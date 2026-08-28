@@ -1,0 +1,289 @@
+/**
+ * combat.ts — PVE 战斗系统 store
+ * 4 类据点、自动战斗结算、挂机驻扎
+ */
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import type { Decimal } from '@/lib/decimal'
+import { STRONGHOLDS, getStronghold, type StrongholdDef } from '@/data/pve'
+import { getUnit, type UnitId } from '@/data/units'
+import type { Formation } from './military'
+import { rollRelic, type RelicDef } from '@/data/relics'
+import type { CombatSaveData } from '@/lib/storage'
+
+export interface BattleLogEntry {
+  round: number
+  msg: string
+  side: 'player' | 'enemy' | 'system'
+}
+
+export interface BattleResult {
+  victory: boolean
+  log: BattleLogEntry[]
+  rewards: { energy?: number; crystal?: number; alloy?: number; data?: number; dark?: number }
+  relic?: RelicDef
+  losses: Record<string, number>  // 玩家损失 {unitId: count}
+  rounds: number
+}
+
+/** 驻扎状态：据点 id → { formationId, startTime } */
+export interface GarrisonState {
+  strongholdId: string
+  formationId: string
+  startTime: number
+}
+
+// 战斗单位内部表示
+interface CombatUnit {
+  unitId: string
+  name: string
+  attack: number
+  defense: number
+  hp: number
+  maxHp: number
+  count: number
+  isEnemy: boolean
+  defRef?: UnitId  // 关联玩家兵种定义用于克制判断
+  counteredBy?: UnitId[]  // 敌方单位被哪些玩家兵种克制
+}
+
+export const useCombatStore = defineStore('combat', () => {
+  const garrisoned = ref<Record<string, GarrisonState>>({})  // strongholdId → state
+  const completedStrongholds = ref<Set<string>>(new Set())
+
+  /**
+   * 种子化 PRNG（mulberry32）—— 使战斗结果可复现
+   *
+   * 同一编队打同一据点，相同种子下结果完全一致，
+   * 避免 SL 刷随机目标的投机行为。
+   * 种子 = 编队内容哈希 + 据点 id + 当前时间分钟数
+   */
+  function _makeRng(seed: number): () => number {
+    let s = seed >>> 0
+    return () => {
+      s = (s + 0x6D2B79F5) >>> 0
+      let t = Math.imul(s ^ (s >>> 15), 1 | s)
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+  }
+
+  /** 从编队和据点信息派生战斗种子 */
+  function _battleSeed(formation: Formation, strongholdId: string): number {
+    let h = 0x811c9dc5
+    const str = formation.id + ':' + strongholdId + ':' + Math.floor(Date.now() / 60000)
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i)
+      h = Math.imul(h, 0x01000193)
+    }
+    return h >>> 0
+  }
+
+  /** 解锁的据点列表 */
+  function availableStrongholds(unlockedNodes: Set<string>): StrongholdDef[] {
+    return STRONGHOLDS.filter((s) => !s.requires || unlockedNodes.has(s.requires))
+  }
+
+  /**
+   * 自动战斗结算（回合制模拟）
+   * @param formation 玩家编队
+   * @param stronghold 据点定义
+   * @param atkMult 玩家攻击乘数
+   * @param defMult 玩家防御乘数
+   */
+  function resolveBattle(
+    formation: Formation,
+    stronghold: StrongholdDef,
+    atkMult: Decimal,
+    defMult: Decimal,
+  ): BattleResult {
+    const log: BattleLogEntry[] = []
+    // 构建战斗单位列表
+    const playerUnits: CombatUnit[] = []
+    for (const [uid, count] of Object.entries(formation.units)) {
+      if (count <= 0) continue
+      const def = getUnit(uid as UnitId)
+      if (!def) continue
+      playerUnits.push({
+        unitId: uid,
+        name: def.name,
+        attack: def.attack * atkMult.toNumber(),
+        defense: def.defense * defMult.toNumber(),
+        hp: def.hp,
+        maxHp: def.hp,
+        count,
+        isEnemy: false,
+        defRef: uid as UnitId,
+      })
+    }
+    const enemyUnits: CombatUnit[] = stronghold.enemies.map((e) => ({
+      unitId: e.unitId,
+      name: e.name,
+      attack: e.attack,
+      defense: e.defense,
+      hp: e.hp,
+      maxHp: e.hp,
+      count: e.count,
+      isEnemy: true,
+      counteredBy: e.counteredBy,
+    }))
+
+    if (playerUnits.length === 0) {
+      return { victory: false, log: [{ round: 0, msg: '编队为空，无法出战', side: 'system' }], rewards: {}, losses: {}, rounds: 0 }
+    }
+
+    log.push({ round: 0, msg: `遭遇 ${stronghold.name} 守军`, side: 'system' })
+
+    const rng = _makeRng(_battleSeed(formation, stronghold.id))
+    let round = 0
+    const maxRounds = 50
+    const losses: Record<string, number> = {}
+
+    while (round < maxRounds) {
+      round++
+      // 玩方攻击
+      for (const p of playerUnits) {
+        if (p.count <= 0) continue
+        const target = enemyUnits.filter((e) => e.count > 0)
+        if (target.length === 0) break
+        const tgt = target[Math.floor(rng() * target.length)]
+        const defRef = getUnit(p.defRef!)
+        let dmg = p.attack * p.count
+        // 克制判断：敌方 unitId 上挂载 counteredBy 列表，检查当前玩家兵种是否在其中
+        if (defRef && tgt.counteredBy?.includes(p.defRef!)) {
+          dmg *= defRef.counterMult
+        }
+        const totalHp = tgt.hp * tgt.count
+        const dmgDealt = Math.min(totalHp, Math.max(1, dmg - tgt.defense * tgt.count * 0.4))
+        // 扣除血量
+        const remaining = totalHp - dmgDealt
+        if (remaining <= 0) {
+          tgt.count = 0
+          log.push({ round, msg: `${p.name} 消灭了 ${tgt.name}`, side: 'player' })
+        } else {
+          const newCount = Math.ceil(remaining / tgt.maxHp)
+          tgt.count = newCount
+          tgt.hp = remaining % tgt.maxHp || tgt.maxHp
+        }
+      }
+      // 检查胜利
+      if (enemyUnits.every((e) => e.count <= 0)) {
+        log.push({ round, msg: '胜利！守军已被全歼', side: 'system' })
+        return buildResult(true, log, stronghold, losses, round, rng)
+      }
+      // 敌方攻击
+      for (const e of enemyUnits) {
+        if (e.count <= 0) continue
+        const target = playerUnits.filter((p) => p.count > 0)
+        if (target.length === 0) break
+        const tgt = target[Math.floor(rng() * target.length)]
+        const dmg = e.attack * e.count
+        const totalHp = tgt.hp * tgt.count
+        const dmgDealt = Math.min(totalHp, Math.max(1, dmg - tgt.defense * tgt.count * 0.4))
+        const remaining = totalHp - dmgDealt
+        if (remaining <= 0) {
+          losses[tgt.unitId] = (losses[tgt.unitId] || 0) + tgt.count
+          tgt.count = 0
+          log.push({ round, msg: `${e.name} 消灭了 ${tgt.name}`, side: 'enemy' })
+        } else {
+          const newCount = Math.ceil(remaining / tgt.maxHp)
+          const lost = tgt.count - newCount
+          if (lost > 0) {
+            losses[tgt.unitId] = (losses[tgt.unitId] || 0) + lost
+            log.push({ round, msg: `${e.name} 对 ${tgt.name} 造成 ${lost} 损失`, side: 'enemy' })
+          }
+          tgt.count = newCount
+          tgt.hp = remaining % tgt.maxHp || tgt.maxHp
+        }
+      }
+      // 检查失败
+      if (playerUnits.every((p) => p.count <= 0)) {
+        log.push({ round, msg: '全军覆没……', side: 'system' })
+        return buildResult(false, log, stronghold, losses, round, rng)
+      }
+    }
+    log.push({ round, msg: '战斗超时，双方撤退', side: 'system' })
+    return buildResult(false, log, stronghold, losses, round, rng)
+  }
+
+  function buildResult(victory: boolean, log: BattleLogEntry[], stronghold: StrongholdDef, losses: Record<string, number>, rounds: number, rng: () => number): BattleResult {
+    // 限制日志条数：保留首条（遭遇）+ 最后 MAX_LOG-1 条
+    const MAX_LOG = 30
+    const trimmedLog = log.length > MAX_LOG
+      ? [log[0], ...log.slice(-(MAX_LOG - 1))]
+      : log
+
+    const rewards: BattleResult['rewards'] = {}
+    let relic: RelicDef | undefined
+    if (victory) {
+      const r = stronghold.rewards
+      if (r.energy) rewards.energy = r.energy
+      if (r.crystal) rewards.crystal = r.crystal
+      if (r.alloy) rewards.alloy = r.alloy
+      if (r.data) rewards.data = r.data
+      if (r.dark) rewards.dark = r.dark
+      // 遗物掉落
+      if (r.relicChance && rng() < r.relicChance) {
+        relic = rollRelic(r.relicRarityBias ?? 0, rng)
+        trimmedLog.push({ round: rounds, msg: `发现遗物：${relic.name}！`, side: 'system' })
+      }
+      completedStrongholds.value.add(stronghold.id)
+    }
+    return { victory, log: trimmedLog, rewards, relic, losses, rounds }
+  }
+
+  /** 驻扎据点（挂机） */
+  function garrison(strongholdId: string, formationId: string): boolean {
+    if (garrisoned.value[strongholdId]) return false
+    garrisoned.value[strongholdId] = { strongholdId, formationId, startTime: Date.now() }
+    return true
+  }
+  /** 撤回驻扎 */
+  function ungarrison(strongholdId: string) {
+    delete garrisoned.value[strongholdId]
+  }
+  /** 获取驻扎挂机收益（每秒） */
+  function garrisonIdleReward(strongholdId: string): Record<string, number> {
+    const s = getStronghold(strongholdId)
+    if (!s) return {}
+    return { ...s.idle }
+  }
+
+  /**
+   * 所有驻扎据点的合并产出（每秒）—— computed 缓存
+   * 仅在 garrisoned 变化时重算，避免每 tick 遍历
+   */
+  const garrisonProduction = computed<Record<string, number>>(() => {
+    const result: Record<string, number> = {}
+    for (const sid of Object.keys(garrisoned.value)) {
+      const idle = garrisonIdleReward(sid)
+      for (const [res, v] of Object.entries(idle)) {
+        result[res] = (result[res] || 0) + v
+      }
+    }
+    return result
+  })
+
+  function reset() {
+    garrisoned.value = {}
+    completedStrongholds.value = new Set()
+  }
+
+  function serialize() {
+    return {
+      garrisoned: { ...garrisoned.value },
+      completed: Array.from(completedStrongholds.value),
+    }
+  }
+  function hydrate(data: CombatSaveData | undefined) {
+    if (!data) return
+    if (data.garrisoned) garrisoned.value = { ...data.garrisoned }
+    if (data.completed) completedStrongholds.value = new Set(data.completed)
+  }
+
+  return {
+    garrisoned, completedStrongholds, garrisonProduction,
+    availableStrongholds, resolveBattle, garrison, ungarrison, garrisonIdleReward,
+    reset, serialize, hydrate,
+  }
+})
