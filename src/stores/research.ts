@@ -1,0 +1,86 @@
+/**
+ * research.ts — 科技树 store
+ * 管理已完成科技集合、解锁状态、科技效果汇总
+ */
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { D, Decimal } from '@/lib/decimal'
+import { getTech, techAvailable, type TechDef, type TechEffect } from '@/data/tech'
+import type { ResearchSaveData } from '@/lib/storage'
+
+export const useResearchStore = defineStore('research', () => {
+  // —— state ——
+  const completed = ref<Set<string>>(new Set())
+
+  // —— getters ——
+  const isCompleted = (id: string) => completed.value.has(id)
+  const count = computed(() => completed.value.size)
+
+  /** 当前已解锁的 id 集合（用于建筑/兵种判断） */
+  const unlockedSet = computed(() => {
+    const s = new Set<string>()
+    for (const id of completed.value) {
+      const tech = getTech(id)
+      if (!tech) continue
+      for (const eff of tech.effects) {
+        if (eff.type === 'unlock' && eff.target) s.add(eff.target)
+      }
+    }
+    return s
+  })
+
+  /** 科技是否可研究 */
+  const available = (def: TechDef) => techAvailable(def, completed.value, unlockedSet.value)
+
+  /** 计算当前所有生效效果（按 type 聚合） */
+  const allEffects = computed<TechEffect[]>(() => {
+    const list: TechEffect[] = []
+    for (const id of completed.value) {
+      const tech = getTech(id)
+      if (tech) list.push(...tech.effects.filter((e) => e.type !== 'unlock'))
+    }
+    return list
+  })
+
+  /** 某类乘数汇总，如 production_mult / energy → 1.2 * 1.3 = 1.56 */
+  function getMult(type: TechEffect['type'], target?: string, extraEffects: TechEffect[] = []): Decimal {
+    let mult = D(1)
+    const all = [...allEffects.value, ...extraEffects]
+    for (const eff of all) {
+      if (eff.type !== type) continue
+      if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
+      mult = mult.times(eff.value)
+    }
+    return mult
+  }
+
+  /** 科技成本乘数 */
+  const techCostMult = computed(() => getMult('cost_mult', 'tech'))
+
+  // —— actions ——
+  function complete(id: string): boolean {
+    const def = getTech(id)
+    if (!def || completed.value.has(id)) return false
+    completed.value.add(id)
+    return true
+  }
+
+  function reset() {
+    completed.value = new Set()
+  }
+
+  function serialize() {
+    return { completed: Array.from(completed.value) }
+  }
+  function hydrate(data: ResearchSaveData | undefined) {
+    if (!data?.completed) return
+    completed.value = new Set(data.completed as string[])
+  }
+
+  return {
+    completed,
+    isCompleted, count, unlockedSet, available, allEffects, getMult, techCostMult,
+    complete, reset,
+    serialize, hydrate,
+  }
+})

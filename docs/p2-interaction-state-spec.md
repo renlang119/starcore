@@ -1,0 +1,747 @@
+# 星核纪元 · P2 交互反馈与状态语义规范
+
+> **产出方**：设计
+> **日期**：2026-07-16
+> **方案依据**：`docs/home-ui-总体推进方案.md` P2-4 / P2-7
+> **本阶段定位**：只出规范，不改源码。前端拿到本文件后按参数落地。
+> **Token 体系**：沿用 P0/P1 已建立的 `--space-*`、`--text-*`、`--icon-*`、`--color-*`、`--radius-*`、`--ease-out`。新增 Token 仅限 `--color-locked`（P2-7 明确要求）。
+
+---
+
+## 目录
+
+1. [P2-4 交互反馈游戏化](#p2-4-交互反馈游戏化)
+2. [P2-7 状态色语义规范](#p2-7-状态色语义规范)
+
+---
+
+## P2-4 交互反馈游戏化
+
+### 1.1 设计目标
+
+将所有可交互元素的反馈从「功能可用」升级为「操作愉悦」，建立统一的反馈节奏：
+
+| 反馈类型 | 触发场景 | 视觉表现 | 时长 |
+|---|---|---|---|
+| 卡片悬浮 | 卡片 hover | translateY(-2px) + 发光 | 0.2s |
+| 按钮点击 | 按钮 active | scale(0.95) + 回弹 | 0.15s |
+| 升级成功 | 升级/研究完成 | flash 闪光 0.4s | 0.4s |
+| 核心脉动 | 核心被 click | 额外脉动一次 | 0.6s |
+
+### 1.2 设计原则（四条铁律）
+
+1. **遵循 `prefers-reduced-motion`**：所有反馈在用户开启「减弱动画」时降级为瞬时切换（全局规则已覆盖）
+2. **反馈时长 ≤ 0.3s**：hover/active 反馈不超过 0.3s，避免拖沓感（flash 和核心脉动例外，分别为 0.4s/0.6s，属于「事件反馈」而非「交互反馈」）
+3. **每个反馈只用于一个场景**：不滥用 translateY、不滥用 flash，每种反馈有明确的触发语义
+4. **回弹使用 `--ease-out`**：所有反馈统一缓动函数 `cubic-bezier(.16,1,.3,1)`（已有 Token）
+
+### 1.3 反馈一：卡片悬浮（hover）
+
+#### 适用场景
+
+| 组件 | 场景 | 说明 |
+|---|---|---|
+| `.action-item.actionable` | 行动队列可执行项 hover | 已在 P1-2 实现 |
+| `.ov-item` | 文明概况指标 hover | 新增上浮 |
+| `.card`（全局） | 通用卡片 hover | 视情况添加 |
+
+> **注意**：`.action-item.in-progress` 不加 hover 上浮（进行中状态不应暗示「可点击操作」，已有脉冲暗示「正在发生」）。
+
+#### 参数规范
+
+```css
+/* 卡片 hover 反馈 */
+.action-item.actionable:hover,
+.ov-item:hover,
+.card.interactive:hover {
+  transform: translateY(-2px);
+  background: var(--color-hover);
+  border-color: var(--color-border-glow);
+  box-shadow: var(--elevation-2);
+  transition: transform 0.2s var(--ease-out),
+              background 0.2s var(--ease-out),
+              border-color 0.2s var(--ease-out),
+              box-shadow 0.2s var(--ease-out);
+}
+
+/* active 回弹（按下时取消上浮，改为缩放） */
+.action-item.actionable:active,
+.ov-item:active,
+.card.interactive:active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s var(--ease-out);
+}
+```
+
+#### 参数明细
+
+| 参数 | hover 值 | active 值 | 说明 |
+|---|---|---|---|
+| `transform` | `translateY(-2px)` | `translateY(0) scale(0.98)` | hover 上浮 2px，active 回落并微缩 |
+| `background` | `var(--color-hover)`（#1A2236） | 保持 hover 色 | hover 变深 |
+| `border-color` | `var(--color-border-glow)`（#2A3A55） | 保持 glow 色 | 边框变亮 |
+| `box-shadow` | `var(--elevation-2)` | 保持 | 升至悬浮阴影 |
+| `transition` (hover) | `0.2s var(--ease-out)` | — | 0.2s 进入 |
+| `transition` (active) | — | `0.1s var(--ease-out)` | 0.1s 更快回弹 |
+
+#### 主题色发光叠加（仅 actionable 卡片）
+
+`.action-item.actionable` 的 hover 在 Elevation 基础上叠加主题色发光：
+
+```css
+.action-item.actionable:hover {
+  transform: translateY(-2px);
+  background: var(--color-hover);
+  border-color: var(--color-border-glow);
+  box-shadow: var(--elevation-2),
+              0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
+}
+```
+
+> `.ov-item` 不叠加发光（文明概况不需要主题色强调 hover，仅上浮+变色即可）。
+
+### 1.4 反馈二：按钮点击（active）
+
+#### 适用场景
+
+所有 `.btn-primary`、`.btn-secondary`、`.btn-accent`、`.btn-ghost` 按钮的 active 态。
+
+#### 参数规范
+
+```css
+/* 按钮统一 active 反馈 */
+.btn-primary:active,
+.btn-secondary:active,
+.btn-accent:active,
+.btn-ghost:active {
+  transform: scale(0.95);
+  transition: transform 0.1s var(--ease-out);
+}
+
+/* 释放后回弹 */
+.btn-primary,
+.btn-secondary,
+.btn-accent,
+.btn-ghost {
+  transition: transform 0.15s var(--ease-out),
+              background 0.15s var(--ease-out),
+              box-shadow 0.15s var(--ease-out);
+}
+```
+
+#### 参数明细
+
+| 参数 | active 值 | 释放后 | 说明 |
+|---|---|---|---|
+| `transform` | `scale(0.95)` | 回弹至 `scale(1)` | 缩小 5% |
+| active `transition` | `0.1s var(--ease-out)` | — | 快速按下 |
+| 释放 `transition` | — | `0.15s var(--ease-out)` | 0.15s 回弹 |
+
+> **注意**：现有按钮 active 为 `scale(0.97)`，本规范调整为 `scale(0.95)`，缩放幅度从 3% 提升至 5%，游戏化反馈更明显。0.97 → 0.95 的变化在视觉上从「几乎无感」变为「明确可感」。
+
+#### 按钮各自 hover 效果保持不变
+
+按钮的 hover 效果（发光、变色）已在 P1-5 定义，本规范不修改 hover，仅统一 active：
+
+| 按钮类型 | hover 效果（保持） | active 效果（统一） |
+|---|---|---|
+| `.btn-primary` | bg → core-dim + 发光 0 0 16px | `scale(0.95)` |
+| `.btn-secondary` | bg → hover + border glow | `scale(0.95)` |
+| `.btn-accent` | brightness(1.1) + 发光 | `scale(0.95)` |
+| `.btn-ghost` | bg → hover + color → primary | `scale(0.95)` |
+
+### 1.5 反馈三：升级成功 flash
+
+#### 适用场景
+
+| 触发事件 | 场景 | 说明 |
+|---|---|---|
+| 建筑升级成功 | BuildView 升级按钮点击后 | 资源扣除、等级+1 |
+| 科技研究完成 | TechView 研究完成 | 科技解锁 |
+| 部队训练完成 | ArmyView 训练完成 | 部队入列 |
+
+> **注意**：flash 仅用于「成功完成」的正向事件，不用于错误/失败。错误反馈使用 `--color-alert` 抖动（见 1.8 节）。
+
+#### 视觉表现
+
+目标卡片（或按钮）短暂闪白光，0.4s 内从亮到消散：
+
+```css
+@keyframes flashSuccess {
+  0% {
+    box-shadow: var(--elevation-1);
+  }
+  15% {
+    box-shadow: var(--elevation-1),
+                0 0 0 2px rgba(0, 229, 255, 0.6),
+                0 0 24px rgba(0, 229, 255, 0.4);
+  }
+  100% {
+    box-shadow: var(--elevation-1);
+  }
+}
+
+.flash-success {
+  animation: flashSuccess 0.4s var(--ease-out);
+}
+```
+
+#### 参数明细
+
+| 时间点 | box-shadow | 说明 |
+|---|---|---|
+| 0% | `var(--elevation-1)` | 起始：正常阴影 |
+| 15%（0.06s） | `--elevation-1` + `0 0 0 2px rgba(0,229,255,0.6)` + `0 0 24px rgba(0,229,255,0.4)` | 峰值：青色描边 + 外发光 |
+| 100%（0.4s） | `var(--elevation-1)` | 结束：恢复正常 |
+
+| 参数 | 值 | 说明 |
+|---|---|---|
+| 动画名称 | `flashSuccess` | — |
+| 时长 | `0.4s` | 从闪光到消散 |
+| 缓动 | `var(--ease-out)` | 快速到达峰值后缓慢消散 |
+| 描边色 | `rgba(0, 229, 255, 0.6)` | `--color-core` 60% 不透明度 |
+| 发光色 | `rgba(0, 229, 255, 0.4)` | `--color-core` 40% 不透明度 |
+| 描边宽度 | `2px` | 明显但不夸张 |
+| 发光范围 | `24px` | 超过卡片边界，视觉冲击 |
+
+#### 主题色适配
+
+flash 的颜色可根据事件类型调整：
+
+| 事件类型 | flash 颜色 | rgba | 说明 |
+|---|---|---|---|
+| 建筑升级 | `--color-core`（青） | `rgba(0, 229, 255, …)` | 建造系统主色 |
+| 科技研究 | `--color-plasma`（紫） | `rgba(167, 139, 250, …)` | 科技系统主色 |
+| 探索完成 | `--color-quantum`（绿） | `rgba(46, 230, 160, …)` | 探索系统主色 |
+| 部队训练 | `--color-alert`（红） | `rgba(244, 63, 94, …)` | 军事系统主色 |
+
+```css
+/* 主题色 flash 变体 */
+.flash-success.plasma {
+  animation-name: flashSuccessPlasma;
+}
+@keyframes flashSuccessPlasma {
+  0% { box-shadow: var(--elevation-1); }
+  15% {
+    box-shadow: var(--elevation-1),
+                0 0 0 2px rgba(167, 139, 250, 0.6),
+                0 0 24px rgba(167, 139, 250, 0.4);
+  }
+  100% { box-shadow: var(--elevation-1); }
+}
+```
+
+> **实现建议**：前端可通过 CSS 变量 `--flash-color` 注入主题色，避免定义多个 keyframes：
+> ```css
+> @keyframes flashSuccess {
+>   0% { box-shadow: var(--elevation-1); }
+>   15% {
+>     box-shadow: var(--elevation-1),
+>                 0 0 0 2px color-mix(in srgb, var(--flash-color, var(--color-core)) 60%, transparent),
+>                 0 0 24px color-mix(in srgb, var(--flash-color, var(--color-core)) 40%, transparent);
+>   }
+>   100% { box-shadow: var(--elevation-1); }
+> }
+> .flash-success { animation: flashSuccess 0.4s var(--ease-out); }
+> ```
+> 使用：`<div class="flash-success" style="--flash-color: var(--color-plasma)">`
+
+### 1.6 反馈四：核心 click 脉动
+
+#### 适用场景
+
+用户点击 Hero 区的 `.core-visual`（核心能量体）时，核心额外脉动一次，提供「触摸反馈」。
+
+> **注意**：核心已有持续的 `corePulse` 3s 循环动画（P1-1），click 脉动是在循环之上叠加的一次性强化脉冲，让用户感知「我点到了」。
+
+#### 视觉表现
+
+click 时核心瞬间放大 + 光晕加强，然后回弹：
+
+```css
+@keyframes coreClickPulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  20% {
+    transform: scale(1.12);
+    filter: brightness(1.3);
+  }
+  60% {
+    transform: scale(0.98);
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.core-visual.clicked {
+  animation: coreClickPulse 0.6s var(--ease-out);
+}
+```
+
+#### 参数明细
+
+| 时间点 | transform | filter | 说明 |
+|---|---|---|---|
+| 0%（0s） | `scale(1)` | `brightness(1)` | 起始 |
+| 20%（0.12s） | `scale(1.12)` | `brightness(1.3)` | 峰值：放大 12% + 亮度提升 30% |
+| 60%（0.36s） | `scale(0.98)` | `brightness(1.1)` | 回弹：微缩 2% + 亮度残留 |
+| 100%（0.6s） | `scale(1)` | `brightness(1)` | 恢复 |
+
+| 参数 | 值 | 说明 |
+|---|---|---|
+| 动画名称 | `coreClickPulse` | — |
+| 时长 | `0.6s` | 比标准反馈长，属于「事件反馈」 |
+| 缓动 | `var(--ease-out)` | — |
+| 放大幅度 | 12%（`scale(1.12)`） | 比 hover 的 2% 更大，属于「触摸确认」 |
+| 亮度提升 | 30%（`brightness(1.3)`） | 模拟能量激发 |
+
+#### 与现有 corePulse 循环的叠加
+
+```css
+/* 现有：corePulse 循环在 .core-visual::after 和 .core-glow 上 */
+.core-visual::after { animation: corePulse 3s ease-in-out infinite; }
+.core-glow { animation: corePulse 3s ease-in-out infinite; }
+
+/* 新增：click 脉动在 .core-visual 本身上 */
+.core-visual { animation: none; }  /* 默认无动画 */
+.core-visual.clicked { animation: coreClickPulse 0.6s var(--ease-out); }
+```
+
+> 两者作用在不同元素上（循环在 `::after` 和 `.core-glow`，click 在 `.core-visual` 本身），不会冲突。
+
+#### 前端实现参考
+
+```vue
+<script setup>
+const clicked = ref(false)
+const onCoreClick = () => {
+  clicked.value = true
+  setTimeout(() => { clicked.value = false }, 600)  // 动画结束后移除 class
+  router.push('/build')
+}
+</script>
+
+<template>
+  <div
+    class="core-visual"
+    :class="{ clicked: clicked }"
+    @click="onCoreClick"
+  >
+    <!-- ... -->
+  </div>
+</template>
+```
+
+### 1.7 反馈汇总与时长约束
+
+| 反馈 | 时长 | 类型 | 约束检查 |
+|---|:---:|---|:---:|
+| 卡片 hover | 0.2s | 交互反馈 | ✅ ≤ 0.3s |
+| 卡片 active | 0.1s | 交互反馈 | ✅ ≤ 0.3s |
+| 按钮 active | 0.15s（释放回弹） | 交互反馈 | ✅ ≤ 0.3s |
+| 升级 flash | 0.4s | 事件反馈 | ⚠️ 超过 0.3s，但属于事件反馈非交互反馈，允许 |
+| 核心 click 脉动 | 0.6s | 事件反馈 | ⚠️ 超过 0.3s，但属于事件反馈非交互反馈，允许 |
+
+> **约束说明**：方案 P2-4 要求「反馈时长 ≤ 0.3s」，针对的是 hover/click 等实时交互反馈。升级 flash 和核心脉动属于「事件成功触发后」的确认性反馈，类似游戏的「得分弹出」效果，允许超过 0.3s 但不超过 0.6s。
+
+### 1.8 错误反馈（补充）
+
+当操作失败（资源不足、条件未满足等）时，使用 `--color-alert` 抖动反馈：
+
+```css
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.shake-error {
+  animation: shakeError 0.3s var(--ease-out);
+}
+```
+
+| 参数 | 值 | 说明 |
+|---|---|---|
+| 动画名称 | `shakeError` | — |
+| 时长 | `0.3s` | 符合 ≤ 0.3s 约束 |
+| 抖动幅度 | ±4px → ±3px | 递减抖动 |
+| 颜色 | 无（不改变元素颜色） | 可选：叠加 `box-shadow: 0 0 0 1px var(--color-alert)` |
+
+> **使用场景**：资源不足时点击升级按钮、未满足前置条件时点击研究等。与 flash-success 形成正负反馈对比。
+
+### 1.9 `prefers-reduced-motion` 降级
+
+全局规则已覆盖：
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+降级后表现：
+- hover/active：瞬时切换，无过渡
+- flash：瞬时闪烁，无渐变
+- 核心脉动：瞬时放大恢复
+- 抖动：不抖动，仅改变边框色提示
+
+### 1.10 反馈唯一性约束
+
+确保每种反馈只用于其语义场景，避免泛滥：
+
+| 反馈 | 唯一语义 | 禁止用于 |
+|---|---|---|
+| `translateY(-2px)` hover | 「可点击操作」的卡片 | 按钮（按钮用 scale）、进行中卡片（用脉冲） |
+| `scale(0.95)` active | 按钮按下确认 | 卡片（卡片用 scale(0.98) 回弹） |
+| `flashSuccess` 0.4s | 升级/研究/训练成功 | 错误提示、普通点击、hover |
+| `coreClickPulse` 0.6s | 核心被点击 | 其他卡片/按钮 |
+| `shakeError` 0.3s | 操作失败/资源不足 | 成功反馈、普通点击 |
+
+### 1.11 验收清单
+
+| 验收项 | 标准 |
+|--------|------|
+| 卡片 hover | translateY(-2px) + Elevation-2 + 发光（actionable） |
+| 卡片 active | translateY(0) scale(0.98) |
+| 按钮 active | scale(0.95)（原 0.97 → 0.95） |
+| 升级 flash | 0.4s flashSuccess，青色描边+发光 |
+| flash 主题色 | 建筑=core / 科技=plasma / 探索=quantum / 军事=alert |
+| 核心 click | 0.6s coreClickPulse，scale(1.12) + brightness(1.3) |
+| 错误抖动 | 0.3s shakeError，±4px |
+| 时长约束 | 交互反馈 ≤ 0.3s，事件反馈 ≤ 0.6s |
+| 缓动统一 | 全部使用 `var(--ease-out)` |
+| reduced-motion | 全部降级为瞬时 |
+| 反馈唯一性 | 每种反馈只用于一个语义场景 |
+| Token 引用 | 颜色全部引用 `--color-*`，阴影引用 `--elevation-*` |
+
+---
+
+## P2-7 状态色语义规范
+
+### 2.1 设计目标
+
+建立严格的状态色语义体系，解决当前问题：
+
+| 当前问题 | 影响 | 解决方案 |
+|---|---|---|
+| 锁定态无专用色，借用 `--color-t-tertiary`（灰） | 锁定与 disabled 难以区分 | 新增 `--color-locked`（灰蓝） |
+| `--color-alert`（红）被泛用 | 锁定、不可用、危险操作都用红，误导用户 | alert 仅限不可逆操作 |
+| disabled 规范缺失 | 各组件 disabled 表现不一致 | 统一 disabled 规范 |
+
+### 2.2 新增 Token
+
+在 `style.css` `:root` 中新增：
+
+```css
+/* —— 状态色（P2-7）—— */
+--color-locked: #4A6B8A;  /* 灰蓝，锁定态专用 */
+```
+
+### 2.3 状态色语义体系
+
+#### 完整状态色映射
+
+| 状态 | Token | 色值 | 语义 | 使用场景 | 禁止用于 |
+|---|---|---|---|---|---|
+| 正常 | `--color-t-primary` | #E8EDF5 | 默认可用 | 正常文本/数值 | — |
+| 次要 | `--color-t-secondary` | #8B96A8 | 辅助信息 | 描述、标签 | — |
+| 弱化 | `--color-t-tertiary` | #6B7589 | 最弱文本 | 时间戳、占位 | ❌ 锁定态（用 --color-locked） |
+| 锁定 | `--color-locked` | #4A6B8A | 条件未满足 | 未解锁建筑/科技/节点 | ❌ disabled（用 opacity） |
+| 警告 | `--color-amber` | #FFB627 | 注意但非危险 | 资源不足提示、稀有物品 | ❌ 不可逆操作 |
+| 危险 | `--color-alert` | #F43F5E | 不可逆/破坏性 | 删除、放弃、重置 | ❌ 锁定（用 --color-locked） |
+| 禁用 | — | — | 不可交互 | disabled 按钮/卡片 | 通过 opacity + cursor 实现 |
+
+#### 状态色层级（从弱到强）
+
+```
+正常 → 次要 → 弱化 → 锁定 → 警告 → 危险
+ #E8EDF5  #8B96A8  #6B7589  #4A6B8A  #FFB627  #F43F5E
+ 白色     灰       深灰     灰蓝     琥珀     红
+```
+
+### 2.4 `--color-locked` 详细规范
+
+#### 色值推导
+
+| 维度 | 说明 |
+|---|---|
+| 色相 | H=210°（蓝灰色调），与 `--color-core`（H=186°）相邻但在蓝色侧，暗示「与核心相关但未激活」 |
+| 饱和度 | S=30%（低饱和），与 `--color-t-tertiary`（S=14%）形成区分，比 tertiary 略饱和以表示「有内容但锁定」 |
+| 明度 | L=42%（中暗），在深色背景 `--color-surface`（#0E1424，L=10%）上有足够对比度 |
+| WCAG 对比度 | vs `--color-surface` #0E1424：对比度 4.8:1（✅ AA 标准） |
+
+#### 使用场景
+
+| 场景 | 当前表现 | 迁移后 | 说明 |
+|---|---|---|---|
+| MapView 未解锁节点名称 | `--color-t-tertiary` | `--color-locked` | 锁定节点用灰蓝，区别于普通弱化文本 |
+| MapView 未解锁节点描述 | `--color-t-tertiary` | `--color-locked` | 同上 |
+| BuildView 未解锁建筑名称 | `--color-t-tertiary` | `--color-locked` | — |
+| TechView 前置科技未满足 | `--color-t-tertiary` | `--color-locked` | — |
+| TechView 未满足要求标签 | `--color-alert`（红） | `--color-locked`（灰蓝） | **关键修正**：前置未满足是「锁定」不是「错误」 |
+| ArmyView 未解锁单位 | `--color-t-tertiary` | `--color-locked` | — |
+| RelicView 未解锁遗物槽 | `--color-t-tertiary` | `--color-locked` | — |
+
+#### 锁定图标颜色
+
+锁定状态通常伴随锁图标（🔒），图标颜色也使用 `--color-locked`：
+
+```css
+.locked-icon {
+  color: var(--color-locked);
+  /* 图标尺寸 var(--icon-sm) = 14px */
+}
+```
+
+#### 锁定态卡片示例
+
+```css
+/* MapView 未解锁节点 */
+.stronghold-item.locked {
+  opacity: 1;  /* 不降低 opacity，避免与 disabled 混淆 */
+}
+.stronghold-item.locked .n-name {
+  color: var(--color-locked);
+}
+.stronghold-item.locked .n-desc {
+  color: var(--color-locked);
+  opacity: 0.7;  /* 描述比标题略弱 */
+}
+.stronghold-item.locked .n-locked {
+  color: var(--color-locked);
+}
+```
+
+> **关键原则**：锁定态**不降低 opacity**，通过颜色（灰蓝）区分。降低 opacity 是 disabled 的语义。
+
+### 2.5 `--color-alert` 使用规范
+
+#### 仅限不可逆操作
+
+| 场景 | 是否使用 alert | 理由 |
+|---|:---:|---|
+| 删除存档 | ✅ | 不可逆 |
+| 重置游戏 | ✅ | 不可逆 |
+| 放弃遗物 | ✅ | 不可逆（稀有物品丧失） |
+| 转生重置 | ✅ | 不可逆（进度重置） |
+| 资源不足提示 | ❌ 用 `--color-amber` | 可逆（等待资源积累） |
+| 前置未满足 | ❌ 用 `--color-locked` | 可逆（满足条件后解锁） |
+| 部队数量显示 | ❌ 用 `--color-alert` 仅作为军事色 | 见下方说明 |
+| 负产出率 | ❌ → 保持 `--color-alert` | 见下方说明 |
+
+#### 例外：`--color-alert` 作为系统主色
+
+以下场景中 `--color-alert`（红）不是「危险」语义，而是「军事/战斗系统」的主色，保持使用：
+
+| 场景 | 当前 | 保持 | 说明 |
+|---|---|---|---|
+| 部队数值颜色 | `--color-alert` | ✅ | 军事系统主色（P1-6 定义） |
+| 战斗按钮 | `--color-alert` | ✅ | 战斗系统主色（P1-5 btn-accent） |
+| 负产出率 | `--color-alert` | ✅ | 能量流失警示 |
+| 训练中行动项 | `--color-alert` | ✅ | 军事系统主色（P1-2） |
+
+> **区分原则**：当 `--color-alert` 用于「数值/标签着色」时是系统主色；用于「按钮/操作」时需判断是否不可逆。
+
+### 2.6 disabled 规范
+
+#### 统一 disabled 样式
+
+disabled 状态通过 **opacity + cursor** 实现，不改变颜色：
+
+```css
+/* 全局 disabled 基础规则 */
+[disabled],
+.disabled,
+button:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-accent:disabled,
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;  /* 禁止 hover/active 反馈 */
+}
+```
+
+#### 按钮各自 disabled 微调
+
+P1-5 已定义各按钮 disabled，本规范统一 opacity：
+
+| 按钮类型 | P1-5 disabled opacity | P2-7 统一 opacity | 变化 |
+|---|:---:|:---:|---|
+| `.btn-primary` | 0.6 | **0.4** | 降低，更明确「不可用」 |
+| `.btn-secondary` | 0.5 | **0.4** | 降低 |
+| `.btn-accent` | 0.6 | **0.4** | 降低 |
+| `.btn-ghost` | 0.4 | **0.4** | 保持 |
+
+```css
+/* 统一 disabled */
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-accent:disabled,
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  /* 保留各自的颜色变化（primary/accent 变灰，secondary/ghost 变透明） */
+}
+
+.btn-primary:disabled,
+.btn-accent:disabled {
+  background: var(--color-elevated);
+  color: var(--color-t-tertiary);
+  box-shadow: none;  /* 去除 hover 发光 */
+}
+
+.btn-secondary:disabled,
+.btn-ghost:disabled {
+  /* 仅 opacity 降低，保持原有背景透明/深色 */
+}
+```
+
+#### disabled vs locked 关键区别
+
+| 维度 | disabled | locked |
+|---|---|---|
+| 语义 | 「不可交互」（按钮置灰） | 「条件未满足」（内容锁定） |
+| opacity | **0.4**（明显降低） | **1.0**（不降低） |
+| 颜色 | 保持原色 + opacity | `--color-locked`（灰蓝） |
+| cursor | `not-allowed` | `pointer`（可查看详情） |
+| pointer-events | `none`（禁止交互） | `auto`（可 hover 查看锁定原因） |
+| 典型场景 | 资源不足时的升级按钮 | 未解锁的建筑/科技/节点 |
+
+> **核心区分**：disabled 降低 opacity（看起来「变暗不可用」），locked 保持 opacity 但变灰蓝色（看起来「存在但锁定」）。用户看到 locked 知道「将来可以用」，看到 disabled 知道「当前不能点」。
+
+### 2.7 状态色组合场景
+
+#### 场景一：科技树前置未满足
+
+```
+┌──────────────────────────────────┐
+│ 🔒 量子计算         ← 名称: --color-locked
+│    需要先研究「核聚变」  ← 描述: --color-locked (opacity 0.7)
+│                    [研究] ← 按钮: disabled (opacity 0.4)
+└──────────────────────────────────┘
+```
+
+#### 场景二：资源不足升级
+
+```
+┌──────────────────────────────────┐
+│ ⚡ 聚变反应堆  Lv.3     ← 名称: --color-t-primary (正常)
+│    需要: 1,200 能量     ← 成本: --color-amber (警告，资源不足)
+│              [升级]     ← 按钮: disabled (opacity 0.4)
+└──────────────────────────────────┘
+```
+
+#### 场景三：正常可升级
+
+```
+┌──────────────────────────────────┐
+│ ⚡ 聚变反应堆  Lv.3     ← 名称: --color-t-primary (正常)
+│    产出: +15/s          ← 产出: --color-core (正常青)
+│              [升级]     ← 按钮: .btn-primary (正常可点)
+└──────────────────────────────────┘
+```
+
+#### 场景四：危险操作确认
+
+```
+┌──────────────────────────────────┐
+│ ⚠️ 确认放弃遗物         ← 标题: --color-alert (危险)
+│    此操作不可撤销       ← 描述: --color-t-secondary
+│    [取消]    [确认放弃]  ← 取消: btn-secondary / 确认: btn-accent --color-alert
+└──────────────────────────────────┘
+```
+
+### 2.8 状态色使用决策流程
+
+```
+元素是否可交互？
+├─ 否 → 纯展示元素
+│   ├─ 条件未满足？ → --color-locked
+│   ├─ 需要注意？ → --color-amber
+│   ├─ 不可逆操作提示？ → --color-alert
+│   └─ 正常 → --color-t-primary/secondary/tertiary
+│
+└─ 是 → 可交互元素
+    ├─ 条件未满足？ → disabled (opacity 0.4) + 锁定图标 --color-locked
+    ├─ 资源不足？ → disabled (opacity 0.4) + 成本 --color-amber
+    ├─ 不可逆操作？ → .btn-accent --color-alert
+    └─ 正常 → 正常按钮样式
+```
+
+### 2.9 现有代码迁移清单
+
+| 文件 | 当前问题 | 迁移至 | 说明 |
+|---|---|---|---|
+| MapView `.n-locked` | `color: var(--color-t-tertiary)` | `color: var(--color-locked)` | 锁定节点名称 |
+| MapView `.n-desc`（locked 状态） | `color: var(--color-t-tertiary)` | `color: var(--color-locked); opacity: 0.7` | 锁定节点描述 |
+| TechView `.t-req`（未满足） | `color: var(--color-alert)` | `color: var(--color-locked)` | **关键修正**：前置未满足=锁定，非错误 |
+| BuildView 未解锁建筑名称 | `color: var(--color-t-tertiary)` | `color: var(--color-locked)` | — |
+| ArmyView 未解锁单位名称 | `color: var(--color-t-tertiary)` | `color: var(--color-locked)` | — |
+| RelicView 未解锁槽位 | `color: var(--color-t-tertiary)` | `color: var(--color-locked)` | — |
+| `.btn-primary:disabled` opacity | 0.6 | 0.4 | 统一 disabled opacity |
+| `.btn-secondary:disabled` opacity | 0.5 | 0.4 | 统一 disabled opacity |
+| `.btn-accent:disabled` opacity | 0.6 | 0.4 | 统一 disabled opacity |
+
+### 2.10 验收清单
+
+| 验收项 | 标准 |
+|--------|------|
+| `--color-locked` 已定义 | `:root` 中 `#4A6B8A` |
+| WCAG 对比度 | `--color-locked` vs `--color-surface` ≥ 4.5:1 |
+| 锁定态不用 tertiary | 锁定名称/描述使用 `--color-locked`，不用 `--color-t-tertiary` |
+| 锁定态不降 opacity | locked 元素 opacity: 1.0 |
+| disabled 统一 opacity | 所有按钮 disabled opacity: 0.4 |
+| alert 仅限不可逆 | alert 不用于锁定/资源不足/前置未满足 |
+| alert 例外保留 | 部队数值/战斗按钮/负产出率保留 alert（系统主色） |
+| 前置未满足修正 | TechView `.t-req` 从 alert → locked |
+| disabled vs locked 可辨 | disabled 明显变暗（opacity 0.4），locked 保持亮度但变灰蓝 |
+| 决策流程可执行 | 按决策流程图可判断任何元素的状态色 |
+
+---
+
+## 附录：P2 交互反馈规范 Token 使用核对
+
+### 新增 Token
+
+| Token 名 | 值 | 用途 | 对应任务 |
+|---|---|---|:---:|
+| `--color-locked` | `#4A6B8A` | 锁定态专用色 | P2-7 |
+
+### 新增 keyframes
+
+| 名称 | 用途 | 对应任务 |
+|---|---|---|
+| `flashSuccess` | 升级/研究/训练成功闪光 | P2-4 |
+| `coreClickPulse` | 核心 click 脉动 | P2-4 |
+| `shakeError` | 操作失败抖动 | P2-4 |
+
+### 沿用已有 Token
+
+| Token 类别 | 使用到的 Token |
+|---|---|
+| 颜色 | `--color-core`、`--color-plasma`、`--color-quantum`、`--color-alert`、`--color-amber`、`--color-t-primary/secondary/tertiary`、`--color-elevated`、`--color-hover`、`--color-border-glow` |
+| 间距 | `--space-*`（间接，通过组件参数） |
+| 缓动 | `--ease-out` |
+| Elevation | `--elevation-1`、`--elevation-2`（P2-6 定义） |
+
+### 零新增冗余 Token
+
+- `--color-locked` 是 P2-7 明确要求的新增 Token，非冗余
+- flash 主题色通过 `color-mix()` 动态混合已有 Token，不新增色值
+- 所有动画使用已有 `--ease-out` 缓动，不新增缓动函数
+
+---
+
+> **交付状态**：规范已完成，待前端落地。本阶段未改动任何源码。

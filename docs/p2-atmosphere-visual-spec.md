@@ -1,0 +1,737 @@
+# 星核纪元 · P2 氛围与视觉系统规范
+
+> **产出方**：设计
+> **日期**：2026-07-16
+> **方案依据**：`docs/home-ui-总体推进方案.md` P2-1 / P2-3 / P2-6 / P2-9
+> **本阶段定位**：只出规范，不改源码。前端拿到本文件后按参数落地。
+> **Token 体系**：沿用 P0/P1 已建立的 `--space-*`、`--text-*`、`--icon-*`、`--color-*`、`--radius-*`、`--ease-out`。新增 Token 仅限 `--elevation-1/2/3`（P2-6 明确要求）和 `--color-locked`（P2-7，本文件不涉及，见交互反馈规范）。
+
+---
+
+## 目录
+
+1. [P2-1 星云层 + 暗角效果](#p2-1-星云层--暗角效果)
+2. [P2-3 核心环信息映射](#p2-3-核心环信息映射)
+3. [P2-6 Elevation 阴影系统](#p2-6-elevation-阴影系统)
+4. [P2-9 视觉动线引导](#p2-9-视觉动线引导)
+
+---
+
+## P2-1 星云层 + 暗角效果
+
+### 1.1 设计目标
+
+在现有 `body::before`（星点层）基础上，新增 `body::after` 星云层 + 屏幕四周 inset 暗角，构建三层纵深：
+
+```
+z-index 层级（从底到顶）：
+  body::before  →  星点层（已有，z:0）
+  body::after   →  星云层 + 暗角（新增，z:0，叠加在星点之上）
+  #app          →  内容层（已有，z:1）
+```
+
+**视觉效果**：界面从「平面黑底」变为「深空有纵深」，四周微暗、中心微亮，模拟太空望远镜的视野感。
+
+### 1.2 星云层参数
+
+`body::after` 新增 3 个超大低不透明度 `radial-gradient`，模拟远端星云气体：
+
+```css
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    /* 星云团 1 — 青蓝色，左上区域 */
+    radial-gradient(
+      ellipse 80% 60% at 15% 20%,
+      rgba(0, 229, 255, 0.045) 0%,
+      rgba(0, 229, 255, 0.02) 40%,
+      transparent 70%
+    ),
+    /* 星云团 2 — 紫色，右下区域 */
+    radial-gradient(
+      ellipse 70% 50% at 85% 75%,
+      rgba(167, 139, 250, 0.04) 0%,
+      rgba(167, 139, 250, 0.015) 45%,
+      transparent 75%
+    ),
+    /* 星云团 3 — 琥珀色微染，中心偏下 */
+    radial-gradient(
+      ellipse 60% 40% at 50% 90%,
+      rgba(255, 182, 39, 0.025) 0%,
+      transparent 60%
+    );
+
+  /* —— 暗角：屏幕四周 inset 阴影 —— */
+  box-shadow:
+    inset 0 0 120px 40px rgba(5, 7, 13, 0.6),
+    inset 0 0 60px 20px rgba(5, 7, 13, 0.3);
+}
+```
+
+### 1.3 参数明细
+
+#### 星云团参数
+
+| 星云团 | 位置（at） | 椭圆尺寸 | 颜色 | 中心不透明度 | 40% 处不透明度 | 消散点 |
+|:---:|---|---|---|:---:|:---:|:---:|
+| 团 1（青蓝） | `15% 20%`（左上） | `80% 60%` | `rgba(0, 229, 255, …)` | 0.045 | 0.02 | 70% transparent |
+| 团 2（紫） | `85% 75%`（右下） | `70% 50%` | `rgba(167, 139, 250, …)` | 0.04 | 0.015 | 75% transparent |
+| 团 3（琥珀） | `50% 90%`（中下） | `60% 40%` | `rgba(255, 182, 39, …)` | 0.025 | — | 60% transparent |
+
+**设计原则**：
+1. **三色对应三主色**：青蓝（--color-core）、紫（--color-plasma）、琥珀（--color-amber），与游戏色彩体系一致，不引入新色相
+2. **不透明度极低**：单个星云团中心最高 0.045，三个叠加后中心区域约 0.08-0.12，保证不干扰前景内容可读性
+3. **椭圆而非正圆**：`ellipse 80% 60%` 比 `circle` 更像真实星云的弥漫形态，避免规则的圆形色斑
+4. **位置错落**：三个团分别位于左上、右下、中下，形成不对称构图，避免居中对称的呆板感
+
+#### 暗角参数
+
+| 属性 | 值 | 说明 |
+|---|---|---|
+| `box-shadow` 第一层 | `inset 0 0 120px 40px rgba(5, 7, 13, 0.6)` | 主暗角：扩散 120px + 模糊 40px，四周最深 |
+| `box-shadow` 第二层 | `inset 0 0 60px 20px rgba(5, 7, 13, 0.3)` | 次暗角：扩散 60px + 模糊 20px，边缘加强 |
+
+**暗角色值**：`rgba(5, 7, 13, …)` 即 `--color-void`（#05070D）的 rgba 形式，与背景色一致，营造「四周渐暗融入虚空」的效果。
+
+### 1.4 与现有星点层的关系
+
+| 层 | 伪元素 | 内容 | z-index | opacity |
+|---|---|---|:---:|:---:|
+| 星点层（已有） | `body::before` | 6 个 `radial-gradient(1px 1px …)` 模拟星点 | 0 | 0.7 |
+| 星云+暗角（新增） | `body::after` | 3 个大椭圆 `radial-gradient` + inset `box-shadow` | 0 | 1（不设整体 opacity，由各 gradient 内部控制） |
+
+> `body::before` 和 `body::after` 同为 `z-index: 0`，渲染顺序 `::after` 在 `::before` 之上，星云层自然覆盖在星点层上方，但两者不透明度都极低，不会互相遮蔽。
+
+### 1.5 性能考量
+
+- **零 JS 开销**：纯 CSS `body::after`，无额外 DOM 节点
+- **GPU 合成**：`box-shadow` 和 `background` 均由 GPU 合成，不影响主线程
+- **静态层**：星云层无动画（星点闪烁由 P2-2 处理），不产生重绘
+- **`pointer-events: none`**：不拦截任何交互
+
+### 1.6 无障碍
+
+- `pointer-events: none` 确保不影响键盘焦点导航
+- 星云层不透明度极低（< 0.12），不影响前景文字对比度
+- `prefers-reduced-motion: reduce` 时无需降级（本层无动画）
+
+### 1.7 验收清单
+
+| 验收项 | 标准 |
+|--------|------|
+| `body::after` 已添加 | 纯 CSS 伪元素，无额外 DOM |
+| 星云团数量 | 3 个 `radial-gradient` |
+| 星云团颜色 | 青蓝 / 紫 / 琥珀，对应已有 Token 色值 |
+| 单团最高不透明度 | ≤ 0.045 |
+| 暗角效果 | `inset box-shadow` 两层，四周明显变暗 |
+| 暗角色值 | `rgba(5, 7, 13, …)` 对应 `--color-void` |
+| 前景可读性 | 星云层不影响任何文字对比度 |
+| 性能 | 无 JS、无动画、无重绘 |
+| Token 引用 | 颜色值与 `--color-core/plasma/amber/void` 一致（rgba 形式） |
+
+---
+
+## P2-3 核心环信息映射
+
+### 2.1 设计目标
+
+将 Hero 区 3 层装饰性核心环（`.core-ring.r1/r2/r3`）从纯装饰升级为游戏状态映射器：
+
+| 环 | 当前状态 | 映射目标 | 数据源 |
+|:---:|---|---|---|
+| r1（外环，100%） | 纯装饰旋转 | **探索进度** — 已探索节点数 / 总节点数 | `game.exploration` |
+| r2（中环，75%） | 纯装饰旋转 | **科技完成率** — 已完成科技数 / 总科技数 | `game.research` |
+| r3（内环，50%） | 纯装饰旋转 | **能量等级** — 当前能量在对数尺度上的水平 | `game.resources.getAmount('energy')` |
+
+**核心原则**：装饰即信息（Decorative = Informative）。玩家看核心环即可知大致进度，无需翻页查看。
+
+### 2.2 映射规则
+
+#### r1 — 探索进度（外环）
+
+| 状态 | 条件 | 视觉表现 |
+|---|---|---|
+| 初始 | 已探索 0 个节点 | opacity 0.15，旋转 30s/圈（缓慢） |
+| 进行中 | 已探索 1~N-1 个节点 | opacity 0.3，旋转 20s/圈（当前默认） |
+| 接近完成 | 已探索 ≥ 80% 节点 | opacity 0.5，旋转 12s/圈（加速） |
+| 全部完成 | 全部节点已探索 | opacity 0.7，旋转 8s/圈（最快）+ 边框色变为 `--color-quantum` |
+
+```typescript
+// 前端落地参考（HomeView.vue computed）
+const exploreProgress = computed(() => {
+  const explored = game.exploration.completedNodes  // 已探索节点数
+  const total = game.exploration.totalNodes          // 总节点数
+  if (total === 0) return { ratio: 0, phase: 'initial' }
+  const ratio = explored / total
+  if (ratio === 0) return { ratio, phase: 'initial' }
+  if (ratio >= 1) return { ratio, phase: 'complete' }
+  if (ratio >= 0.8) return { ratio, phase: 'near' }
+  return { ratio, phase: 'active' }
+})
+```
+
+#### r2 — 科技完成率（中环）
+
+| 状态 | 条件 | 视觉表现 |
+|---|---|---|
+| 初始 | 已完成 0 项科技 | opacity 0.15，旋转 22s/圈反向（缓慢） |
+| 进行中 | 已完成 1~N-1 项 | opacity 0.4，旋转 15s/圈反向（当前默认） |
+| 接近完成 | 已完成 ≥ 80% | opacity 0.6，旋转 10s/圈反向（加速） |
+| 全部完成 | 全部科技完成 | opacity 0.8，旋转 6s/圈反向（最快）+ 边框色变为 `--color-plasma` |
+
+#### r3 — 能量等级（内环）
+
+能量等级采用对数尺度（与 `coreGlowSize` 计算逻辑一致）：
+
+| 状态 | 条件（log10(energy)） | 视觉表现 |
+|---|---|---|
+| 初始 | energy ≤ 0 或 log10 < 1 | opacity 0.3，旋转 15s/圈 |
+| 低 | 1 ≤ log10 < 3（10~999） | opacity 0.5，旋转 10s/圈 |
+| 中 | 3 ≤ log10 < 6（1K~1M） | opacity 0.7，旋转 8s/圈（当前默认） |
+| 高 | 6 ≤ log10 < 9（1M~1B） | opacity 0.85，旋转 5s/圈 |
+| 极高 | log10 ≥ 9（≥ 1B） | opacity 1.0，旋转 3s/圈 + 边框色变为 `--color-amber` |
+
+### 2.3 CSS 参数规范
+
+#### 通用环样式（保持已有）
+
+```css
+.core-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--color-core);
+  z-index: 1;
+  /* transition 用于 opacity 和 animation-duration 的平滑变化 */
+  transition: opacity 0.6s var(--ease-out), border-color 0.6s var(--ease-out);
+}
+```
+
+#### r1 — 探索进度环
+
+```css
+.r1 {
+  width: 100%;
+  height: 100%;
+  /* 默认：进行中 */
+  opacity: 0.3;
+  animation: spinRing 20s linear infinite;
+  border: 1px solid var(--color-core);
+}
+
+/* phase: initial */
+.r1.phase-initial { opacity: 0.15; animation-duration: 30s; }
+/* phase: active（默认） */
+.r1.phase-active { opacity: 0.3; animation-duration: 20s; }
+/* phase: near */
+.r1.phase-near { opacity: 0.5; animation-duration: 12s; }
+/* phase: complete */
+.r1.phase-complete {
+  opacity: 0.7;
+  animation-duration: 8s;
+  border-color: var(--color-quantum);  /* #2EE6A0 探索系统主色 */
+}
+```
+
+#### r2 — 科技完成率环
+
+```css
+.r2 {
+  width: 75%;
+  height: 75%;
+  border-style: dashed;
+  /* 默认：进行中 */
+  opacity: 0.4;
+  animation: spinRing 15s linear infinite reverse;
+  border: 1px dashed var(--color-core);
+}
+
+/* phase: initial */
+.r2.phase-initial { opacity: 0.15; animation-duration: 22s; }
+/* phase: active（默认） */
+.r2.phase-active { opacity: 0.4; animation-duration: 15s; }
+/* phase: near */
+.r2.phase-near { opacity: 0.6; animation-duration: 10s; }
+/* phase: complete */
+.r2.phase-complete {
+  opacity: 0.8;
+  animation-duration: 6s;
+  border-color: var(--color-plasma);  /* #A78BFA 科技系统主色 */
+}
+```
+
+#### r3 — 能量等级环
+
+```css
+.r3 {
+  width: 50%;
+  height: 50%;
+  /* 默认：中 */
+  opacity: 0.7;
+  animation: spinRing 10s linear infinite;
+  border: 1px solid var(--color-core);
+}
+
+/* level: initial */
+.r3.level-initial { opacity: 0.3; animation-duration: 15s; }
+/* level: low */
+.r3.level-low { opacity: 0.5; animation-duration: 10s; }
+/* level: mid（默认） */
+.r3.level-mid { opacity: 0.7; animation-duration: 8s; }
+/* level: high */
+.r3.level-high { opacity: 0.85; animation-duration: 5s; }
+/* level: extreme */
+.r3.level-extreme {
+  opacity: 1;
+  animation-duration: 3s;
+  border-color: var(--color-amber);  /* #FFB627 稀有/高价值 */
+}
+```
+
+### 2.4 参数汇总表
+
+| 环 | 映射维度 | phase 初始 | phase 进行中 | phase 接近完成 | phase 完成 |
+|:---:|---|---|---|---|---|
+| r1 | 探索进度 | op 0.15 / 30s | op 0.3 / 20s | op 0.5 / 12s | op 0.7 / 8s + `--color-quantum` |
+| r2 | 科技完成率 | op 0.15 / 22s | op 0.4 / 15s | op 0.6 / 10s | op 0.8 / 6s + `--color-plasma` |
+| r3 | 能量等级 | op 0.3 / 15s | op 0.5-0.7 / 8-10s | op 0.85 / 5s | op 1.0 / 3s + `--color-amber` |
+
+> **注**：r3 有 5 个级别（initial/low/mid/high/extreme），上表简化为 4 列对应。详见 2.2 节。
+
+### 2.5 动态 class 绑定（前端落地参考）
+
+```vue
+<div class="core-ring r1" :class="`phase-${exploreProgress.phase}`"></div>
+<div class="core-ring r2" :class="`phase-${techProgress.phase}`"></div>
+<div class="core-ring r3" :class="`level-${energyLevel.phase}`"></div>
+```
+
+```typescript
+// 科技完成率
+const techProgress = computed(() => {
+  const completed = game.research.count
+  const total = TECHS.length
+  if (total === 0 || completed === 0) return { ratio: 0, phase: 'initial' }
+  if (completed >= total) return { ratio: 1, phase: 'complete' }
+  const ratio = completed / total
+  if (ratio >= 0.8) return { ratio, phase: 'near' }
+  return { ratio, phase: 'active' }
+})
+
+// 能量等级
+const energyLevel = computed(() => {
+  const energy = game.resources.getAmount('energy')
+  if (energy.lte(0)) return { phase: 'initial' }
+  const logVal = Math.log10(energy.toNumber())
+  if (logVal < 1) return { phase: 'initial' }
+  if (logVal < 3) return { phase: 'low' }
+  if (logVal < 6) return { phase: 'mid' }
+  if (logVal < 9) return { phase: 'high' }
+  return { phase: 'extreme' }
+})
+```
+
+### 2.6 动画时长变化过渡
+
+`animation-duration` 无法通过 CSS `transition` 平滑过渡。当 phase 变化导致旋转速度突变时，采用以下策略：
+
+1. **opacity 和 border-color**：通过 `transition: opacity 0.6s var(--ease-out), border-color 0.6s var(--ease-out)` 平滑过渡（0.6s）
+2. **animation-duration**：直接切换，由于旋转是连续的线性动画，速度变化在视觉上表现为「加速/减速」，不会产生跳变感
+3. **不使用 JS 动画**：纯 CSS `animation` 实现，性能最优
+
+### 2.7 无障碍
+
+- `prefers-reduced-motion: reduce` 时，全局规则已将 `animation-duration` 强制为 0.01ms，核心环静止
+- 环的 `opacity` 变化仍保留（信息映射不依赖动画），状态可感知
+- 核心环不携带 `aria-label`（纯装饰性信息可视化，精确数值由文明概况区域提供）
+
+### 2.8 验收清单
+
+| 验收项 | 标准 |
+|--------|------|
+| r1 映射探索进度 | 4 个 phase class，opacity 0.15→0.7，旋转 30s→8s |
+| r2 映射科技完成率 | 4 个 phase class，opacity 0.15→0.8，旋转 22s→6s |
+| r3 映射能量等级 | 5 个 level class，opacity 0.3→1.0，旋转 15s→3s |
+| 完成态变色 | r1→quantum / r2→plasma / r3→amber |
+| 平滑过渡 | opacity 和 border-color 有 0.6s 过渡 |
+| 数据源正确 | 探索/科技/能量均从 game store 读取 |
+| Token 引用 | 颜色全部引用 `--color-core/quantum/plasma/amber`，无硬编码 |
+| reduced-motion | 动画静止，opacity 仍反映状态 |
+
+---
+
+## P2-6 Elevation 阴影系统
+
+### 3.1 设计目标
+
+建立三级 Elevation 阴影系统，在深色 UI 下通过阴影差建立视觉层次：
+
+| 级别 | Token | 语义 | 使用场景 |
+|:---:|---|---|---|
+| 1 | `--elevation-1` | 基础层 | 卡片默认态（.card、action-item、ov-item 等） |
+| 2 | `--elevation-2` | 悬浮层 | 卡片 hover 态、下拉面板、tooltip |
+| 3 | `--elevation-3` | 浮顶层 | 模态框（ModalOverlay）、全屏弹窗 |
+
+### 3.2 新增 Token 定义
+
+在 `style.css` `:root` 中新增：
+
+```css
+/* —— Elevation 阴影（P2-6，三级深色 UI 专用） —— */
+--elevation-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 8px rgba(0, 0, 0, 0.3);
+--elevation-2: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 24px rgba(0, 0, 0, 0.4);
+--elevation-3: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
+```
+
+### 3.3 参数详解
+
+#### 共同结构
+
+每个 Elevation 由两层阴影组成：
+1. **inset 高光**（第一层）：`inset 0 1px 0 rgba(255,255,255,…)` — 模拟顶部边缘光线反射，在深色背景下营造「卡片有厚度」的微高光
+2. **外阴影**（第二层）：`0 Ypx BlURpx rgba(0,0,0,…)` — 向下扩散的投影，模拟卡片悬浮于背景之上
+
+#### 三级参数对比
+
+| 级别 | inset 高光不透明度 | 外阴影 Y 偏移 | 外阴影模糊半径 | 外阴影不透明度 | 整体感知 |
+|:---:|:---:|:---:|:---:|:---:|---|
+| `--elevation-1` | 0.03 | 2px | 8px | 0.3 | 轻微贴底，与背景区分 |
+| `--elevation-2` | 0.05 | 8px | 24px | 0.4 | 明确悬浮，有空间感 |
+| `--elevation-3` | 0.07 | 16px | 48px | 0.5 | 高浮于一切之上 |
+
+**设计原则**：
+1. **深色 UI 阴影用黑色而非灰色**：`rgba(0,0,0,…)` 在深色背景上比灰色更自然，灰色阴影会显得「脏」
+2. **inset 高光模拟物理边缘**：深色卡片背景 `--color-surface`（#0E1424）与背景 `--color-void`（#05070D）明度差较小，单纯外阴影不够明显，inset 顶部高光补充了边缘感知
+3. **不透明度递增**：从 0.03 → 0.05 → 0.07（高光）和 0.3 → 0.4 → 0.5（阴影），每级递增约 30%，肉眼可辨但不过度
+4. **模糊半径翻倍增长**：8px → 24px → 48px，扩散范围越大，悬浮感越强
+
+### 3.4 与现有阴影的关系
+
+项目现有以下阴影 utility class：
+
+| 现有 class | 现有值 | 迁移建议 |
+|---|---|---|
+| `.shadow-card` | `0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px rgba(0,0,0,.4)` | **替换为 `var(--elevation-2)`**（值完全一致，当前 .shadow-card 实际就是 elevation-2 级别） |
+| `.glow-core` | `0 0 0 1px rgba(0,229,255,.4), 0 0 20px rgba(0,229,255,.15)` | 保留（发光效果非 Elevation 范畴） |
+| `.glow-amber` | `0 0 0 1px rgba(255,182,39,.4), 0 0 20px rgba(255,182,39,.12)` | 保留（同上） |
+
+> `.shadow-card` 的值恰好等于 `--elevation-2`，说明项目中已有「悬浮卡片」的阴影直觉，P2-6 将其 Token 化并补齐 1/3 级。
+
+### 3.5 各组件 Elevation 分配
+
+| 组件 | 默认 Elevation | hover Elevation | 说明 |
+|---|:---:|:---:|---|
+| `.card`（全局工具类） | `--elevation-1` | — | 基础卡片 |
+| `.action-item.in-progress` | `--elevation-1` | — | 进行中卡片，已有脉冲 box-shadow 不叠加 |
+| `.action-item.actionable` | `--elevation-1` | `--elevation-2` | hover 时上浮（配合 translateY(-2px)） |
+| `.ov-item`（文明概况） | `--elevation-1` | `--elevation-1` | hover 仅变背景色，不上浮 |
+| `.btn-primary` / `.btn-secondary` 等 | 无 | `0 0 16px rgba(0,229,255,.3)` | 按钮保持发光 hover 效果，不用 Elevation |
+| `ModalOverlay .modal` | `--elevation-3` | — | 模态框最高层 |
+| `.extra-nav`（战斗返回浮钮） | `--elevation-2` | — | 浮动导航 |
+| `OfflineReport modal` | `--elevation-3` | — | 离线报告弹窗 |
+
+### 3.6 落地 CSS 参考
+
+```css
+/* style.css 全局 */
+
+/* —— Elevation Token —— */
+:root {
+  --elevation-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 8px rgba(0, 0, 0, 0.3);
+  --elevation-2: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 24px rgba(0, 0, 0, 0.4);
+  --elevation-3: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* .shadow-card 迁移为 Token 引用 */
+.shadow-card { box-shadow: var(--elevation-2); }
+
+/* .card 添加默认 Elevation */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  box-shadow: var(--elevation-1);  /* 新增 */
+}
+```
+
+```css
+/* HomeView.vue scoped */
+
+/* actionable 卡片 hover 时上浮至 elevation-2 */
+.action-item.actionable {
+  box-shadow: var(--elevation-1);
+}
+.action-item.actionable:hover {
+  transform: translateY(-2px);
+  background: var(--color-hover);
+  border-color: var(--color-border-glow);
+  box-shadow: var(--elevation-2),
+              0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
+}
+
+/* ov-item 保持 elevation-1（hover 不上浮） */
+.ov-item {
+  box-shadow: var(--elevation-1);
+}
+```
+
+```css
+/* ModalOverlay.vue scoped */
+.modal-overlay .modal {
+  box-shadow: var(--elevation-3);
+}
+```
+
+### 3.7 Elevation 与发光效果的叠加规则
+
+当组件同时需要 Elevation 和发光（glow）效果时：
+
+```css
+/* 正确：Elevation 在前，glow 在后 */
+.action-item.actionable:hover {
+  box-shadow: var(--elevation-2),
+              0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
+}
+
+/* 正确：按钮仅用发光，不用 Elevation */
+.btn-primary:hover {
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);  /* 发光，无 Elevation */
+}
+
+/* 错误：不要在按钮上叠加 Elevation */
+.btn-primary:hover {
+  box-shadow: var(--elevation-2), 0 0 16px rgba(0, 229, 255, 0.3);  /* 过度 */
+}
+```
+
+**规则**：
+- 卡片类组件 → 用 Elevation（1 默认，2 hover）
+- 按钮类组件 → 用发光（glow），不用 Elevation
+- 模态框 → 仅用 Elevation-3
+
+### 3.8 验收清单
+
+| 验收项 | 标准 |
+|--------|------|
+| Token 已定义 | `:root` 中 `--elevation-1/2/3` |
+| 三级阴影值 | inset 高光 0.03/0.05/0.07 + 外阴影 2/8/16px 偏移 |
+| `.shadow-card` 迁移 | 值替换为 `var(--elevation-2)` |
+| `.card` 默认 Elevation | `box-shadow: var(--elevation-1)` |
+| actionable hover | `box-shadow: var(--elevation-2)` + 发光 |
+| 模态框 | `box-shadow: var(--elevation-3)` |
+| 按钮不加 Elevation | 按钮保持发光效果，不叠加 Elevation |
+| 层次可辨 | 三级阴影在深色背景下肉眼可辨 |
+
+---
+
+## P2-9 视觉动线引导
+
+### 4.1 设计目标
+
+在 Hero 区底部增加一个向下渐隐的光柱，引导视线从 Hero 核心区自然过渡到下方的行动队列。
+
+**当前问题**：Hero 区（核心能量值）与行动队列之间仅有间距分隔，视线在 Hero 停留后缺乏向下的视觉引导，首屏动线有「断裂感」。
+
+**解决方式**：Hero 区底部增加一个垂直渐隐光柱（伪元素），从核心下方延伸至 Hero 区底部边缘，模拟「能量向下流注」的动线。
+
+### 4.2 视觉示意
+
+```
+移动端：
+┌──────────────────────────────────────┐
+│                                      │
+│         ┌─────────────────┐          │
+│         │   ░░░░░░░░░░░   │          │ ← 核心光晕
+│         │  ░ ┌─────────┐ ░│          │
+│         │  ░ │  ◯ ◯ ◯  │ ░│          │ ← 核心环
+│         │  ░ │  1,234  │ ░│          │ ← 核心数值
+│         │  ░ │ 星核能量 │ ░│          │
+│         │  ░ └─────────┘ ░│          │
+│         │   ░░░░░░░░░░░   │          │
+│         └─────────────────┘          │
+│           +12.5 /s                   │ ← 产出率
+│              ║                       │ ← 光柱（渐隐）
+│              ║                       │
+│              ║                       │
+│              ↓                       │ ← 渐隐至透明
+│  ▎行动队列                           │ ← 视线落点
+│  ┌──────────────────────────────────┐│
+│  │ ...                              ││
+│  └──────────────────────────────────┘│
+└──────────────────────────────────────┘
+```
+
+### 4.3 光柱参数
+
+光柱通过 `.hero::after` 伪元素实现（注意：`.core-visual::after` 已被渗透光晕占用，此处用 `.hero::after`）：
+
+```css
+.hero::after {
+  content: "";
+  position: absolute;
+  /* 水平居中于 Hero 区 */
+  left: 50%;
+  /* 从产出率下方开始 */
+  top: calc(100% - var(--space-6));
+  transform: translateX(-50%);
+
+  /* 光柱尺寸 */
+  width: 2px;
+  height: var(--space-6);  /* 24px，移动端 */
+
+  /* 渐隐：顶部微亮 → 底部透明 */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 229, 255, 0.4) 0%,
+    rgba(0, 229, 255, 0.15) 50%,
+    transparent 100%
+  );
+
+  /* 微光发散 */
+  filter: blur(1px);
+
+  pointer-events: none;
+  z-index: 0;
+}
+```
+
+### 4.4 参数明细
+
+| 参数 | 移动端值 | 桌面端值 | 说明 |
+|---|---|---|---|
+| `width` | `2px` | `2px` | 光柱宽度，细线感 |
+| `height` | `var(--space-6)`（24px） | `var(--space-8)`（40px） | 桌面端间距更大，光柱更长 |
+| `top` | `calc(100% - var(--space-6))` | `calc(100% - var(--space-8))` | 从 Hero 底部向上偏移，与 height 配合 |
+| `left` | `50%` | `50%` | 水平居中 |
+| `transform` | `translateX(-50%)` | `translateX(-50%)` | 居中校正 |
+
+#### 渐变参数
+
+| 渐变停止点 | 位置 | 颜色 | 不透明度 | 说明 |
+|:---:|:---:|---|:---:|---|
+| 起点 | 0% | `rgba(0, 229, 255, …)` | 0.4 | 顶部最亮，与核心青色一致 |
+| 中点 | 50% | `rgba(0, 229, 255, …)` | 0.15 | 中段渐淡 |
+| 终点 | 100% | `transparent` | 0 | 完全透明，与背景融合 |
+
+#### 滤镜
+
+| 参数 | 值 | 说明 |
+|---|---|---|
+| `filter` | `blur(1px)` | 轻微模糊，避免硬边线，模拟光晕发散 |
+
+### 4.5 桌面端差异
+
+```css
+@media (min-width: 768px) {
+  .hero::after {
+    height: var(--space-8);  /* 40px，桌面端更长 */
+    top: calc(100% - var(--space-8));
+  }
+}
+```
+
+**桌面端特殊处理**：桌面端 Hero 区采用 `position: sticky`（P1-3 布局），光柱随 Hero 粘性滚动。当 Hero 粘性固定时，光柱指向行动队列的方向仍然成立（行动队列在右侧，但视觉动线引导从 Hero 产出率向下延伸至 Hero 底部边缘，暗示「更多内容在下方/右方」）。
+
+### 4.6 与 Hero 区其他元素的关系
+
+| 元素 | 伪元素 | z-index | 作用 |
+|---|---|:---:|---|
+| 核心渗透光晕 | `.core-visual::after` | 0 | 核心四周的光晕扩散 |
+| 动线光柱 | `.hero::after` | 0 | Hero 底部向下渐隐的光柱 |
+
+两者不冲突：渗透光晕在 `.core-visual`（200/240px）范围内，动线光柱在 `.hero` 底部（产出率下方），空间上分离。
+
+### 4.7 动画（可选）
+
+光柱可添加微弱的「呼吸」动画，模拟能量脉动流注：
+
+```css
+@keyframes flowPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1.1);
+  }
+}
+
+.hero::after {
+  /* … 其他参数 … */
+  animation: flowPulse 3s ease-in-out infinite;
+  transform-origin: top center;  /* 从顶部缩放，底部自然伸缩 */
+}
+```
+
+| 动画参数 | 值 | 说明 |
+|---|---|---|
+| 名称 | `flowPulse` | 与 `corePulse` 同周期（3s），视觉同步 |
+| 时长 | `3s` | 与核心脉动一致 |
+| 缓动 | `ease-in-out` | 平滑呼吸 |
+| opacity 变化 | 0.6 → 1.0 → 0.6 | 微弱明暗变化 |
+| scaleY 变化 | 1.0 → 1.1 → 1.0 | 高度微伸缩，模拟流注 |
+
+> **注意**：动画为可选项。若前端评估性能或视觉过度，可不加动画，光柱静态渐隐已有足够引导效果。`prefers-reduced-motion: reduce` 时动画自动降级。
+
+### 4.8 无障碍
+
+- `pointer-events: none`，不拦截交互
+- 纯装饰性元素，不携带 ARIA 属性
+- `prefers-reduced-motion: reduce` 时，若启用动画则自动降级为静态
+- 光柱不透明度最高 0.4，不干扰前景文字可读性
+
+### 4.9 验收清单
+
+| 验收项 | 标准 |
+|--------|------|
+| 伪元素 | `.hero::after`，不新增 DOM |
+| 光柱宽度 | 2px |
+| 光柱高度 | 移动端 24px / 桌面端 40px |
+| 渐变方向 | 从上到下，0.4 → 0.15 → 透明 |
+| 光柱颜色 | `rgba(0, 229, 255, …)` 对应 `--color-core` |
+| 滤镜 | `blur(1px)` |
+| 水平居中 | `left: 50%` + `translateX(-50%)` |
+| 动画（可选） | `flowPulse` 3s，opacity 0.6→1→0.6，scaleY 1→1.1→1 |
+| Token 引用 | 尺寸引用 `--space-6/8`，颜色对应 `--color-core` |
+| reduced-motion | 动画降级为静态光柱 |
+| 不干扰交互 | `pointer-events: none` |
+
+---
+
+## 附录：P2 氛围规范 Token 使用核对
+
+### 新增 Token
+
+| Token 名 | 值 | 用途 | 对应任务 |
+|---|---|---|:---:|
+| `--elevation-1` | `0 1px 0 rgba(255,255,255,0.03) inset, 0 2px 8px rgba(0,0,0,0.3)` | 基础卡片阴影 | P2-6 |
+| `--elevation-2` | `0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px rgba(0,0,0,0.4)` | 悬浮态阴影 | P2-6 |
+| `--elevation-3` | `0 1px 0 rgba(255,255,255,0.07) inset, 0 16px 48px rgba(0,0,0,0.5)` | 模态框阴影 | P2-6 |
+
+### 沿用已有 Token
+
+| Token 类别 | 使用到的 Token |
+|---|---|
+| 间距 | `--space-1`、`--space-6`、`--space-8` |
+| 颜色 | `--color-void`、`--color-core`、`--color-plasma`、`--color-amber`、`--color-quantum` |
+| 缓动 | `--ease-out` |
+
+### 零新增全局颜色 Token
+
+P2-1 星云层使用 `--color-core/plasma/amber/void` 的 rgba 形式（非新 Token），P2-3 核心环变色使用已有辅色 Token，P2-9 光柱使用 `--color-core` 的 rgba 形式。全文件**零新增冗余颜色 Token**。
+
+### 新增 keyframes
+
+| 名称 | 用途 | 对应任务 |
+|---|---|---|
+| `flowPulse` | P2-9 光柱呼吸动画（可选） | P2-9 |
+
+---
+
+> **交付状态**：规范已完成，待前端落地。本阶段未改动任何源码。
