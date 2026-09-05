@@ -58,6 +58,16 @@ const hasAnyUnits = computed(
 
 const totalPower = computed(() => game.military.totalPower(atkMult.value, defMult.value))
 
+// 训练并行槽：满槽时禁用训练按钮并提示（集群操练 I/II 各 +1 槽，上限 3）
+const maxSlots = computed(() => game.military.maxTrainingSlots)
+const slotsFull = computed(() => game.military.trainingQueue.length >= maxSlots.value)
+const slotHint = computed(() => {
+  if (!slotsFull.value) return ''
+  if (maxSlots.value >= 3) return '训练槽已满'
+  const nextTech = maxSlots.value < 2 ? '集群操练 I' : '集群操练 II'
+  return `训练槽已满 · 研究「${nextTech}」可扩展至 ${maxSlots.value + 1} 槽`
+})
+
 function tryTrain(unitId: UnitId) {
   const count = trainCount.value[unitId]
   if (count <= 0) return
@@ -199,15 +209,14 @@ function removeAll(fid: string, uid: UnitId) {
         action="前往科技"
         to="/tech"
       />
-      <!-- 空状态 2：已解锁但尚无部队 -->
-      <EmptyState
-        v-else-if="!hasAnyUnits"
-        icon="i-nav-army"
-        text="部队尚未组建"
-        hint="训练你的第一支星际防卫军"
-        action="训练部队"
-      />
+      <!-- 已解锁但尚无部队：轻提示（单位卡片本身即训练入口，空态不遮挡卡片） -->
       <template v-else>
+        <EmptyState
+          v-if="!hasAnyUnits"
+          icon="i-nav-army"
+          text="部队尚未组建"
+          hint="训练你的第一支星际防卫军"
+        />
         <div
           v-for="u in UNITS"
           :key="u.id"
@@ -276,6 +285,7 @@ function removeAll(fid: string, uid: UnitId) {
               class="btn-accent block"
               style="--accent: var(--color-alert)"
               :disabled="
+                slotsFull ||
                 trainCount[u.id] === 0 ||
                 !game.resources.canAfford(getUnitCost(u.id, trainCount[u.id]))
               "
@@ -288,7 +298,10 @@ function removeAll(fid: string, uid: UnitId) {
 
         <!-- 训练队列 -->
         <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
-          <h3 class="section-title">训练中</h3>
+          <h3 class="section-title">
+            训练中（{{ game.military.trainingQueue.length }}/{{ maxSlots }}）
+          </h3>
+          <p v-if="slotHint" class="slot-hint">{{ slotHint }}</p>
           <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">
             <span class="q-name"
               >{{ getUnit(task.unitId)?.name ?? task.unitId }} ×{{ task.count }}</span
@@ -559,6 +572,11 @@ function removeAll(fid: string, uid: UnitId) {
 
 .train-queue {
   margin-top: var(--space-2);
+}
+.slot-hint {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
 }
 .queue-item {
   display: flex;
