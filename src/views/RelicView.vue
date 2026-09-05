@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { RARITY_INFO } from '@/data/relics'
 import type { OwnedRelic } from '@/stores/relics'
 import Icons from '@/components/ui/Icons.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 
 const game = useGameStore()
 
@@ -118,7 +119,15 @@ onUnmounted(() => {
     <!-- 遗物图鉴 -->
     <div class="inventory">
       <h3 class="section-title">遗物收藏（{{ owned.length }}）</h3>
-      <div v-if="owned.length === 0" class="empty-inv">击败 PVE 据点有概率获得遗物</div>
+      <div v-if="owned.length === 0" class="empty-inv">
+        <EmptyState
+          icon="i-nav-relic"
+          text="尚未发现遗物"
+          hint="探索深层星域有机会获得遗物"
+          action="前往探索"
+          to="/map"
+        />
+      </div>
       <div v-else class="relic-list">
         <div
           v-for="r in owned"
