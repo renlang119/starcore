@@ -16,12 +16,20 @@ import { useCombatStore } from './combat'
 import { useExplorationStore } from './exploration'
 import { useRelicsStore, setRelicSlotProvider } from './relics'
 import { useTranscendStore } from './transcend'
-import { readSave, writeSave, writeSaveSync, clearSave, exportSave, importSave, type SaveData } from '@/lib/storage'
+import {
+  readSave,
+  writeSave,
+  writeSaveSync,
+  clearSave,
+  exportSave,
+  importSave,
+  type SaveData,
+} from '@/lib/storage'
 import { TECHS } from '@/data/tech'
 import type { ResourceType } from '@/data/buildings'
 
 const SAVE_VERSION = 5
-const TICK_INTERVAL = 1000  // ms
+const TICK_INTERVAL = 1000 // ms
 // 后台 tick 补算后，仅当离线时长超过此阈值才弹窗展示报告；
 // 低于阈值时静默补算资源/训练进度，避免浏览器对不活跃标签页 setInterval
 // 节流导致的短时 dt>60 误弹"离线收益报告"。
@@ -57,7 +65,13 @@ export const useGameStore = defineStore('game', () => {
 
   // —— 计算全局乘数（5.1：改为 computed 缓存，仅在依赖变化时重算）——
   const productionMults = computed<Record<string, Decimal>>(() => {
-    const result: Record<string, Decimal> = { energy: D(1), crystal: D(1), alloy: D(1), data: D(1), dark: D(1) }
+    const result: Record<string, Decimal> = {
+      energy: D(1),
+      crystal: D(1),
+      alloy: D(1),
+      data: D(1),
+      dark: D(1),
+    }
     for (const res of ['energy', 'crystal', 'alloy', 'data', 'dark']) {
       result[res] = effectSystem.getMult('production_mult', res)
     }
@@ -81,7 +95,7 @@ export const useGameStore = defineStore('game', () => {
     const now = Date.now()
     let dt = (now - lastTickTime.value) / 1000
     lastTickTime.value = now
-    if (dt <= 0) dt = 1  // 异常保护
+    if (dt <= 0) dt = 1 // 异常保护
     if (dt > 60) {
       // 标签页后台过久：补算离线收益，本次 tick 只算 1 秒
       const report = doComputeOfflineGains(dt)
@@ -102,7 +116,10 @@ export const useGameStore = defineStore('game', () => {
     // 驻扎挂机收益（使用 computed 缓存，仅在 garrisoned 变化时重算）
     const garrisonProd = combat.garrisonProduction
     for (const [res, v] of Object.entries(garrisonProd)) {
-      resources.setProduction(res as ResourceType, add(resources.getRate(res as ResourceType), D(v)))
+      resources.setProduction(
+        res as ResourceType,
+        add(resources.getRate(res as ResourceType), D(v))
+      )
     }
     // 2. 资源增长
     resources.applyTick(dt)
@@ -200,8 +217,6 @@ export const useGameStore = defineStore('game', () => {
     relics.hydrate(data.relics)
   }
 
-
-
   // —— 离线收益 ——
   function doComputeOfflineGains(elapsedOverride?: number): OfflineReport | null {
     const now = Date.now()
@@ -293,7 +308,7 @@ export const useGameStore = defineStore('game', () => {
     // 执行转生
     transcend.transcend(gain)
     // 重置非保留项
-    resources.reset(true)  // 保留暗物质
+    resources.reset(true) // 保留暗物质
     buildings.reset()
     research.reset()
     military.reset()
@@ -316,7 +331,7 @@ export const useGameStore = defineStore('game', () => {
    */
   function tryUpgradeBuilding(id: string): boolean {
     const cost = buildings.getCost(id)
-    if (!resources.spendCost(cost)) return false  // spendCost 内部已含 canAfford 检查
+    if (!resources.spendCost(cost)) return false // spendCost 内部已含 canAfford 检查
     buildings.upgrade(id)
     return true
   }
@@ -338,20 +353,49 @@ export const useGameStore = defineStore('game', () => {
 
   return {
     // sub-stores (directly accessible)
-    resources, buildings, research, military, combat, exploration, relics, transcend,
+    resources,
+    buildings,
+    research,
+    military,
+    combat,
+    exploration,
+    relics,
+    transcend,
     // meta
-    lastSaveTime, isRunning, totalPlayTime, player, offlineReport,
+    lastSaveTime,
+    isRunning,
+    totalPlayTime,
+    player,
+    offlineReport,
     // computed（直接暴露，无需包装函数）
-    productionMults, atkMult, defMult, exploreMult, prestigeMult, offlineMult, techCostMult,
+    productionMults,
+    atkMult,
+    defMult,
+    exploreMult,
+    prestigeMult,
+    offlineMult,
+    techCostMult,
     // lifecycle
-    tick, start, stop, init, save, saveSync, load, hardReset,
+    tick,
+    start,
+    stop,
+    init,
+    save,
+    saveSync,
+    load,
+    hardReset,
     // offline
-    computeOfflineGains: doComputeOfflineGains, setOfflineReport,
+    computeOfflineGains: doComputeOfflineGains,
+    setOfflineReport,
     // import/export
-    doExport, doImport,
+    doExport,
+    doImport,
     // atomic actions (3.12)
-    tryUpgradeBuilding, tryResearch,
+    tryUpgradeBuilding,
+    tryResearch,
     // transcend
-    canTranscend, previewTranscendGain, doTranscend,
+    canTranscend,
+    previewTranscendGain,
+    doTranscend,
   }
 })

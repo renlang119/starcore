@@ -3,8 +3,30 @@
  */
 import { Decimal } from './decimal'
 
-const UNITS = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
-  'UDc', 'DDc', 'TDc', 'QaDc', 'QiDc', 'SxDc', 'SpDc', 'OcDc', 'NoDc', 'Vg']
+const UNITS = [
+  '',
+  'K',
+  'M',
+  'B',
+  'T',
+  'Qa',
+  'Qi',
+  'Sx',
+  'Sp',
+  'Oc',
+  'No',
+  'Dc',
+  'UDc',
+  'DDc',
+  'TDc',
+  'QaDc',
+  'QiDc',
+  'SxDc',
+  'SpDc',
+  'OcDc',
+  'NoDc',
+  'Vg',
+]
 
 /** 预计算的 1000 的幂次 Decimal 实例（避免 fmt 每次创建） */
 const D_POWERS: Decimal[] = UNITS.map((_, i) => Decimal.pow(10, i * 3))

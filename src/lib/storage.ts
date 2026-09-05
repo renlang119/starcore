@@ -48,7 +48,10 @@ export interface CombatSaveData {
   completed: string[]
 }
 export interface ExplorationSaveData {
-  progress: Record<string, { nodeId: string; startTime: number; endTime: number; completed: boolean }>
+  progress: Record<
+    string,
+    { nodeId: string; startTime: number; endTime: number; completed: boolean }
+  >
 }
 export interface RelicSaveData {
   owned: { id: string; instanceId: string; obtainedAt: number }[]
@@ -114,11 +117,15 @@ export async function readSave(): Promise<SaveData | null> {
       const parsed = _parseStored(stored)
       if (parsed) return parsed
     }
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
   try {
     const bak = localStorage.getItem(SAVE_KEY + '_backup')
     if (bak) return _parseBackup(bak)
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
   return null
 }
 
@@ -132,7 +139,9 @@ function _parseStored(stored: unknown): SaveData | null {
       const data = JSON.parse(stored.d)
       if (!validateSaveData(data)) return null
       return data
-    } catch { return null }
+    } catch {
+      return null
+    }
   }
   // 旧格式兼容：裸 SaveData 对象
   if (validateSaveData(stored)) return stored as SaveData
@@ -170,8 +179,16 @@ function _checksum(data: string): string {
 
 /** 清除存档 */
 export async function clearSave(): Promise<void> {
-  try { await STORE.removeItem(SAVE_KEY) } catch { /* noop */ }
-  try { localStorage.removeItem(SAVE_KEY + '_backup') } catch { /* noop */ }
+  try {
+    await STORE.removeItem(SAVE_KEY)
+  } catch {
+    /* noop */
+  }
+  try {
+    localStorage.removeItem(SAVE_KEY + '_backup')
+  } catch {
+    /* noop */
+  }
 }
 
 /**
@@ -192,13 +209,15 @@ function validateSaveData(data: unknown): data is SaveData {
 
   // buildings: levels key 必须是有效建筑 ID，value 必须是非负整数
   if (!_isObject(d.buildings)) return false
-  if (!_isValidIdNumberRecord((d.buildings as Record<string, unknown>).levels, BUILDING_IDS, true)) return false
+  if (!_isValidIdNumberRecord((d.buildings as Record<string, unknown>).levels, BUILDING_IDS, true))
+    return false
 
   // research: completed 数组元素必须是有效科技 ID
   if (!_isObject(d.research)) return false
   const research = d.research as Record<string, unknown>
   if (!Array.isArray(research.completed)) return false
-  if (!research.completed.every((id: unknown) => typeof id === 'string' && TECH_IDS.has(id))) return false
+  if (!research.completed.every((id: unknown) => typeof id === 'string' && TECH_IDS.has(id)))
+    return false
 
   // military: owned key 必须是有效兵种 ID，value 非负
   if (!_isObject(d.military)) return false
@@ -212,7 +231,8 @@ function validateSaveData(data: unknown): data is SaveData {
   const cb = d.combat as Record<string, unknown>
   if (!_isObject(cb.garrisoned) && cb.garrisoned !== undefined) return false
   if (!Array.isArray(cb.completed)) return false
-  if (!cb.completed.every((id: unknown) => typeof id === 'string' && STRONGHOLD_IDS.has(id))) return false
+  if (!cb.completed.every((id: unknown) => typeof id === 'string' && STRONGHOLD_IDS.has(id)))
+    return false
 
   // exploration: progress key 必须是有效探索节点 ID，value 结构合法
   if (!_isObject(d.exploration)) return false
@@ -222,14 +242,23 @@ function validateSaveData(data: unknown): data is SaveData {
     if (!EXPLORE_NODE_IDS.has(key)) return false
     if (!_isObject(val)) return false
     const p = val as Record<string, unknown>
-    if (typeof p.nodeId !== 'string' || typeof p.startTime !== 'number' || typeof p.endTime !== 'number' || typeof p.completed !== 'boolean') return false
+    if (
+      typeof p.nodeId !== 'string' ||
+      typeof p.startTime !== 'number' ||
+      typeof p.endTime !== 'number' ||
+      typeof p.completed !== 'boolean'
+    )
+      return false
   }
 
   // relics: owned 条目的 id 必须是有效遗物 ID
   if (!_isObject(d.relics)) return false
   const rl = d.relics as Record<string, unknown>
   if (!Array.isArray(rl.owned)) return false
-  if (!rl.owned.every((r: unknown) => _isObject(r) && typeof r.id === 'string' && RELIC_IDS.has(r.id))) return false
+  if (
+    !rl.owned.every((r: unknown) => _isObject(r) && typeof r.id === 'string' && RELIC_IDS.has(r.id))
+  )
+    return false
   if (!Array.isArray(rl.equipped)) return false
   if (!rl.equipped.every((e: unknown) => e === null || typeof e === 'string')) return false
 
@@ -239,7 +268,12 @@ function validateSaveData(data: unknown): data is SaveData {
   if (typeof tc.negativeEntropy !== 'string' && tc.negativeEntropy !== undefined) return false
   if (typeof tc.totalTranscends !== 'number' && tc.totalTranscends !== undefined) return false
   if (!Array.isArray(tc.tree)) return false
-  if (!tc.tree.every((n: unknown) => _isObject(n) && typeof n.id === 'string' && typeof n.purchased === 'boolean')) return false
+  if (
+    !tc.tree.every(
+      (n: unknown) => _isObject(n) && typeof n.id === 'string' && typeof n.purchased === 'boolean'
+    )
+  )
+    return false
   return true
 }
 
@@ -287,8 +321,7 @@ function _isValidIdNumberRecord(v: unknown, validIds: Set<string>, intOnly: bool
 
 /** 导入结果类型 */
 export type ImportResult =
-  | { ok: true; data: SaveData }
-  | { ok: false; reason: 'invalid' | 'corrupted' }
+  { ok: true; data: SaveData } | { ok: false; reason: 'invalid' | 'corrupted' }
 
 /** UTF-8 字符串 → Base64 */
 function _toB64(str: string): string {

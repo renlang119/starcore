@@ -64,27 +64,47 @@ const result = computed<CountdownResult>(() => {
 
     if (deficit.lte(0)) {
       resourceResults.push({
-        resType: rt, need, have, rate, deficit: D(0),
-        status: 'sufficient', etaSeconds: 0,
+        resType: rt,
+        need,
+        have,
+        rate,
+        deficit: D(0),
+        status: 'sufficient',
+        etaSeconds: 0,
       })
     } else if (rate.gt(0)) {
       const eta = deficit.div(rate).toNumber()
       // 防御性：Infinity / NaN 视为 manual
       if (!isFinite(eta) || eta < 0) {
         resourceResults.push({
-          resType: rt, need, have, rate, deficit,
-          status: 'manual', etaSeconds: null,
+          resType: rt,
+          need,
+          have,
+          rate,
+          deficit,
+          status: 'manual',
+          etaSeconds: null,
         })
       } else {
         resourceResults.push({
-          resType: rt, need, have, rate, deficit,
-          status: 'producible', etaSeconds: eta,
+          resType: rt,
+          need,
+          have,
+          rate,
+          deficit,
+          status: 'producible',
+          etaSeconds: eta,
         })
       }
     } else {
       resourceResults.push({
-        resType: rt, need, have, rate, deficit,
-        status: 'manual', etaSeconds: null,
+        resType: rt,
+        need,
+        have,
+        rate,
+        deficit,
+        status: 'manual',
+        etaSeconds: null,
       })
     }
   }
@@ -92,9 +112,9 @@ const result = computed<CountdownResult>(() => {
   // 所有资源为空（need <= 0 全部跳过）
   if (resourceResults.length === 0) return { type: 'none', resources: [] }
 
-  const producible = resourceResults.filter(r => r.status === 'producible')
-  const manual = resourceResults.filter(r => r.status === 'manual')
-  const allSufficient = resourceResults.every(r => r.status === 'sufficient')
+  const producible = resourceResults.filter((r) => r.status === 'producible')
+  const manual = resourceResults.filter((r) => r.status === 'manual')
+  const allSufficient = resourceResults.every((r) => r.status === 'sufficient')
 
   // 情况 A：资源全满
   if (allSufficient) {
@@ -186,10 +206,7 @@ function toggleExpand() {
 </script>
 
 <template>
-  <div
-    v-if="result.type === 'countdown' || result.type === 'manual'"
-    class="countdown-zone"
-  >
+  <div v-if="result.type === 'countdown' || result.type === 'manual'" class="countdown-zone">
     <!-- 情况 C：混合瓶颈 — 两行并列 -->
     <div v-if="result.type === 'countdown' && result.hasManual" class="countdown-mixed">
       <div
@@ -202,13 +219,28 @@ function toggleExpand() {
         @keydown.enter="toggleExpand"
         @keydown.space.prevent="toggleExpand"
       >
-        <span class="res-dot" :style="{ background: bottleneckColor, color: bottleneckColor }"></span>
+        <span
+          class="res-dot"
+          :style="{ background: bottleneckColor, color: bottleneckColor }"
+        ></span>
         <span class="countdown-text">
-          <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span><span class="cd-prefix">后可升级</span>
+          <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span
+          ><span class="cd-prefix">后可升级</span>
         </span>
         <span class="cd-hint">
           明细
-          <svg class="cd-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          <svg
+            class="cd-arrow"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
         </span>
       </div>
       <div
@@ -242,11 +274,23 @@ function toggleExpand() {
     >
       <span class="res-dot" :style="{ background: bottleneckColor, color: bottleneckColor }"></span>
       <span class="countdown-text">
-        <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span><span class="cd-prefix">后可升级</span>
+        <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span
+        ><span class="cd-prefix">后可升级</span>
       </span>
       <span class="cd-hint">
         明细
-        <svg class="cd-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        <svg
+          class="cd-arrow"
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </span>
     </div>
 
@@ -268,7 +312,18 @@ function toggleExpand() {
       </span>
       <span class="cd-hint">
         明细
-        <svg class="cd-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        <svg
+          class="cd-arrow"
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </span>
     </div>
 
@@ -285,19 +340,30 @@ function toggleExpand() {
             :class="{ bottleneck: isBottleneck(r) }"
           >
             <span
-class="d-dot" :style="{
-              background: resColor(r.resType),
-              ...(r.status === 'manual' ? { border: `1px dashed ${resColor(r.resType)}` } : {})
-            }"></span>
+              class="d-dot"
+              :style="{
+                background: resColor(r.resType),
+                ...(r.status === 'manual' ? { border: `1px dashed ${resColor(r.resType)}` } : {}),
+              }"
+            ></span>
             <span class="d-name">{{ game.resources.getMeta(r.resType).name }}</span>
             <span class="d-amount">
-              <span class="d-current">{{ fmt(r.have) }}</span><span class="d-sep">/</span><span class="d-need">{{ fmt(r.need) }}</span>
+              <span class="d-current">{{ fmt(r.have) }}</span
+              ><span class="d-sep">/</span><span class="d-need">{{ fmt(r.need) }}</span>
             </span>
             <span class="d-rate" :class="{ zero: r.status === 'manual' }">{{ fmtRateStr(r) }}</span>
             <span class="d-eta">{{ fmtEta(r) }}</span>
             <span
               class="d-status"
-              :class="r.status === 'sufficient' ? 'ok' : isBottleneck(r) ? 'bottleneck' : r.status === 'manual' ? 'manual' : ''"
+              :class="
+                r.status === 'sufficient'
+                  ? 'ok'
+                  : isBottleneck(r)
+                    ? 'bottleneck'
+                    : r.status === 'manual'
+                      ? 'manual'
+                      : ''
+              "
             >
               <template v-if="r.status === 'sufficient'">✓</template>
               <template v-else-if="isBottleneck(r)">瓶颈</template>
@@ -306,7 +372,18 @@ class="d-dot" :style="{
           </div>
 
           <div class="detail-disclaimer">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
             基于当前生产速率预估，实际时间可能因速率变化而偏移
           </div>
         </div>
@@ -323,13 +400,15 @@ class="d-dot" :style="{
 
 /* —— 倒计时行 —— */
 .countdown-row {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   background: var(--color-elevated);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-line);
   cursor: pointer;
-  transition: all .15s var(--ease-out);
+  transition: all 0.15s var(--ease-out);
   user-select: none;
 }
 .countdown-row:hover {
@@ -343,7 +422,9 @@ class="d-dot" :style="{
 
 /* 色点 */
 .res-dot {
-  width: 8px; height: 8px; border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
   box-shadow: 0 0 6px currentColor;
 }
@@ -351,7 +432,8 @@ class="d-dot" :style="{
 /* 倒计时文字 */
 .countdown-text {
   font-family: var(--font-mono);
-  font-size: var(--text-xs); font-weight: 500;
+  font-size: var(--text-xs);
+  font-weight: 500;
   color: var(--color-t-secondary);
   white-space: nowrap;
 }
@@ -370,24 +452,27 @@ class="d-dot" :style="{
 /* 展开提示 */
 .cd-hint {
   margin-left: auto;
-  font-size: var(--text-xs); color: var(--color-t-tertiary);
-  display: flex; align-items: center; gap: var(--space-1);
-  transition: transform .2s var(--ease-out);
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: transform 0.2s var(--ease-out);
 }
-.countdown-row[aria-expanded="true"] .cd-hint .cd-arrow {
+.countdown-row[aria-expanded='true'] .cd-hint .cd-arrow {
   transform: rotate(180deg);
 }
 
 /* —— rate=0 状态 —— */
 .countdown-row.rate-zero {
-  background: rgba(255,182,39,.06);
-  border-color: rgba(255,182,39,.25);
+  background: rgba(255, 182, 39, 0.06);
+  border-color: rgba(255, 182, 39, 0.25);
 }
 .countdown-row.rate-zero .res-dot {
   background: var(--color-amber);
   color: var(--color-amber);
-  border: 1px dashed rgba(255,182,39,.5);
-  box-shadow: 0 0 6px rgba(255,182,39,.3);
+  border: 1px dashed rgba(255, 182, 39, 0.5);
+  box-shadow: 0 0 6px rgba(255, 182, 39, 0.3);
 }
 .countdown-row.rate-zero .countdown-text {
   color: var(--color-amber);
@@ -398,17 +483,25 @@ class="d-dot" :style="{
 
 /* —— 混合状态 —— */
 .countdown-mixed {
-  display: flex; flex-direction: column; gap: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
 /* —— 展开面板 —— */
 .countdown-detail {
   overflow: hidden;
-  animation: cdIn .25s var(--ease-out);
+  animation: cdIn 0.25s var(--ease-out);
 }
 @keyframes cdIn {
-  from { opacity: 0; max-height: 0; }
-  to { opacity: 1; max-height: 500px; }
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
 }
 .countdown-detail-inner {
   margin-top: var(--space-2);
@@ -419,7 +512,8 @@ class="d-dot" :style="{
 }
 
 .detail-title {
-  font-size: var(--text-xs); font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: 600;
   color: var(--color-t-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -428,77 +522,111 @@ class="d-dot" :style="{
 
 /* 资源明细行 */
 .detail-row {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--color-border-line);
   font-size: var(--text-xs);
 }
-.detail-row:last-of-type { border-bottom: none; }
+.detail-row:last-of-type {
+  border-bottom: none;
+}
 .detail-row.bottleneck {
-  background: rgba(255,182,39,.06);
-  margin: 0 calc(-1 * var(--space-2)); padding: var(--space-2);
+  background: rgba(255, 182, 39, 0.06);
+  margin: 0 calc(-1 * var(--space-2));
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   border-bottom: none;
 }
 .detail-row .d-dot {
-  width: 8px; height: 8px; border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 .detail-row .d-name {
-  font-size: var(--text-xs); color: var(--color-t-secondary);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
   min-width: 48px;
 }
 .detail-row .d-amount {
-  font-family: var(--font-mono); font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
   color: var(--color-t-primary);
   flex: 1;
 }
-.detail-row .d-amount .d-current { color: var(--color-t-secondary); }
-.detail-row .d-amount .d-sep { color: var(--color-t-tertiary); margin: 0 var(--space-1); }
-.detail-row .d-amount .d-need { color: var(--color-t-primary); }
+.detail-row .d-amount .d-current {
+  color: var(--color-t-secondary);
+}
+.detail-row .d-amount .d-sep {
+  color: var(--color-t-tertiary);
+  margin: 0 var(--space-1);
+}
+.detail-row .d-amount .d-need {
+  color: var(--color-t-primary);
+}
 .detail-row .d-rate {
-  font-family: var(--font-mono); font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
   color: var(--color-quantum);
 }
-.detail-row .d-rate.zero { color: var(--color-amber); }
+.detail-row .d-rate.zero {
+  color: var(--color-amber);
+}
 .detail-row .d-eta {
-  font-family: var(--font-mono); font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
   color: var(--color-t-tertiary);
-  min-width: 56px; text-align: right;
+  min-width: 56px;
+  text-align: right;
 }
 .detail-row .d-status {
-  font-size: var(--text-xs); font-weight: 600;
-  padding: 1px var(--space-2); border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
   white-space: nowrap;
 }
 .d-status.ok {
-  background: rgba(46,230,160,.12); color: var(--color-quantum);
+  background: rgba(46, 230, 160, 0.12);
+  color: var(--color-quantum);
 }
 .d-status.bottleneck {
-  background: rgba(255,182,39,.12); color: var(--color-amber);
+  background: rgba(255, 182, 39, 0.12);
+  color: var(--color-amber);
 }
 .d-status.manual {
-  background: rgba(255,182,39,.12); color: var(--color-amber);
+  background: rgba(255, 182, 39, 0.12);
+  color: var(--color-amber);
 }
 
 /* 预估声明 */
 .detail-disclaimer {
   margin-top: var(--space-2);
-  font-size: var(--text-xs); color: var(--color-t-tertiary);
-  display: flex; align-items: center; gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   line-height: 1.4;
 }
 
 /* transition */
-.cd-expand-enter-active, .cd-expand-leave-active {
-  transition: opacity .2s var(--ease-out), max-height .25s var(--ease-out);
+.cd-expand-enter-active,
+.cd-expand-leave-active {
+  transition:
+    opacity 0.2s var(--ease-out),
+    max-height 0.25s var(--ease-out);
   overflow: hidden;
 }
-.cd-expand-enter-from, .cd-expand-leave-to {
+.cd-expand-enter-from,
+.cd-expand-leave-to {
   opacity: 0;
   max-height: 0;
 }
-.cd-expand-enter-to, .cd-expand-leave-from {
+.cd-expand-enter-to,
+.cd-expand-leave-from {
   max-height: 500px;
 }
 </style>

@@ -53,7 +53,7 @@ function onOverlayClick() {
   border: 1px solid var(--color-border-glow);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  box-shadow: var(--elevation-3);  /* P2-6 */
-  animation: modalIn .25s var(--ease-out);
+  box-shadow: var(--elevation-3); /* P2-6 */
+  animation: modalIn 0.25s var(--ease-out);
 }
 </style>

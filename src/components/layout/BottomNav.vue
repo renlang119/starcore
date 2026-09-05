@@ -19,9 +19,7 @@ const activeId = computed(() => {
 })
 
 /** 「更多」按钮是否高亮（当前处于次级页面时） */
-const moreActive = computed(() =>
-  secondaryTabs.some((t) => t.path === route.path),
-)
+const moreActive = computed(() => secondaryTabs.some((t) => t.path === route.path))
 
 function nav(path: string) {
   router.push(path)
@@ -39,7 +37,9 @@ function navSecondary(path: string) {
 /** 路由变化时自动收起「更多」面板 */
 watch(
   () => route.path,
-  () => { moreOpen.value = false },
+  () => {
+    moreOpen.value = false
+  }
 )
 
 /**
@@ -67,7 +67,9 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
       :aria-current="activeId === t.id ? 'page' : undefined"
       @click="nav(t.path)"
     >
-      <svg class="icon" style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true"><use :href="'#' + t.icon" /></svg>
+      <svg class="icon" style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+        <use :href="'#' + t.icon" />
+      </svg>
       <span class="label">{{ t.label }}</span>
     </button>
 
@@ -79,7 +81,12 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
       aria-haspopup="true"
       @click="toggleMore"
     >
-      <svg class="icon" :class="{ popped: moreOpen }" style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+      <svg
+        class="icon"
+        :class="{ popped: moreOpen }"
+        style="width: var(--icon-lg); height: var(--icon-lg)"
+        aria-hidden="true"
+      >
         <use href="#i-ui-more" />
       </svg>
       <span class="label">更多</span>
@@ -96,7 +103,13 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
           :aria-current="activeId === t.id ? 'page' : undefined"
           @click="navSecondary(t.path)"
         >
-          <svg class="icon" style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use :href="'#' + t.icon" /></svg>
+          <svg
+            class="icon"
+            style="width: var(--icon-md); height: var(--icon-md)"
+            aria-hidden="true"
+          >
+            <use :href="'#' + t.icon" />
+          </svg>
           <span>{{ t.label }}</span>
         </button>
       </div>
@@ -128,16 +141,27 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
   gap: var(--space-1);
   padding: var(--space-2) var(--space-1);
   color: var(--color-t-tertiary);
-  transition: color .2s var(--ease-out);
+  transition: color 0.2s var(--ease-out);
   position: relative;
 }
-.tab .label { font-size: var(--text-xs); font-weight: 500; }
-.tab.active { color: var(--color-core); }
-.tab.active .icon { filter: drop-shadow(0 0 6px rgba(0,229,255,.5)); }
+.tab .label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+.tab.active {
+  color: var(--color-core);
+}
+.tab.active .icon {
+  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.5));
+}
 
 /* 更多按钮反馈——面板打开时图标微弹 */
-.icon.popped { transform: scale(1.15); }
-.icon { transition: transform .2s var(--ease-out); }
+.icon.popped {
+  transform: scale(1.15);
+}
+.icon {
+  transition: transform 0.2s var(--ease-out);
+}
 
 /* 更多面板——向上弹出 */
 .more-panel {
@@ -164,19 +188,24 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--color-t-secondary);
-  transition: all .15s var(--ease-out);
+  transition: all 0.15s var(--ease-out);
   white-space: nowrap;
 }
-.more-item:hover { background: var(--color-hover); color: var(--color-t-primary); }
+.more-item:hover {
+  background: var(--color-hover);
+  color: var(--color-t-primary);
+}
 .more-item.active {
-  background: linear-gradient(90deg, rgba(0,229,255,.12), transparent);
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.12), transparent);
   color: var(--color-core);
 }
 
 /* 面板出入场动画 */
 .more-pop-enter-active,
 .more-pop-leave-active {
-  transition: opacity .18s var(--ease-out), transform .18s var(--ease-out);
+  transition:
+    opacity 0.18s var(--ease-out),
+    transform 0.18s var(--ease-out);
   transform-origin: bottom right;
 }
 .more-pop-enter-from,

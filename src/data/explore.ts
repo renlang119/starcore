@@ -25,7 +25,10 @@ export interface ExploreNode {
   story?: string
 }
 
-export const LAYER_INFO: Record<StarLayer, { id: StarLayer; name: string; color: string; distance: string }> = {
+export const LAYER_INFO: Record<
+  StarLayer,
+  { id: StarLayer; name: string; color: string; distance: string }
+> = {
   orbit: { id: 'orbit', name: '轨道带', color: '#00E5FF', distance: '0.1-1 AU' },
   inner: { id: 'inner', name: '内层星系', color: '#2EE6A0', distance: '1-50 AU' },
   outer: { id: 'outer', name: '外层星系', color: '#FFB627', distance: '50-5000 AU' },

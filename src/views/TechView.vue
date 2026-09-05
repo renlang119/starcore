@@ -12,7 +12,8 @@ const activeBranch = ref<TechBranch | 'all'>('all')
 
 const branches = Object.values(TECH_BRANCHES)
 const techsToShow = computed(() => {
-  const list = activeBranch.value === 'all' ? TECHS : TECHS.filter((t) => t.branch === activeBranch.value)
+  const list =
+    activeBranch.value === 'all' ? TECHS : TECHS.filter((t) => t.branch === activeBranch.value)
   return [...list].sort((a, b) => a.tier - b.tier)
 })
 
@@ -26,7 +27,7 @@ function techStatus(id: string): 'completed' | 'available' | 'locked' {
   return 'locked'
 }
 
-function getAdjustedCost(def: typeof TECHS[0]) {
+function getAdjustedCost(def: (typeof TECHS)[0]) {
   const mult = game.techCostMult.toNumber()
   const result: Record<string, number> = {}
   for (const [k, v] of Object.entries(def.cost)) result[k] = Math.ceil((v as number) * mult)
@@ -56,7 +57,13 @@ function tryResearch(id: string) {
 
     <!-- 分支筛选 -->
     <div class="branch-tabs">
-      <button class="branch-tab" :class="{ active: activeBranch === 'all' }" @click="activeBranch = 'all'">全部</button>
+      <button
+        class="branch-tab"
+        :class="{ active: activeBranch === 'all' }"
+        @click="activeBranch = 'all'"
+      >
+        全部
+      </button>
       <button
         v-for="b in branches"
         :key="b.id"
@@ -71,23 +78,24 @@ function tryResearch(id: string) {
 
     <!-- 科技列表 -->
     <ul class="tech-list" aria-label="科技列表">
-      <li
-        v-for="t in techsToShow"
-        :key="t.id"
-        class="tech-card"
-        :class="techStatus(t.id)"
-      >
+      <li v-for="t in techsToShow" :key="t.id" class="tech-card" :class="techStatus(t.id)">
         <div class="t-head">
           <div class="t-icon" :style="{ color: TECH_BRANCHES[t.branch].color }">
-            <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use :href="'#' + t.icon" /></svg>
+            <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
+              <use :href="'#' + t.icon" />
+            </svg>
           </div>
           <div class="t-info">
             <div class="t-name">{{ t.name }}</div>
-            <div class="t-branch" :style="{ color: TECH_BRANCHES[t.branch].color }">{{ TECH_BRANCHES[t.branch].name }} · Tier {{ t.tier }}</div>
+            <div class="t-branch" :style="{ color: TECH_BRANCHES[t.branch].color }">
+              {{ TECH_BRANCHES[t.branch].name }} · Tier {{ t.tier }}
+            </div>
           </div>
           <div class="t-status">
             <span v-if="techStatus(t.id) === 'completed'" class="status-done">
-              <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use href="#i-ui-check" /></svg>
+              <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
+                <use href="#i-ui-check" />
+              </svg>
             </span>
           </div>
         </div>
@@ -105,7 +113,7 @@ function tryResearch(id: string) {
 
         <!-- 前置 -->
         <div v-if="t.requires && techStatus(t.id) === 'locked'" class="t-req">
-          需要：{{ t.requires.map(r => TECHS.find(x => x.id === r)?.name).join(', ') }}
+          需要：{{ t.requires.map((r) => TECHS.find((x) => x.id === r)?.name).join(', ') }}
         </div>
 
         <button
@@ -123,55 +131,138 @@ function tryResearch(id: string) {
 </template>
 
 <style scoped>
-.tech-view { display: flex; flex-direction: column; gap: var(--space-4); animation: screenIn .4s var(--ease-out); }
-.page-sub { margin-top: calc(-1 * var(--space-2)); }
-
-.branch-tabs { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; padding-bottom: var(--space-1); }
-.branch-tabs::-webkit-scrollbar { display: none; }
-.branch-tab {
-  flex-shrink: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill);
-  background: var(--color-surface); border: 1px solid var(--color-border-line);
-  font-size: var(--text-xs); font-weight: 500; color: var(--color-t-secondary);
+.tech-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: screenIn 0.4s var(--ease-out);
 }
-.branch-tab.active { background: color-mix(in srgb, var(--c, #00E5FF) 12%, transparent); border-color: var(--c, #00E5FF); color: var(--c, #00E5FF); }
+.page-sub {
+  margin-top: calc(-1 * var(--space-2));
+}
 
-.tech-list { display: flex; flex-direction: column; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
+.branch-tabs {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+}
+.branch-tabs::-webkit-scrollbar {
+  display: none;
+}
+.branch-tab {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-t-secondary);
+}
+.branch-tab.active {
+  background: color-mix(in srgb, var(--c, #00e5ff) 12%, transparent);
+  border-color: var(--c, #00e5ff);
+  color: var(--c, #00e5ff);
+}
+
+.tech-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 .tech-card {
-  background: var(--color-surface); border: 1px solid var(--color-border-line);
-  border-radius: var(--radius-lg); padding: var(--space-3);
-  box-shadow: var(--elevation-1);  /* P2-6 */
-  transition: opacity .2s, transform .2s var(--ease-out), border-color .2s, box-shadow .2s var(--ease-out);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  box-shadow: var(--elevation-1); /* P2-6 */
+  transition:
+    opacity 0.2s,
+    transform 0.2s var(--ease-out),
+    border-color 0.2s,
+    box-shadow 0.2s var(--ease-out);
 }
 .tech-card:not(.locked):not(.completed):hover {
-  transform: translateY(-2px);  /* P2-4 */
+  transform: translateY(-2px); /* P2-4 */
   border-color: var(--color-border-glow);
-  box-shadow: var(--elevation-2);  /* P2-6 */
+  box-shadow: var(--elevation-2); /* P2-6 */
 }
-.tech-card.completed { opacity: .6; border-color: var(--color-quantum); }
-.tech-card.locked { /* P2-7: 不降低 opacity，通过 --color-locked 区分 */ }
+.tech-card.completed {
+  opacity: 0.6;
+  border-color: var(--color-quantum);
+}
+.tech-card.locked {
+  /* P2-7: 不降低 opacity，通过 --color-locked 区分 */
+}
 
-.t-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
+.t-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
 .t-icon {
-  width: 32px; height: 32px; border-radius: var(--radius-md);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
   background: var(--color-elevated);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.t-info { flex: 1; }
-.t-name { font-size: var(--text-sm); font-weight: 600; }
-.t-branch { font-size: var(--text-xs); }
-.status-done { color: var(--color-quantum); }
+.t-info {
+  flex: 1;
+}
+.t-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.t-branch {
+  font-size: var(--text-xs);
+}
+.status-done {
+  color: var(--color-quantum);
+}
 
-.t-desc { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-2); line-height: 1.4; }
+.t-desc {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+}
 
-.t-effects { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-2); }
+.t-effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
 .eff-tag {
-  font-size: var(--text-xs); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
-  background: rgba(0,229,255,.08); color: var(--color-core);
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 229, 255, 0.08);
+  color: var(--color-core);
 }
 
-.t-cost { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
+.t-cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
 
-.t-req { font-size: var(--text-xs); color: var(--color-locked); margin-bottom: var(--space-2); }  /* P2-7 */
+.t-req {
+  font-size: var(--text-xs);
+  color: var(--color-locked);
+  margin-bottom: var(--space-2);
+} /* P2-7 */
 
 /* P3-3 onboarding */
 .onboard-tech {

@@ -26,7 +26,12 @@ function makeValidSaveData(): SaveData {
     combat: { garrisoned: {}, completed: ['raider_1'] },
     exploration: {
       progress: {
-        node_orbit: { nodeId: 'node_orbit', startTime: Date.now() - 60000, endTime: Date.now() + 60000, completed: false },
+        node_orbit: {
+          nodeId: 'node_orbit',
+          startTime: Date.now() - 60000,
+          endTime: Date.now() + 60000,
+          completed: false,
+        },
       },
     },
     relics: {
@@ -36,7 +41,10 @@ function makeValidSaveData(): SaveData {
     transcend: {
       negativeEntropy: '3',
       totalTranscends: 1,
-      tree: [{ id: 'relic_slot', purchased: true }, { id: 'starting_energy', purchased: false }],
+      tree: [
+        { id: 'relic_slot', purchased: true },
+        { id: 'starting_energy', purchased: false },
+      ],
     },
   }
 }

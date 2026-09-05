@@ -11,21 +11,24 @@ import type { MilitarySaveData } from '@/lib/storage'
 export interface Formation {
   id: string
   name: string
-  units: Record<UnitId, number>  // 兵种 → 数量
+  units: Record<UnitId, number> // 兵种 → 数量
 }
 
 export interface TrainingTask {
   id: string
   unitId: UnitId
   count: number
-  remaining: number  // 剩余秒
+  remaining: number // 剩余秒
   totalTime: number
 }
 
 export const useMilitaryStore = defineStore('military', () => {
   // —— state ——
   const owned = ref<Record<UnitId, number>>({
-    assault: 0, guard: 0, heavy: 0, psionic: 0,
+    assault: 0,
+    guard: 0,
+    heavy: 0,
+    psionic: 0,
   })
   const trainingQueue = ref<TrainingTask[]>([])
   const formations = ref<Formation[]>([
@@ -39,11 +42,18 @@ export const useMilitaryStore = defineStore('military', () => {
   // —— getters ——
   const getOwned = (id: UnitId) => owned.value[id]
   const totalUnits = computed(() => Object.values(owned.value).reduce((a, b) => a + b, 0))
-  const isUnlocked = (def: UnitDef, completedTechs: Set<string>) => !def.requires || completedTechs.has(def.requires)
+  const isUnlocked = (def: UnitDef, completedTechs: Set<string>) =>
+    !def.requires || completedTechs.has(def.requires)
 
   /** 编队总战力（用于 UI 展示） */
-  function formationPower(formation: Formation, atkMult: Decimal, defMult: Decimal): { atk: number; def: number; hp: number } {
-    let atk = 0, def = 0, hp = 0
+  function formationPower(
+    formation: Formation,
+    atkMult: Decimal,
+    defMult: Decimal
+  ): { atk: number; def: number; hp: number } {
+    let atk = 0,
+      def = 0,
+      hp = 0
     for (const [uid, count] of Object.entries(formation.units)) {
       if (count <= 0) continue
       const u = getUnit(uid as UnitId)
@@ -57,7 +67,9 @@ export const useMilitaryStore = defineStore('military', () => {
 
   /** 全军战力（所有已造兵种） */
   function totalPower(atkMult: Decimal, defMult: Decimal) {
-    let atk = 0, def = 0, hp = 0
+    let atk = 0,
+      def = 0,
+      hp = 0
     for (const [uid, count] of Object.entries(owned.value)) {
       if (count <= 0) continue
       const u = getUnit(uid as UnitId)
@@ -71,7 +83,12 @@ export const useMilitaryStore = defineStore('military', () => {
 
   // —— actions ——
   /** 训练兵种（入队） */
-  function startTraining(unitId: UnitId, count: number, canAffordFn: (cost: Record<string, number>) => boolean, spendFn: (cost: Record<string, number>) => boolean): boolean {
+  function startTraining(
+    unitId: UnitId,
+    count: number,
+    canAffordFn: (cost: Record<string, number>) => boolean,
+    spendFn: (cost: Record<string, number>) => boolean
+  ): boolean {
     const def = getUnit(unitId)
     if (!def || count <= 0) return false
     // 计算总成本
@@ -80,7 +97,7 @@ export const useMilitaryStore = defineStore('military', () => {
     if (!canAffordFn(totalCost)) return false
     if (!spendFn(totalCost)) return false
     const task: TrainingTask = {
-      id: 'train_' + (++taskId),
+      id: 'train_' + ++taskId,
       unitId,
       count,
       remaining: def.trainTime * count,
@@ -159,13 +176,26 @@ export const useMilitaryStore = defineStore('military', () => {
     if (!data) return
     if (data.owned) owned.value = { ...owned.value, ...data.owned }
     if (data.training) trainingQueue.value = data.training.map((t) => ({ ...t }))
-    if (data.formations) formations.value = data.formations.map((f) => ({ ...f, units: { ...f.units } }))
+    if (data.formations)
+      formations.value = data.formations.map((f) => ({ ...f, units: { ...f.units } }))
   }
 
   return {
-    owned, trainingQueue, formations,
-    getOwned, totalUnits, isUnlocked, formationPower, totalPower,
-    startTraining, applyTick, assignToFormation, removeFromFormation, applyLosses,
-    reset, serialize, hydrate,
+    owned,
+    trainingQueue,
+    formations,
+    getOwned,
+    totalUnits,
+    isUnlocked,
+    formationPower,
+    totalPower,
+    startTraining,
+    applyTick,
+    assignToFormation,
+    removeFromFormation,
+    applyLosses,
+    reset,
+    serialize,
+    hydrate,
   }
 })
