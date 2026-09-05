@@ -1,0 +1,304 @@
+<script setup lang="ts">
+/**
+ * AchievementsView.vue — 成就/里程碑页（v0.57 玩法扩展方案 2）
+ * 按类别分区展示 31 个成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
+ */
+import { computed } from 'vue'
+import { useGameStore } from '@/stores/game'
+import { fmt, fmtTime } from '@/lib/format'
+import {
+  ACHIEVEMENTS,
+  ACHIEVEMENT_CATEGORIES,
+  groupByCategory,
+  type AchievementDef,
+  type AchievementMetric,
+} from '@/data/achievements'
+import Icons from '@/components/ui/Icons.vue'
+
+const game = useGameStore()
+const ach = game.achievements
+
+const groups = groupByCategory()
+
+const unlockedCount = computed(() => ach.unlockedCount)
+
+/** 阈值/当前值的展示格式化（按指标类型选择） */
+function fmtMetricValue(metric: AchievementMetric, v: number): string {
+  if (metric === 'playtime') return fmtTime(v)
+  if (metric === 'energy' || metric === 'dark') return fmt(v)
+  return String(Math.floor(v))
+}
+
+function progressPct(def: AchievementDef): number {
+  return Math.min(100, ach.progressOf(def.metric, def.threshold) * 100)
+}
+
+function unlockedDate(def: AchievementDef): string {
+  const ts = ach.unlocked[def.id]
+  if (ts === undefined) return ''
+  const d = new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** 顶部汇总：已解锁成就的效果合并预览（按类型聚合文案） */
+const bonusSummary = computed(() => {
+  let prodPct = 0
+  let combatPct = 0
+  let explorePct = 0
+  let offlinePct = 0
+  let prestigePct = 0
+  for (const def of ACHIEVEMENTS) {
+    if (!ach.isUnlocked(def.id)) continue
+    for (const e of def.effects) {
+      const pctVal = (e.value - 1) * 100
+      if (e.type === 'production_mult') prodPct += pctVal
+      else if (e.type === 'combat_mult') combatPct += pctVal
+      else if (e.type === 'explore_mult') explorePct += pctVal
+      else if (e.type === 'offline_bonus') offlinePct += pctVal
+      else if (e.type === 'prestige_mult') prestigePct += pctVal
+    }
+  }
+  // combat 攻防成对重复累计，除以 2 归一
+  combatPct = combatPct / 2
+  const parts: string[] = []
+  const round = (n: number) => Math.round(n * 10) / 10
+  if (prodPct > 0) parts.push(`全产出 +${round(prodPct)}%`)
+  if (combatPct > 0) parts.push(`攻防 +${round(combatPct)}%`)
+  if (explorePct > 0) parts.push(`探索 +${round(explorePct)}%`)
+  if (offlinePct > 0) parts.push(`离线 +${round(offlinePct)}%`)
+  if (prestigePct > 0) parts.push(`负熵 +${round(prestigePct)}%`)
+  return parts.length > 0 ? parts.join(' · ') : '尚未获得加成'
+})
+</script>
+
+<template>
+  <div class="achievements-view">
+    <Icons />
+    <h2 class="page-title font-display">成就殿堂</h2>
+    <p class="page-sub">跨越轮回的里程碑，点亮永久加成</p>
+
+    <!-- 汇总面板 -->
+    <div class="summary-panel">
+      <div class="summary-count">
+        <span class="count-num font-display">{{ unlockedCount }}</span>
+        <span class="count-total font-mono">/ {{ ACHIEVEMENTS.length }}</span>
+      </div>
+      <div class="summary-bonus">
+        <div class="bonus-label">已获得加成</div>
+        <div class="bonus-value">{{ bonusSummary }}</div>
+      </div>
+    </div>
+
+    <!-- 分类成就列表 -->
+    <section v-for="[cat, defs] in groups" :key="cat" class="ach-section">
+      <h3 class="section-title">
+        <svg class="cat-icon" aria-hidden="true">
+          <use :href="'#' + ACHIEVEMENT_CATEGORIES[cat].icon" />
+        </svg>
+        {{ ACHIEVEMENT_CATEGORIES[cat].label }}
+      </h3>
+      <div class="ach-grid">
+        <div
+          v-for="def in defs"
+          :key="def.id"
+          class="ach-card"
+          :class="{ unlocked: ach.isUnlocked(def.id) }"
+        >
+          <div class="ach-icon-wrap">
+            <svg class="ach-icon" aria-hidden="true">
+              <use :href="'#' + def.icon" />
+            </svg>
+            <svg v-if="ach.isUnlocked(def.id)" class="ach-check" aria-hidden="true">
+              <use href="#i-ui-check" />
+            </svg>
+          </div>
+          <div class="ach-body">
+            <div class="ach-head">
+              <span class="ach-name">{{ def.name }}</span>
+              <span class="ach-reward">{{ def.effects[0]?.label }}</span>
+            </div>
+            <p class="ach-desc">{{ def.desc }}</p>
+            <!-- 已解锁：时间戳；进行中：进度条 -->
+            <div v-if="ach.isUnlocked(def.id)" class="ach-done">
+              ✓ 已解锁 · {{ unlockedDate(def) }}
+            </div>
+            <template v-else>
+              <div class="ach-progress">
+                <div class="bar">
+                  <div class="bar-fill" :style="{ width: progressPct(def) + '%' }"></div>
+                </div>
+                <span class="progress-text font-mono">
+                  {{ fmtMetricValue(def.metric, ach.metricValue(def.metric)) }} /
+                  {{ fmtMetricValue(def.metric, def.threshold) }}
+                </span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>
+
+<style scoped>
+.achievements-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: screenIn 0.4s var(--ease-out);
+}
+.page-title {
+  color: var(--color-quantum);
+}
+
+.summary-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-quantum);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.summary-count {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+.count-num {
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  color: var(--color-quantum);
+  text-shadow: 0 0 16px rgba(46, 230, 160, 0.3);
+}
+.count-total {
+  font-size: var(--text-sm);
+  color: var(--color-t-tertiary);
+}
+.summary-bonus {
+  flex: 1;
+  min-width: 200px;
+  text-align: right;
+}
+.bonus-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.bonus-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-amber);
+}
+
+.ach-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cat-icon {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--color-t-secondary);
+}
+.ach-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ach-card {
+  display: flex;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.ach-card.unlocked {
+  border-color: var(--color-quantum);
+}
+.ach-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
+.ach-icon {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  color: var(--color-t-tertiary);
+}
+.ach-card.unlocked .ach-icon {
+  color: var(--color-quantum);
+  filter: drop-shadow(0 0 6px rgba(46, 230, 160, 0.4));
+}
+.ach-check {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--color-quantum);
+  background: var(--color-surface);
+  border-radius: 50%;
+}
+.ach-body {
+  flex: 1;
+  min-width: 0;
+}
+.ach-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.ach-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.ach-reward {
+  font-size: var(--text-xs);
+  color: var(--color-amber);
+  white-space: nowrap;
+}
+.ach-desc {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin: var(--space-1) 0;
+}
+.ach-done {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+}
+.ach-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.bar {
+  flex: 1;
+  height: 6px;
+  background: var(--color-elevated);
+  border-radius: var(--radius-pill, 999px);
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-core), var(--color-quantum));
+  border-radius: inherit;
+  transition: width 0.3s var(--ease-out);
+}
+.progress-text {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  white-space: nowrap;
+}
+</style>

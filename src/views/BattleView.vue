@@ -96,6 +96,11 @@ function startBattle() {
   battleLog.value = result.log
   battleResult.value = result
   showResult.value = true
+  // 成就终身计数：据点攻克（胜利）次数
+  if (result.victory) {
+    game.achievements.recordBattle()
+    game.achievements.checkAndUnlock()
+  }
   // 奖励发放推迟到 confirmResult/stayHere 时
 }
 
