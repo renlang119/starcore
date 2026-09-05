@@ -120,6 +120,9 @@ const availableStrongholds = computed(() => {
     <Icons />
     <h2 class="page-title font-display">探索星图</h2>
     <p class="page-sub">探索未知星域，解锁据点与资源</p>
+    <p v-if="game.autoExplore" class="auto-badge" title="探索协议已激活：自动开始可探索的星域节点">
+      ⚙ 探索协议进行中
+    </p>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
@@ -278,6 +281,14 @@ const availableStrongholds = computed(() => {
 </template>
 
 <style scoped>
+.auto-badge {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+  margin-top: calc(-1 * var(--space-2));
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.05em;
+}
+
 .map-view {
   display: flex;
   flex-direction: column;
