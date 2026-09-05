@@ -1,0 +1,132 @@
+/* ============================================================
+   P1-5 按钮系统 — 四类语义型全局按钮
+   .btn-primary   主操作（升级/确认）
+   .btn-secondary 次操作（取消/返回）
+   .btn-accent    分类强调（研究/探索/战斗），通过 --accent 注入色
+   .btn-ghost     幽灵按钮（次要操作）
+   尺寸变体：.sm（紧凑）、.block（全宽）
+   ============================================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-core);
+  color: var(--color-on-core);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.15s var(--ease-out);
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: var(--color-core-dim);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+}
+.btn-primary:active {
+  transform: scale(0.95);
+} /* P2-4: 0.95 + 回弹 */
+.btn-primary:disabled {
+  background: var(--color-elevated);
+  color: var(--color-t-tertiary);
+  cursor: not-allowed;
+  opacity: 0.4;
+} /* P2-7: 统一 .4 */
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-elevated);
+  color: var(--color-t-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  transition: all 0.15s var(--ease-out);
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background: var(--color-hover);
+  border-color: var(--color-border-glow);
+}
+.btn-secondary:active {
+  transform: scale(0.95);
+} /* P2-4 */
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+} /* P2-7 */
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent, var(--color-core));
+  color: var(--color-on-core);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.15s var(--ease-out);
+  cursor: pointer;
+}
+.btn-accent:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent, var(--color-core)) 30%, transparent);
+}
+.btn-accent:active {
+  transform: scale(0.95);
+} /* P2-4 */
+.btn-accent:disabled {
+  background: var(--color-elevated);
+  color: var(--color-t-tertiary);
+  cursor: not-allowed;
+  opacity: 0.4;
+} /* P2-7 */
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  color: var(--color-t-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all 0.15s var(--ease-out);
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  background: var(--color-hover);
+  color: var(--color-t-primary);
+}
+.btn-ghost:active {
+  transform: scale(0.95);
+} /* P2-4 */
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+} /* P2-7 已统一 */
+
+/* 尺寸变体 */
+.btn-primary.sm,
+.btn-secondary.sm,
+.btn-accent.sm,
+.btn-ghost.sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+}
+/* 全宽变体 */
+.btn-primary.block,
+.btn-secondary.block,
+.btn-accent.block,
+.btn-ghost.block {
+  width: 100%;
+}

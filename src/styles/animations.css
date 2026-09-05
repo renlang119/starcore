@@ -1,0 +1,177 @@
+/* ============================================================
+   动画 keyframes
+   ============================================================ */
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes spinRing {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes corePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 40px rgba(0, 229, 255, 0.4),
+      inset 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 60px rgba(0, 229, 255, 0.6),
+      inset 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes actionPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c, var(--color-core)) 20%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px color-mix(in srgb, var(--c, var(--color-core)) 15%, transparent);
+  }
+}
+/* P2-4 交互反馈游戏化 keyframes */
+@keyframes coreClickPulse {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.12);
+  }
+  60% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* P2-9 视觉动线引导 — Hero 底部光柱呼吸 */
+@keyframes flowPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* P3-5 路由切换"空间跃迁"光效 */
+@keyframes warpFlash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes warpOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes warpIn {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* P3-6 资源产出粒子动画 */
+@keyframes particleRise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.8);
+  }
+}
+
+/* ============================================================
+   P3-5 路由切换"空间跃迁"过渡
+   旧页: scale(0.96)+fade 0.2s → 白光 overlay 闪过 0.35s → 新页: scale(1.04)+fade 0.3s
+   reduced-motion 降级为纯 opacity fade
+   ============================================================ */
+.warp-enter-active {
+  animation: warpIn 0.3s var(--ease-out);
+}
+.warp-leave-active {
+  animation: warpOut 0.2s var(--ease-out);
+}
+.warp-enter-active .warp-overlay {
+  animation: warpFlash 0.35s var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .warp-enter-active,
+  .warp-leave-active {
+    animation: fadeIn 0.2s ease;
+  }
+  .warp-enter-active .warp-overlay {
+    animation: none;
+  }
+}
