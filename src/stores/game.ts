@@ -28,7 +28,7 @@ import {
 import { TECHS } from '@/data/tech'
 import type { ResourceType } from '@/data/buildings'
 
-const SAVE_VERSION = 5
+const SAVE_VERSION = 6
 const TICK_INTERVAL = 1000 // ms
 // 后台 tick 补算后，仅当离线时长超过此阈值才弹窗展示报告；
 // 低于阈值时静默补算资源/训练进度，避免浏览器对不活跃标签页 setInterval
