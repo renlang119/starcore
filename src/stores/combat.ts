@@ -142,6 +142,10 @@ export const useCombatStore = defineStore('combat', () => {
 
     const rng = _makeRng(_battleSeed(formation, stronghold.id))
     let round = 0
+    // 软墙设计（v0.52 确定）：保底伤害 1 + 50 回合上限配合使用。
+    // 战斗为瞬时结算，该组合表示「越级挑战本该败」——低攻编队对高防据点
+    // 每轮仅保底 1 点进展，50 回合磨不死即超时撤退判负；文案已有覆盖。
+    // 去掉保底会出现 0 伤害僵局，去掉上限则蚂蚁可啃死大象，均非设计意图。
     const maxRounds = 50
     const losses: Record<string, number> = {}
 

@@ -220,6 +220,11 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 # 预期：零结果（P0-6 验收标准）
 ```
 
+> **口径修正（v0.52 回写）**：上述「零结果」预期有一个已知豁免——
+> P1-8 要求主标题 `17px`，落地为 `style.css` `.section-title { font-size: 17px }`，
+> 是全项目唯一硬编码字号（Token 表无 17px 档位）。P0-6 验收以此豁免为准，
+> 即：除 `.section-title` 外零硬编码。
+
 #### 2.3.5 Stylelint 防回潮（建议 P1 阶段引入）
 
 ```jsonc
@@ -277,6 +282,18 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 | 统一规则 | 页面 gap = `--space-4`、卡片 padding = `--space-3` | body = `--text-sm`、核心数值 = `--text-2xl` |
 | 跨页面一致 | 同类组件间距视觉一致 | 同类文本字号视觉一致 |
 | 回归无异常 | 7 个 View × 2 断点截图对比无布局破坏 | 7 个 View × 2 断点截图对比无文字溢出/留白 |
+
+---
+
+## 五、补充登记（v0.52）
+
+**颜色 Token 遗漏补登**：`--color-core-deep: #006b7a`（style.css :root 定义，
+用于 App/SideNav 背景渐变的深青色端点）。该 Token 为全局颜色体系成员，
+此前未在本文档登记，现补记。
+
+**组件级注入变量口径**：`--accent`（按钮分类强调色）、`--ov-color`（文明概况指标色）
+等属**组件级 CSS 变量**——由使用方在元素上内联注入（如 `style="--accent: var(--color-alert)"`），
+不进 `:root` 全局 Token 表；文档检索全局 Token 时不应期待它们出现。
 
 ---
 
