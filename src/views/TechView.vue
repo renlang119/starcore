@@ -20,7 +20,8 @@ const techsToShow = computed(() => {
 
 // 空状态：当前筛选分支下所有科技均已完成
 const allCompleted = computed(
-  () => techsToShow.value.length > 0 && techsToShow.value.every((t) => game.research.isCompleted(t.id))
+  () =>
+    techsToShow.value.length > 0 && techsToShow.value.every((t) => game.research.isCompleted(t.id))
 )
 
 // P3-3 onboarding

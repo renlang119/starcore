@@ -46,11 +46,14 @@ const defMult = computed(() => game.defMult)
 const formations = computed(() => game.military.formations)
 
 // 军事系统解锁状态：任一兵种解锁即可训练（military_basic）
-const armyUnlocked = computed(() => UNITS.some((u) => game.military.isUnlocked(u, completedTechs.value)))
+const armyUnlocked = computed(() =>
+  UNITS.some((u) => game.military.isUnlocked(u, completedTechs.value))
+)
 
 // 空状态（已解锁分支）：无已拥有部队且无训练中任务
 const hasAnyUnits = computed(
-  () => UNITS.some((u) => game.military.getOwned(u.id) > 0) || game.military.trainingQueue.length > 0
+  () =>
+    UNITS.some((u) => game.military.getOwned(u.id) > 0) || game.military.trainingQueue.length > 0
 )
 
 const totalPower = computed(() => game.military.totalPower(atkMult.value, defMult.value))
@@ -205,97 +208,100 @@ function removeAll(fid: string, uid: UnitId) {
         action="训练部队"
       />
       <template v-else>
-      <div
-        v-for="u in UNITS"
-        :key="u.id"
-        class="unit-card"
-        :class="{ locked: !game.military.isUnlocked(u, completedTechs) }"
-      >
-        <div class="u-head">
-          <div
-            class="u-icon"
-            :style="{
-              color: u.rarity === 'rare' ? 'var(--color-amber)' : 'var(--color-t-primary)',
-            }"
-          >
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-              <use :href="'#' + u.icon" />
-            </svg>
-          </div>
-          <div class="u-info">
-            <div class="u-name">
-              {{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span>
-            </div>
-            <div class="u-count font-mono">已拥有：{{ game.military.getOwned(u.id) }}</div>
-          </div>
-        </div>
-        <p class="u-desc">{{ u.desc }}</p>
-
-        <div class="u-stats">
-          <span class="stat">攻 {{ getUnitPower(u.id).atk }}</span>
-          <span class="stat">防 {{ getUnitPower(u.id).def }}</span>
-          <span class="stat">HP {{ getUnitPower(u.id).hp }}</span>
-          <span class="stat counter"
-            >克制 {{ u.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
-          >
-        </div>
-
-        <div v-if="!game.military.isUnlocked(u, completedTechs)" class="u-locked">
-          需要科技：{{ getTech(u.requires)?.name ?? u.requires }}
-        </div>
-        <template v-else>
-          <!-- 训练数量 -->
-          <div class="train-control">
-            <button
-              class="count-btn"
-              @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 10)"
-            >
-              -10
-            </button>
-            <button class="count-btn" @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 1)">
-              -1
-            </button>
-            <span class="count-display font-mono">{{ trainCount[u.id] }}</span>
-            <button class="count-btn" @click="trainCount[u.id] += 1">+1</button>
-            <button class="count-btn" @click="trainCount[u.id] += 10">+10</button>
-          </div>
-
-          <!-- 成本 -->
-          <div class="u-cost">
-            <CostTag :cost="getUnitCost(u.id, trainCount[u.id])" />
-            <span class="time-tag font-mono">{{ u.trainTime * trainCount[u.id] }}s</span>
-          </div>
-
-          <button
-            class="btn-accent block"
-            style="--accent: var(--color-alert)"
-            :disabled="
-              trainCount[u.id] === 0 ||
-              !game.resources.canAfford(getUnitCost(u.id, trainCount[u.id]))
-            "
-            @click="tryTrain(u.id)"
-          >
-            训练
-          </button>
-        </template>
-      </div>
-
-      <!-- 训练队列 -->
-      <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
-        <h3 class="section-title">训练中</h3>
-        <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">
-          <span class="q-name"
-            >{{ getUnit(task.unitId)?.name ?? task.unitId }} ×{{ task.count }}</span
-          >
-          <div class="q-bar">
+        <div
+          v-for="u in UNITS"
+          :key="u.id"
+          class="unit-card"
+          :class="{ locked: !game.military.isUnlocked(u, completedTechs) }"
+        >
+          <div class="u-head">
             <div
-              class="q-fill"
-              :style="{ width: (1 - task.remaining / task.totalTime) * 100 + '%' }"
-            ></div>
+              class="u-icon"
+              :style="{
+                color: u.rarity === 'rare' ? 'var(--color-amber)' : 'var(--color-t-primary)',
+              }"
+            >
+              <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+                <use :href="'#' + u.icon" />
+              </svg>
+            </div>
+            <div class="u-info">
+              <div class="u-name">
+                {{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span>
+              </div>
+              <div class="u-count font-mono">已拥有：{{ game.military.getOwned(u.id) }}</div>
+            </div>
           </div>
-          <span class="q-time font-mono">{{ Math.ceil(task.remaining) }}s</span>
+          <p class="u-desc">{{ u.desc }}</p>
+
+          <div class="u-stats">
+            <span class="stat">攻 {{ getUnitPower(u.id).atk }}</span>
+            <span class="stat">防 {{ getUnitPower(u.id).def }}</span>
+            <span class="stat">HP {{ getUnitPower(u.id).hp }}</span>
+            <span class="stat counter"
+              >克制 {{ u.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
+            >
+          </div>
+
+          <div v-if="!game.military.isUnlocked(u, completedTechs)" class="u-locked">
+            需要科技：{{ getTech(u.requires)?.name ?? u.requires }}
+          </div>
+          <template v-else>
+            <!-- 训练数量 -->
+            <div class="train-control">
+              <button
+                class="count-btn"
+                @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 10)"
+              >
+                -10
+              </button>
+              <button
+                class="count-btn"
+                @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 1)"
+              >
+                -1
+              </button>
+              <span class="count-display font-mono">{{ trainCount[u.id] }}</span>
+              <button class="count-btn" @click="trainCount[u.id] += 1">+1</button>
+              <button class="count-btn" @click="trainCount[u.id] += 10">+10</button>
+            </div>
+
+            <!-- 成本 -->
+            <div class="u-cost">
+              <CostTag :cost="getUnitCost(u.id, trainCount[u.id])" />
+              <span class="time-tag font-mono">{{ u.trainTime * trainCount[u.id] }}s</span>
+            </div>
+
+            <button
+              class="btn-accent block"
+              style="--accent: var(--color-alert)"
+              :disabled="
+                trainCount[u.id] === 0 ||
+                !game.resources.canAfford(getUnitCost(u.id, trainCount[u.id]))
+              "
+              @click="tryTrain(u.id)"
+            >
+              训练
+            </button>
+          </template>
         </div>
-      </div>
+
+        <!-- 训练队列 -->
+        <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
+          <h3 class="section-title">训练中</h3>
+          <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">
+            <span class="q-name"
+              >{{ getUnit(task.unitId)?.name ?? task.unitId }} ×{{ task.count }}</span
+            >
+            <div class="q-bar">
+              <div
+                class="q-fill"
+                :style="{ width: (1 - task.remaining / task.totalTime) * 100 + '%' }"
+              ></div>
+            </div>
+            <span class="q-time font-mono">{{ Math.ceil(task.remaining) }}s</span>
+          </div>
+        </div>
       </template>
     </div>
 
