@@ -1,20 +1,17 @@
 #!/bin/bash
 # 星核纪元 · 部署脚本
 #
-# 构建产物 dist/ 同步到 nginx 站点目录 /var/www/starcore，
-# 由 nginx 对外服务。
-#
-# 用法：
-#   ./deploy.sh            # 构建 + 部署 + 验证
-#   ./deploy.sh --skip-build   # 跳过构建，直接同步现有 dist/
-set -euo pipefail
+# 构建产物 dist/ 同步到 nginx 站点目录，由 nginx 对外服务。
+# 目标目录与站点域名通过环境变量或脚本顶部常量配置。
+
+DEST="${DEPLOY_DEST:-/var/www/starcore}"
+SITE_URL="${DEPLOY_URL:-https://example.com}"
+
+SKIP_BUILD=0
+[[ "${1:-}" == "--skip-build" ]] && SKIP_BUILD=1
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
-
-DEST="/var/www/starcore"
-SKIP_BUILD=0
-[[ "${1:-}" == "--skip-build" ]] && SKIP_BUILD=1
 
 echo "==== 星核纪元 · 部署 ===="
 
@@ -35,8 +32,8 @@ else
 fi
 
 # 2. 同步产物
-# rsync --delete 清掉站点里已从产物中移除的旧文件（如 v0.44 清理的 icons.svg 残留），
-# 这是 cp -r 覆盖式部署做不到的；--exclude 防止误删服务器侧 .well-known（证书续期用）。
+# rsync --delete 清掉站点里已从产物中移除的旧文件；
+# --exclude 防止误删服务器侧 .well-known（证书续期用）。
 echo "[2/4] 同步到 $DEST ..."
 sudo rsync -rcv --delete \
   --exclude='.well-known/' \
@@ -49,10 +46,10 @@ sudo chmod -R a+rX "$DEST"
 
 # 4. 验证：线上入口 + 版本号
 echo "[4/4] 验证 ..."
-LOCAL_CODE=$(curl -s -o /dev/null -w '%{http_code}' "https://example.com/?t=$(date +%s)")
+LOCAL_CODE=$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/?t=$(date +%s)")
 VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
-BUNDLE=$(curl -s "https://example.com/?t=$(date +%s)" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1)
-REMOTE_VERSION=$(curl -s "https://example.com/assets/$BUNDLE" | grep -oE "\"$VERSION\"" | head -1)
+BUNDLE=$(curl -s "$SITE_URL/?t=$(date +%s)" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1)
+REMOTE_VERSION=$(curl -s "$SITE_URL/assets/$BUNDLE" | grep -oE "\"$VERSION\"" | head -1)
 
 echo "  HTTP 状态: $LOCAL_CODE"
 echo "  线上 bundle: $BUNDLE"
