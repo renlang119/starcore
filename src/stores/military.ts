@@ -22,6 +22,17 @@ export interface TrainingTask {
   totalTime: number
 }
 
+/** 训练并行槽：基础 1 槽，上限 3 槽（科技「集群操练 I/II」各 +1） */
+export const BASE_TRAINING_SLOTS = 1
+export const MAX_TRAINING_SLOTS = 3
+
+// 并行槽上限由 game store 注入（依赖效果系统聚合科技加成），
+// 避免 military store 直接引用 research/effectSystem（同 setRelicSlotProvider 模式）
+let trainingSlotProvider: () => number = () => BASE_TRAINING_SLOTS
+export function setTrainingSlotProvider(fn: () => number) {
+  trainingSlotProvider = fn
+}
+
 export const useMilitaryStore = defineStore('military', () => {
   // —— state ——
   const owned = ref<Record<UnitId, number>>({
@@ -42,6 +53,10 @@ export const useMilitaryStore = defineStore('military', () => {
   // —— getters ——
   const getOwned = (id: UnitId) => owned.value[id]
   const totalUnits = computed(() => Object.values(owned.value).reduce((a, b) => a + b, 0))
+  /** 训练并行槽上限（1~3） */
+  const maxTrainingSlots = computed(() =>
+    Math.min(MAX_TRAINING_SLOTS, Math.max(BASE_TRAINING_SLOTS, trainingSlotProvider()))
+  )
   const isUnlocked = (def: UnitDef, completedTechs: Set<string>) =>
     !def.requires || completedTechs.has(def.requires)
 
@@ -82,7 +97,7 @@ export const useMilitaryStore = defineStore('military', () => {
   }
 
   // —— actions ——
-  /** 训练兵种（入队） */
+  /** 训练兵种（入队）；并行槽已满时拒绝（已在队列中的任务不受影响，继续跑完） */
   function startTraining(
     unitId: UnitId,
     count: number,
@@ -91,6 +106,7 @@ export const useMilitaryStore = defineStore('military', () => {
   ): boolean {
     const def = getUnit(unitId)
     if (!def || count <= 0) return false
+    if (trainingQueue.value.length >= maxTrainingSlots.value) return false
     // 计算总成本
     const totalCost: Record<string, number> = {}
     for (const [res, per] of Object.entries(def.cost)) totalCost[res] = (per as number) * count
@@ -108,7 +124,7 @@ export const useMilitaryStore = defineStore('military', () => {
   }
 
   /**
-   * tick：推进训练队列（所有任务并行推进，非串行排队）
+   * tick：推进训练队列（队列内任务并行推进；入队受 maxTrainingSlots 限制）
    * @returns 本次 tick 完成的兵种及数量 { unitId: count }
    */
   function applyTick(dt: number): Partial<Record<UnitId, number>> {
@@ -186,6 +202,7 @@ export const useMilitaryStore = defineStore('military', () => {
     formations,
     getOwned,
     totalUnits,
+    maxTrainingSlots,
     isUnlocked,
     formationPower,
     totalPower,

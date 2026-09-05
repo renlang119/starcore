@@ -58,6 +58,15 @@ export const useResearchStore = defineStore('research', () => {
     return mult
   }
 
+  /** 某类累加值汇总（非乘数型效果，如 training_slot）——EffectSource 接口 */
+  function getValue(type: string): number {
+    let total = 0
+    for (const eff of allEffects.value) {
+      if (eff.type === type) total += eff.value
+    }
+    return total
+  }
+
   /** 科技成本乘数 */
   const techCostMult = computed(() => getMult('cost_mult', 'tech'))
 
@@ -89,6 +98,7 @@ export const useResearchStore = defineStore('research', () => {
     available,
     allEffects,
     getMult,
+    getValue,
     techCostMult,
     complete,
     reset,
