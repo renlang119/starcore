@@ -93,7 +93,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
           v-for="p in particles.filter((pt) => pt.resourceId === r.id)"
           :key="p.id"
           class="res-particle"
-          :style="{ '--c': r.color }"
+          :style="{ '--c': r.color, '--duration': p.duration + 'ms' }"
           aria-hidden="true"
         ></span>
       </li>
@@ -228,7 +228,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   background: var(--c, var(--color-core));
   box-shadow: 0 0 4px var(--c, var(--color-core));
   pointer-events: none;
-  animation: particleRise 0.8s var(--ease-out) forwards;
+  animation: particleRise var(--duration, 1s) var(--ease-out) forwards;
   z-index: 1;
 }
 @media (prefers-reduced-motion: reduce) {
