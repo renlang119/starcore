@@ -22,7 +22,7 @@ export interface BattleResult {
   log: BattleLogEntry[]
   rewards: { energy?: number; crystal?: number; alloy?: number; data?: number; dark?: number }
   relic?: RelicDef
-  losses: Record<string, number>  // 玩家损失 {unitId: count}
+  losses: Record<string, number> // 玩家损失 {unitId: count}
   rounds: number
 }
 
@@ -43,12 +43,12 @@ interface CombatUnit {
   maxHp: number
   count: number
   isEnemy: boolean
-  defRef?: UnitId  // 关联玩家兵种定义用于克制判断
-  counteredBy?: UnitId[]  // 敌方单位被哪些玩家兵种克制
+  defRef?: UnitId // 关联玩家兵种定义用于克制判断
+  counteredBy?: UnitId[] // 敌方单位被哪些玩家兵种克制
 }
 
 export const useCombatStore = defineStore('combat', () => {
-  const garrisoned = ref<Record<string, GarrisonState>>({})  // strongholdId → state
+  const garrisoned = ref<Record<string, GarrisonState>>({}) // strongholdId → state
   const completedStrongholds = ref<Set<string>>(new Set())
 
   /**
@@ -61,7 +61,7 @@ export const useCombatStore = defineStore('combat', () => {
   function _makeRng(seed: number): () => number {
     let s = seed >>> 0
     return () => {
-      s = (s + 0x6D2B79F5) >>> 0
+      s = (s + 0x6d2b79f5) >>> 0
       let t = Math.imul(s ^ (s >>> 15), 1 | s)
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296
@@ -95,7 +95,7 @@ export const useCombatStore = defineStore('combat', () => {
     formation: Formation,
     stronghold: StrongholdDef,
     atkMult: Decimal,
-    defMult: Decimal,
+    defMult: Decimal
   ): BattleResult {
     const log: BattleLogEntry[] = []
     // 构建战斗单位列表
@@ -129,7 +129,13 @@ export const useCombatStore = defineStore('combat', () => {
     }))
 
     if (playerUnits.length === 0) {
-      return { victory: false, log: [{ round: 0, msg: '编队为空，无法出战', side: 'system' }], rewards: {}, losses: {}, rounds: 0 }
+      return {
+        victory: false,
+        log: [{ round: 0, msg: '编队为空，无法出战', side: 'system' }],
+        rewards: {},
+        losses: {},
+        rounds: 0,
+      }
     }
 
     log.push({ round: 0, msg: `遭遇 ${stronghold.name} 守军`, side: 'system' })
@@ -206,12 +212,17 @@ export const useCombatStore = defineStore('combat', () => {
     return buildResult(false, log, stronghold, losses, round, rng)
   }
 
-  function buildResult(victory: boolean, log: BattleLogEntry[], stronghold: StrongholdDef, losses: Record<string, number>, rounds: number, rng: () => number): BattleResult {
+  function buildResult(
+    victory: boolean,
+    log: BattleLogEntry[],
+    stronghold: StrongholdDef,
+    losses: Record<string, number>,
+    rounds: number,
+    rng: () => number
+  ): BattleResult {
     // 限制日志条数：保留首条（遭遇）+ 最后 MAX_LOG-1 条
     const MAX_LOG = 30
-    const trimmedLog = log.length > MAX_LOG
-      ? [log[0], ...log.slice(-(MAX_LOG - 1))]
-      : log
+    const trimmedLog = log.length > MAX_LOG ? [log[0], ...log.slice(-(MAX_LOG - 1))] : log
 
     const rewards: BattleResult['rewards'] = {}
     let relic: RelicDef | undefined
@@ -282,8 +293,16 @@ export const useCombatStore = defineStore('combat', () => {
   }
 
   return {
-    garrisoned, completedStrongholds, garrisonProduction,
-    availableStrongholds, resolveBattle, garrison, ungarrison, garrisonIdleReward,
-    reset, serialize, hydrate,
+    garrisoned,
+    completedStrongholds,
+    garrisonProduction,
+    availableStrongholds,
+    resolveBattle,
+    garrison,
+    ungarrison,
+    garrisonIdleReward,
+    reset,
+    serialize,
+    hydrate,
   }
 })

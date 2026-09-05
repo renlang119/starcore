@@ -41,7 +41,7 @@ const emit = defineEmits<{
   padding: var(--space-3) var(--space-4);
   max-width: 260px;
   z-index: 60;
-  animation: floatUp .3s var(--ease-out);
+  animation: floatUp 0.3s var(--ease-out);
 }
 .onboard-title {
   font-size: var(--text-sm);
@@ -91,7 +91,7 @@ const emit = defineEmits<{
 
 @media (prefers-reduced-motion: reduce) {
   .onboard-bubble {
-    animation: fadeIn .15s ease;
+    animation: fadeIn 0.15s ease;
   }
 }
 </style>

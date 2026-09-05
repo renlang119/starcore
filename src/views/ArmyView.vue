@@ -16,7 +16,12 @@ const trainCount = ref<Record<UnitId, number>>({ assault: 0, guard: 0, heavy: 0,
 const selectedFormation = ref(0)
 
 // 全入/全撤确认（大数量操作需确认）
-const pendingBulkAction = ref<{ type: 'assign' | 'remove'; fid: string; uid: UnitId; count: number } | null>(null)
+const pendingBulkAction = ref<{
+  type: 'assign' | 'remove'
+  fid: string
+  uid: UnitId
+  count: number
+} | null>(null)
 const showBulkModal = computed(() => !!pendingBulkAction.value)
 
 // P3-3 onboarding
@@ -29,7 +34,9 @@ function confirmBulkAction() {
   else doRemoveAll(a.fid, a.uid)
   pendingBulkAction.value = null
 }
-function cancelBulkAction() { pendingBulkAction.value = null }
+function cancelBulkAction() {
+  pendingBulkAction.value = null
+}
 
 const completedTechs = computed(() => game.research.completed)
 const atkMult = computed(() => game.atkMult)
@@ -43,9 +50,10 @@ function tryTrain(unitId: UnitId) {
   const count = trainCount.value[unitId]
   if (count <= 0) return
   game.military.startTraining(
-    unitId, count,
+    unitId,
+    count,
     (c) => game.resources.canAfford(c),
-    (c) => game.resources.spendCost(c),
+    (c) => game.resources.spendCost(c)
   )
 }
 
@@ -132,33 +140,65 @@ function removeAll(fid: string, uid: UnitId) {
     <div class="power-bar">
       <div class="power-item">
         <span class="p-label">总攻击</span>
-        <span class="p-value font-mono" style="color: var(--color-alert)">{{ fmt(totalPower.atk) }}</span>
+        <span class="p-value font-mono" style="color: var(--color-alert)">{{
+          fmt(totalPower.atk)
+        }}</span>
       </div>
       <div class="power-item">
         <span class="p-label">总防御</span>
-        <span class="p-value font-mono" style="color: var(--color-core)">{{ fmt(totalPower.def) }}</span>
+        <span class="p-value font-mono" style="color: var(--color-core)">{{
+          fmt(totalPower.def)
+        }}</span>
       </div>
       <div class="power-item">
         <span class="p-label">总兵力</span>
-        <span class="p-value font-mono" style="color: var(--color-quantum)">{{ fmt(totalPower.hp) }}</span>
+        <span class="p-value font-mono" style="color: var(--color-quantum)">{{
+          fmt(totalPower.hp)
+        }}</span>
       </div>
     </div>
 
     <!-- Tab 切换 -->
     <div class="tabs">
-      <button class="tab" :class="{ active: activeTab === 'barracks' }" @click="activeTab = 'barracks'">兵营</button>
-      <button class="tab" :class="{ active: activeTab === 'formation' }" @click="activeTab = 'formation'">编组</button>
+      <button
+        class="tab"
+        :class="{ active: activeTab === 'barracks' }"
+        @click="activeTab = 'barracks'"
+      >
+        兵营
+      </button>
+      <button
+        class="tab"
+        :class="{ active: activeTab === 'formation' }"
+        @click="activeTab = 'formation'"
+      >
+        编组
+      </button>
     </div>
 
     <!-- 兵营：训练 -->
     <div v-if="activeTab === 'barracks'" class="barracks">
-      <div v-for="u in UNITS" :key="u.id" class="unit-card" :class="{ locked: !game.military.isUnlocked(u, completedTechs) }">
+      <div
+        v-for="u in UNITS"
+        :key="u.id"
+        class="unit-card"
+        :class="{ locked: !game.military.isUnlocked(u, completedTechs) }"
+      >
         <div class="u-head">
-          <div class="u-icon" :style="{ color: u.rarity === 'rare' ? 'var(--color-amber)' : 'var(--color-t-primary)' }">
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true"><use :href="'#' + u.icon" /></svg>
+          <div
+            class="u-icon"
+            :style="{
+              color: u.rarity === 'rare' ? 'var(--color-amber)' : 'var(--color-t-primary)',
+            }"
+          >
+            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+              <use :href="'#' + u.icon" />
+            </svg>
           </div>
           <div class="u-info">
-            <div class="u-name">{{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span></div>
+            <div class="u-name">
+              {{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span>
+            </div>
             <div class="u-count font-mono">已拥有：{{ game.military.getOwned(u.id) }}</div>
           </div>
         </div>
@@ -168,7 +208,9 @@ function removeAll(fid: string, uid: UnitId) {
           <span class="stat">攻 {{ getUnitPower(u.id).atk }}</span>
           <span class="stat">防 {{ getUnitPower(u.id).def }}</span>
           <span class="stat">HP {{ getUnitPower(u.id).hp }}</span>
-          <span class="stat counter">克制 {{ u.counters.map(c => getUnit(c)?.name ?? c).join('/') }}</span>
+          <span class="stat counter"
+            >克制 {{ u.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
+          >
         </div>
 
         <div v-if="!game.military.isUnlocked(u, completedTechs)" class="u-locked">
@@ -177,8 +219,15 @@ function removeAll(fid: string, uid: UnitId) {
         <template v-else>
           <!-- 训练数量 -->
           <div class="train-control">
-            <button class="count-btn" @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 10)">-10</button>
-            <button class="count-btn" @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 1)">-1</button>
+            <button
+              class="count-btn"
+              @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 10)"
+            >
+              -10
+            </button>
+            <button class="count-btn" @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 1)">
+              -1
+            </button>
             <span class="count-display font-mono">{{ trainCount[u.id] }}</span>
             <button class="count-btn" @click="trainCount[u.id] += 1">+1</button>
             <button class="count-btn" @click="trainCount[u.id] += 10">+10</button>
@@ -190,7 +239,15 @@ function removeAll(fid: string, uid: UnitId) {
             <span class="time-tag font-mono">{{ u.trainTime * trainCount[u.id] }}s</span>
           </div>
 
-          <button class="btn-accent block" style="--accent: var(--color-alert)" :disabled="trainCount[u.id] === 0 || !game.resources.canAfford(getUnitCost(u.id, trainCount[u.id]))" @click="tryTrain(u.id)">
+          <button
+            class="btn-accent block"
+            style="--accent: var(--color-alert)"
+            :disabled="
+              trainCount[u.id] === 0 ||
+              !game.resources.canAfford(getUnitCost(u.id, trainCount[u.id]))
+            "
+            @click="tryTrain(u.id)"
+          >
             训练
           </button>
         </template>
@@ -200,9 +257,14 @@ function removeAll(fid: string, uid: UnitId) {
       <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
         <h3 class="section-title">训练中</h3>
         <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">
-          <span class="q-name">{{ getUnit(task.unitId)?.name ?? task.unitId }} ×{{ task.count }}</span>
+          <span class="q-name"
+            >{{ getUnit(task.unitId)?.name ?? task.unitId }} ×{{ task.count }}</span
+          >
           <div class="q-bar">
-            <div class="q-fill" :style="{ width: ((1 - task.remaining / task.totalTime) * 100) + '%' }"></div>
+            <div
+              class="q-fill"
+              :style="{ width: (1 - task.remaining / task.totalTime) * 100 + '%' }"
+            ></div>
           </div>
           <span class="q-time font-mono">{{ Math.ceil(task.remaining) }}s</span>
         </div>
@@ -211,16 +273,26 @@ function removeAll(fid: string, uid: UnitId) {
 
     <!-- 编组 -->
     <div v-else class="formation-view">
-      <div v-for="(f, idx) in formations" :key="f.id" class="formation-card" :class="{ selected: selectedFormation === idx }" @click="selectedFormation = idx">
+      <div
+        v-for="(f, idx) in formations"
+        :key="f.id"
+        class="formation-card"
+        :class="{ selected: selectedFormation === idx }"
+        @click="selectedFormation = idx"
+      >
         <div class="f-head">
           <span class="f-name">{{ f.name }}</span>
-          <span class="f-power font-mono">战力 {{ game.military.formationPower(f, atkMult, defMult).atk }}</span>
+          <span class="f-power font-mono"
+            >战力 {{ game.military.formationPower(f, atkMult, defMult).atk }}</span
+          >
         </div>
         <div class="f-units">
           <div v-for="u in UNITS" :key="u.id" class="f-unit-row">
             <div class="fu-top">
               <div class="fu-info">
-                <svg style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true"><use :href="'#' + u.icon" /></svg>
+                <svg style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true">
+                  <use :href="'#' + u.icon" />
+                </svg>
                 <span class="fu-name">{{ u.name }}</span>
               </div>
               <div class="fu-numbers">
@@ -229,12 +301,48 @@ function removeAll(fid: string, uid: UnitId) {
               </div>
             </div>
             <div class="fu-controls">
-              <button class="fu-btn" :disabled="f.units[u.id] <= 0" @click.stop="removeCount(f.id, u.id, 10)">-10</button>
-              <button class="fu-btn" :disabled="f.units[u.id] <= 0" @click.stop="removeCount(f.id, u.id, 1)">-1</button>
-              <button class="fu-btn" :disabled="game.military.getOwned(u.id) <= 0" @click.stop="assignCount(f.id, u.id, 1)">+1</button>
-              <button class="fu-btn" :disabled="game.military.getOwned(u.id) <= 0" @click.stop="assignCount(f.id, u.id, 10)">+10</button>
-              <button class="fu-btn fu-btn-wide" :disabled="game.military.getOwned(u.id) <= 0" @click.stop="assignAll(f.id, u.id)">全入</button>
-              <button class="fu-btn fu-btn-wide fu-btn-remove" :disabled="f.units[u.id] <= 0" @click.stop="removeAll(f.id, u.id)">全撤</button>
+              <button
+                class="fu-btn"
+                :disabled="f.units[u.id] <= 0"
+                @click.stop="removeCount(f.id, u.id, 10)"
+              >
+                -10
+              </button>
+              <button
+                class="fu-btn"
+                :disabled="f.units[u.id] <= 0"
+                @click.stop="removeCount(f.id, u.id, 1)"
+              >
+                -1
+              </button>
+              <button
+                class="fu-btn"
+                :disabled="game.military.getOwned(u.id) <= 0"
+                @click.stop="assignCount(f.id, u.id, 1)"
+              >
+                +1
+              </button>
+              <button
+                class="fu-btn"
+                :disabled="game.military.getOwned(u.id) <= 0"
+                @click.stop="assignCount(f.id, u.id, 10)"
+              >
+                +10
+              </button>
+              <button
+                class="fu-btn fu-btn-wide"
+                :disabled="game.military.getOwned(u.id) <= 0"
+                @click.stop="assignAll(f.id, u.id)"
+              >
+                全入
+              </button>
+              <button
+                class="fu-btn fu-btn-wide fu-btn-remove"
+                :disabled="f.units[u.id] <= 0"
+                @click.stop="removeAll(f.id, u.id)"
+              >
+                全撤
+              </button>
             </div>
           </div>
         </div>
@@ -242,88 +350,318 @@ function removeAll(fid: string, uid: UnitId) {
     </div>
 
     <!-- 批量操作确认弹窗 -->
-    <ModalOverlay v-model="showBulkModal" :aria-label="pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤'" @overlay-click="cancelBulkAction">
-      <h2 class="confirm-title font-display">{{ pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤' }}</h2>
+    <ModalOverlay
+      v-model="showBulkModal"
+      :aria-label="pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤'"
+      @overlay-click="cancelBulkAction"
+    >
+      <h2 class="confirm-title font-display">
+        {{ pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤' }}
+      </h2>
       <p class="confirm-desc">
-        即将{{ pendingBulkAction?.type === 'assign' ? '编入' : '撤出' }} <span class="font-mono" style="color: var(--color-alert)">{{ pendingBulkAction?.count }}</span> 名士兵
+        即将{{ pendingBulkAction?.type === 'assign' ? '编入' : '撤出' }}
+        <span class="font-mono" style="color: var(--color-alert)">{{
+          pendingBulkAction?.count
+        }}</span>
+        名士兵
       </p>
       <div class="confirm-actions">
         <button class="btn-secondary" style="flex: 1" @click="cancelBulkAction">取消</button>
-        <button class="btn-accent" style="flex: 1; --accent: var(--color-alert)" @click="confirmBulkAction">确认</button>
+        <button
+          class="btn-accent"
+          style="flex: 1; --accent: var(--color-alert)"
+          @click="confirmBulkAction"
+        >
+          确认
+        </button>
       </div>
     </ModalOverlay>
   </div>
 </template>
 
 <style scoped>
-.army-view { display: flex; flex-direction: column; gap: var(--space-4); animation: screenIn .4s var(--ease-out); }
-.page-title { color: var(--color-alert); }
+.army-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: screenIn 0.4s var(--ease-out);
+}
+.page-title {
+  color: var(--color-alert);
+}
 
-.power-bar { display: flex; gap: var(--space-2); }
+.power-bar {
+  display: flex;
+  gap: var(--space-2);
+}
 .power-item {
-  flex: 1; background: var(--color-surface); border: 1px solid var(--color-border-line);
-  border-radius: var(--radius-md); padding: var(--space-3); text-align: center;
+  flex: 1;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: center;
 }
-.p-label { display: block; font-size: var(--text-xs); color: var(--color-t-secondary); }
-.p-value { font-size: var(--text-base); font-weight: 700; }
+.p-label {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.p-value {
+  font-size: var(--text-base);
+  font-weight: 700;
+}
 
-.tabs { display: flex; gap: var(--space-2); }
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+}
 .tab {
-  flex: 1; padding: var(--space-3); border-radius: var(--radius-md);
-  background: var(--color-surface); border: 1px solid var(--color-border-line);
-  font-size: var(--text-sm); font-weight: 500; color: var(--color-t-secondary);
+  flex: 1;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-t-secondary);
 }
-.tab.active { background: var(--color-alert); color: var(--color-on-core); border-color: var(--color-alert); }
+.tab.active {
+  background: var(--color-alert);
+  color: var(--color-on-core);
+  border-color: var(--color-alert);
+}
 
-.unit-card { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-lg); padding: var(--space-3); }
-.unit-card.locked { opacity: .5; }
-.u-head { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
-.u-icon { width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--color-elevated); display: flex; align-items: center; justify-content: center; }
-.u-name { font-size: var(--text-sm); font-weight: 600; }
-.rare-tag { font-size: var(--text-xs); padding: 1px var(--space-1); background: var(--color-amber); color: var(--color-void); border-radius: 3px; }
-.u-count { font-size: var(--text-xs); color: var(--color-t-secondary); }
-.u-desc { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-2); }
-.u-stats { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
-.stat.counter { color: var(--color-amber); }
+.unit-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.unit-card.locked {
+  opacity: 0.5;
+}
+.u-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+.u-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.u-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.rare-tag {
+  font-size: var(--text-xs);
+  padding: 1px var(--space-1);
+  background: var(--color-amber);
+  color: var(--color-void);
+  border-radius: 3px;
+}
+.u-count {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.u-desc {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.u-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.stat.counter {
+  color: var(--color-amber);
+}
 
-.train-control { display: flex; align-items: center; justify-content: center; gap: var(--space-2); margin-bottom: var(--space-2); }
-.count-btn { width: 36px; height: 28px; border-radius: var(--radius-sm); background: var(--color-elevated); font-size: var(--text-xs); font-weight: 600; }
-.count-display { min-width: 32px; text-align: center; font-size: var(--text-sm); font-weight: 700; }
+.train-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.count-btn {
+  width: 36px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--color-elevated);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.count-display {
+  min-width: 32px;
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
 
-.u-cost { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-2); }
+.u-cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
 
-.u-locked { font-size: var(--text-xs); color: var(--color-locked); text-align: center; padding: var(--space-2); }  /* P2-7 */
+.u-locked {
+  font-size: var(--text-xs);
+  color: var(--color-locked);
+  text-align: center;
+  padding: var(--space-2);
+} /* P2-7 */
 
-.train-queue { margin-top: var(--space-2); }
-.queue-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-md); margin-bottom: var(--space-2); }
-.q-name { font-size: var(--text-xs); flex-shrink: 0; width: 100px; }
-.q-bar { flex: 1; height: 4px; background: var(--color-elevated); border-radius: 2px; overflow: hidden; }
-.q-fill { height: 100%; background: var(--color-alert); transition: width .3s; }
-.q-time { font-size: var(--text-xs); color: var(--color-t-secondary); width: 32px; text-align: right; }
+.train-queue {
+  margin-top: var(--space-2);
+}
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+.q-name {
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+  width: 100px;
+}
+.q-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--color-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.q-fill {
+  height: 100%;
+  background: var(--color-alert);
+  transition: width 0.3s;
+}
+.q-time {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  width: 32px;
+  text-align: right;
+}
 
-.formation-card { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-lg); padding: var(--space-3); margin-bottom: var(--space-3); }
-.formation-card.selected { border-color: var(--color-alert); }
-.f-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2); }
-.f-name { font-size: var(--text-sm); font-weight: 600; }
-.f-power { font-size: var(--text-xs); color: var(--color-alert); }
-.f-unit-row { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-line); }
-.f-unit-row:last-child { border-bottom: none; }
-.fu-top { display: flex; justify-content: space-between; align-items: center; }
-.fu-info { display: flex; align-items: center; gap: var(--space-2); }
-.fu-name { font-size: var(--text-xs); }
-.fu-numbers { display: flex; gap: var(--space-2); font-size: var(--text-xs); color: var(--color-t-secondary); }
-.fu-owned { color: var(--color-t-tertiary); }
-.fu-count { color: var(--color-alert); font-weight: 600; }
-.fu-controls { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.fu-btn { min-width: 36px; height: 28px; padding: 0 var(--space-2); border-radius: var(--radius-sm); background: var(--color-elevated); font-size: var(--text-xs); font-weight: 600; }
-.fu-btn:disabled { opacity: .4; }
-.fu-btn-wide { min-width: 42px; }
-.fu-btn-remove { color: var(--color-alert); }
+.formation-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.formation-card.selected {
+  border-color: var(--color-alert);
+}
+.f-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+.f-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.f-power {
+  font-size: var(--text-xs);
+  color: var(--color-alert);
+}
+.f-unit-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-line);
+}
+.f-unit-row:last-child {
+  border-bottom: none;
+}
+.fu-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.fu-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.fu-name {
+  font-size: var(--text-xs);
+}
+.fu-numbers {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.fu-owned {
+  color: var(--color-t-tertiary);
+}
+.fu-count {
+  color: var(--color-alert);
+  font-weight: 600;
+}
+.fu-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.fu-btn {
+  min-width: 36px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-elevated);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.fu-btn:disabled {
+  opacity: 0.4;
+}
+.fu-btn-wide {
+  min-width: 42px;
+}
+.fu-btn-remove {
+  color: var(--color-alert);
+}
 
 /* 批量操作确认弹窗 */
-.confirm-title { font-size: var(--text-base); font-weight: 700; color: var(--color-alert); text-align: center; margin-bottom: var(--space-2); }
-.confirm-desc { font-size: var(--text-sm); color: var(--color-t-secondary); text-align: center; margin-bottom: var(--space-4); }
-.confirm-actions { display: flex; gap: var(--space-2); }
+.confirm-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-alert);
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+.confirm-desc {
+  font-size: var(--text-sm);
+  color: var(--color-t-secondary);
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+.confirm-actions {
+  display: flex;
+  gap: var(--space-2);
+}
 
 /* P3-3 onboarding */
 .onboard-army {

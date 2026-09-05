@@ -23,7 +23,7 @@ const items = computed(() =>
     enough: resources.canAfford({ [k]: v }),
     icon: resources.allMeta[k as keyof typeof resources.allMeta]?.icon ?? '',
     name: resources.allMeta[k as keyof typeof resources.allMeta]?.name ?? k,
-  })),
+  }))
 )
 </script>
 

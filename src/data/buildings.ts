@@ -13,10 +13,10 @@ export interface BuildingDef {
   name: string
   desc: string
   sector: SectorId
-  icon: string              // svg symbol id
+  icon: string // svg symbol id
   /** 基础成本 {资源: 数量}，每级按 costGrowth 增长 */
   baseCost: Partial<Record<ResourceType, number>>
-  costGrowth: number        // 成本增长系数，默认 1.15
+  costGrowth: number // 成本增长系数，默认 1.15
   /** 产出 {资源: 每秒} per level */
   produces: Partial<Record<ResourceType, number>>
   /** 解锁条件：前置科技 id */
@@ -27,7 +27,10 @@ export interface BuildingDef {
   tier: number
 }
 
-export const SECTORS: Record<SectorId, { id: SectorId; name: string; desc: string; color: string }> = {
+export const SECTORS: Record<
+  SectorId,
+  { id: SectorId; name: string; desc: string; color: string }
+> = {
   energy: { id: 'energy', name: '能量扇区', desc: '采集星核能量', color: '#00E5FF' },
   crystal: { id: 'crystal', name: '晶体扇区', desc: '开采硅基晶体', color: '#2EE6A0' },
   alloy: { id: 'alloy', name: '合金扇区', desc: '精炼稀有合金', color: '#FFB627' },
@@ -79,7 +82,7 @@ export const BUILDINGS: BuildingDef[] = [
     sector: 'energy',
     icon: 'i-bld-dyson',
     baseCost: { energy: 50000, crystal: 10000, alloy: 1000 },
-    costGrowth: 1.10,
+    costGrowth: 1.1,
     produces: { energy: 300 },
     requires: 'dyson_theory',
     tier: 4,
@@ -128,7 +131,7 @@ export const BUILDINGS: BuildingDef[] = [
     sector: 'crystal',
     icon: 'i-bld-silicon-ring',
     baseCost: { energy: 50000, crystal: 10000, alloy: 1000 },
-    costGrowth: 1.10,
+    costGrowth: 1.1,
     produces: { crystal: 15.0 },
     requires: 'silicon_ring_theory',
     tier: 4,
@@ -154,7 +157,7 @@ export const BUILDINGS: BuildingDef[] = [
     icon: 'i-bld-nano-forge',
     baseCost: { energy: 2000, crystal: 400, alloy: 60 },
     costGrowth: 1.15,
-    produces: { alloy: 0.30 },
+    produces: { alloy: 0.3 },
     requires: 'nano_forge_tech',
     tier: 2,
   },
@@ -177,7 +180,7 @@ export const BUILDINGS: BuildingDef[] = [
     sector: 'alloy',
     icon: 'i-bld-stellar-forge',
     baseCost: { energy: 250000, crystal: 50000, alloy: 8000, dark: 10 },
-    costGrowth: 1.10,
+    costGrowth: 1.1,
     produces: { alloy: 5.0 },
     requires: 'stellar_forge_theory',
     tier: 4,
@@ -226,7 +229,7 @@ export const BUILDINGS: BuildingDef[] = [
     sector: 'dark',
     icon: 'i-bld-dark-well',
     baseCost: { energy: 800000, alloy: 30000, dark: 200, crystal: 5000 },
-    costGrowth: 1.10,
+    costGrowth: 1.1,
     produces: { dark: 0.25 },
     requires: 'dark_singularity_well_theory',
     tier: 4,
@@ -275,7 +278,7 @@ export const BUILDINGS: BuildingDef[] = [
     sector: 'data',
     icon: 'i-bld-holo-core',
     baseCost: { energy: 300000, alloy: 8000, data: 5000, dark: 15 },
-    costGrowth: 1.10,
+    costGrowth: 1.1,
     produces: { data: 10.0 },
     requires: 'holographic_computing',
     tier: 4,
@@ -293,7 +296,10 @@ export function buildingCost(def: BuildingDef, currentLevel: number): Record<str
   const result: Record<string, number> = {}
   const factor = D(def.costGrowth).pow(currentLevel)
   for (const [res, base] of Object.entries(def.baseCost)) {
-    result[res] = D(base as number).times(factor).ceil().toNumber()
+    result[res] = D(base as number)
+      .times(factor)
+      .ceil()
+      .toNumber()
   }
   return result
 }

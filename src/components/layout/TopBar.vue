@@ -15,7 +15,15 @@ const flashState = ref<Record<string, boolean>>({})
 const prevAmounts: Record<string, string> = {}
 
 const resourceList = computed(() => {
-  const items: { id: string; name: string; icon: string; color: string; amount: string; rate: string; flash: boolean }[] = []
+  const items: {
+    id: string
+    name: string
+    icon: string
+    color: string
+    amount: string
+    rate: string
+    flash: boolean
+  }[] = []
   for (const [id, meta] of Object.entries(res.allMeta)) {
     const amountStr = fmt(res.getAmount(id as ResourceType))
     items.push({
@@ -39,7 +47,9 @@ watchEffect(() => {
     const prev = prevAmounts[id]
     if (prev !== undefined && prev !== amountStr) {
       flashState.value[id] = true
-      setTimeout(() => { flashState.value[id] = false }, 300)
+      setTimeout(() => {
+        flashState.value[id] = false
+      }, 300)
     }
     prevAmounts[id] = amountStr
   }
@@ -69,7 +79,13 @@ const { particles } = useResourceParticles(getPositiveRateResources)
         :class="{ flash: r.flash }"
         :style="{ '--c': r.color }"
       >
-        <svg class="r-icon" style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true"><use :href="'#' + r.icon" /></svg>
+        <svg
+          class="r-icon"
+          style="width: var(--icon-sm); height: var(--icon-sm)"
+          aria-hidden="true"
+        >
+          <use :href="'#' + r.icon" />
+        </svg>
         <span class="r-amount font-mono">{{ r.amount }}</span>
         <span class="r-rate font-mono" :style="{ color: r.color }">{{ r.rate }}</span>
         <!-- P3-6 资源产出粒子 -->
@@ -107,9 +123,13 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   color: var(--color-core);
   white-space: nowrap;
 }
-.brand { display: none; }
+.brand {
+  display: none;
+}
 @media (max-width: 767px) {
-  .brand { display: block; }
+  .brand {
+    display: block;
+  }
 }
 .res-strip {
   display: flex;
@@ -123,7 +143,9 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   padding: 0;
   position: relative;
 }
-.res-strip::-webkit-scrollbar { display: none; }
+.res-strip::-webkit-scrollbar {
+  display: none;
+}
 .res-pill {
   position: relative; /* P3-6 粒子定位基准 */
   display: flex;
@@ -135,9 +157,14 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   border-radius: var(--radius-pill);
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background .15s var(--ease-out), box-shadow .15s var(--ease-out);
+  transition:
+    background 0.15s var(--ease-out),
+    box-shadow 0.15s var(--ease-out);
 }
-.r-icon { color: var(--c); flex-shrink: 0; }
+.r-icon {
+  color: var(--c);
+  flex-shrink: 0;
+}
 .r-amount {
   font-size: var(--text-sm);
   font-weight: 600;
@@ -146,26 +173,26 @@ const { particles } = useResourceParticles(getPositiveRateResources)
 /* P2-10 产出率字号优化 — 较数值更小、更淡，建立视觉层级 */
 .r-rate {
   font-size: var(--text-xs);
-  opacity: .55;
+  opacity: 0.55;
   font-weight: 400;
 }
 .version-tag {
   flex-shrink: 0;
   font-size: var(--text-xs);
   color: var(--color-t-secondary);
-  opacity: .6;
+  opacity: 0.6;
   white-space: nowrap;
   user-select: none;
 }
 
 /* P2-5 资源变化高亮 — 0.3s 短暂变绿过渡 */
 .res-pill.flash .r-amount {
-  animation: resFlash .3s var(--ease-out);
+  animation: resFlash 0.3s var(--ease-out);
 }
 @keyframes resFlash {
   0% {
     color: var(--color-quantum);
-    text-shadow: 0 0 6px rgba(46, 230, 160, .6);
+    text-shadow: 0 0 6px rgba(46, 230, 160, 0.6);
   }
   100% {
     color: var(--color-t-primary);
@@ -176,7 +203,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
 /* P2-10 窄屏渐变遮罩提示可滑动 */
 @media (max-width: 767px) {
   .res-strip::after {
-    content: "";
+    content: '';
     position: sticky;
     right: 0;
     flex: 0 0 16px;
@@ -184,7 +211,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
     width: 16px;
     height: 100%;
     min-height: 32px;
-    background: linear-gradient(to right, transparent, rgba(5, 7, 13, .9));
+    background: linear-gradient(to right, transparent, rgba(5, 7, 13, 0.9));
     pointer-events: none;
     z-index: 2;
   }
@@ -201,7 +228,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   background: var(--c, var(--color-core));
   box-shadow: 0 0 4px var(--c, var(--color-core));
   pointer-events: none;
-  animation: particleRise .8s var(--ease-out) forwards;
+  animation: particleRise 0.8s var(--ease-out) forwards;
   z-index: 1;
 }
 @media (prefers-reduced-motion: reduce) {
