@@ -68,11 +68,37 @@ export interface PlayerSaveData {
   name: string
 }
 
+/**
+ * 成就存档（v7+）。旧档（v6 及以前）无此字段，hydrate 时终身计数从零起算，
+ * 历史产量不追溯（无数据来源）。
+ */
+export interface AchievementsSaveData {
+  lifetime: {
+    /** 终身累计能量/暗物质产出（Decimal 字符串） */
+    energy: string
+    dark: string
+    /** 终身建筑升级次数 */
+    upgrades: number
+    /** 终身单建筑最高等级 */
+    maxBuildingLevel: number
+    /** 终身研究完成次数 */
+    researches: number
+    /** 终身探索完成次数 */
+    explores: number
+    /** 终身据点攻克次数 */
+    battles: number
+  }
+  /** 已解锁成就：id → 解锁时间戳（ms） */
+  unlocked: Record<string, number>
+}
+
 /** 全量存档接口 */
 export interface SaveData {
   version: number
   savedAt: number
   player: PlayerSaveData
+  /** 终身游玩时长（秒）。v7 起入档（此前刷新归零）；旧档缺失时按 0 处理 */
+  totalPlayTime?: number
   resources: ResourceSaveData
   buildings: BuildingSaveData
   research: ResearchSaveData
@@ -81,6 +107,8 @@ export interface SaveData {
   exploration: ExplorationSaveData
   relics: RelicSaveData
   transcend: TranscendSaveData
+  /** v7 起新增；旧档缺失，hydrate 自动取默认空值 */
+  achievements?: AchievementsSaveData
 }
 
 /** 写入存档（IndexedDB + localStorage 备份，均带 checksum） */
@@ -201,6 +229,12 @@ function validateSaveData(data: unknown): data is SaveData {
   if (typeof d.version !== 'number' || !isFinite(d.version) || d.version < 1) return false
   if (typeof d.savedAt !== 'number' || !isFinite(d.savedAt) || d.savedAt < 0) return false
   if (d.player != null && !_isObject(d.player)) return false
+  // totalPlayTime（v7+ 可选字段）：存在则必须是非负有限数字
+  if (
+    d.totalPlayTime !== undefined &&
+    (typeof d.totalPlayTime !== 'number' || !isFinite(d.totalPlayTime) || d.totalPlayTime < 0)
+  )
+    return false
 
   // resources: amounts/totals 必须是非负有限数字字符串
   if (!_isObject(d.resources)) return false
@@ -283,6 +317,24 @@ function validateSaveData(data: unknown): data is SaveData {
     })
   )
     return false
+
+  // achievements（v7+ 可选字段）：存在则校验结构；id 白名单在 hydrate 层过滤
+  if (d.achievements !== undefined) {
+    if (!_isObject(d.achievements)) return false
+    const ach = d.achievements as Record<string, unknown>
+    if (!_isObject(ach.lifetime)) return false
+    const lt = ach.lifetime as Record<string, unknown>
+    for (const k of ['energy', 'dark']) {
+      if (typeof lt[k] !== 'string' || !_isNonNegNumberStr(lt[k])) return false
+    }
+    for (const k of ['upgrades', 'maxBuildingLevel', 'researches', 'explores', 'battles']) {
+      if (typeof lt[k] !== 'number' || !isFinite(lt[k]) || (lt[k] as number) < 0) return false
+    }
+    if (!_isObject(ach.unlocked)) return false
+    for (const v of Object.values(ach.unlocked as Record<string, unknown>)) {
+      if (typeof v !== 'number' || !isFinite(v) || v < 0) return false
+    }
+  }
   return true
 }
 
@@ -291,12 +343,16 @@ function _isObject(v: unknown): v is Record<string, unknown> {
 }
 
 /** 检查值是非负有限数字字符串（如 "100", "3.14"）——拒绝 "Infinity", "-999", "NaN" */
+function _isNonNegNumberStr(v: unknown): boolean {
+  if (typeof v !== 'string') return false
+  const n = Number(v)
+  return isFinite(n) && n >= 0
+}
+
 function _isNonNegNumberStrRecord(v: unknown): boolean {
   if (!_isObject(v)) return false
   for (const val of Object.values(v)) {
-    if (typeof val !== 'string') return false
-    const n = Number(val)
-    if (!isFinite(n) || n < 0) return false
+    if (!_isNonNegNumberStr(val)) return false
   }
   return true
 }

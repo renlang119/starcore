@@ -6,6 +6,7 @@ import TopBar from './TopBar.vue'
 import BottomNav from './BottomNav.vue'
 import SideNav from './SideNav.vue'
 import OfflineReport from './OfflineReport.vue'
+import AchievementToast from './AchievementToast.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -125,6 +126,9 @@ watch(
 
     <!-- 离线收益弹窗 -->
     <OfflineReport />
+
+    <!-- 成就解锁全局提示（v0.57） -->
+    <AchievementToast />
 
     <!-- 战斗页返回按钮——仅移动端 -->
     <div v-if="showBattleBack && !isDesktop" class="extra-nav">

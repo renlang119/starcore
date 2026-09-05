@@ -132,4 +132,100 @@ describe('storage export/import', () => {
     const result = await importSave(exported)
     expect(result.ok).toBe(false)
   })
+
+  // —— v0.57 成就字段校验 ——
+  it('importSave accepts v7 save with achievements + totalPlayTime', async () => {
+    const data = makeValidSaveData()
+    data.version = 7
+    data.totalPlayTime = 3600
+    data.achievements = {
+      lifetime: {
+        energy: '100000',
+        dark: '50',
+        upgrades: 12,
+        maxBuildingLevel: 5,
+        researches: 3,
+        explores: 4,
+        battles: 8,
+      },
+      unlocked: { ach_energy_1: 1700000000000 },
+    }
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.totalPlayTime).toBe(3600)
+      expect(result.data.achievements?.lifetime.energy).toBe('100000')
+    }
+  })
+
+  it('importSave accepts v6 save without achievements (旧档)', async () => {
+    const data = makeValidSaveData()
+    data.version = 6
+    delete data.achievements
+    delete data.totalPlayTime
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(true)
+  })
+
+  it('importSave rejects invalid achievements fields', async () => {
+    const bad = [
+      {
+        lifetime: {
+          energy: '-5',
+          dark: '0',
+          upgrades: 0,
+          maxBuildingLevel: 0,
+          researches: 0,
+          explores: 0,
+          battles: 0,
+        },
+        unlocked: {},
+      },
+      {
+        lifetime: {
+          energy: '0',
+          dark: '0',
+          upgrades: -1,
+          maxBuildingLevel: 0,
+          researches: 0,
+          explores: 0,
+          battles: 0,
+        },
+        unlocked: {},
+      },
+      {
+        lifetime: {
+          energy: '0',
+          dark: '0',
+          upgrades: 0,
+          maxBuildingLevel: 0,
+          researches: 0,
+          explores: 0,
+          battles: 0,
+        },
+        unlocked: { ach_energy_1: -1 },
+      },
+    ]
+    for (const ach of bad) {
+      const data = makeValidSaveData()
+      data.version = 7
+      data.achievements = ach as typeof data.achievements
+      const exported = await exportSave(data)
+      const result = await importSave(exported)
+      expect(result.ok, `achievements=${JSON.stringify(ach).slice(0, 80)} should be rejected`).toBe(
+        false
+      )
+    }
+  })
+
+  it('importSave rejects invalid totalPlayTime', async () => {
+    const data = makeValidSaveData()
+    data.version = 7
+    data.totalPlayTime = -100
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(false)
+  })
 })

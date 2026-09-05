@@ -76,6 +76,17 @@ describe('migrateSave — v5→v6 转生树 level 化', () => {
     expect(JSON.stringify(data.transcend.tree)).toBe(before)
   })
 
+  it('v6→v7 为 no-op（成就/时长字段缺失时 hydrate 自动默认）', () => {
+    const data = makeV5Save()
+    // 走完整迁移链 5→6→7：v5→v6 已把 tree 转 level 格式
+    migrateSave(data, 7)
+    expect(data.version).toBe(7)
+    expect(data.achievements).toBeUndefined()
+    expect(data.totalPlayTime).toBeUndefined()
+    // 转生树 level 格式不受 v6→v7 影响
+    expect(data.transcend.tree.every((n) => 'level' in n)).toBe(true)
+  })
+
   it('更低版本档走完整迁移链到 v6（v1 起步）', () => {
     const data = makeV5Save()
     data.version = 1

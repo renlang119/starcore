@@ -16,6 +16,7 @@ import { useCombatStore } from './combat'
 import { useExplorationStore } from './exploration'
 import { useRelicsStore, setRelicSlotProvider } from './relics'
 import { useTranscendStore } from './transcend'
+import { useAchievementsStore, setAchievementExternalProviders } from './achievements'
 import {
   readSave,
   writeSave,
@@ -28,7 +29,7 @@ import {
 import { TECHS } from '@/data/tech'
 import type { ResourceType } from '@/data/buildings'
 
-const SAVE_VERSION = 6
+const SAVE_VERSION = 7
 const TICK_INTERVAL = 1000 // ms
 // 后台 tick 补算后，仅当离线时长超过此阈值才弹窗展示报告；
 // 低于阈值时静默补算资源/训练进度，避免浏览器对不活跃标签页 setInterval
@@ -44,9 +45,16 @@ export const useGameStore = defineStore('game', () => {
   const exploration = useExplorationStore()
   const relics = useRelicsStore()
   const transcend = useTranscendStore()
+  const achievements = useAchievementsStore()
 
   // 显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
+  // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
+  setAchievementExternalProviders({
+    relicsOwned: () => relics.ownedCount,
+    transcends: () => transcend.totalTranscends,
+    playtime: () => totalPlayTime.value,
+  })
   // 训练并行槽：基础 1 槽 + 科技加成（集群操练 I/II 各 +1），封顶 MAX_TRAINING_SLOTS
   setTrainingSlotProvider(() =>
     Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
@@ -66,6 +74,7 @@ export const useGameStore = defineStore('game', () => {
   effectSystem.register(research as EffectSource)
   effectSystem.register(relics as EffectSource)
   effectSystem.register(transcend as EffectSource)
+  effectSystem.register(achievements as EffectSource)
 
   // —— 计算全局乘数（5.1：改为 computed 缓存，仅在依赖变化时重算）——
   const productionMults = computed<Record<string, Decimal>>(() => {
@@ -95,6 +104,24 @@ export const useGameStore = defineStore('game', () => {
   // —— 计算属性直接暴露（已移除冗余包装函数）——
 
   // —— 主 tick ——
+  /**
+   * 成就终身计数采集：totals 差值快照法。
+   * resources.totals 记录本轮总产出（建筑 tick/探索奖励/战斗奖励/离线补算全部入 totals），
+   * 每 tick 取与上次快照的差值计入终身计数——单点采集覆盖全部产出通道。
+   * 转生会重置 totals（差值为负 → 钳 0）；hydrate/hardReset 时快照显式对齐。
+   */
+  const lifetimeTotalsSnapshot = { energy: D(0), dark: D(0) }
+  function collectLifetimeTotals(): void {
+    const curEnergy = resources.getTotal('energy')
+    const curDark = resources.getTotal('dark')
+    const dEnergy = curEnergy.minus(lifetimeTotalsSnapshot.energy)
+    const dDark = curDark.minus(lifetimeTotalsSnapshot.dark)
+    if (dEnergy.gt(0)) achievements.addEnergy(dEnergy)
+    if (dDark.gt(0)) achievements.addDark(dDark)
+    lifetimeTotalsSnapshot.energy = curEnergy
+    lifetimeTotalsSnapshot.dark = curDark
+  }
+
   function tick() {
     const now = Date.now()
     let dt = (now - lastTickTime.value) / 1000
@@ -138,7 +165,13 @@ export const useGameStore = defineStore('game', () => {
       for (const [res, v] of Object.entries(r.rewards)) {
         resources.gain(res as ResourceType, v as number)
       }
+      achievements.recordExplore()
     }
+
+    // 5. 成就：终身计数采集 + 解锁判定（31 条全表扫描，每秒一次开销可忽略）
+    // playtime 指标直接读 totalPlayTime 现值（转生不清、hardReset 才清），无需单独累计
+    collectLifetimeTotals()
+    achievements.checkAndUnlock()
   }
 
   // —— 自动存档 ——
@@ -176,6 +209,7 @@ export const useGameStore = defineStore('game', () => {
       version: SAVE_VERSION,
       savedAt: Date.now(),
       player: { ...player.value },
+      totalPlayTime: totalPlayTime.value,
       resources: resources.serialize(),
       buildings: buildings.serialize(),
       research: research.serialize(),
@@ -184,6 +218,7 @@ export const useGameStore = defineStore('game', () => {
       exploration: exploration.serialize(),
       relics: relics.serialize(),
       transcend: transcend.serialize(),
+      achievements: achievements.serialize(),
     }
   }
 
@@ -211,6 +246,14 @@ export const useGameStore = defineStore('game', () => {
     if (data.player) player.value = { ...player.value, ...data.player }
     // 恢复上次保存时间，否则 computeOfflineGains 会因 elapsed≈0 直接 return null
     if (data.savedAt) lastSaveTime.value = data.savedAt
+    // v7 起终身游玩时长入档；旧档缺失保持 0
+    if (
+      typeof data.totalPlayTime === 'number' &&
+      isFinite(data.totalPlayTime) &&
+      data.totalPlayTime >= 0
+    ) {
+      totalPlayTime.value = data.totalPlayTime
+    }
     resources.hydrate(data.resources)
     buildings.hydrate(data.buildings)
     research.hydrate(data.research)
@@ -219,6 +262,11 @@ export const useGameStore = defineStore('game', () => {
     exploration.hydrate(data.exploration)
     transcend.hydrate(data.transcend)
     relics.hydrate(data.relics)
+    achievements.hydrate(data.achievements)
+    // 终身计数快照对齐已恢复的 totals——否则首个 tick 会把整轮历史产量
+    // 当作增量重复计入终身计数
+    lifetimeTotalsSnapshot.energy = resources.getTotal('energy')
+    lifetimeTotalsSnapshot.dark = resources.getTotal('dark')
   }
 
   // —— 离线收益 ——
@@ -279,6 +327,9 @@ export const useGameStore = defineStore('game', () => {
     exploration.reset()
     relics.reset()
     transcend.reset(true)
+    achievements.reset()
+    lifetimeTotalsSnapshot.energy = D(0)
+    lifetimeTotalsSnapshot.dark = D(0)
     offlineReport.value = null
     totalPlayTime.value = 0
     // 给初始资源
@@ -309,6 +360,11 @@ export const useGameStore = defineStore('game', () => {
   function doTranscend(): boolean {
     const gain = previewTranscendGain()
     if (gain.lt(1)) return false
+    // 成就终身计数：转生前先把本轮未采集的 totals 增量收进终身计数，
+    // 再把快照归零对齐 reset 后的 totals（否则差值为负被钳掉，白丢一段计数）
+    collectLifetimeTotals()
+    lifetimeTotalsSnapshot.energy = D(0)
+    lifetimeTotalsSnapshot.dark = D(0)
     // 执行转生
     transcend.transcend(gain)
     // 重置非保留项
@@ -325,6 +381,8 @@ export const useGameStore = defineStore('game', () => {
     if (startingMult > 0) {
       resources.setAmount('energy', 50 * startingMult)
     }
+    // 转生次数类成就即时判定（不等下一个 tick）
+    achievements.checkAndUnlock()
     return true
   }
 
@@ -337,6 +395,7 @@ export const useGameStore = defineStore('game', () => {
     const cost = buildings.getCost(id)
     if (!resources.spendCost(cost)) return false // spendCost 内部已含 canAfford 检查
     buildings.upgrade(id)
+    achievements.recordUpgrade(buildings.getLevel(id))
     return true
   }
 
@@ -352,6 +411,7 @@ export const useGameStore = defineStore('game', () => {
     if (!research.available(def)) return false
     if (!resources.spendCost(adjustedCost)) return false
     research.complete(id)
+    achievements.recordResearch()
     return true
   }
 
@@ -365,6 +425,7 @@ export const useGameStore = defineStore('game', () => {
     exploration,
     relics,
     transcend,
+    achievements,
     // meta
     lastSaveTime,
     isRunning,
