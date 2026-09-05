@@ -8,6 +8,11 @@ const routes = [
   { path: '/army', name: 'army', component: () => import('@/views/ArmyView.vue') },
   { path: '/relic', name: 'relic', component: () => import('@/views/RelicView.vue') },
   { path: '/prestige', name: 'prestige', component: () => import('@/views/PrestigeView.vue') },
+  {
+    path: '/achievements',
+    name: 'achievements',
+    component: () => import('@/views/AchievementsView.vue'),
+  },
   { path: '/battle/:id', name: 'battle', component: () => import('@/views/BattleView.vue') },
 ]
 

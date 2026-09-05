@@ -25,4 +25,11 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/prestige',
     tier: 'secondary',
   },
+  {
+    id: 'achievements',
+    label: '成就',
+    icon: 'i-ui-check',
+    path: '/achievements',
+    tier: 'secondary',
+  },
 ]
