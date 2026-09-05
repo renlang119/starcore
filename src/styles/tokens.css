@@ -1,0 +1,78 @@
+/* ============================================================
+   星核纪元 · 设计系统 Token（原生 CSS 自定义属性）
+   风格：cosmic sci-fi（深空底色 + 星核青蓝主色 + 琥珀稀有辅色）
+   ============================================================ */
+:root {
+  /* —— 表层（P0-3 明度梯度拉大） —— */
+  --color-void: #05070d;
+  --color-surface: #0e1424;
+  --color-elevated: #182238;
+  --color-hover: #1a2236;
+  --color-border-line: #243350;
+  --color-border-glow: #2a3a55;
+
+  /* —— 主色：星核青 —— */
+  --color-core: #00e5ff;
+  --color-core-dim: #00b8cc;
+  --color-core-deep: #006b7a;
+
+  /* —— 辅色（P0-4 quantum 饱和度对齐） —— */
+  --color-amber: #ffb627;
+  --color-quantum: #2ee6a0;
+  --color-alert: #f43f5e;
+  --color-plasma: #a78bfa;
+
+  /* —— 文本 —— */
+  --color-t-primary: #e8edf5;
+  --color-t-secondary: #8b96a8;
+  --color-t-tertiary: #6b7589; /* WCAG AA 4.5:1 对比度（vs --color-void #05070D） */
+  --color-on-core: #05070d;
+
+  /* —— 字体 —— */
+  --font-display: 'Orbitron', 'PingFang SC', 'HarmonyOS Sans SC', system-ui, sans-serif;
+  --font-body:
+    'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* —— 圆角 —— */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* —— 图标尺寸（P0-8 收敛 6 种为 4 种 Token） —— */
+  --icon-xs: 12px;
+  --icon-sm: 14px;
+  --icon-md: 18px;
+  --icon-lg: 24px;
+
+  /* —— 间距（P0-5，4px 基准，8 级线性阶梯） —— */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* —— 字号（P0-6，1:1.250 模数，Major Third，base 16px） —— */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 25px;
+  --text-2xl: 31px;
+  --text-display: 39px;
+
+  /* —— 动效 —— */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* —— Elevation 阴影（P2-6，三级深色 UI 专用） —— */
+  --elevation-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 8px rgba(0, 0, 0, 0.3);
+  --elevation-2: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 24px rgba(0, 0, 0, 0.4);
+  --elevation-3: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* —— 状态色（P2-7）—— */
+  --color-locked: #4a6b8a; /* 灰蓝，锁定态专用 */
+}

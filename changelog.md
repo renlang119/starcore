@@ -3,7 +3,45 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.54
+> 当前版本：v0.55
+
+---
+
+## v0.55 — 工程化: 全局样式模块化拆分 + UpgradeCountdown 归位 build/
+
+**变更性质：工程化（结构优化）**
+**开发时间：2026-09-05**
+
+### 概述
+
+style.css（763 行单文件）按职责拆为 src/styles/ 七个模块，style.css 改作
+@import 聚合入口；UpgradeCountdown 由通用 ui/ 目录归位至业务目录 build/。
+选择器级零改动。纯结构重构，样式内容、渲染输出与游戏行为零变化；存档不受影
+响。
+
+### 变更明细
+
+- `src/style.css` 拆分为聚合入口 + `src/styles/` 七模块：fonts（自托管字
+  体）、tokens（设计 Token）、base（重置+滚动条）、background（星点/星
+  云/暗角）、animations（keyframes+路由过渡）、utilities（工具类/布局/空态
+  /Modal/导航安全网/品牌名）、buttons（按钮系统）；@import 顺序保持原单文
+  件级联顺序
+- 清理 Token 段头注释中残留的「Tailwind 4 CSS-first」表述（v0.54 移除依赖
+  时漏网）
+- `UpgradeCountdown.vue`（632 行）自 `components/ui/` 移至
+  `components/build/`：该组件仅 BuildView 引用，属业务组件而非通用 UI；
+  BuildView import 路径同步更新
+- 校验：新旧 CSS 去注释排序 diff 仅两处预期注释行差异，选择器与声明零丢失
+
+### 验证
+
+- 新旧 CSS 实质内容 diff 校验通过（仅预期注释差异）
+- `pnpm build`（含 vue-tsc）通过
+- `pnpm test`：12 文件 86 用例全绿
+- `lint:check` / `format:check` 零输出
+- Playwright 回归四套全绿（release 双端八路由 / 空状态 / 训练槽位 / 行动队
+  列）
+- 部署后线上版本串核对一致
 
 ---
 

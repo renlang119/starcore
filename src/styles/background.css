@@ -1,0 +1,64 @@
+/* ============================================================
+   深空背景（星点 / 星云 / 暗角）
+   ============================================================ */
+
+/* 深空背景星点 — P2-2: 移至 DOM 元素以支持独立闪烁动画 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* P2-1 星云层 + 暗角 — 三层纵深：星点(底) → 星云+暗角(中) → 内容(顶) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    /* 星云团 1 — 青蓝色，左上区域 */
+    radial-gradient(
+      ellipse 80% 60% at 15% 20%,
+      rgba(0, 229, 255, 0.045) 0%,
+      rgba(0, 229, 255, 0.02) 40%,
+      transparent 70%
+    ),
+    /* 星云团 2 — 紫色，右下区域 */
+    radial-gradient(
+        ellipse 70% 50% at 85% 75%,
+        rgba(167, 139, 250, 0.04) 0%,
+        rgba(167, 139, 250, 0.015) 45%,
+        transparent 75%
+      ),
+    /* 星云团 3 — 琥珀色微染，中心偏下 */
+    radial-gradient(ellipse 60% 40% at 50% 90%, rgba(255, 182, 39, 0.025) 0%, transparent 60%);
+  /* 暗角：屏幕四周 inset 阴影 */
+  box-shadow:
+    inset 0 0 120px 40px rgba(5, 7, 13, 0.6),
+    inset 0 0 60px 20px rgba(5, 7, 13, 0.3);
+}
+
+/* P2-2 星点闪烁 */
+.star-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+/* 星点位置/颜色/动画参数由 AppShell.vue 内联 style 设置（v-for 生成） */
+
+#app {
+  position: relative;
+  z-index: 1;
+}
