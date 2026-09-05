@@ -1,9 +1,55 @@
 # 星核纪元 · 版本更新日志
 
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
-> 技术栈：Vue 3.5 + Vite 8 + Pinia 3 + TypeScript 6 + decimal.js 10 + localforage 1.10
+> 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.46
+> 当前版本：v0.47
+
+---
+
+## v0.47 — 工程化: 依赖升级与构建/测试工具链现代化
+
+**变更性质：工程化（依赖升级与工具链现代化）**
+**开发时间：2026-09-05**
+
+### 概述
+
+安全检查发现 dev 工具链 14 个已知漏洞（5 moderate + 9 high，均不进生产
+bundle），通过跨大版本升级根除；顺带将全部依赖升至锁定大版本内最新稳定版。
+升级后 pnpm audit 漏洞清零。
+
+### 变更明细
+
+- 跨大版本：
+  - eslint 9 → 10.10.0（连带 @eslint/js 10）
+  - vitest 3 → 5.0.0（连带 @vitest/coverage-v8 5）
+  - jsdom 29 → 30.0.1（消除 undici 信息泄露/CRLF 注入链）
+  - @vue/test-utils 2.4 → 2.5.0
+  - pinia 3 → 4.0.3（新增 @vue/devtools-api 8 peer）
+  - vue-router 4 → 6 内大版本 5.3.1
+- 锁定大版本内更新：
+  - vue 3.5.39 → 3.5.42、vite 8.1 → 8.2.2、vue-tsc 3.3.11、tailwindcss
+    4.3.3、prettier 3.9.6、typescript-eslint 8.69.0、eslint-plugin-vue
+    10.10.0、@types/node 24.x 最新
+- 传递依赖加固（pnpm overrides）：
+  - brace-expansion ≥5.0.9（DoS）、nanoid ≥3.3.18（死循环）、postcss
+    ≥8.5.23（不完整修复）
+- 评估后暂缓：
+  - typescript 7：typescript-eslint 8.69 peer 上限 <6.1.0，生态未跟进，待
+    其发版后升级
+- 兼容性：
+  - eslint 10 flat config 无需迁移，现有 eslint.config.js 直接兼容
+  - vitest 5 配置格式无变化，8 文件 67 用例全部通过
+  - pinia 4 API 向后兼容，9 个 store 无需改动
+  - vue-router 5 路由定义与守卫 API 兼容，8 路由 + 测试 stub 均正常
+
+### 验证
+
+- pnpm audit 漏洞清零（14 → 0）
+- vue-tsc -b 零错误 + vite build 通过（产物体积无实质变化）
+- vitest run 8 文件 67/67 通过；lint:check / format:check 零输出
+- Playwright 双端（preview + 线上）回归：八路由无 404/无 console error、移
+  动端 375px 无溢出、五页空状态专项 24/24 通过
 
 ---
 
