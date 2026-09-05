@@ -282,18 +282,12 @@ const actionQueue = computed<ActionItem[]>(() => {
     })
   }
 
-  // 6. 有训练中或可训练
-  if (game.military.trainingQueue.length > 0) {
-    items.push({
-      id: 'army-training',
-      label: `${game.military.trainingQueue.length} 支部队训练中`,
-      detail: '查看进度',
-      path: '/army',
-      color: '#F43F5E',
-      icon: 'i-nav-army',
-      status: 'actionable',
-    })
-  } else if (totalUnits.value > 0 || completedTechs.has('military_basic')) {
+  // 6. 可训练引导（无训练任务时显示；训练进度由上方进行中条目承担，
+  //    不再单独展示「N 支部队训练中」汇总卡——v0.49 起按 行动队列方案文档建议落地）
+  if (
+    game.military.trainingQueue.length === 0 &&
+    (totalUnits.value > 0 || completedTechs.has('military_basic'))
+  ) {
     items.push({
       id: 'army-train',
       label: '训练部队',
@@ -305,10 +299,14 @@ const actionQueue = computed<ActionItem[]>(() => {
     })
   }
 
-  // 排序：in-progress 优先 → actionable 按优先级（建筑 > 科技 > 探索 > 军事）
-  // actionable 已按插入顺序天然有序
-  // 限制最多 8 条
-  return items.slice(0, 8)
+  // 排序：in-progress 优先（插入序天然有序：探索 → 训练）→ actionable（建筑 > 科技 > 探索 > 军事）
+  // 截断：进行中全保留（天然上限 7 = 4 探索 + 3 训练槽，进度信息不丢）；
+  // 可执行补足至总数 ≤6（进行中 ≥6 时不显示可执行项）
+  const inProgress = items.filter((i) => i.status === 'in-progress')
+  const actionable = items
+    .filter((i) => i.status === 'actionable')
+    .slice(0, Math.max(0, 6 - inProgress.length))
+  return [...inProgress, ...actionable]
 })
 
 // 空状态
