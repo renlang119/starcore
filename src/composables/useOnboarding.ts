@@ -12,19 +12,21 @@
  */
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const STORAGE_KEY = 'sc_onboarding_v1'
+const STORAGE_KEY = 'starcore_onboarding'
 const TIMEOUT_MS = 10_000
 
 /** 所有引导流程 ID */
 export type OnboardingFlow = 'home' | 'build' | 'tech' | 'map' | 'army'
 
-/** 已完成 step 集合（跨页面共享） */
+/** 已完成 step 集合（跨页面共享）
+ *  存储结构（体验增强设计规范 §3.3.4）：JSON 对象，每个 step 一个 boolean，
+ *  `state[stepId] === true` 表示已 dismiss */
 function loadCompleted(): Set<string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return new Set()
-    const arr = JSON.parse(raw) as string[]
-    return new Set(arr)
+    const obj = JSON.parse(raw) as Record<string, boolean>
+    return new Set(Object.keys(obj).filter((k) => obj[k] === true))
   } catch {
     return new Set()
   }
@@ -32,7 +34,9 @@ function loadCompleted(): Set<string> {
 
 function saveCompleted(set: Set<string>) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]))
+    const obj: Record<string, boolean> = {}
+    for (const s of set) obj[s] = true
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj))
   } catch {
     // ignore
   }
