@@ -16,7 +16,8 @@
 - **成就**：31 个里程碑跨转生累计，解锁永久加成
 
 详细设定与架构见 [docs/游戏设定与架构.md](docs/游戏设定与架构.md)，
-版本历史见 [changelog.md](changelog.md)。
+版本历史见 [changelog.md](changelog.md)（v0.51 起）；
+v0.01 - v0.50 历史条目见 [changelog-v0.01-v0.50.md](changelog-v0.01-v0.50.md)。
 
 ## 技术栈
 
