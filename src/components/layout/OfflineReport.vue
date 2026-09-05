@@ -69,7 +69,12 @@ function dismiss() {
             </div>
           </div>
         </div>
-        <p v-if="gainsList.length === 0 && garrisonList.length === 0 && trainedList.length === 0" class="empty">离线期间没有产出（建造更多建筑以获得离线收益）</p>
+        <p
+          v-if="gainsList.length === 0 && garrisonList.length === 0 && trainedList.length === 0"
+          class="empty"
+        >
+          离线期间没有产出（建造更多建筑以获得离线收益）
+        </p>
         <button class="btn-primary block" @click="dismiss">继续</button>
       </div>
     </div>
@@ -78,28 +83,71 @@ function dismiss() {
 
 <style scoped>
 .modal {
-  width: 100%; max-width: 360px;
+  width: 100%;
+  max-width: 360px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-glow);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  box-shadow: 0 24px 60px rgba(0,0,0,.5);
-  animation: modalIn .3s var(--ease-out);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: modalIn 0.3s var(--ease-out);
 }
-.title { font-size: var(--text-lg); font-weight: 700; color: var(--color-core); margin-bottom: var(--space-1); }
-.subtitle { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-4); }
-.gains { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-5); }
+.title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-core);
+  margin-bottom: var(--space-1);
+}
+.subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-4);
+}
+.gains {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
 .gain-item {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: var(--space-3) var(--space-3);
   background: var(--color-elevated);
   border-radius: var(--radius-md);
 }
-.g-name { font-size: var(--text-sm); font-weight: 500; }
-.g-amount { font-size: var(--text-sm); font-weight: 700; color: var(--color-quantum); }
-.empty { font-size: var(--text-xs); color: var(--color-t-tertiary); text-align: center; padding: var(--space-4); }
-.garrison-section { margin-bottom: var(--space-5); }
-.garrison-title { font-size: var(--text-sm); font-weight: 600; color: var(--color-plasma, #A78BFA); margin-bottom: var(--space-2); }
-.trained-section { margin-bottom: var(--space-5); }
-.trained-title { font-size: var(--text-sm); font-weight: 600; color: var(--color-alert); margin-bottom: var(--space-2); }
+.g-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.g-amount {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-quantum);
+}
+.empty {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  text-align: center;
+  padding: var(--space-4);
+}
+.garrison-section {
+  margin-bottom: var(--space-5);
+}
+.garrison-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-plasma, #a78bfa);
+  margin-bottom: var(--space-2);
+}
+.trained-section {
+  margin-bottom: var(--space-5);
+}
+.trained-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-alert);
+  margin-bottom: var(--space-2);
+}
 </style>

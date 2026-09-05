@@ -5,7 +5,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { D, Decimal } from '@/lib/decimal'
-import { BUILDINGS, getBuilding, buildingCost, type BuildingDef, type SectorId } from '@/data/buildings'
+import {
+  BUILDINGS,
+  getBuilding,
+  buildingCost,
+  type BuildingDef,
+  type SectorId,
+} from '@/data/buildings'
 import type { BuildingSaveData } from '@/lib/storage'
 
 export const useBuildingsStore = defineStore('buildings', () => {
@@ -16,7 +22,8 @@ export const useBuildingsStore = defineStore('buildings', () => {
 
   // —— getters ——
   const getLevel = (id: string) => levels.value[id] ?? 0
-  const isUnlocked = (def: BuildingDef, completedTechs: Set<string>) => !def.requires || completedTechs.has(def.requires)
+  const isUnlocked = (def: BuildingDef, completedTechs: Set<string>) =>
+    !def.requires || completedTechs.has(def.requires)
   const getCost = (id: string) => {
     const def = getBuilding(id)
     if (!def) return {}
@@ -43,7 +50,13 @@ export const useBuildingsStore = defineStore('buildings', () => {
 
   /** 获取所有建筑的总产出汇总 */
   function getTotalProduction(mults: Record<string, Decimal>): Record<string, Decimal> {
-    const result: Record<string, Decimal> = { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
+    const result: Record<string, Decimal> = {
+      energy: D(0),
+      crystal: D(0),
+      alloy: D(0),
+      data: D(0),
+      dark: D(0),
+    }
     for (const b of BUILDINGS) {
       const prod = getProduction(b.id, mults)
       for (const [res, v] of Object.entries(prod)) {
@@ -80,9 +93,16 @@ export const useBuildingsStore = defineStore('buildings', () => {
 
   return {
     levels,
-    getLevel, isUnlocked, getCost, bySector,
-    getProduction, getTotalProduction,
-    upgrade, setLevel, reset,
-    serialize, hydrate,
+    getLevel,
+    isUnlocked,
+    getCost,
+    bySector,
+    getProduction,
+    getTotalProduction,
+    upgrade,
+    setLevel,
+    reset,
+    serialize,
+    hydrate,
   }
 })

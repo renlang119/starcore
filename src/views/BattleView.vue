@@ -23,7 +23,7 @@ const battleLog = ref<any[] | null>(null)
 const battleResult = ref<any | null>(null)
 const showResult = ref(false)
 const showGarrisonConfirm = ref(false)
-const rewardsGranted = ref(false)  // 防止奖励重复发放
+const rewardsGranted = ref(false) // 防止奖励重复发放
 
 const formation = computed(() => game.military.formations[selectedFormation.value])
 
@@ -39,12 +39,22 @@ const garrisonPreview = computed(() => {
       const meta = metaMap[k]
       const perSec = v as number
       const perHour = perSec * 3600
-      return { id: k, name: meta?.name ?? k, color: meta?.color ?? '#fff', perSec: fmt(perSec), perHour: fmt(perHour) }
+      return {
+        id: k,
+        name: meta?.name ?? k,
+        color: meta?.color ?? '#fff',
+        perSec: fmt(perSec),
+        perHour: fmt(perHour),
+      }
     })
 })
 
 // 编队详情（含兵种名和数量）
-interface FormationUnitRow { unitId: string; name: string; count: number }
+interface FormationUnitRow {
+  unitId: string
+  name: string
+  count: number
+}
 const formationRows = computed<FormationUnitRow[]>(() => {
   const f = formation.value
   return (Object.keys(f.units) as Array<keyof typeof f.units>)
@@ -70,16 +80,18 @@ const lossRows = computed(() => {
     .filter(([, v]) => v)
     .map(([k, v]) => ({ key: k, name: getUnit(k as UnitId)?.name ?? k, count: v as number }))
 })
-const hasNoLoss = computed(() => battleResult.value && Object.values(battleResult.value.losses).every((v) => !v))
+const hasNoLoss = computed(
+  () => battleResult.value && Object.values(battleResult.value.losses).every((v) => !v)
+)
 
 function startBattle() {
   if (!stronghold.value) return
-  rewardsGranted.value = false  // 新战斗重置发放标志
+  rewardsGranted.value = false // 新战斗重置发放标志
   const result = game.combat.resolveBattle(
     formation.value,
     stronghold.value,
     game.atkMult,
-    game.defMult,
+    game.defMult
   )
   battleLog.value = result.log
   battleResult.value = result
@@ -140,10 +152,16 @@ function cancelGarrison() {
 
     <!-- 据点信息 -->
     <div class="stronghold-info" :style="{ '--c': STRONGHOLD_TYPES[stronghold.type].color }">
-      <div class="s-icon"><svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true"><use :href="'#' + stronghold.icon" /></svg></div>
+      <div class="s-icon">
+        <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+          <use :href="'#' + stronghold.icon" />
+        </svg>
+      </div>
       <div class="s-meta">
         <h2 class="s-name font-display">{{ stronghold.name }}</h2>
-        <p class="s-type">{{ STRONGHOLD_TYPES[stronghold.type].name }} · Tier {{ stronghold.tier }}</p>
+        <p class="s-type">
+          {{ STRONGHOLD_TYPES[stronghold.type].name }} · Tier {{ stronghold.tier }}
+        </p>
         <p class="s-desc">{{ stronghold.desc }}</p>
       </div>
     </div>
@@ -189,11 +207,24 @@ function cancelGarrison() {
 
     <!-- 操作 -->
     <div class="actions">
-      <button class="btn-accent" style="flex: 2; --accent: var(--color-alert)" :disabled="isFormationEmpty" @click="startBattle">
-        <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use href="#i-ui-sword" /></svg>
+      <button
+        class="btn-accent"
+        style="flex: 2; --accent: var(--color-alert)"
+        :disabled="isFormationEmpty"
+        @click="startBattle"
+      >
+        <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
+          <use href="#i-ui-sword" />
+        </svg>
         出征
       </button>
-      <button class="btn-secondary" :class="{ 'garrison-active': isGarrisoned }" style="flex: 1" :disabled="isFormationEmpty" @click="toggleGarrison">
+      <button
+        class="btn-secondary"
+        :class="{ 'garrison-active': isGarrisoned }"
+        style="flex: 1"
+        :disabled="isFormationEmpty"
+        @click="toggleGarrison"
+      >
         {{ isGarrisoned ? '撤回驻扎' : '挂机驻扎' }}
       </button>
     </div>
@@ -210,7 +241,12 @@ function cancelGarrison() {
     </div>
 
     <!-- 结果弹窗 -->
-    <ModalOverlay v-model="showResult" :modal-class="{ victory: battleResult?.victory, defeat: !battleResult?.victory }" :aria-label="battleResult?.victory ? '战斗胜利' : '战斗失败'" @overlay-click="battleResult?.victory ? stayHere() : confirmResult()">
+    <ModalOverlay
+      v-model="showResult"
+      :modal-class="{ victory: battleResult?.victory, defeat: !battleResult?.victory }"
+      :aria-label="battleResult?.victory ? '战斗胜利' : '战斗失败'"
+      @overlay-click="battleResult?.victory ? stayHere() : confirmResult()"
+    >
       <h2 class="result-title font-display">{{ battleResult?.victory ? '胜 利' : '失 败' }}</h2>
       <p class="result-sub">{{ battleResult?.victory ? '据点已被攻克！' : '部队被击退…' }}</p>
 
@@ -221,7 +257,12 @@ function cancelGarrison() {
           <span class="font-mono" style="color: var(--color-quantum)">+{{ r.amount }}</span>
         </div>
         <div v-if="battleResult.relic" class="relic-drop">
-          <span class="rarity-tag" :style="{ color: `var(--color-${battleResult.relic.rarity === 'legendary' ? 'amber' : battleResult.relic.rarity === 'epic' ? 'plasma' : battleResult.relic.rarity === 'rare' ? 'core' : 't-secondary'})` }">
+          <span
+            class="rarity-tag"
+            :style="{
+              color: `var(--color-${battleResult.relic.rarity === 'legendary' ? 'amber' : battleResult.relic.rarity === 'epic' ? 'plasma' : battleResult.relic.rarity === 'rare' ? 'core' : 't-secondary'})`,
+            }"
+          >
             🎁 获得遗物：{{ battleResult.relic.name }}（{{ battleResult.relic.rarity }}）
           </span>
         </div>
@@ -248,13 +289,22 @@ function cancelGarrison() {
       </div>
 
       <div class="btn-group">
-        <button v-if="battleResult?.victory" class="btn-primary" style="flex: 2" @click="stayHere">留在此据点</button>
-        <button class="btn-secondary" style="flex: 1" @click="confirmResult">{{ battleResult?.victory ? '返回星图' : '确认' }}</button>
+        <button v-if="battleResult?.victory" class="btn-primary" style="flex: 2" @click="stayHere">
+          留在此据点
+        </button>
+        <button class="btn-secondary" style="flex: 1" @click="confirmResult">
+          {{ battleResult?.victory ? '返回星图' : '确认' }}
+        </button>
       </div>
     </ModalOverlay>
 
     <!-- 驻扎确认弹窗 -->
-    <ModalOverlay v-model="showGarrisonConfirm" modal-class="garrison-confirm-modal" aria-label="挂机驻扎确认" @overlay-click="cancelGarrison">
+    <ModalOverlay
+      v-model="showGarrisonConfirm"
+      modal-class="garrison-confirm-modal"
+      aria-label="挂机驻扎确认"
+      @overlay-click="cancelGarrison"
+    >
       <h2 class="result-title font-display">挂机驻扎</h2>
       <p class="result-sub">在「{{ stronghold.name }}」驻扎编队，持续获得以下收益</p>
       <div class="garrison-rewards">
@@ -270,68 +320,270 @@ function cancelGarrison() {
       </div>
       <div class="btn-group">
         <button class="btn-secondary" style="flex: 1" @click="cancelGarrison">取消</button>
-        <button class="btn-accent" style="flex: 2; --accent: var(--color-quantum)" @click="confirmGarrison">确认驻扎</button>
+        <button
+          class="btn-accent"
+          style="flex: 2; --accent: var(--color-quantum)"
+          @click="confirmGarrison"
+        >
+          确认驻扎
+        </button>
       </div>
     </ModalOverlay>
   </div>
 </template>
 
 <style scoped>
-.battle-view { display: flex; flex-direction: column; gap: var(--space-4); animation: screenIn .4s var(--ease-out); }
-.back-btn { align-self: flex-start; font-size: var(--text-sm); color: var(--color-t-secondary); padding: var(--space-2) var(--space-3); }
+.battle-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: screenIn 0.4s var(--ease-out);
+}
+.back-btn {
+  align-self: flex-start;
+  font-size: var(--text-sm);
+  color: var(--color-t-secondary);
+  padding: var(--space-2) var(--space-3);
+}
 
-.stronghold-info { display: flex; gap: var(--space-3); background: var(--color-surface); border: 1px solid var(--c); border-radius: var(--radius-lg); padding: var(--space-3); }
-.s-icon { color: var(--c); flex-shrink: 0; }
-.s-name { font-size: var(--text-lg); font-weight: 700; color: var(--c); }
-.s-type { font-size: var(--text-xs); color: var(--color-t-secondary); }
-.s-desc { font-size: var(--text-xs); color: var(--color-t-secondary); margin-top: var(--space-1); }
+.stronghold-info {
+  display: flex;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--c);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.s-icon {
+  color: var(--c);
+  flex-shrink: 0;
+}
+.s-name {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--c);
+}
+.s-type {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.s-desc {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-top: var(--space-1);
+}
 
-.enemy-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.enemy-card { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-md); padding: var(--space-3); }
-.e-name { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); }
-.e-stats { display: flex; gap: var(--space-2); }
-.stat { border-radius: 3px; }
-.stat.count { color: var(--color-alert); }
+.enemy-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.enemy-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.e-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+.e-stats {
+  display: flex;
+  gap: var(--space-2);
+}
+.stat {
+  border-radius: 3px;
+}
+.stat.count {
+  color: var(--color-alert);
+}
 
-.formation-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); }
-.f-tab { flex: 1; padding: var(--space-2); border-radius: var(--radius-md); background: var(--color-surface); border: 1px solid var(--color-border-line); font-size: var(--text-xs); color: var(--color-t-secondary); }
-.f-tab.active { background: var(--color-alert); color: var(--color-on-core); border-color: var(--color-alert); }
-.formation-detail { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-md); padding: var(--space-3); }
-.fu-row { display: flex; justify-content: space-between; font-size: var(--text-xs); padding: var(--space-1) 0; }
+.formation-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.f-tab {
+  flex: 1;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.f-tab.active {
+  background: var(--color-alert);
+  color: var(--color-on-core);
+  border-color: var(--color-alert);
+}
+.formation-detail {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.fu-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  padding: var(--space-1) 0;
+}
 
-.actions { display: flex; gap: var(--space-2); }
-.garrison-active { background: var(--color-quantum) !important; color: var(--color-on-core) !important; border-color: var(--color-quantum) !important; }
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.garrison-active {
+  background: var(--color-quantum) !important;
+  color: var(--color-on-core) !important;
+  border-color: var(--color-quantum) !important;
+}
 
-.battle-log { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-lg); padding: var(--space-3); }
-.log-list { max-height: 300px; overflow-y: auto; }
-.log-entry { display: flex; gap: var(--space-2); padding: var(--space-1) 0; font-size: var(--text-xs); border-bottom: 1px solid var(--color-border-line); }
-.log-entry.player { color: var(--color-core); }
-.log-entry.enemy { color: var(--color-alert); }
-.log-entry.system { color: var(--color-t-secondary); }
-.log-round { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-t-tertiary); width: 32px; flex-shrink: 0; }
+.battle-log {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.log-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+.log-entry {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  font-size: var(--text-xs);
+  border-bottom: 1px solid var(--color-border-line);
+}
+.log-entry.player {
+  color: var(--color-core);
+}
+.log-entry.enemy {
+  color: var(--color-alert);
+}
+.log-entry.system {
+  color: var(--color-t-secondary);
+}
+.log-round {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  width: 32px;
+  flex-shrink: 0;
+}
 
-.modal.victory { border-color: var(--color-quantum); box-shadow: 0 0 40px rgba(46,230,160,.2); }
-.modal.defeat { border-color: var(--color-alert); box-shadow: 0 0 40px rgba(244,63,94,.2); }
-.result-title { font-size: var(--text-xl); font-weight: 900; text-align: center; margin-bottom: var(--space-1); }
-.modal.victory .result-title { color: var(--color-quantum); }
-.modal.defeat .result-title { color: var(--color-alert); }
-.result-sub { font-size: var(--text-xs); color: var(--color-t-secondary); text-align: center; margin-bottom: var(--space-4); }
-.result-rewards, .result-losses { margin-bottom: var(--space-4); }
-.result-rewards h4, .result-losses h4 { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-2); }
-.reward-row, .loss-row { display: flex; justify-content: space-between; padding: var(--space-1) 0; font-size: var(--text-sm); }
-.relic-drop { margin-top: var(--space-2); padding: var(--space-2); background: var(--color-elevated); border-radius: var(--radius-md); text-align: center; }
-.rarity-tag { font-size: var(--text-sm); font-weight: 600; }
-.no-loss { font-size: var(--text-xs); color: var(--color-quantum); }
-.result-log { margin-bottom: var(--space-4); }
-.result-log h4 { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-2); }
-.modal-log-list { max-height: 180px; overflow-y: auto; background: var(--color-elevated); border-radius: var(--radius-md); padding: var(--space-2); }
-.btn-group { display: flex; gap: var(--space-2); }
-.garrison-confirm-modal { border-color: var(--color-quantum); box-shadow: 0 0 40px rgba(46,230,160,.15); }
-.garrison-rewards { margin-bottom: var(--space-4); }
-.garrison-rewards h4 { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-2); }
-.g-reward-name { font-size: var(--text-sm); font-weight: 500; }
-.g-reward-rates { font-size: var(--text-sm); }
-.rate-sec { color: var(--color-quantum); font-weight: 700; }
-.rate-hour { color: var(--color-t-tertiary); font-size: var(--text-xs); }
-.garrison-hint { font-size: var(--text-xs); color: var(--color-t-tertiary); margin-top: var(--space-2); text-align: center; }
+.modal.victory {
+  border-color: var(--color-quantum);
+  box-shadow: 0 0 40px rgba(46, 230, 160, 0.2);
+}
+.modal.defeat {
+  border-color: var(--color-alert);
+  box-shadow: 0 0 40px rgba(244, 63, 94, 0.2);
+}
+.result-title {
+  font-size: var(--text-xl);
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: var(--space-1);
+}
+.modal.victory .result-title {
+  color: var(--color-quantum);
+}
+.modal.defeat .result-title {
+  color: var(--color-alert);
+}
+.result-sub {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+.result-rewards,
+.result-losses {
+  margin-bottom: var(--space-4);
+}
+.result-rewards h4,
+.result-losses h4 {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.reward-row,
+.loss-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) 0;
+  font-size: var(--text-sm);
+}
+.relic-drop {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-elevated);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.rarity-tag {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.no-loss {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+}
+.result-log {
+  margin-bottom: var(--space-4);
+}
+.result-log h4 {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.modal-log-list {
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--color-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+}
+.btn-group {
+  display: flex;
+  gap: var(--space-2);
+}
+.garrison-confirm-modal {
+  border-color: var(--color-quantum);
+  box-shadow: 0 0 40px rgba(46, 230, 160, 0.15);
+}
+.garrison-rewards {
+  margin-bottom: var(--space-4);
+}
+.garrison-rewards h4 {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.g-reward-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.g-reward-rates {
+  font-size: var(--text-sm);
+}
+.rate-sec {
+  color: var(--color-quantum);
+  font-weight: 700;
+}
+.rate-hour {
+  color: var(--color-t-tertiary);
+  font-size: var(--text-xs);
+}
+.garrison-hint {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  margin-top: var(--space-2);
+  text-align: center;
+}
 </style>

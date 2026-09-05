@@ -31,14 +31,28 @@ function handleUnload() {
 
 <style scoped>
 .loading-screen {
-  position: fixed; inset: 0; z-index: 999;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: var(--space-6); color: var(--color-t-secondary); font-size: var(--text-sm);
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  color: var(--color-t-secondary);
+  font-size: var(--text-sm);
   background: var(--color-void);
 }
 .loading-core {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: radial-gradient(circle, var(--color-core) 0%, var(--color-core-deep) 70%, transparent 100%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--color-core) 0%,
+    var(--color-core-deep) 70%,
+    transparent 100%
+  );
   animation: corePulse 2s ease-in-out infinite;
 }
 </style>

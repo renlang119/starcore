@@ -43,7 +43,11 @@ export const useResearchStore = defineStore('research', () => {
   })
 
   /** 某类乘数汇总，如 production_mult / energy → 1.2 * 1.3 = 1.56 */
-  function getMult(type: TechEffect['type'], target?: string, extraEffects: TechEffect[] = []): Decimal {
+  function getMult(
+    type: TechEffect['type'],
+    target?: string,
+    extraEffects: TechEffect[] = []
+  ): Decimal {
     let mult = D(1)
     const all = [...allEffects.value, ...extraEffects]
     for (const eff of all) {
@@ -79,8 +83,16 @@ export const useResearchStore = defineStore('research', () => {
 
   return {
     completed,
-    isCompleted, count, unlockedSet, available, allEffects, getMult, techCostMult,
-    complete, reset,
-    serialize, hydrate,
+    isCompleted,
+    count,
+    unlockedSet,
+    available,
+    allEffects,
+    getMult,
+    techCostMult,
+    complete,
+    reset,
+    serialize,
+    hydrate,
   }
 })

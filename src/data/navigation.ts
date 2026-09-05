@@ -18,5 +18,11 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'map', label: '探索', icon: 'i-nav-explore', path: '/map', tier: 'primary' },
   { id: 'army', label: '部队', icon: 'i-nav-army', path: '/army', tier: 'primary' },
   { id: 'relic', label: '遗物', icon: 'i-nav-relic', path: '/relic', tier: 'secondary' },
-  { id: 'prestige', label: '奇点重启', icon: 'i-nav-prestige', path: '/prestige', tier: 'secondary' },
+  {
+    id: 'prestige',
+    label: '奇点重启',
+    icon: 'i-nav-prestige',
+    path: '/prestige',
+    tier: 'secondary',
+  },
 ]

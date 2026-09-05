@@ -59,10 +59,10 @@ const energyPhase = computed(() => {
   const energy = game.resources.getAmount('energy')
   if (energy.lte(0)) return 0
   const logVal = Math.log10(energy.toNumber())
-  if (logVal < 2) return 0   // <100
-  if (logVal < 4) return 1   // <10K
-  if (logVal < 8) return 2   // <100M
-  return 3                   // ≥100M
+  if (logVal < 2) return 0 // <100
+  if (logVal < 4) return 1 // <10K
+  if (logVal < 8) return 2 // <100M
+  return 3 // ≥100M
 })
 
 // P2-3 phase classes for rings
@@ -89,7 +89,9 @@ const r3Phase = computed(() => {
 const coreClicked = ref(false)
 function onCoreClick() {
   coreClicked.value = true
-  setTimeout(() => { coreClicked.value = false }, 600)
+  setTimeout(() => {
+    coreClicked.value = false
+  }, 600)
   router.push('/build')
 }
 
@@ -121,14 +123,50 @@ interface OverviewItem {
 }
 const overviewItems = computed<OverviewItem[]>(() => {
   const items: OverviewItem[] = [
-    { key: 'buildings', label: '建筑', value: `${buildingsUnlocked.value}/${BUILDINGS.length}`, icon: 'i-nav-build', color: 'var(--color-core)' },
-    { key: 'tech', label: '科技', value: `${techCompleted.value}/${TECHS.length}`, icon: 'i-nav-tech', color: 'var(--color-plasma)' },
-    { key: 'army', label: '部队', value: `${totalUnits.value}`, icon: 'i-nav-army', color: 'var(--color-alert)' },
-    { key: 'relics', label: '遗物', value: `${relicsEquipped.value}/${game.relics.maxSlots}`, icon: 'i-nav-relic', color: 'var(--color-amber)' },
-    { key: 'playtime', label: '时长', value: playTime.value, icon: 'i-ui-more', color: 'var(--color-t-primary)' },
+    {
+      key: 'buildings',
+      label: '建筑',
+      value: `${buildingsUnlocked.value}/${BUILDINGS.length}`,
+      icon: 'i-nav-build',
+      color: 'var(--color-core)',
+    },
+    {
+      key: 'tech',
+      label: '科技',
+      value: `${techCompleted.value}/${TECHS.length}`,
+      icon: 'i-nav-tech',
+      color: 'var(--color-plasma)',
+    },
+    {
+      key: 'army',
+      label: '部队',
+      value: `${totalUnits.value}`,
+      icon: 'i-nav-army',
+      color: 'var(--color-alert)',
+    },
+    {
+      key: 'relics',
+      label: '遗物',
+      value: `${relicsEquipped.value}/${game.relics.maxSlots}`,
+      icon: 'i-nav-relic',
+      color: 'var(--color-amber)',
+    },
+    {
+      key: 'playtime',
+      label: '时长',
+      value: playTime.value,
+      icon: 'i-ui-more',
+      color: 'var(--color-t-primary)',
+    },
   ]
   if (game.transcend.totalTranscends > 0) {
-    items.push({ key: 'transcends', label: '转生', value: `${game.transcend.totalTranscends}`, icon: 'i-nav-prestige', color: 'var(--color-amber)' })
+    items.push({
+      key: 'transcends',
+      label: '转生',
+      value: `${game.transcend.totalTranscends}`,
+      icon: 'i-nav-prestige',
+      color: 'var(--color-amber)',
+    })
   }
   return items
 })
@@ -142,7 +180,7 @@ interface ActionItem {
   color: string
   icon: string
   status: 'in-progress' | 'actionable'
-  progress?: number  // 0~1，仅 in-progress 有
+  progress?: number // 0~1，仅 in-progress 有
 }
 
 const actionQueue = computed<ActionItem[]>(() => {
@@ -278,10 +316,26 @@ const hasActions = computed(() => actionQueue.value.length > 0)
 
 // 默认兜底（当无任何行动时，显示建造和研究两个入口）
 const fallbackActions: ActionItem[] = [
-  { id: 'fallback-build', label: '建造', detail: '升级建筑提升产能', path: '/build', color: '#00E5FF', icon: 'i-nav-build', status: 'actionable' },
-  { id: 'fallback-tech', label: '研究', detail: '解锁新技术', path: '/tech', color: '#A78BFA', icon: 'i-nav-tech', status: 'actionable' },
+  {
+    id: 'fallback-build',
+    label: '建造',
+    detail: '升级建筑提升产能',
+    path: '/build',
+    color: '#00E5FF',
+    icon: 'i-nav-build',
+    status: 'actionable',
+  },
+  {
+    id: 'fallback-tech',
+    label: '研究',
+    detail: '解锁新技术',
+    path: '/tech',
+    color: '#A78BFA',
+    icon: 'i-nav-tech',
+    status: 'actionable',
+  },
 ]
-const displayActions = computed(() => hasActions.value ? actionQueue.value : fallbackActions)
+const displayActions = computed(() => (hasActions.value ? actionQueue.value : fallbackActions))
 </script>
 
 <template>
@@ -313,13 +367,18 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
           <div class="core-ring r1" :class="r1Phase"></div>
           <div class="core-ring r2" :class="r2Phase"></div>
           <div class="core-ring r3" :class="r3Phase"></div>
-          <div class="core-glow" :style="{ width: coreGlowSize + 'px', height: coreGlowSize + 'px' }"></div>
+          <div
+            class="core-glow"
+            :style="{ width: coreGlowSize + 'px', height: coreGlowSize + 'px' }"
+          ></div>
           <div class="core-center">
             <div class="core-value font-display">{{ fmt(game.resources.getAmount('energy')) }}</div>
             <div class="core-label">星核能量</div>
           </div>
         </div>
-        <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">{{ rateDisplay }}</div>
+        <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">
+          {{ rateDisplay }}
+        </div>
         <!-- P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 -->
         <div class="hero-flow" aria-hidden="true"></div>
       </section>
@@ -346,21 +405,41 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
           >
             <button class="action-btn" @click="router.push(item.path)">
               <!-- in-progress: 纯色图标 -->
-              <svg v-if="item.status === 'in-progress'" class="action-icon" style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use :href="'#' + item.icon" /></svg>
+              <svg
+                v-if="item.status === 'in-progress'"
+                class="action-icon"
+                style="width: var(--icon-md); height: var(--icon-md)"
+                aria-hidden="true"
+              >
+                <use :href="'#' + item.icon" />
+              </svg>
               <!-- actionable: 色块 + 图标 -->
               <div v-else class="action-icon-block">
-                <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true"><use :href="'#' + item.icon" /></svg>
+                <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+                  <use :href="'#' + item.icon" />
+                </svg>
               </div>
               <div class="action-info">
                 <span class="action-label">{{ item.label }}</span>
-                <span v-if="item.status === 'in-progress'" class="action-detail">{{ item.detail }}</span>
+                <span v-if="item.status === 'in-progress'" class="action-detail">{{
+                  item.detail
+                }}</span>
                 <span v-else class="action-desc">{{ item.detail }}</span>
               </div>
-              <svg class="action-arrow" style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true"><use href="#i-ui-arrow-right" /></svg>
+              <svg
+                class="action-arrow"
+                style="width: var(--icon-sm); height: var(--icon-sm)"
+                aria-hidden="true"
+              >
+                <use href="#i-ui-arrow-right" />
+              </svg>
             </button>
             <!-- 进度条（仅 in-progress） -->
-            <div v-if="item.status === 'in-progress' && item.progress !== undefined" class="action-progress">
-              <div class="action-progress-bar" :style="{ width: (item.progress * 100) + '%' }"></div>
+            <div
+              v-if="item.status === 'in-progress' && item.progress !== undefined"
+              class="action-progress"
+            >
+              <div class="action-progress-bar" :style="{ width: item.progress * 100 + '%' }"></div>
             </div>
           </li>
         </ul>
@@ -388,7 +467,9 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
         :style="{ '--c': action.color }"
         @click="router.push(action.path)"
       >
-        <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use :href="'#' + action.icon" /></svg>
+        <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
+          <use :href="'#' + action.icon" />
+        </svg>
         <span>{{ action.label }}</span>
       </button>
     </section>
@@ -404,7 +485,13 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
           :style="{ '--ov-color': item.color }"
         >
           <div class="ov-top">
-            <svg class="ov-icon" style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true"><use :href="'#' + item.icon" /></svg>
+            <svg
+              class="ov-icon"
+              style="width: var(--icon-sm); height: var(--icon-sm)"
+              aria-hidden="true"
+            >
+              <use :href="'#' + item.icon" />
+            </svg>
             <span class="ov-value font-mono" :style="{ color: item.color }">{{ item.value }}</span>
           </div>
           <span class="ov-label">{{ item.label }}</span>
@@ -415,7 +502,12 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
 </template>
 
 <style scoped>
-.home { display: flex; flex-direction: column; gap: var(--space-5); animation: screenIn .4s var(--ease-out); }
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  animation: screenIn 0.4s var(--ease-out);
+}
 
 /* —— P1-3 桌面端双列布局 —— */
 /* 覆盖 AppShell .content max-width，仅在 HomeView 内生效，不影响其他 View */
@@ -431,7 +523,9 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   :deep(.content) {
     max-width: 1040px;
   }
-  .home { gap: var(--space-6); }
+  .home {
+    gap: var(--space-6);
+  }
   .home-top-row {
     display: grid;
     grid-template-columns: 40% 60%;
@@ -445,21 +539,38 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
 }
 
 /* —— P1-1 星核核心视觉 —— */
-.hero { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-6) 0 var(--space-4); position: relative; }
-.core-visual {
-  position: relative; width: 200px; height: 200px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: transform .2s var(--ease-out);
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) 0 var(--space-4);
+  position: relative;
 }
-.core-visual:hover { transform: scale(1.02); }
-.core-visual:active { transform: scale(0.95); }  /* P2-4 */
+.core-visual {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out);
+}
+.core-visual:hover {
+  transform: scale(1.02);
+}
+.core-visual:active {
+  transform: scale(0.95);
+} /* P2-4 */
 /* P2-4 核心点击额外脉动 */
-.core-visual.core-clicked { animation: coreClickPulse .6s var(--ease-out); }
+.core-visual.core-clicked {
+  animation: coreClickPulse 0.6s var(--ease-out);
+}
 
 /* P1-1 外层渗透光晕 */
 .core-visual::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -481,52 +592,113 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
 
 /* P2-3 核心环信息映射 — 3 层环映射游戏状态 */
 .core-ring {
-  position: absolute; border-radius: 50%; border: 1px solid;
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid;
   z-index: 1;
-  transition: opacity .4s var(--ease-out), border-color .4s var(--ease-out);
+  transition:
+    opacity 0.4s var(--ease-out),
+    border-color 0.4s var(--ease-out);
 }
 /* phase-idle: 低透明度、慢速旋转 */
-.core-ring.phase-idle { opacity: .2; }
+.core-ring.phase-idle {
+  opacity: 0.2;
+}
 /* phase-progress: 中透明度、正常旋转、主色 */
-.core-ring.phase-progress { opacity: .5; }
+.core-ring.phase-progress {
+  opacity: 0.5;
+}
 /* phase-active: 高透明度、加速旋转、辅色发光 */
-.core-ring.phase-active { opacity: .8; }
+.core-ring.phase-active {
+  opacity: 0.8;
+}
 
 .r1 {
-  width: 100%; height: 100%;
-  border-color: var(--color-quantum);  /* 探索 → 绿 */
+  width: 100%;
+  height: 100%;
+  border-color: var(--color-quantum); /* 探索 → 绿 */
   animation: spinRing 20s linear infinite;
 }
-.r1.phase-active { border-color: var(--color-quantum); box-shadow: 0 0 12px rgba(46, 230, 160, .3); animation-duration: 12s; }
-.r1.phase-progress { animation-duration: 16s; }
+.r1.phase-active {
+  border-color: var(--color-quantum);
+  box-shadow: 0 0 12px rgba(46, 230, 160, 0.3);
+  animation-duration: 12s;
+}
+.r1.phase-progress {
+  animation-duration: 16s;
+}
 
 .r2 {
-  width: 75%; height: 75%; border-style: dashed;
-  border-color: var(--color-plasma);  /* 科技 → 紫 */
+  width: 75%;
+  height: 75%;
+  border-style: dashed;
+  border-color: var(--color-plasma); /* 科技 → 紫 */
   animation: spinRing 15s linear infinite reverse;
 }
-.r2.phase-active { border-color: var(--color-plasma); box-shadow: 0 0 10px rgba(167, 139, 250, .3); animation-duration: 8s; }
-.r2.phase-progress { animation-duration: 12s; }
+.r2.phase-active {
+  border-color: var(--color-plasma);
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
+  animation-duration: 8s;
+}
+.r2.phase-progress {
+  animation-duration: 12s;
+}
 
 .r3 {
-  width: 50%; height: 50%;
-  border-color: var(--color-amber);  /* 能量 → 琥珀 */
+  width: 50%;
+  height: 50%;
+  border-color: var(--color-amber); /* 能量 → 琥珀 */
   animation: spinRing 10s linear infinite;
 }
-.r3.phase-active { border-color: var(--color-amber); box-shadow: 0 0 8px rgba(255, 182, 39, .3); animation-duration: 6s; }
-.r3.phase-progress { animation-duration: 8s; }
+.r3.phase-active {
+  border-color: var(--color-amber);
+  box-shadow: 0 0 8px rgba(255, 182, 39, 0.3);
+  animation-duration: 6s;
+}
+.r3.phase-progress {
+  animation-duration: 8s;
+}
 
 .core-glow {
-  position: absolute; width: 80px; height: 80px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,229,255,.6) 0%, rgba(0,107,122,.3) 60%, transparent 100%);
-  filter: blur(16px); animation: corePulse 3s ease-in-out infinite;
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 229, 255, 0.6) 0%,
+    rgba(0, 107, 122, 0.3) 60%,
+    transparent 100%
+  );
+  filter: blur(16px);
+  animation: corePulse 3s ease-in-out infinite;
   z-index: 1;
 }
-.core-center { position: relative; z-index: 2; text-align: center; }
-.core-value { font-size: var(--text-2xl); font-weight: 900; color: var(--color-t-primary); text-shadow: 0 0 16px rgba(0,229,255,.5); }
-.core-label { font-size: var(--text-xs); color: var(--color-t-secondary); margin-top: var(--space-1); }
-.rate-display { font-size: var(--text-sm); color: var(--color-core); font-weight: 500; letter-spacing: 0.5px; }
-.rate-display.negative { color: var(--color-alert); }
+.core-center {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+.core-value {
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  color: var(--color-t-primary);
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.5);
+}
+.core-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-top: var(--space-1);
+}
+.rate-display {
+  font-size: var(--text-sm);
+  color: var(--color-core);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.rate-display.negative {
+  color: var(--color-alert);
+}
 
 /* P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 */
 .hero-flow {
@@ -550,26 +722,50 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
 
 /* P1-1 桌面端差异 */
 @media (min-width: 768px) {
-  .core-visual { width: 240px; height: 240px; }
-  .core-visual::after { width: 288px; height: 288px; }
-  .core-glow { width: 96px; height: 96px; }
-  .core-value { font-size: var(--text-display); text-shadow: 0 0 24px rgba(0,229,255,.5); }
-  .hero { padding: var(--space-8) 0 var(--space-6); }
+  .core-visual {
+    width: 240px;
+    height: 240px;
+  }
+  .core-visual::after {
+    width: 288px;
+    height: 288px;
+  }
+  .core-glow {
+    width: 96px;
+    height: 96px;
+  }
+  .core-value {
+    font-size: var(--text-display);
+    text-shadow: 0 0 24px rgba(0, 229, 255, 0.5);
+  }
+  .hero {
+    padding: var(--space-8) 0 var(--space-6);
+  }
 }
 
 /* —— P3-4 三段式响应断点 —— */
 /* L 断点（1024-1439px）：双列比 38/62，核心视觉 260 */
 @media (min-width: 1024px) {
-  :deep(.content) { max-width: 1280px; }
+  :deep(.content) {
+    max-width: 1280px;
+  }
   .home-top-row {
     grid-template-columns: 38% 62%;
   }
-  .core-visual { width: 260px; height: 260px; }
-  .core-visual::after { width: 312px; height: 312px; }
+  .core-visual {
+    width: 260px;
+    height: 260px;
+  }
+  .core-visual::after {
+    width: 312px;
+    height: 312px;
+  }
 }
 /* XL 断点（≥1440px）：双列比 33/67，核心视觉 260（封顶） */
 @media (min-width: 1440px) {
-  :deep(.content) { max-width: 1440px; }
+  :deep(.content) {
+    max-width: 1440px;
+  }
   .home-top-row {
     grid-template-columns: 33% 67%;
   }
@@ -581,12 +777,26 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   border-radius: var(--radius-lg);
   padding: var(--space-4);
 }
-.action-list { display: flex; flex-direction: column; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
-.action-item { width: 100%; position: relative; overflow: hidden; }
+.action-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.action-item {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
 .action-btn {
-  display: flex; align-items: center; gap: var(--space-3); width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
   padding: var(--space-3);
-  transition: all .2s var(--ease-out);
+  transition: all 0.2s var(--ease-out);
   position: relative;
 }
 
@@ -605,26 +815,44 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   flex-shrink: 0;
 }
 .action-item.in-progress .action-info {
-  flex: 1; text-align: left; min-width: 0;
+  flex: 1;
+  text-align: left;
+  min-width: 0;
 }
 .action-item.in-progress .action-label {
-  display: block; font-size: var(--text-sm); font-weight: 600; color: var(--color-t-primary);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-t-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .action-item.in-progress .action-detail {
-  display: block; font-size: var(--text-xs); color: var(--color-t-secondary);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .action-item.in-progress .action-arrow {
-  color: var(--color-t-tertiary); flex-shrink: 0;
+  color: var(--color-t-tertiary);
+  flex-shrink: 0;
 }
 .action-progress {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
   background: var(--color-elevated);
 }
 .action-progress-bar {
-  height: 100%; background: var(--c); border-radius: 0 2px 2px 0;
-  transition: width .5s var(--ease-out);
+  height: 100%;
+  background: var(--c);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.5s var(--ease-out);
   box-shadow: 0 0 4px var(--c);
 }
 
@@ -633,38 +861,52 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   background: var(--color-surface);
   border: 1px solid var(--color-border-line);
   border-radius: var(--radius-md);
-  transition: all .2s var(--ease-out);
+  transition: all 0.2s var(--ease-out);
 }
 .action-item.actionable:hover {
-  transform: translateY(-2px);  /* P2-4 */
+  transform: translateY(-2px); /* P2-4 */
   background: var(--color-hover);
   border-color: var(--color-border-glow);
-  box-shadow: var(--elevation-2),  /* P2-6 */
-              0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
+  box-shadow:
+    var(--elevation-2),
+    /* P2-6 */ 0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
 }
 .action-item.actionable:active {
-  transform: translateY(0) scale(0.95);  /* P2-4 */
+  transform: translateY(0) scale(0.95); /* P2-4 */
 }
 .action-item.actionable .action-icon-block {
-  width: 40px; height: 40px; border-radius: var(--radius-md);
-  display: flex; align-items: center; justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: color-mix(in srgb, var(--c) 15%, transparent);
-  color: var(--c); flex-shrink: 0;
+  color: var(--c);
+  flex-shrink: 0;
 }
 .action-item.actionable .action-info {
-  flex: 1; text-align: left;
+  flex: 1;
+  text-align: left;
 }
 .action-item.actionable .action-label {
-  font-size: var(--text-sm); font-weight: 600; color: var(--color-t-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-t-primary);
 }
 .action-item.actionable .action-desc {
-  font-size: var(--text-xs); color: var(--color-t-secondary); margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-top: var(--space-1);
   display: block;
 }
 .action-item.actionable .action-arrow {
-  color: var(--color-t-tertiary); flex-shrink: 0;
+  color: var(--color-t-tertiary);
+  flex-shrink: 0;
   opacity: 0;
-  transition: opacity .2s var(--ease-out), transform .2s var(--ease-out);
+  transition:
+    opacity 0.2s var(--ease-out),
+    transform 0.2s var(--ease-out);
 }
 .action-item.actionable:hover .action-arrow {
   opacity: 1;
@@ -681,11 +923,20 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
 
 /* P1-2 桌面端适配 */
 @media (min-width: 768px) {
-  .action-list { gap: var(--space-3); }
+  .action-list {
+    gap: var(--space-3);
+  }
 }
 
 /* —— P1-6 文明概况 —— */
-.overview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 .ov-item {
   background: var(--color-surface);
   border: 1px solid var(--color-border-line);
@@ -696,14 +947,14 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   flex-direction: row;
   align-items: center;
   gap: var(--space-2);
-  transition: all .2s var(--ease-out);
-  box-shadow: var(--elevation-1);  /* P2-6 */
+  transition: all 0.2s var(--ease-out);
+  box-shadow: var(--elevation-1); /* P2-6 */
 }
 .ov-item:hover {
   background: var(--color-hover);
   border-color: var(--color-border-glow);
-  transform: translateY(-2px);  /* P2-4 */
-  box-shadow: var(--elevation-2);  /* P2-6 */
+  transform: translateY(-2px); /* P2-4 */
+  box-shadow: var(--elevation-2); /* P2-6 */
 }
 .ov-top {
   display: flex;
@@ -712,9 +963,19 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   gap: var(--space-1);
   flex: 1;
 }
-.ov-icon { color: var(--ov-color, var(--color-core)); flex-shrink: 0; }
-.ov-value { font-size: var(--text-sm); font-weight: 600; }
-.ov-label { font-size: var(--text-xs); color: var(--color-t-secondary); text-align: center; }
+.ov-icon {
+  color: var(--ov-color, var(--color-core));
+  flex-shrink: 0;
+}
+.ov-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.ov-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  text-align: center;
+}
 
 /* P1-6 桌面端 6 列横排 */
 @media (min-width: 768px) {
@@ -732,7 +993,9 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
     align-items: center;
     gap: var(--space-2);
   }
-  .ov-value { font-size: var(--text-base); }
+  .ov-value {
+    font-size: var(--text-base);
+  }
 }
 
 /* —— P3-2 快速操作入口 —— */
@@ -754,7 +1017,7 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   color: var(--color-t-secondary);
   font-size: var(--text-xs);
   font-weight: 500;
-  transition: all .15s var(--ease-out);
+  transition: all 0.15s var(--ease-out);
   cursor: pointer;
 }
 .quick-action-btn svg {
@@ -766,7 +1029,7 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
   background: var(--color-elevated);
 }
 .quick-action-btn:active {
-  transform: scale(.95);
+  transform: scale(0.95);
 }
 
 /* —— P3-3 onboarding 气泡定位 —— */

@@ -26,12 +26,11 @@ function calcBreakpoint(w: number): Breakpoint {
 
 export function useBreakpoint() {
   // setup 阶段立即求值——消除首帧闪烁
-  const mql = typeof window !== 'undefined'
-    ? window.matchMedia(`(min-width: ${MOBILE_BREAKPOINT}px)`)
-    : null
+  const mql =
+    typeof window !== 'undefined' ? window.matchMedia(`(min-width: ${MOBILE_BREAKPOINT}px)`) : null
   const isDesktop = ref(mql ? mql.matches : true)
   const breakpoint = ref<Breakpoint>(
-    typeof window !== 'undefined' ? calcBreakpoint(window.innerWidth) : 'S',
+    typeof window !== 'undefined' ? calcBreakpoint(window.innerWidth) : 'S'
   )
 
   function update(e: MediaQueryListEvent) {

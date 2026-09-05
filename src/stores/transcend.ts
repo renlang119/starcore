@@ -8,7 +8,14 @@ import { D, Decimal, ser, deser } from '@/lib/decimal'
 import type { TranscendSaveData } from '@/lib/storage'
 
 export interface TranscendEffect {
-  type: 'production_mult' | 'combat_mult' | 'explore_mult' | 'prestige_mult' | 'offline_bonus' | 'relic_slot' | 'starting_energy'
+  type:
+    | 'production_mult'
+    | 'combat_mult'
+    | 'explore_mult'
+    | 'prestige_mult'
+    | 'offline_bonus'
+    | 'relic_slot'
+    | 'starting_energy'
   target?: string
   value: number
   label: string
@@ -18,28 +25,108 @@ export interface TranscendNode {
   id: string
   name: string
   desc: string
-  cost: number  // 负熵消耗
+  cost: number // 负熵消耗
   effects: TranscendEffect[]
   purchased: boolean
 }
 
 const DEFAULT_NODES: TranscendNode[] = [
-  { id: 't_energy_1', name: '能量觉醒', desc: '能量建筑产出永久 +50%', cost: 1, effects: [{ type: 'production_mult', target: 'energy', value: 1.5, label: '能量产出 ×1.5' }], purchased: false },
-  { id: 't_alloy_1', name: '合金觉醒', desc: '合金建筑产出永久 +50%', cost: 1, effects: [{ type: 'production_mult', target: 'alloy', value: 1.5, label: '合金产出 ×1.5' }], purchased: false },
-  { id: 't_data_1', name: '数据觉醒', desc: '数据建筑产出永久 +50%', cost: 2, effects: [{ type: 'production_mult', target: 'data', value: 1.5, label: '数据产出 ×1.5' }], purchased: false },
-  { id: 't_crystal_1', name: '晶体觉醒', desc: '晶体建筑产出永久 +50%', cost: 2, effects: [{ type: 'production_mult', target: 'crystal', value: 1.5, label: '晶体产出 ×1.5' }], purchased: false },
-  { id: 't_starting', name: '初始加速', desc: '每次转生后初始能量 ×10', cost: 2, effects: [{ type: 'starting_energy', value: 10, label: '初始能量 ×10' }], purchased: false },
-  { id: 't_slot', name: '遗物扩展', desc: '解锁第 5 个遗物槽位', cost: 3, effects: [{ type: 'relic_slot', value: 1, label: '+1 遗物槽' }], purchased: false },
-  { id: 't_dark_1', name: '暗物质觉醒', desc: '暗物质建筑产出永久 +50%', cost: 5, effects: [{ type: 'production_mult', target: 'dark', value: 1.5, label: '暗物质产出 ×1.5' }], purchased: false },
-  { id: 't_energy_2', name: '能量共鸣', desc: '能量建筑产出再 +100%', cost: 5, effects: [{ type: 'production_mult', target: 'energy', value: 2.0, label: '能量产出 ×2' }], purchased: false },
-  { id: 't_combat_1', name: '军事传承', desc: '部队攻防永久 +30%', cost: 5, effects: [{ type: 'combat_mult', target: 'attack', value: 1.3, label: '攻击 ×1.3' }, { type: 'combat_mult', target: 'defense', value: 1.3, label: '防御 ×1.3' }], purchased: false },
-  { id: 't_offline', name: '时间之主', desc: '离线收益再 +50%', cost: 6, effects: [{ type: 'offline_bonus', value: 1.5, label: '离线收益 ×1.5' }], purchased: false },
-  { id: 't_prestige_boost', name: '负熵循环', desc: '转生获得的负熵 ×2', cost: 8, effects: [{ type: 'prestige_mult', value: 2.0, label: '负熵 ×2' }], purchased: false },
+  {
+    id: 't_energy_1',
+    name: '能量觉醒',
+    desc: '能量建筑产出永久 +50%',
+    cost: 1,
+    effects: [{ type: 'production_mult', target: 'energy', value: 1.5, label: '能量产出 ×1.5' }],
+    purchased: false,
+  },
+  {
+    id: 't_alloy_1',
+    name: '合金觉醒',
+    desc: '合金建筑产出永久 +50%',
+    cost: 1,
+    effects: [{ type: 'production_mult', target: 'alloy', value: 1.5, label: '合金产出 ×1.5' }],
+    purchased: false,
+  },
+  {
+    id: 't_data_1',
+    name: '数据觉醒',
+    desc: '数据建筑产出永久 +50%',
+    cost: 2,
+    effects: [{ type: 'production_mult', target: 'data', value: 1.5, label: '数据产出 ×1.5' }],
+    purchased: false,
+  },
+  {
+    id: 't_crystal_1',
+    name: '晶体觉醒',
+    desc: '晶体建筑产出永久 +50%',
+    cost: 2,
+    effects: [{ type: 'production_mult', target: 'crystal', value: 1.5, label: '晶体产出 ×1.5' }],
+    purchased: false,
+  },
+  {
+    id: 't_starting',
+    name: '初始加速',
+    desc: '每次转生后初始能量 ×10',
+    cost: 2,
+    effects: [{ type: 'starting_energy', value: 10, label: '初始能量 ×10' }],
+    purchased: false,
+  },
+  {
+    id: 't_slot',
+    name: '遗物扩展',
+    desc: '解锁第 5 个遗物槽位',
+    cost: 3,
+    effects: [{ type: 'relic_slot', value: 1, label: '+1 遗物槽' }],
+    purchased: false,
+  },
+  {
+    id: 't_dark_1',
+    name: '暗物质觉醒',
+    desc: '暗物质建筑产出永久 +50%',
+    cost: 5,
+    effects: [{ type: 'production_mult', target: 'dark', value: 1.5, label: '暗物质产出 ×1.5' }],
+    purchased: false,
+  },
+  {
+    id: 't_energy_2',
+    name: '能量共鸣',
+    desc: '能量建筑产出再 +100%',
+    cost: 5,
+    effects: [{ type: 'production_mult', target: 'energy', value: 2.0, label: '能量产出 ×2' }],
+    purchased: false,
+  },
+  {
+    id: 't_combat_1',
+    name: '军事传承',
+    desc: '部队攻防永久 +30%',
+    cost: 5,
+    effects: [
+      { type: 'combat_mult', target: 'attack', value: 1.3, label: '攻击 ×1.3' },
+      { type: 'combat_mult', target: 'defense', value: 1.3, label: '防御 ×1.3' },
+    ],
+    purchased: false,
+  },
+  {
+    id: 't_offline',
+    name: '时间之主',
+    desc: '离线收益再 +50%',
+    cost: 6,
+    effects: [{ type: 'offline_bonus', value: 1.5, label: '离线收益 ×1.5' }],
+    purchased: false,
+  },
+  {
+    id: 't_prestige_boost',
+    name: '负熵循环',
+    desc: '转生获得的负熵 ×2',
+    cost: 8,
+    effects: [{ type: 'prestige_mult', value: 2.0, label: '负熵 ×2' }],
+    purchased: false,
+  },
 ]
 
 export const useTranscendStore = defineStore('transcend', () => {
-  const negativeEntropy = ref<Decimal>(D(0))   // 负熵余额
-  const totalTranscends = ref(0)                 // 转生次数
+  const negativeEntropy = ref<Decimal>(D(0)) // 负熵余额
+  const totalTranscends = ref(0) // 转生次数
   const tree = ref<TranscendNode[]>(JSON.parse(JSON.stringify(DEFAULT_NODES)))
 
   /** 转生树已购节点的效果汇总 */
@@ -125,8 +212,17 @@ export const useTranscendStore = defineStore('transcend', () => {
   }
 
   return {
-    negativeEntropy, totalTranscends, tree, allEffects,
-    getMult, getValue, previewNegEntropy, transcend, purchaseNode, reset,
-    serialize, hydrate,
+    negativeEntropy,
+    totalTranscends,
+    tree,
+    allEffects,
+    getMult,
+    getValue,
+    previewNegEntropy,
+    transcend,
+    purchaseNode,
+    reset,
+    serialize,
+    hydrate,
   }
 })

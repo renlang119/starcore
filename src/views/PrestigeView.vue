@@ -26,7 +26,9 @@ function confirmTranscend() {
   game.doTranscend()
   showConfirm.value = false
 }
-function cancelTranscend() { showConfirm.value = false }
+function cancelTranscend() {
+  showConfirm.value = false
+}
 
 // 存档管理
 const importCode = ref('')
@@ -43,7 +45,9 @@ async function copyToClipboard(text: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(text)
       return true
-    } catch { /* 继续 fallback */ }
+    } catch {
+      /* 继续 fallback */
+    }
   }
   // 2. 回退 execCommand('copy')（非安全上下文也可用）
   try {
@@ -60,7 +64,9 @@ async function copyToClipboard(text: string): Promise<boolean> {
     const ok = document.execCommand('copy')
     document.body.removeChild(ta)
     if (ok) return true
-  } catch { /* 继续 fallback */ }
+  } catch {
+    /* 继续 fallback */
+  }
   // 3. 两种方式均失败
   return false
 }
@@ -86,9 +92,7 @@ async function doImport() {
     return
   }
   const result = await game.doImport(importCode.value)
-  importMsg.value = result.success
-    ? '导入成功，页面将刷新'
-    : (result.message || '导入失败：存档无效')
+  importMsg.value = result.success ? '导入成功，页面将刷新' : result.message || '导入失败：存档无效'
   if (result.success) setTimeout(() => location.reload(), 1500)
 }
 async function manualSave() {
@@ -108,7 +112,9 @@ async function confirmHardReset() {
   await game.hardReset()
   location.reload()
 }
-function cancelHardReset() { showResetConfirm.value = false }
+function cancelHardReset() {
+  showResetConfirm.value = false
+}
 </script>
 
 <template>
@@ -133,7 +139,9 @@ function cancelHardReset() { showResetConfirm.value = false }
 
     <!-- 转生按钮 -->
     <button class="btn-transcend" :disabled="!canTranscend" @click="tryTranscend">
-      <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true"><use href="#i-nav-prestige" /></svg>
+      <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
+        <use href="#i-nav-prestige" />
+      </svg>
       执行奇点重启
     </button>
     <p v-if="!canTranscend" class="req-hint">需达到 300,000 总能量产出才能转生</p>
@@ -147,7 +155,10 @@ function cancelHardReset() { showResetConfirm.value = false }
           v-for="node in tree"
           :key="node.id"
           class="tree-node"
-          :class="{ purchased: node.purchased, affordable: !node.purchased && negEntropy.gte(node.cost) }"
+          :class="{
+            purchased: node.purchased,
+            affordable: !node.purchased && negEntropy.gte(node.cost),
+          }"
         >
           <div class="node-head">
             <span class="node-name">{{ node.name }}</span>
@@ -157,7 +168,13 @@ function cancelHardReset() { showResetConfirm.value = false }
           <div class="node-effects">
             <span v-for="(e, i) in node.effects" :key="i" class="node-eff">{{ e.label }}</span>
           </div>
-          <button v-if="!node.purchased" class="btn-accent sm block" style="--accent: var(--color-amber)" :disabled="negEntropy.lt(node.cost)" @click="tryPurchase(node.id)">
+          <button
+            v-if="!node.purchased"
+            class="btn-accent sm block"
+            style="--accent: var(--color-amber)"
+            :disabled="negEntropy.lt(node.cost)"
+            @click="tryPurchase(node.id)"
+          >
             购买
           </button>
           <div v-else class="purchased-tag">已激活</div>
@@ -171,12 +188,20 @@ function cancelHardReset() { showResetConfirm.value = false }
       <div class="save-actions">
         <button class="btn-secondary sm" @click="doExport">导出存档</button>
         <button class="btn-secondary sm" @click="manualSave">手动保存</button>
-        <button class="btn-ghost sm" style="color: var(--color-alert)" @click="tryHardReset">清除存档</button>
+        <button class="btn-ghost sm" style="color: var(--color-alert)" @click="tryHardReset">
+          清除存档
+        </button>
       </div>
       <p v-if="saveMsg" class="save-msg">{{ saveMsg }}</p>
       <!-- 导出码回退显示（剪贴板不可用时） -->
       <div v-if="showExportCode" class="export-fallback">
-        <textarea :value="exportCodeDisplay" readonly rows="4" placeholder="导出存档码" @focus="($event.target as HTMLTextAreaElement).select()"></textarea>
+        <textarea
+          :value="exportCodeDisplay"
+          readonly
+          rows="4"
+          placeholder="导出存档码"
+          @focus="($event.target as HTMLTextAreaElement).select()"
+        ></textarea>
       </div>
       <div class="import-box">
         <textarea v-model="importCode" placeholder="粘贴存档代码…" rows="3"></textarea>
@@ -207,13 +232,23 @@ function cancelHardReset() { showResetConfirm.value = false }
       <p class="gain-preview">获得 +{{ fmt(previewGain) }} 负熵</p>
       <div class="confirm-actions">
         <button class="btn-secondary" style="flex: 1" @click="cancelTranscend">取消</button>
-        <button class="btn-accent" style="flex: 1; --accent: var(--color-amber)" @click="confirmTranscend">确认重启</button>
+        <button
+          class="btn-accent"
+          style="flex: 1; --accent: var(--color-amber)"
+          @click="confirmTranscend"
+        >
+          确认重启
+        </button>
       </div>
     </ModalOverlay>
 
     <!-- 清除存档确认弹窗 -->
-    <ModalOverlay v-model="showResetConfirm" aria-label="确认清除存档" @overlay-click="cancelHardReset">
-      <h2 class="confirm-title font-display" style="color: var(--color-alert);">确认清除存档？</h2>
+    <ModalOverlay
+      v-model="showResetConfirm"
+      aria-label="确认清除存档"
+      @overlay-click="cancelHardReset"
+    >
+      <h2 class="confirm-title font-display" style="color: var(--color-alert)">确认清除存档？</h2>
       <div class="warning-box">
         <p>⚠️ 此操作将<strong>永久清除</strong>以下全部数据，不可恢复：</p>
         <ul>
@@ -226,56 +261,235 @@ function cancelHardReset() { showResetConfirm.value = false }
       </div>
       <div class="confirm-actions">
         <button class="btn-secondary" style="flex: 1" @click="cancelHardReset">取消</button>
-        <button class="btn-accent" style="flex: 1; --accent: var(--color-alert)" @click="confirmHardReset">确认清除</button>
+        <button
+          class="btn-accent"
+          style="flex: 1; --accent: var(--color-alert)"
+          @click="confirmHardReset"
+        >
+          确认清除
+        </button>
       </div>
     </ModalOverlay>
   </div>
 </template>
 
 <style scoped>
-.prestige-view { display: flex; flex-direction: column; gap: var(--space-4); animation: screenIn .4s var(--ease-out); }
-.page-title { color: var(--color-amber); }
+.prestige-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  animation: screenIn 0.4s var(--ease-out);
+}
+.page-title {
+  color: var(--color-amber);
+}
 
-.neg-panel { background: var(--color-surface); border: 1px solid var(--color-amber); border-radius: var(--radius-lg); padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; }
-.neg-label { font-size: var(--text-xs); color: var(--color-t-secondary); }
-.neg-value { font-size: var(--text-2xl); font-weight: 900; color: var(--color-amber); text-shadow: 0 0 16px rgba(255,182,39,.3); }
-.preview-label { font-size: var(--text-xs); color: var(--color-t-secondary); text-align: right; }
-.preview-value { font-size: var(--text-lg); font-weight: 700; color: var(--color-t-tertiary); }
-.preview-value.ready { color: var(--color-quantum); }
+.neg-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-amber);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.neg-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+.neg-value {
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  color: var(--color-amber);
+  text-shadow: 0 0 16px rgba(255, 182, 39, 0.3);
+}
+.preview-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  text-align: right;
+}
+.preview-value {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-t-tertiary);
+}
+.preview-value.ready {
+  color: var(--color-quantum);
+}
 
-.btn-transcend { width: 100%; padding: var(--space-4); background: linear-gradient(135deg, var(--color-amber), #ff8c00); color: var(--color-void); border-radius: var(--radius-md); font-weight: 700; font-size: var(--text-base); display: flex; align-items: center; justify-content: center; gap: var(--space-2); transition: all .15s var(--ease-out); }
-.btn-transcend:hover:not(:disabled) { box-shadow: 0 0 20px rgba(255,182,39,.3); }
-.btn-transcend:active:not(:disabled) { transform: scale(.97); }
-.btn-transcend:disabled { background: var(--color-elevated); color: var(--color-t-tertiary); cursor: not-allowed; opacity: .5; }
-.req-hint { font-size: var(--text-xs); color: var(--color-t-tertiary); text-align: center; }
-.ready-hint { font-size: var(--text-xs); color: var(--color-quantum); text-align: center; }
+.btn-transcend {
+  width: 100%;
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--color-amber), #ff8c00);
+  color: var(--color-void);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--text-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: all 0.15s var(--ease-out);
+}
+.btn-transcend:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(255, 182, 39, 0.3);
+}
+.btn-transcend:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-transcend:disabled {
+  background: var(--color-elevated);
+  color: var(--color-t-tertiary);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.req-hint {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  text-align: center;
+}
+.ready-hint {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+  text-align: center;
+}
 
-.tree-grid { display: flex; flex-direction: column; gap: var(--space-2); }
-.tree-node { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-md); padding: var(--space-3); }
-.tree-node.purchased { border-color: var(--color-quantum); }
-.tree-node.affordable { border-color: var(--color-amber); }
-.node-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-1); }
-.node-name { font-size: var(--text-sm); font-weight: 600; }
-.node-cost { font-size: var(--text-xs); color: var(--color-amber); }
-.node-desc { font-size: var(--text-xs); color: var(--color-t-secondary); margin-bottom: var(--space-2); }
-.node-effects { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-bottom: var(--space-2); }
-.node-eff { font-size: var(--text-xs); padding: var(--space-1) var(--space-2); background: var(--color-elevated); border-radius: 3px; }
-.purchased-tag { text-align: center; font-size: var(--text-xs); color: var(--color-quantum); }
+.tree-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.tree-node {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.tree-node.purchased {
+  border-color: var(--color-quantum);
+}
+.tree-node.affordable {
+  border-color: var(--color-amber);
+}
+.node-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-1);
+}
+.node-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.node-cost {
+  font-size: var(--text-xs);
+  color: var(--color-amber);
+}
+.node-desc {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.node-effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+.node-eff {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-elevated);
+  border-radius: 3px;
+}
+.purchased-tag {
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+}
 
-.save-section { background: var(--color-surface); border: 1px solid var(--color-border-line); border-radius: var(--radius-lg); padding: var(--space-3); }
-.save-actions { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); }
-.import-box { display: flex; flex-direction: column; gap: var(--space-2); }
-.import-box textarea { background: var(--color-elevated); border: 1px solid var(--color-border-line); border-radius: var(--radius-md); padding: var(--space-2); font-size: var(--text-xs); color: var(--color-t-primary); resize: vertical; }
-.import-msg { font-size: var(--text-xs); color: var(--color-core); }
+.save-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.save-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.import-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.import-box textarea {
+  background: var(--color-elevated);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-primary);
+  resize: vertical;
+}
+.import-msg {
+  font-size: var(--text-xs);
+  color: var(--color-core);
+}
 
-.modal { border-color: var(--color-amber); }
-.confirm-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-amber); text-align: center; margin-bottom: var(--space-3); }
-.warning-box { background: rgba(244,63,94,.06); border: 1px solid rgba(244,63,94,.2); border-radius: var(--radius-md); padding: var(--space-3); font-size: var(--text-xs); margin-bottom: var(--space-3); }
-.warning-box ul { margin: var(--space-1) 0 var(--space-2) var(--space-4); color: var(--color-t-secondary); }
-.warning-box p { color: var(--color-t-primary); }
-.gain-preview { text-align: center; font-size: var(--text-sm); color: var(--color-quantum); margin-bottom: var(--space-3); }
-.confirm-actions { display: flex; gap: var(--space-2); }
-.save-msg { font-size: var(--text-xs); color: var(--color-quantum); margin-top: calc(-1 * var(--space-1)); }
-.export-fallback { margin-top: var(--space-1); }
-.export-fallback textarea { width: 100%; background: var(--color-elevated); border: 1px solid var(--color-amber); border-radius: var(--radius-md); padding: var(--space-2); font-size: var(--text-xs); color: var(--color-t-primary); resize: vertical; word-break: break-all; }
+.modal {
+  border-color: var(--color-amber);
+}
+.confirm-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-amber);
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+.warning-box {
+  background: rgba(244, 63, 94, 0.06);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-xs);
+  margin-bottom: var(--space-3);
+}
+.warning-box ul {
+  margin: var(--space-1) 0 var(--space-2) var(--space-4);
+  color: var(--color-t-secondary);
+}
+.warning-box p {
+  color: var(--color-t-primary);
+}
+.gain-preview {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-quantum);
+  margin-bottom: var(--space-3);
+}
+.confirm-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.save-msg {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+  margin-top: calc(-1 * var(--space-1));
+}
+.export-fallback {
+  margin-top: var(--space-1);
+}
+.export-fallback textarea {
+  width: 100%;
+  background: var(--color-elevated);
+  border: 1px solid var(--color-amber);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-primary);
+  resize: vertical;
+  word-break: break-all;
+}
 </style>

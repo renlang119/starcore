@@ -13,12 +13,54 @@ const { isDesktop } = useBreakpoint()
 
 /** P2-2 星点闪烁 — 背景星点配置（替代 6 个静态 span） */
 const stars = [
-  { top: '18%', left: '12%', background: 'rgba(255,255,255,.6)', size: '2px', duration: '3.2s', delay: '0s' },
-  { top: '12%', left: '78%', background: 'rgba(0,229,255,.5)', size: '2px', duration: '2.8s', delay: '-0.7s' },
-  { top: '65%', left: '35%', background: 'rgba(255,255,255,.4)', size: '2px', duration: '3.5s', delay: '-1.4s' },
-  { top: '78%', left: '88%', background: 'rgba(167,139,250,.4)', size: '2px', duration: '3.0s', delay: '-2.1s' },
-  { top: '88%', left: '22%', background: 'rgba(255,255,255,.3)', size: '2px', duration: '2.5s', delay: '-0.5s' },
-  { top: '40%', left: '60%', background: 'rgba(0,229,255,.3)', size: '3px', duration: '4.0s', delay: '-1.8s' },
+  {
+    top: '18%',
+    left: '12%',
+    background: 'rgba(255,255,255,.6)',
+    size: '2px',
+    duration: '3.2s',
+    delay: '0s',
+  },
+  {
+    top: '12%',
+    left: '78%',
+    background: 'rgba(0,229,255,.5)',
+    size: '2px',
+    duration: '2.8s',
+    delay: '-0.7s',
+  },
+  {
+    top: '65%',
+    left: '35%',
+    background: 'rgba(255,255,255,.4)',
+    size: '2px',
+    duration: '3.5s',
+    delay: '-1.4s',
+  },
+  {
+    top: '78%',
+    left: '88%',
+    background: 'rgba(167,139,250,.4)',
+    size: '2px',
+    duration: '3.0s',
+    delay: '-2.1s',
+  },
+  {
+    top: '88%',
+    left: '22%',
+    background: 'rgba(255,255,255,.3)',
+    size: '2px',
+    duration: '2.5s',
+    delay: '-0.5s',
+  },
+  {
+    top: '40%',
+    left: '60%',
+    background: 'rgba(0,229,255,.3)',
+    size: '3px',
+    duration: '4.0s',
+    delay: '-1.8s',
+  },
 ] as const
 
 /**
@@ -34,8 +76,10 @@ watch(
   () => route.path,
   () => {
     warpFlash.value = true
-    setTimeout(() => { warpFlash.value = false }, 350)
-  },
+    setTimeout(() => {
+      warpFlash.value = false
+    }, 350)
+  }
 )
 </script>
 
@@ -154,11 +198,11 @@ watch(
     rgba(0, 229, 255, 0.1) 30%,
     transparent 70%
   );
-  animation: warpFlash .35s var(--ease-out);
+  animation: warpFlash 0.35s var(--ease-out);
 }
 @media (prefers-reduced-motion: reduce) {
   .warp-overlay {
-    animation: fadeIn .2s ease;
+    animation: fadeIn 0.2s ease;
     background: rgba(255, 255, 255, 0.08);
   }
 }

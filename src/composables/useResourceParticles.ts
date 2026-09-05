@@ -21,15 +21,14 @@ const SPAWN_INTERVAL = 400 // ms
 
 export function useResourceParticles(
   /** 返回当前有正 rate 的资源 id 列表 */
-  getPositiveRateResources: () => string[],
+  getPositiveRateResources: () => string[]
 ) {
   const particles = ref<Particle[]>([])
   let nextId = 0
   let spawnTimer: ReturnType<typeof setInterval> | null = null
 
   const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   function spawn() {
     if (document.hidden) return

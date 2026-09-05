@@ -10,16 +10,24 @@ import type { ExplorationSaveData } from '@/lib/storage'
 
 export interface ExploreProgress {
   nodeId: string
-  startTime: number  // 0 = 未开始
-  endTime: number    // 预计完成时间戳（0 = 未开始）；锁定后不受 exploreMult 变化影响
+  startTime: number // 0 = 未开始
+  endTime: number // 预计完成时间戳（0 = 未开始）；锁定后不受 exploreMult 变化影响
   completed: boolean
 }
 
 export const useExplorationStore = defineStore('exploration', () => {
   const progress = ref<Record<string, ExploreProgress>>({})
-  for (const n of EXPLORE_NODES) progress.value[n.id] = { nodeId: n.id, startTime: 0, endTime: 0, completed: false }
+  for (const n of EXPLORE_NODES)
+    progress.value[n.id] = { nodeId: n.id, startTime: 0, endTime: 0, completed: false }
 
-  const completedNodes = computed(() => new Set(Object.values(progress.value).filter((p) => p.completed).map((p) => p.nodeId)))
+  const completedNodes = computed(
+    () =>
+      new Set(
+        Object.values(progress.value)
+          .filter((p) => p.completed)
+          .map((p) => p.nodeId)
+      )
+  )
   const count = computed(() => completedNodes.value.size)
 
   function isCompleted(id: string) {
@@ -39,7 +47,12 @@ export const useExplorationStore = defineStore('exploration', () => {
   }
 
   /** 开始探索 */
-  function startExplore(nodeId: string, exploreMult: Decimal, canAffordFn: (cost: Partial<Record<string, number>>) => boolean, spendFn: (cost: Partial<Record<string, number>>) => boolean): boolean {
+  function startExplore(
+    nodeId: string,
+    exploreMult: Decimal,
+    canAffordFn: (cost: Partial<Record<string, number>>) => boolean,
+    spendFn: (cost: Partial<Record<string, number>>) => boolean
+  ): boolean {
     const node = getNode(nodeId)
     if (!node) return false
     if (isCompleted(nodeId) || isExploring(nodeId)) return false
@@ -49,15 +62,30 @@ export const useExplorationStore = defineStore('exploration', () => {
     // 锁定完成时间：基于当前 exploreMult 计算，之后 mult 变化不影响本次探索
     const required = node.time / exploreMult.toNumber()
     const now = Date.now()
-    progress.value[nodeId] = { nodeId, startTime: now, endTime: now + required * 1000, completed: false }
+    progress.value[nodeId] = {
+      nodeId,
+      startTime: now,
+      endTime: now + required * 1000,
+      completed: false,
+    }
     return true
   }
 
   /** tick：检查探索是否完成（基于锁定 endTime，不受 mult 变化影响） */
-  function applyTick(exploreMult: Decimal): { nodeId: string; rewards: Partial<Record<string, number>>; story?: string; unlocks: string[] }[] {
+  function applyTick(exploreMult: Decimal): {
+    nodeId: string
+    rewards: Partial<Record<string, number>>
+    story?: string
+    unlocks: string[]
+  }[] {
     void exploreMult // 保留参数兼容但不再使用——完成时间在 startExplore 时已锁定
     const now = Date.now()
-    const results: { nodeId: string; rewards: Partial<Record<string, number>>; story?: string; unlocks: string[] }[] = []
+    const results: {
+      nodeId: string
+      rewards: Partial<Record<string, number>>
+      story?: string
+      unlocks: string[]
+    }[] = []
     for (const p of Object.values(progress.value)) {
       if (p.completed || p.startTime === 0) continue
       // 向后兼容：旧存档无 endTime，回退到动态计算
@@ -71,7 +99,12 @@ export const useExplorationStore = defineStore('exploration', () => {
         p.completed = true
         const node = getNode(p.nodeId)
         if (!node) continue
-        results.push({ nodeId: p.nodeId, rewards: { ...node.rewards }, story: node.story, unlocks: node.unlocksStronghold ?? [] })
+        results.push({
+          nodeId: p.nodeId,
+          rewards: { ...node.rewards },
+          story: node.story,
+          unlocks: node.unlocksStronghold ?? [],
+        })
       }
     }
     return results
@@ -96,7 +129,8 @@ export const useExplorationStore = defineStore('exploration', () => {
 
   function reset() {
     progress.value = {}
-    for (const n of EXPLORE_NODES) progress.value[n.id] = { nodeId: n.id, startTime: 0, endTime: 0, completed: false }
+    for (const n of EXPLORE_NODES)
+      progress.value[n.id] = { nodeId: n.id, startTime: 0, endTime: 0, completed: false }
   }
 
   function serialize() {
@@ -110,8 +144,17 @@ export const useExplorationStore = defineStore('exploration', () => {
   }
 
   return {
-    progress, completedNodes, count,
-    isCompleted, isExploring, availableNodes, startExplore, applyTick, getProgress,
-    reset, serialize, hydrate,
+    progress,
+    completedNodes,
+    count,
+    isCompleted,
+    isExploring,
+    availableNodes,
+    startExplore,
+    applyTick,
+    getProgress,
+    reset,
+    serialize,
+    hydrate,
   }
 })

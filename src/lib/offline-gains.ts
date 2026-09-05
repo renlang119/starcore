@@ -42,7 +42,14 @@ export interface OfflineGainsDeps {
 export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): OfflineReport | null {
   if (elapsed < 60) return null
   const duration = Math.min(elapsed, OFFLINE_CAP)
-  const { totalProduction, offlineMult, garrisoned, garrisonIdleReward, gainResource, advanceTraining } = deps
+  const {
+    totalProduction,
+    offlineMult,
+    garrisoned,
+    garrisonIdleReward,
+    gainResource,
+    advanceTraining,
+  } = deps
 
   // 建筑产出
   const gains: Record<string, string> = {}
@@ -79,7 +86,9 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
   ]
   if (Math.random() < 0.2 && Object.keys(gains).length > 0) {
     const ev = events[Math.floor(Math.random() * events.length)]
-    const evGain = totalProduction[ev.res as keyof typeof totalProduction]?.times(ev.mult).times(offlineMult) ?? D(0)
+    const evGain =
+      totalProduction[ev.res as keyof typeof totalProduction]?.times(ev.mult).times(offlineMult) ??
+      D(0)
     if (evGain.gt(0)) {
       gainResource(ev.res as ResourceType, evGain)
       const existing = gains[ev.res] ? deser(gains[ev.res]) : D(0)
@@ -89,5 +98,10 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
 
   const hasTrained = Object.keys(trainedUnits).length > 0
   const hasGarrison = Object.keys(garrisonGains).length > 0
-  return { duration, gains, ...(hasGarrison ? { garrisonGains } : {}), ...(hasTrained ? { trainedUnits } : {}) }
+  return {
+    duration,
+    gains,
+    ...(hasGarrison ? { garrisonGains } : {}),
+    ...(hasTrained ? { trainedUnits } : {}),
+  }
 }

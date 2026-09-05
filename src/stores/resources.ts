@@ -10,7 +10,7 @@ import type { ResourceSaveData } from '@/lib/storage'
 
 export interface ResourceState {
   amount: Decimal
-  total: Decimal  // 历史总产出
+  total: Decimal // 历史总产出
 }
 
 export interface ResourceMeta {
@@ -38,11 +38,19 @@ export const useResourcesStore = defineStore('resources', () => {
     dark: D(0),
   })
   const totals = ref<Record<ResourceType, Decimal>>({
-    energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0),
+    energy: D(0),
+    crystal: D(0),
+    alloy: D(0),
+    data: D(0),
+    dark: D(0),
   })
   /** 每秒产出（由 game loop 每帧计算并写入） */
   const production = ref<Record<ResourceType, Decimal>>({
-    energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0),
+    energy: D(0),
+    crystal: D(0),
+    alloy: D(0),
+    data: D(0),
+    dark: D(0),
   })
 
   // —— getters ——
@@ -77,7 +85,8 @@ export const useResourcesStore = defineStore('resources', () => {
   function spendCost(cost: Partial<Record<string, number>>): boolean {
     if (!canAfford(cost)) return false
     for (const [k, v] of Object.entries(cost)) {
-      if (k in amounts.value) amounts.value[k as ResourceType] = amounts.value[k as ResourceType].minus(v as number)
+      if (k in amounts.value)
+        amounts.value[k as ResourceType] = amounts.value[k as ResourceType].minus(v as number)
     }
     return true
   }
@@ -110,8 +119,12 @@ export const useResourcesStore = defineStore('resources', () => {
   // —— 序列化 ——
   function serialize() {
     return {
-      amounts: Object.fromEntries(Object.entries(amounts.value).map(([k, v]) => [k, ser(v)])) as Record<string, string>,
-      totals: Object.fromEntries(Object.entries(totals.value).map(([k, v]) => [k, ser(v)])) as Record<string, string>,
+      amounts: Object.fromEntries(
+        Object.entries(amounts.value).map(([k, v]) => [k, ser(v)])
+      ) as Record<string, string>,
+      totals: Object.fromEntries(
+        Object.entries(totals.value).map(([k, v]) => [k, ser(v)])
+      ) as Record<string, string>,
     }
   }
   function hydrate(data: ResourceSaveData | undefined) {
@@ -123,9 +136,23 @@ export const useResourcesStore = defineStore('resources', () => {
   }
 
   return {
-    amounts, totals, production,
-    getAmount, getTotal, getRate, allMeta, getMeta,
-    canAfford, gain, spend, spendCost, setAmount, setProduction, applyTick, reset,
-    serialize, hydrate,
+    amounts,
+    totals,
+    production,
+    getAmount,
+    getTotal,
+    getRate,
+    allMeta,
+    getMeta,
+    canAfford,
+    gain,
+    spend,
+    spendCost,
+    setAmount,
+    setProduction,
+    applyTick,
+    reset,
+    serialize,
+    hydrate,
   }
 })

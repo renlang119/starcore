@@ -22,7 +22,7 @@ export function freshPinia() {
  */
 export function mountComponent<T extends Component>(
   component: T,
-  options: { props?: Record<string, any>; shallow?: boolean } = {},
+  options: { props?: Record<string, any>; shallow?: boolean } = {}
 ): VueWrapper {
   const pinia = createPinia()
   setActivePinia(pinia)

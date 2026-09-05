@@ -16,7 +16,9 @@ export interface OwnedRelic extends RelicDef {
 export type RelicSlotProvider = () => number
 
 const slotProvider = shallowRef<RelicSlotProvider>(() => 0)
-export function setRelicSlotProvider(p: RelicSlotProvider) { slotProvider.value = p }
+export function setRelicSlotProvider(p: RelicSlotProvider) {
+  slotProvider.value = p
+}
 
 export const useRelicsStore = defineStore('relics', () => {
   const owned = ref<OwnedRelic[]>([])
@@ -25,18 +27,27 @@ export const useRelicsStore = defineStore('relics', () => {
   const equipped = ref<(string | null)[]>([null, null, null, null])
 
   // 槽位数随转生树购买扩展（或回退保持对齐）
-  watch(maxSlots, (newMax) => {
-    const cur = equipped.value.length
-    if (newMax > cur) {
-      for (let i = cur; i < newMax; i++) equipped.value.push(null)
-    } else if (newMax < cur) {
-      // 收缩：把超出的槽位中的遗物卸下
-      equipped.value.length = newMax
-    }
-  }, { immediate: true })
+  watch(
+    maxSlots,
+    (newMax) => {
+      const cur = equipped.value.length
+      if (newMax > cur) {
+        for (let i = cur; i < newMax; i++) equipped.value.push(null)
+      } else if (newMax < cur) {
+        // 收缩：把超出的槽位中的遗物卸下
+        equipped.value.length = newMax
+      }
+    },
+    { immediate: true }
+  )
 
   const ownedCount = computed(() => owned.value.length)
-  const equippedRelics = computed(() => equipped.value.map((id) => owned.value.find((r) => r.instanceId === id)).filter(Boolean) as OwnedRelic[])
+  const equippedRelics = computed(
+    () =>
+      equipped.value
+        .map((id) => owned.value.find((r) => r.instanceId === id))
+        .filter(Boolean) as OwnedRelic[]
+  )
 
   /** 装备某遗物到槽位 */
   function equip(instanceId: string, slot: number): boolean {
@@ -71,7 +82,11 @@ export const useRelicsStore = defineStore('relics', () => {
 
   /** 获得新遗物 */
   function obtain(relic: RelicDef): OwnedRelic {
-    const newRelic: OwnedRelic = { ...relic, instanceId: 'relic_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7), obtainedAt: Date.now() }
+    const newRelic: OwnedRelic = {
+      ...relic,
+      instanceId: 'relic_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+      obtainedAt: Date.now(),
+    }
     pushRelic(newRelic)
     return newRelic
   }
@@ -105,28 +120,44 @@ export const useRelicsStore = defineStore('relics', () => {
 
   function serialize() {
     return {
-      owned: owned.value.map((r) => ({ id: r.id, instanceId: r.instanceId, obtainedAt: r.obtainedAt })),
+      owned: owned.value.map((r) => ({
+        id: r.id,
+        instanceId: r.instanceId,
+        obtainedAt: r.obtainedAt,
+      })),
       equipped: [...equipped.value],
     }
   }
   function hydrate(data: RelicSaveData | undefined) {
     if (!data) return
     if (data.owned) {
-      owned.value = data.owned.map((r) => {
-        // v4+：精简存档，从 RELIC_POOL 补全完整字段
-        const def = getRelicById(r.id)
-        if (def) {
-          return { ...def, instanceId: r.instanceId, obtainedAt: r.obtainedAt }
-        }
-        // 降级：id 在 RELIC_POOL 中找不到时，尝试从旧格式完整字段恢复
-        // 旧格式 owned 条目包含 name/desc/rarity/icon/effects/source
-        const legacy = r as Partial<RelicDef>
-        if (legacy.name) {
-          return { id: r.id, name: legacy.name, desc: legacy.desc ?? '', rarity: legacy.rarity ?? 'common', icon: legacy.icon ?? 'i-nav-relic', effects: legacy.effects ?? [], source: legacy.source ?? '', instanceId: r.instanceId, obtainedAt: r.obtainedAt }
-        }
-        // 完全无法恢复，跳过该遗物
-        return null
-      }).filter((r): r is OwnedRelic => r !== null) as OwnedRelic[]
+      owned.value = data.owned
+        .map((r) => {
+          // v4+：精简存档，从 RELIC_POOL 补全完整字段
+          const def = getRelicById(r.id)
+          if (def) {
+            return { ...def, instanceId: r.instanceId, obtainedAt: r.obtainedAt }
+          }
+          // 降级：id 在 RELIC_POOL 中找不到时，尝试从旧格式完整字段恢复
+          // 旧格式 owned 条目包含 name/desc/rarity/icon/effects/source
+          const legacy = r as Partial<RelicDef>
+          if (legacy.name) {
+            return {
+              id: r.id,
+              name: legacy.name,
+              desc: legacy.desc ?? '',
+              rarity: legacy.rarity ?? 'common',
+              icon: legacy.icon ?? 'i-nav-relic',
+              effects: legacy.effects ?? [],
+              source: legacy.source ?? '',
+              instanceId: r.instanceId,
+              obtainedAt: r.obtainedAt,
+            }
+          }
+          // 完全无法恢复，跳过该遗物
+          return null
+        })
+        .filter((r): r is OwnedRelic => r !== null) as OwnedRelic[]
     }
     if (data.equipped) {
       const saved = [...data.equipped] as (string | null)[]
@@ -139,8 +170,20 @@ export const useRelicsStore = defineStore('relics', () => {
   }
 
   return {
-    owned, equipped, ownedCount, equippedRelics, equippedEffects, maxSlots,
-    equip, unequip, isEquipped, obtain, discard, getMult,
-    reset, serialize, hydrate,
+    owned,
+    equipped,
+    ownedCount,
+    equippedRelics,
+    equippedEffects,
+    maxSlots,
+    equip,
+    unequip,
+    isEquipped,
+    obtain,
+    discard,
+    getMult,
+    reset,
+    serialize,
+    hydrate,
   }
 })
