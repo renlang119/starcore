@@ -3,7 +3,52 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.52
+> 当前版本：v0.53
+
+---
+
+## v0.53 — 文档: 文档库整理（删 8 份历史草稿，保留文档全中文命名）
+
+**变更性质：文档（结构整理）**
+**开发时间：2026-09-05**
+
+### 概述
+
+docs/ 文档库去重清理：删除 8 份历史文档（有效结论均已落地代码/本日志/保
+留文档），保留的 7 份活跃参考文档全部改为中文名。文档总量 8511 行 → 约
+4200 行。
+
+### 变更明细
+
+- 文件名映射（旧 → 新）：
+  - p0-token-mapping.md → 设计Token规范.md
+  - p1-design-deliverables.md → 组件与按钮设计规范.md
+  - p2-atmosphere-visual-spec.md → 氛围视觉规范.md
+  - p2-interaction-state-spec.md → 交互状态规范.md
+  - p3-design-specs.md → 体验增强设计规范.md
+  - icon-design-spec.md → 图标设计规范.md
+  - 游戏设定与架构.md 不变（v0.52 入库）
+- 删除清单（git 历史可查）：
+  - home-ui-总体推进方案.md（P0–P3 计划表，全部落地完毕）与 home-ui-总体推
+    进方案-技术复查.md（计划的技术复查）
+  - starcore-v0.41-复查-前端层.md（v0.41 时点复查，9/11 项已修复）
+  - ui-eval-report.md（早期评估，结论已转化）
+  - cache-strategy-evaluation.md（缓存评估，结论已落地部署配置）
+  - old-icon-visual-tweaks.md + audits/old-icon-unification-audit.md（图标
+    历史草稿，已并入图标设计规范 v2.0；audits/ 目录随删）
+  - p1-2-行动队列合并-数据源梳理.md（合并前结构梳理，最终口径见 v0.49 条目
+    与代码注释）
+- 连带更新：
+  - 代码注释中文档名引用同步更新 5 处（EmptyState / useOnboarding /
+    useResourceParticles / HomeView）
+  - 保留文档中对退役文件的引用改为概念表述（「计划文档已退役，git 历史可
+    查」）
+  - 本日志的历史条目保留旧文件名不改（日志即历史）
+
+### 验证
+
+- vue-tsc -b 零错误 + vite build 通过；lint:check / format:check 零输出
+- vitest run 12 文件 86/86 通过；Playwright 双端回归全过
 
 ---
 
