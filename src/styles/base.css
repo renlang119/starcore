@@ -1,0 +1,99 @@
+/* ============================================================
+   基础重置
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid;
+}
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  overflow-x: clip; /* 修复移动端横向滚动：hero 光晕伪元素(::after 240px + translate 居中)的变换前位置被计入 viewport 溢出区，body 级 hidden 无法阻止 viewport 滚动，必须 html 级拦截；clip 优先(不建滚动容器)，旧内核回退 hidden */
+}
+body {
+  font-family: var(--font-body);
+  background: var(--color-void);
+  color: var(--color-t-primary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+button {
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+ul,
+ol {
+  list-style: none;
+}
+input,
+textarea,
+select {
+  font: inherit;
+}
+img,
+svg,
+video,
+canvas {
+  display: block;
+  vertical-align: middle;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--color-core);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   滚动条
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-glow);
+  border-radius: 3px;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
