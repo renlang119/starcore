@@ -358,10 +358,10 @@ const displayActions = computed(() => (hasActions.value ? actionQueue.value : fa
         <div
           class="core-visual"
           :class="{ 'core-clicked': coreClicked }"
-          @click="onCoreClick"
           role="button"
           tabindex="0"
           aria-label="星核核心，点击进入建造页面"
+          @click="onCoreClick"
           @keydown.enter="onCoreClick"
         >
           <div class="core-ring r1" :class="r1Phase"></div>

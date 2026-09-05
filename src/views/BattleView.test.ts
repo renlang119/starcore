@@ -24,7 +24,9 @@ vi.mock('vue-router', () => ({
   useRoute: () => ({ params: mockRouteParams.value }),
   useRouter: () => ({ push: mockPush }),
   RouterLink: defineComponent({
-    props: ['to'],
+    props: {
+      to: { type: String, required: false, default: '' },
+    },
     template: '<a><slot /></a>',
   }),
   RouterView: defineComponent({
@@ -132,9 +134,6 @@ describe('BattleView — 战斗流程与奖励防重入', () => {
     // 开始战斗
     vm.startBattle()
     await wrapper.vm.$nextTick()
-
-    // 获取战斗后的基准能量（战斗结果可能已确定奖励）
-    const baseline = resources.getAmount('energy').toNumber()
 
     // 第一次确认结果
     vm.confirmResult()
