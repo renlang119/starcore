@@ -144,98 +144,98 @@ const availableStrongholds = computed(() => {
     <!-- 星图层 -->
     <template v-else>
       <div v-for="layer in layers" :key="layer" class="layer-section">
-      <div class="layer-header" :style="{ color: LAYER_INFO[layer].color }">
-        <span class="layer-name">{{ LAYER_INFO[layer].name }}</span>
-        <span class="layer-dist">{{ LAYER_INFO[layer].distance }}</span>
-      </div>
+        <div class="layer-header" :style="{ color: LAYER_INFO[layer].color }">
+          <span class="layer-name">{{ LAYER_INFO[layer].name }}</span>
+          <span class="layer-dist">{{ LAYER_INFO[layer].distance }}</span>
+        </div>
 
-      <div class="node-list">
-        <div
-          v-for="node in nodesByLayer[layer]"
-          :key="node.id"
-          class="node-card"
-          :class="{
-            completed: game.exploration.isCompleted(node.id),
-            exploring: game.exploration.isExploring(node.id),
-            locked: node.requires && !node.requires.every((r) => game.exploration.isCompleted(r)),
-          }"
-        >
-          <div class="n-head">
-            <div class="n-dot" :style="{ background: LAYER_INFO[layer].color }"></div>
-            <div class="n-name">{{ node.name }}</div>
-            <span v-if="game.exploration.isCompleted(node.id)" class="n-done">
-              <svg style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true">
-                <use href="#i-ui-check" />
-              </svg>
-            </span>
-          </div>
-          <p class="n-desc">{{ node.desc }}</p>
-
-          <!-- 探索进度 -->
-          <div v-if="game.exploration.isExploring(node.id)" class="n-progress">
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{
-                  width: getProgress(node.id) * 100 + '%',
-                  background: LAYER_INFO[layer].color,
-                }"
-              ></div>
-            </div>
-            <span class="progress-text font-mono"
-              >{{ Math.floor(getProgress(node.id) * 100) }}%</span
-            >
-          </div>
-
-          <!-- 成本 -->
+        <div class="node-list">
           <div
-            v-else-if="
-              !game.exploration.isCompleted(node.id) &&
-              (!node.requires || node.requires.every((r) => game.exploration.isCompleted(r)))
-            "
-            class="n-info"
+            v-for="node in nodesByLayer[layer]"
+            :key="node.id"
+            class="node-card"
+            :class="{
+              completed: game.exploration.isCompleted(node.id),
+              exploring: game.exploration.isExploring(node.id),
+              locked: node.requires && !node.requires.every((r) => game.exploration.isCompleted(r)),
+            }"
           >
-            <div class="n-cost">
-              <CostTag :cost="node.cost" />
-              <span class="time-tag font-mono">{{
-                fmtTime(node.time / exploreMult.toNumber())
-              }}</span>
+            <div class="n-head">
+              <div class="n-dot" :style="{ background: LAYER_INFO[layer].color }"></div>
+              <div class="n-name">{{ node.name }}</div>
+              <span v-if="game.exploration.isCompleted(node.id)" class="n-done">
+                <svg style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true">
+                  <use href="#i-ui-check" />
+                </svg>
+              </span>
             </div>
-            <button
-              class="btn-accent sm"
-              style="--accent: var(--color-quantum)"
-              :disabled="!game.resources.canAfford(node.cost)"
-              @click="tryExplore(node.id)"
-            >
-              探索
-            </button>
-          </div>
+            <p class="n-desc">{{ node.desc }}</p>
 
-          <!-- 锁定 -->
-          <div
-            v-else-if="
-              node.requires && !node.requires.every((r) => game.exploration.isCompleted(r))
-            "
-            class="n-locked"
-          >
-            需先完成：{{
-              node.requires.map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name).join(', ')
-            }}
-          </div>
+            <!-- 探索进度 -->
+            <div v-if="game.exploration.isExploring(node.id)" class="n-progress">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  :style="{
+                    width: getProgress(node.id) * 100 + '%',
+                    background: LAYER_INFO[layer].color,
+                  }"
+                ></div>
+              </div>
+              <span class="progress-text font-mono"
+                >{{ Math.floor(getProgress(node.id) * 100) }}%</span
+              >
+            </div>
 
-          <!-- 已完成奖励预览 -->
-          <div v-if="game.exploration.isCompleted(node.id)" class="n-rewards">
-            <span class="rewards-label">已获得：</span>
-            <span
-              v-for="r in getNodeRewards(node)"
-              :key="r.name"
-              class="reward-tag"
-              :style="{ color: r.color }"
-              >{{ r.name }} +{{ r.amount }}</span
+            <!-- 成本 -->
+            <div
+              v-else-if="
+                !game.exploration.isCompleted(node.id) &&
+                (!node.requires || node.requires.every((r) => game.exploration.isCompleted(r)))
+              "
+              class="n-info"
             >
+              <div class="n-cost">
+                <CostTag :cost="node.cost" />
+                <span class="time-tag font-mono">{{
+                  fmtTime(node.time / exploreMult.toNumber())
+                }}</span>
+              </div>
+              <button
+                class="btn-accent sm"
+                style="--accent: var(--color-quantum)"
+                :disabled="!game.resources.canAfford(node.cost)"
+                @click="tryExplore(node.id)"
+              >
+                探索
+              </button>
+            </div>
+
+            <!-- 锁定 -->
+            <div
+              v-else-if="
+                node.requires && !node.requires.every((r) => game.exploration.isCompleted(r))
+              "
+              class="n-locked"
+            >
+              需先完成：{{
+                node.requires.map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name).join(', ')
+              }}
+            </div>
+
+            <!-- 已完成奖励预览 -->
+            <div v-if="game.exploration.isCompleted(node.id)" class="n-rewards">
+              <span class="rewards-label">已获得：</span>
+              <span
+                v-for="r in getNodeRewards(node)"
+                :key="r.name"
+                class="reward-tag"
+                :style="{ color: r.color }"
+                >{{ r.name }} +{{ r.amount }}</span
+              >
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </template>
 
