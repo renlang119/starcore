@@ -13,11 +13,15 @@ import { ref, onMounted, onUnmounted } from 'vue'
 interface Particle {
   id: number
   resourceId: string
+  /** 生命周期（ms），生成时随机 800~1200（体验增强设计规范 §P3-6） */
+  duration: number
 }
 
 const GLOBAL_MAX = 15
 const PER_RESOURCE_MAX = 3
 const SPAWN_INTERVAL = 400 // ms
+const DURATION_MIN = 800
+const DURATION_MAX = 1200
 
 export function useResourceParticles(
   /** 返回当前有正 rate 的资源 id 列表 */
@@ -46,12 +50,13 @@ export function useResourceParticles(
     if (count >= PER_RESOURCE_MAX) return
 
     const id = nextId++
-    particles.value.push({ id, resourceId: resId })
+    const duration = DURATION_MIN + Math.random() * (DURATION_MAX - DURATION_MIN)
+    particles.value.push({ id, resourceId: resId, duration })
 
-    // 800ms 后移除（动画时长）
+    // 动画结束后移除（与 --duration 同步）
     setTimeout(() => {
       particles.value = particles.value.filter((p) => p.id !== id)
-    }, 800)
+    }, duration)
   }
 
   function start() {
