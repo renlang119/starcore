@@ -3,10 +3,42 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.50
+> 当前版本：v0.51
 
 ---
 
+## v0.51 — 工程化: 新手引导存储口径对齐设计文档
+
+**变更性质：工程化（引导存储口径对齐设计文档）**
+**开发时间：2026-09-05**
+
+### 概述
+
+新手引导的 localStorage 存储与体验增强设计规范 §3.3.4 不符（key 名与数据结
+构均不同）。本版本按文档对齐：key 改为 `starcore_onboarding`，结构改为
+JSON 对象（每个 step 一个 boolean）。
+
+### 变更明细
+
+- `useOnboarding`：`STORAGE_KEY` 由 `sc_onboarding_v1` 改为
+  `starcore_onboarding`；持久化由「已完成 id 数组」改为「step → boolean 对
+  象」
+- 读取侧兼容防御：内容损坏时按全新处理，不抛错
+- 兼容性：
+  - 旧 key（`sc_onboarding_v1`）不再读取：老玩家会重新看到一遍引导气泡，属
+    一次性打扰，已确认接受
+  - 不影响游戏存档（引导状态与存档相互独立）
+
+### 验证
+
+- vitest run 12 文件 86/86 通过（新增 useOnboarding 测试 5 例：首 step 显
+  示 / 对象结构写入 / skipAll / 预置跳过 / 损坏内容兜底）
+- vue-tsc -b 零错误 + vite build 通过；lint:check / format:check 零输出
+- Playwright 回归：行动队列 / 槽位 / 空状态 / 双端八路由全过
+
+---
+
+> v0.50 及更早的历史条目已归档至 [changelog-v0.01-v0.50.md](changelog-v0.01-v0.50.md)（历史存档不再更新，新条目继续在本文件置顶）。
 ## v0.50 — UI: 粒子随机生命周期
 
 **变更性质：UI（粒子生命周期口径对齐设计规范）**
