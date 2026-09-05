@@ -113,7 +113,7 @@
    基础重置
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; }
-html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; overflow-x: hidden; overflow-x: clip; /* 修复移动端横向滚动：hero 光晕伪元素(::after 240px + translate 居中)的变换前位置被计入 viewport 溢出区，body 级 hidden 无法阻止 viewport 滚动，必须 html 级拦截；clip 优先(不建滚动容器)，旧内核回退 hidden */ }
 body {
   font-family: var(--font-body);
   background: var(--color-void);
@@ -198,39 +198,25 @@ body::after {
    动画 keyframes
    ============================================================ */
 @keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pulseNode { 0%,100% { box-shadow: 0 0 0 0 rgba(255,182,39,.3); } 50% { box-shadow: 0 0 0 6px rgba(255,182,39,0); } }
-@keyframes ringPulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: .5; } }
 @keyframes spinRing { to { transform: rotate(360deg); } }
 @keyframes corePulse {
   0%,100% { transform: scale(1); box-shadow: 0 0 40px rgba(0,229,255,.4), inset 0 0 20px rgba(255,255,255,.2); }
   50% { transform: scale(1.08); box-shadow: 0 0 60px rgba(0,229,255,.6), inset 0 0 30px rgba(255,255,255,.3); }
 }
-@keyframes blink { 50% { opacity: .3; } }
 @keyframes twinkle { 0%, 100% { opacity: .3; } 50% { opacity: .8; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modalIn { from { opacity: 0; transform: scale(.92) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes floatUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes actionPulse {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c, var(--color-core)) 20%, transparent); }
   50% { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--c, var(--color-core)) 15%, transparent); }
 }
 /* P2-4 交互反馈游戏化 keyframes */
-@keyframes flashSuccess {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--flash-c, var(--color-quantum)) 40%, transparent); }
-  30% { box-shadow: 0 0 20px 4px color-mix(in srgb, var(--flash-c, var(--color-quantum)) 25%, transparent); }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
 @keyframes coreClickPulse {
   0% { transform: scale(1); }
   20% { transform: scale(1.12); }
   60% { transform: scale(0.97); }
   100% { transform: scale(1); }
-}
-@keyframes shakeError {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-3px); }
-  40%, 80% { transform: translateX(3px); }
 }
 /* P2-9 视觉动线引导 — Hero 底部光柱呼吸 */
 @keyframes flowPulse {
@@ -393,27 +379,6 @@ body::after {
   font-size: var(--text-xs);
   color: var(--color-t-tertiary);
   opacity: .7;
-}
-
-/* 骨架屏加载 */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface) 25%,
-    var(--color-elevated) 50%,
-    var(--color-surface) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: var(--radius-sm);
-}
-.skeleton-line {
-  height: 12px;
-  margin-bottom: var(--space-2);
-}
-.skeleton-line:last-child {
-  margin-bottom: 0;
-  width: 60%;
 }
 
 /* ============================================================
