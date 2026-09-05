@@ -11,7 +11,7 @@ import { migrateSave } from '@/lib/save-migrate'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
 import { useResearchStore } from './research'
-import { useMilitaryStore } from './military'
+import { useMilitaryStore, setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
 import { useCombatStore } from './combat'
 import { useExplorationStore } from './exploration'
 import { useRelicsStore, setRelicSlotProvider } from './relics'
@@ -47,6 +47,10 @@ export const useGameStore = defineStore('game', () => {
 
   // 显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
+  // 训练并行槽：基础 1 槽 + 科技加成（集群操练 I/II 各 +1），封顶 MAX_TRAINING_SLOTS
+  setTrainingSlotProvider(() =>
+    Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
+  )
 
   // —— game meta state ——
   const lastSaveTime = ref(Date.now())

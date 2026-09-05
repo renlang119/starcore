@@ -36,6 +36,7 @@ export interface TechEffect {
     | 'explore_mult'
     | 'prestige_mult'
     | 'offline_bonus'
+    | 'training_slot'
   target?: string // buildingId | resourceId | unitId | etc
   value: number // 乘数，1.1 = +10%
   label: string
@@ -312,6 +313,28 @@ export const TECHS: TechDef[] = [
     cost: { data: 1500, energy: 10000, alloy: 500, dark: 5 },
     requires: ['weapon_upg', 'armor_upg'],
     effects: [{ type: 'unlock', target: 'advanced_units', value: 1, label: '解锁机甲/灵能兵种' }],
+  },
+  {
+    id: 'parallel_training_1',
+    name: '集群操练 I',
+    desc: '标准化训练流程，兵营可同时推进 2 个训练任务',
+    branch: 'military',
+    icon: 'i-branch-military',
+    tier: 3,
+    cost: { data: 800, energy: 6000, alloy: 300 },
+    requires: ['military_basic'],
+    effects: [{ type: 'training_slot', value: 1, label: '训练并行槽 +1' }],
+  },
+  {
+    id: 'parallel_training_2',
+    name: '集群操练 II',
+    desc: '多线作战指挥体系，兵营可同时推进 3 个训练任务',
+    branch: 'military',
+    icon: 'i-tech-mil-basic',
+    tier: 4,
+    cost: { data: 2500, energy: 20000, alloy: 500 },
+    requires: ['parallel_training_1'],
+    effects: [{ type: 'training_slot', value: 1, label: '训练并行槽 +1' }],
   },
 
   // —— 晶脉学 ——
