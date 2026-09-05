@@ -473,7 +473,7 @@ i-{category}-{name}
 #### 步骤 6：本地验证
 
 ```bash
-cd ~/starcore
+cd <项目根目录>
 
 # 1. 类型检查
 npx vue-tsc -b
