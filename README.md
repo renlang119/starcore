@@ -19,7 +19,7 @@
 
 ## 技术栈
 
-Vue 3 · TypeScript · Vite · Pinia · Vue Router · Tailwind CSS 4 · decimal.js · localforage
+Vue 3 · TypeScript · Vite · Pinia · Vue Router · decimal.js · localforage
 
 纯前端，无后端；存档保存在浏览器本地（IndexedDB + localStorage 备份）。
 
