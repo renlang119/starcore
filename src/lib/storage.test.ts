@@ -9,7 +9,7 @@ import { exportSave, importSave, type SaveData } from './storage'
 
 function makeValidSaveData(): SaveData {
   return {
-    version: 5,
+    version: 6,
     savedAt: Date.now(),
     player: { id: 'p1', name: '指挥官' },
     resources: {
@@ -42,8 +42,9 @@ function makeValidSaveData(): SaveData {
       negativeEntropy: '3',
       totalTranscends: 1,
       tree: [
-        { id: 'relic_slot', purchased: true },
-        { id: 'starting_energy', purchased: false },
+        { id: 't_slot', level: 1 },
+        { id: 't_starting', level: 0 },
+        { id: 't_inf_prod', level: 2 },
       ],
     },
   }
@@ -99,5 +100,36 @@ describe('storage export/import', () => {
     const result = await importSave('SCB-' + fakeB64)
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.reason).toBe('invalid')
+  })
+
+  // —— v0.56 转生树双格式校验（旧档 purchased 必须能过校验才有机会被迁移）——
+  it('importSave accepts legacy purchased-format tree (v5 档)', async () => {
+    const data = makeValidSaveData()
+    data.version = 5
+    data.transcend.tree = [
+      { id: 't_slot', purchased: true },
+      { id: 't_starting', purchased: false },
+    ]
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(true)
+  })
+
+  it('importSave rejects invalid level values', async () => {
+    for (const badLevel of [-1, 1.5, NaN, Infinity, '3']) {
+      const data = makeValidSaveData()
+      data.transcend.tree = [{ id: 't_inf_prod', level: badLevel as unknown as number }]
+      const exported = await exportSave(data)
+      const result = await importSave(exported)
+      expect(result.ok, `level=${badLevel} should be rejected`).toBe(false)
+    }
+  })
+
+  it('importSave rejects tree entries with neither purchased nor level', async () => {
+    const data = makeValidSaveData()
+    data.transcend.tree = [{ id: 't_slot' } as unknown as { id: string; level: number }]
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(false)
   })
 })

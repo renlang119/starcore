@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
 import Icons from '@/components/ui/Icons.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
@@ -13,6 +14,19 @@ const previewGain = computed(() => game.previewTranscendGain())
 const canTranscend = computed(() => game.canTranscend())
 
 const tree = computed(() => game.transcend.tree)
+/** 买断节点（maxLevel=1）：引导期目标，购买一次封顶 */
+const buyoutNodes = computed(() => tree.value.filter((n) => !isInfiniteNode(n)))
+/** 无限节点（maxLevel>1）：负熵支出端永不枯竭的长期成长轴 */
+const infiniteNodes = computed(() => tree.value.filter((n) => isInfiniteNode(n)))
+
+/** 无限节点当前总加成文案（乘数型 = value^level） */
+function totalBonusLabel(node: (typeof tree.value)[number]): string {
+  const eff = node.effects[0]
+  if (!eff) return ''
+  const total = Math.pow(eff.value, node.level)
+  const pct = Math.round((total - 1) * 100)
+  return node.level > 0 ? `当前 +${pct}%` : '尚未激活'
+}
 
 function tryPurchase(nodeId: string) {
   game.transcend.purchaseNode(nodeId)
@@ -152,12 +166,12 @@ function cancelHardReset() {
       <h3 class="section-title">转生天赋树</h3>
       <div class="tree-grid">
         <div
-          v-for="node in tree"
+          v-for="node in buyoutNodes"
           :key="node.id"
           class="tree-node"
           :class="{
-            purchased: node.purchased,
-            affordable: !node.purchased && negEntropy.gte(node.cost),
+            purchased: node.level > 0,
+            affordable: node.level === 0 && negEntropy.gte(node.cost),
           }"
         >
           <div class="node-head">
@@ -169,7 +183,7 @@ function cancelHardReset() {
             <span v-for="(e, i) in node.effects" :key="i" class="node-eff">{{ e.label }}</span>
           </div>
           <button
-            v-if="!node.purchased"
+            v-if="node.level === 0"
             class="btn-accent sm block"
             style="--accent: var(--color-amber)"
             :disabled="negEntropy.lt(node.cost)"
@@ -178,6 +192,44 @@ function cancelHardReset() {
             购买
           </button>
           <div v-else class="purchased-tag">已激活</div>
+        </div>
+      </div>
+
+      <h3 class="section-title infinite-title">
+        无限天赋
+        <span class="infinite-badge" aria-hidden="true">∞</span>
+      </h3>
+      <p class="infinite-sub">可重复购买，成本逐级递增，效果永久叠加</p>
+      <div class="tree-grid">
+        <div
+          v-for="node in infiniteNodes"
+          :key="node.id"
+          class="tree-node infinite-node"
+          :class="{
+            purchased: node.level > 0,
+            affordable: negEntropy.gte(nextCost(node)),
+          }"
+        >
+          <div class="node-head">
+            <span class="node-name">
+              {{ node.name }}
+              <span class="node-level font-mono">Lv.{{ node.level }}</span>
+            </span>
+            <span class="node-cost font-mono">{{ nextCost(node) }} 负熵</span>
+          </div>
+          <p class="node-desc">{{ node.desc }}</p>
+          <div class="node-effects">
+            <span v-for="(e, i) in node.effects" :key="i" class="node-eff">{{ e.label }}</span>
+            <span class="node-eff node-eff-total">{{ totalBonusLabel(node) }}</span>
+          </div>
+          <button
+            class="btn-accent sm block"
+            style="--accent: var(--color-amber)"
+            :disabled="negEntropy.lt(nextCost(node))"
+            @click="tryPurchase(node.id)"
+          >
+            {{ node.level === 0 ? '购买' : '升级' }}
+          </button>
         </div>
       </div>
     </div>
@@ -405,6 +457,51 @@ function cancelHardReset() {
 .purchased-tag {
   text-align: center;
   font-size: var(--text-xs);
+  color: var(--color-quantum);
+}
+
+/* —— 无限天赋区（v0.56）—— */
+.infinite-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.infinite-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  height: 1.4em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: rgba(255, 182, 39, 0.14);
+  border: 1px solid var(--color-amber);
+  color: var(--color-amber);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+.infinite-sub {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  margin-bottom: var(--space-2);
+}
+.infinite-node {
+  border-left: 3px solid var(--color-amber);
+}
+.infinite-node.purchased {
+  border-left-color: var(--color-quantum);
+}
+.node-level {
+  margin-left: var(--space-2);
+  padding: 0 var(--space-1);
+  border-radius: 3px;
+  background: var(--color-elevated);
+  color: var(--color-quantum);
+  font-size: var(--text-xs);
+}
+.node-eff-total {
+  background: rgba(46, 230, 160, 0.12);
   color: var(--color-quantum);
 }
 

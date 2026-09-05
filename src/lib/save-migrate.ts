@@ -34,6 +34,19 @@ const MIGRATIONS: Record<number, (data: SaveData) => void> = {
   4: (_data: SaveData) => {
     /* 存档结构无变化 */
   },
+
+  // v5→v6: 转生树无限化——tree 条目 purchased: boolean → level: number
+  // purchased:true → level:1；purchased:false → level:0（hydrate 也兼容双格式，
+  // 此处显式迁移保证新档写出后格式统一）
+  5: (data: SaveData) => {
+    if (data.transcend && Array.isArray(data.transcend.tree)) {
+      data.transcend.tree = data.transcend.tree.map((n) => {
+        if ('level' in n && typeof n.level === 'number') return { id: n.id, level: n.level }
+        const legacy = n as { id: string; purchased?: boolean }
+        return { id: legacy.id, level: legacy.purchased ? 1 : 0 }
+      })
+    }
+  },
 }
 
 /**

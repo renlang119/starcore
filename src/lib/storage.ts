@@ -60,7 +60,8 @@ export interface RelicSaveData {
 export interface TranscendSaveData {
   negativeEntropy: string
   totalTranscends: number
-  tree: { id: string; purchased: boolean }[]
+  /** 新格式（v6+）：id + level；旧格式（v5-）：id + purchased，hydrate/迁移兼容 */
+  tree: ({ id: string; level: number } | { id: string; purchased: boolean })[]
 }
 export interface PlayerSaveData {
   id: string
@@ -262,16 +263,24 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!Array.isArray(rl.equipped)) return false
   if (!rl.equipped.every((e: unknown) => e === null || typeof e === 'string')) return false
 
-  // transcend: tree 条目结构校验
+  // transcend: tree 条目结构校验（兼容新格式 level 与旧格式 purchased——
+  // 校验跑在迁移之前，旧档必须能过校验才有机会被迁移）
   if (!_isObject(d.transcend)) return false
   const tc = d.transcend as Record<string, unknown>
   if (typeof tc.negativeEntropy !== 'string' && tc.negativeEntropy !== undefined) return false
   if (typeof tc.totalTranscends !== 'number' && tc.totalTranscends !== undefined) return false
   if (!Array.isArray(tc.tree)) return false
   if (
-    !tc.tree.every(
-      (n: unknown) => _isObject(n) && typeof n.id === 'string' && typeof n.purchased === 'boolean'
-    )
+    !tc.tree.every((n: unknown) => {
+      if (!_isObject(n) || typeof n.id !== 'string') return false
+      const hasPurchased = typeof n.purchased === 'boolean'
+      const hasLevel =
+        typeof n.level === 'number' &&
+        Number.isInteger(n.level) &&
+        n.level >= 0 &&
+        isFinite(n.level)
+      return hasPurchased || hasLevel
+    })
   )
     return false
   return true
