@@ -3,7 +3,57 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 3 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.44
+> 当前版本：v0.45
+
+---
+
+## v0.45 — 工程化: eslint 修复、Prettier 统一与部署脚本重写
+
+**变更性质：工程化（工具链基线补齐 + 部署脚本重写）**
+**开发时间：2026-09-05**
+
+### 概述
+
+工程基线补齐：eslint 因缺失依赖无法运行、存量源文件未统一格式、部署脚本指
+向失效主机、favicon 未声明四类问题一并修复，部署流程重写为「构建 → rsync
+同步 → 线上验证」的本地方案。
+
+### 变更明细
+
+- eslint 因缺失依赖无法运行：`eslint.config.js` 引用 `globals` 包提供浏览
+  器/ES 标准全局变量声明，但 `package.json` 未声明该依赖，`pnpm lint` 直接
+  因模块解析失败（ERR_MODULE_NOT_FOUND）退出，lint 流程形同虚设。
+  devDependencies 补充 `globals@17.12.0`。
+- 52 个源文件格式不统一：项目配置了 Prettier 但从未对存量代码执行格式化，
+  `pnpm format:check` 报 52 个文件格式不符（全部视图 + 大部分组件
+  /store/lib/测试/样式）。对 `src/` 全量执行一次 `pnpm format`（纯格式重
+  排，零语义变更）。
+- 部署脚本指向失效主机，完全失效：`deploy.py` 目标主机与构建产物路径均为早
+  已弃用的旧环境，当前环境执行必然失败。项目部署拓扑已变更为「单机构建 →
+  单机 nginx 静态站点」。
+  - 删除失效的 `deploy.py`（paramiko SSH 远程部署，含配套的
+    `start-dev.sh`）及过时评估文档 `docs/deploy-ssh-keypair-evaluation.md`
+  - 新增 `deploy.sh` 部署脚本：构建 → `rsync --delete` 同步 `dist/` 到
+    nginx 站点目录 → 修正权限 → 线上验证（HTTP 状态 + bundle 版本串核对）
+  - 同步方式从覆盖复制升级为 `rsync --delete`：站点内已从产物移除的旧文件
+    会被清除（本次即清除了 v0.44 已删但站点残留的 `icons.svg`），并排除
+    `.well-known/` 防误删证书续期目录
+- favicon 未声明，控制台 404（发版回归发现）：`index.html` 未声明
+  `<link rel="icon">`，浏览器回退请求 `/favicon.ico`。dev/preview 服务器无
+  该文件返回 404 并产生控制台错误；线上 nginx SPA fallback 将其回退到
+  index.html，返回 200 但内容并非图标（浏览器静默忽略）。`index.html` 补
+  `<link rel="icon" type="image/svg+xml" href="/favicon.svg">`
+  （`public/favicon.svg` 既有文件，og:image/twitter:image 已在引用）。
+
+### 验证
+
+- `pnpm lint:check` 正常运行，结果 0 errors / 23 warnings（均为存量告警：
+  测试文件多组件声明、属性顺序等，不阻断，留待后续处理）。
+- `pnpm format:check` 全部通过；`vue-tsc -b` 零错误；`vite build` 产物体积
+  无实质变化；`vitest run` 8 文件 67/67 通过。
+- `./deploy.sh` 全流程通过，线上返回 200 且 bundle 版本串为 v0.45；preview
+  与线上 Playwright 回归（八路由遍历、控制台无 404/error、移动端 375px 无
+  溢出）全部通过。
 
 ---
 

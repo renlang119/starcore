@@ -7,7 +7,7 @@ import globals from 'globals'
 export default [
   // 忽略目录
   {
-    ignores: ['dist/**', 'node_modules/**', 'verify-*.cjs', 'deploy.py', 'start-dev.sh'],
+    ignores: ['dist/**', 'node_modules/**', 'verify-*.cjs', 'deploy.sh', 'start-dev.sh'],
   },
 
   // 基础 JS 推荐规则
