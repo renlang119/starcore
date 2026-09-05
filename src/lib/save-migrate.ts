@@ -47,6 +47,12 @@ const MIGRATIONS: Record<number, (data: SaveData) => void> = {
       })
     }
   },
+
+  // v6→v7: 成就系统——新增 achievements 与 totalPlayTime 可选字段
+  // 旧档缺失，hydrate 自动取默认空值（终身计数从零起算，历史产量不追溯）
+  6: (_data: SaveData) => {
+    /* 无需显式迁移 */
+  },
 }
 
 /**
