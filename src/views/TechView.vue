@@ -51,6 +51,9 @@ function tryResearch(id: string) {
     <Icons />
     <h2 class="page-title font-display">科技树</h2>
     <p class="page-sub">研究新技术解锁建筑、兵种和系统</p>
+    <p v-if="game.autoResearch" class="auto-badge" title="研究协议已激活：自动研究买得起的可用科技">
+      ⚙ 研究协议进行中
+    </p>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
@@ -148,6 +151,14 @@ function tryResearch(id: string) {
 </template>
 
 <style scoped>
+.auto-badge {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+  margin-top: calc(-1 * var(--space-2));
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.05em;
+}
+
 .tech-view {
   display: flex;
   flex-direction: column;
