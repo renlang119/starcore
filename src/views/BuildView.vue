@@ -42,6 +42,9 @@ function isMaxed(id: string): boolean {
   <div class="build-view">
     <Icons />
     <h2 class="page-title font-display">建造</h2>
+    <p v-if="game.autoBuild" class="auto-badge" title="建造协议已激活：自动升级买得起的已解锁建筑">
+      ⚙ 建造协议进行中
+    </p>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
@@ -135,6 +138,14 @@ function isMaxed(id: string): boolean {
 </template>
 
 <style scoped>
+.auto-badge {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+  margin-top: calc(-1 * var(--space-2));
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.05em;
+}
+
 .build-view {
   display: flex;
   flex-direction: column;

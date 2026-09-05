@@ -29,6 +29,9 @@ export interface TranscendEffect {
     | 'offline_bonus'
     | 'relic_slot'
     | 'starting_energy'
+    | 'auto_build'
+    | 'auto_research'
+    | 'auto_explore'
   target?: string
   value: number
   label: string
@@ -150,6 +153,31 @@ const DEFAULT_NODES: TranscendNode[] = [
     desc: '转生获得的负熵 ×2',
     cost: 8,
     effects: [{ type: 'prestige_mult', value: 2.0, label: '负熵 ×2' }],
+    level: 0,
+  },
+  // —— 自动化 QoL（v0.58 新增，买断常开：买后每 tick 自动执行对应操作）——
+  {
+    id: 't_auto_build',
+    name: '建造协议',
+    desc: '自动升级买得起的已解锁建筑（每 tick 一级）',
+    cost: 10,
+    effects: [{ type: 'auto_build', value: 1, label: '自动建造' }],
+    level: 0,
+  },
+  {
+    id: 't_auto_research',
+    name: '研究协议',
+    desc: '自动研究买得起的可用科技',
+    cost: 10,
+    effects: [{ type: 'auto_research', value: 1, label: '自动研究' }],
+    level: 0,
+  },
+  {
+    id: 't_auto_explore',
+    name: '探索协议',
+    desc: '自动开始可探索的星域节点（在线时）',
+    cost: 8,
+    effects: [{ type: 'auto_explore', value: 1, label: '自动探索' }],
     level: 0,
   },
   // —— 无限节点（v0.56 新增，负熵支出端永不枯竭）——
