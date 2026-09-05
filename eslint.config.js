@@ -49,9 +49,11 @@ export default [
 
   // 测试文件配置
   {
-    files: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+    files: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'src/tests/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      // 测试 stub 用 defineComponent 定义迷你组件属正常做法，不适用单文件组件限制
+      'vue/one-component-per-file': 'off',
     },
   },
 

@@ -31,7 +31,9 @@ export function mountComponent<T extends Component>(
   const stubs: Record<string, any> = {
     RouterView: defineComponent({ template: '<div data-stub="router-view" />' }),
     RouterLink: defineComponent({
-      props: ['to'],
+      props: {
+        to: { type: String, required: false, default: '' },
+      },
       template: '<a data-stub="router-link"><slot /></a>',
     }),
     Icons: defineComponent({ template: '<svg data-stub="icons" />' }),
