@@ -283,7 +283,7 @@ const actionQueue = computed<ActionItem[]>(() => {
   }
 
   // 6. 可训练引导（无训练任务时显示；训练进度由上方进行中条目承担，
-  //    不再单独展示「N 支部队训练中」汇总卡——v0.49 起按 行动队列方案文档建议落地）
+  //    不再单独展示「N 支部队训练中」汇总卡（v0.49 起）
   if (
     game.military.trainingQueue.length === 0 &&
     (totalUnits.value > 0 || completedTechs.has('military_basic'))
