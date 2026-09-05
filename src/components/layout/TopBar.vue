@@ -115,6 +115,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   display: flex;
   gap: var(--space-2);
   flex: 1;
+  min-width: 0; /* 修复移动端横向溢出：flex 项默认 min-width:auto 不收缩，需显式归零才能触发内部滚动 */
   overflow-x: auto;
   scrollbar-width: none;
   list-style: none;
