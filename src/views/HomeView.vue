@@ -741,7 +741,7 @@ const displayActions = computed(() => (hasActions.value ? actionQueue.value : fa
   }
 }
 
-/* —— P3-4 三段式响应断点 —— */
+/* —— P3-4 四档响应断点 —— */
 /* L 断点（1024-1439px）：双列比 38/62，核心视觉 260 */
 @media (min-width: 1024px) {
   :deep(.content) {
