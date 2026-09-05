@@ -27,6 +27,7 @@ import {
   type SaveData,
 } from '@/lib/storage'
 import { TECHS } from '@/data/tech'
+import { BUILDINGS } from '@/data/buildings'
 import type { ResourceType } from '@/data/buildings'
 
 const SAVE_VERSION = 7
@@ -97,6 +98,10 @@ export const useGameStore = defineStore('game', () => {
   const prestigeMult = computed(() => effectSystem.getMult('prestige_mult'))
   const offlineMult = computed(() => effectSystem.getMult('offline_bonus'))
   const techCostMult = computed(() => effectSystem.getMult('cost_mult', 'tech'))
+  // —— 自动化 QoL 开关（v0.58，转生树买断节点；getValue 累加通道 > 0 即已购）——
+  const autoBuild = computed(() => effectSystem.getValue('auto_build') > 0)
+  const autoResearch = computed(() => effectSystem.getValue('auto_research') > 0)
+  const autoExplore = computed(() => effectSystem.getValue('auto_explore') > 0)
 
   /** 5.2：缓存总产出——仅当建筑等级或乘数变化时重算 */
   const totalProduction = computed(() => buildings.getTotalProduction(productionMults.value))
@@ -155,6 +160,13 @@ export const useGameStore = defineStore('game', () => {
     // 2. 资源增长
     resources.applyTick(dt)
 
+    // 2.5 自动化 QoL（v0.58）：建造协议/研究协议/探索协议，买断常开只在线生效。
+    // 复用既有原子操作（tryUpgradeBuilding/tryResearch/startExplore），
+    // 成就钩子、科技成本乘数、并发口径与手动路径天然一致。
+    if (autoBuild.value || autoResearch.value || autoExplore.value) {
+      runAutomation()
+    }
+
     // 3. 训练队列
     military.applyTick(dt)
 
@@ -174,6 +186,37 @@ export const useGameStore = defineStore('game', () => {
     achievements.checkAndUnlock()
   }
 
+  /**
+   * 自动化 QoL（v0.58）：每 tick 一遍，三种协议独立开关。
+   * - 建造协议：按 BUILDINGS 数据序扫描已解锁建筑，买得起即升 1 级（每建筑每 tick 至多 1 级）
+   * - 研究协议：按 TECHS 数据序扫描可用科技，买得起即完成（含 techCostMult，与手动一致）
+   * - 探索协议：availableNodes 已挡完成/进行中/前置，逐个尝试开始（与 MapView 手动同路径）
+   * 购买策略 = 买得起即买，不留储备。单遍扫描 20 建筑/39 科技/4 节点，开销可忽略。
+   */
+  function runAutomation(): void {
+    if (autoBuild.value) {
+      for (const b of BUILDINGS) {
+        if (!buildings.isUnlocked(b, research.unlockedSet)) continue
+        tryUpgradeBuilding(b.id)
+      }
+    }
+    if (autoResearch.value) {
+      for (const def of TECHS) {
+        if (!research.available(def)) continue
+        tryResearch(def.id)
+      }
+    }
+    if (autoExplore.value) {
+      for (const node of exploration.availableNodes()) {
+        exploration.startExplore(
+          node.id,
+          exploreMult.value,
+          (c) => resources.canAfford(c),
+          (c) => resources.spendCost(c)
+        )
+      }
+    }
+  }
   // —— 自动存档 ——
   let saveTimer: ReturnType<typeof setInterval> | null = null
   let tickTimer: ReturnType<typeof setInterval> | null = null
@@ -440,6 +483,9 @@ export const useGameStore = defineStore('game', () => {
     prestigeMult,
     offlineMult,
     techCostMult,
+    autoBuild,
+    autoResearch,
+    autoExplore,
     // lifecycle
     tick,
     start,

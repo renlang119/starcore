@@ -29,10 +29,20 @@ function node(id: string) {
 }
 
 describe('transcend — 默认树结构', () => {
-  it('共 15 节点：11 买断 + 4 无限', () => {
-    expect(store.tree).toHaveLength(15)
-    expect(store.tree.filter((n) => !isInfiniteNode(n))).toHaveLength(11)
+  it('共 18 节点：14 买断 + 4 无限', () => {
+    expect(store.tree).toHaveLength(18)
+    expect(store.tree.filter((n) => !isInfiniteNode(n))).toHaveLength(14)
     expect(store.tree.filter((n) => isInfiniteNode(n))).toHaveLength(4)
+  })
+
+  it('自动化 QoL 节点（v0.58）：3 个买断、效果类型正确', () => {
+    for (const id of ['t_auto_build', 't_auto_research', 't_auto_explore']) {
+      const n = node(id)
+      expect(isInfiniteNode(n)).toBe(false)
+      expect(n.effects).toHaveLength(1)
+      expect(n.effects[0].type).toMatch(/^auto_/)
+      expect(n.effects[0].value).toBe(1)
+    }
   })
 
   it('无限节点清单与成本参数', () => {
