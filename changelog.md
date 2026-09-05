@@ -3,7 +3,48 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.53
+> 当前版本：v0.54
+
+---
+
+## v0.54 — 工程化: HomeView 结构拆分 + 移除未使用的 Tailwind 依赖
+
+**变更性质：工程化（结构优化）**
+**开发时间：2026-09-05**
+
+### 概述
+
+HomeView.vue（1056 行）按板块拆分：行动队列数据组装抽为 composable，四个板
+块各成子组件，视图瘦身为编排层。另移除开发依赖中已不再使用的 Tailwind CSS
+（样式系统早已切换为原生 CSS 设计 Token）。纯结构重构，渲染输出（DOM 结构/
+类名/文案）与游戏行为零变化；存档不受影响。
+
+### 变更明细
+
+- 新增 `src/composables/useActionQueue.ts`：行动队列数据组装与截断口径（进
+  行中全保留、可执行补足至总数 ≤6），逻辑自 HomeView 原样迁移
+- 新增 `src/components/home/` 四个子组件，模板与样式自 HomeView 原样迁移：
+  - HeroCore：星核核心视觉（能量值/产出率/三层状态环/点击跳转）
+  - ActionQueuePanel：行动队列渲染
+  - QuickActions：快速操作入口
+  - OverviewPanel：文明概况
+- `src/views/HomeView.vue`：1056 行 → 约 85 行，仅保留板块编排、新手引导状
+  态与双列布局样式
+- 测试迁移：`src/views/HomeView.test.ts` →
+  `src/composables/useActionQueue.test.ts`，5 条队列规则用例脱离视图挂载，
+  直接断言 composable 返回
+- 移除 devDependencies 中未使用的 tailwindcss；README 与《游戏设定与架构》
+  技术栈表述同步去掉 Tailwind CSS 4
+
+### 验证
+
+- `pnpm build`（含 vue-tsc）通过
+- `pnpm test`：12 文件 86 用例全绿（队列 5 用例迁移至 composable 层，总数
+  不变）
+- `lint:check` / `format:check` 零输出
+- Playwright 回归四套全绿（release 双端八路由 / 空状态 / 训练槽位 / 行动队
+  列）
+- 部署后线上版本串核对一致
 
 ---
 
