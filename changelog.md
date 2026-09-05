@@ -3,7 +3,58 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 3 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.43
+> 当前版本：v0.44
+
+---
+
+## v0.44 — 修复: 移动端横向滚动、产出率显示与死代码清理
+
+**变更性质：修复（移动端横向滚动 + 显示修正 + 死代码清理）**
+**开发时间：2026-09-05**
+
+### 概述
+
+移动端页面可横向滚动 55px 与 Hero 产出率后缀重复两处缺陷修复，并清理一批零
+引用死代码与冗余资源文件。
+
+### 变更明细
+
+- 移动端页面可横向滚动 55px：HomeView hero 区 `.core-visual::after` 光晕
+  （240px，绝对定位 `left:50%` + `translate(-50%,-50%)` 居中）。浏览器计算
+  viewport 可滚动溢出区时按该伪元素 transform 前的布局位置（100px 起向右
+  240px）计入，溢出约 55px。`body { overflow-x: hidden }` 无法拦截，body
+  只禁自身滚动，溢出仍传播到 viewport 层级，实测 `window.scrollTo(150,0)`
+  后 `scrollX=55`。
+  - `src/style.css` html 元素加 `overflow-x: hidden; overflow-x: clip;`
+    （clip 优先，不创建滚动容器、不影响 sticky/fixed；不支持 clip 的旧内核
+    回退 hidden）
+  - `src/components/layout/TopBar.vue` `.res-strip` 补 `min-width: 0`
+    （flex 项默认 min-width:auto 不收缩，导致资源胶囊不能正确进入内部滚
+    动）
+- Hero 产出率显示「+0.5/s /s」后缀重复：`src/lib/format.ts` 的 `fmtRate()`
+  返回值已含 `/s` 后缀，`src/views/HomeView.vue` 模板又拼接 ` /s`。移除模
+  板中多余的 ` /s`。TopBar.vue 的 `fmtRate` 用法本身正确，未涉及。
+- 死代码与冗余文件清理：
+  - 删除 `public/icons.svg`（Vite 模板遗留的 6 个社交图标，全项目零引用；
+    实际图标体系为 7 个 SFC 内联 symbol，85 个 id 契约完整）
+  - 删除 `src/assets/hero.png`（零引用；hero 为 CSS 类名非图片）及空目录
+    `src/assets/`
+  - 删除 `src/style.css` 死 keyframes ×5：`pulseNode`/`ringPulse`/`blink`/
+    `flashSuccess`/`shakeError`（全项目零引用），连带删除仅被骨架类使用的
+    `shimmer` 与死类 `.skeleton`/`.skeleton-line`
+  - `src/router/index.ts` 移除路由 `meta.title`/`meta.tab` 死字段（全项目
+    无消费方）
+  - `.gitignore` 删除重复的注释行
+
+### 验证
+
+- Playwright 四档视口（1280/375/360/320）`scrollX=0` 且
+  `documentElement.scrollWidth === innerWidth`；截图确认光晕视觉完整未裁
+  切；桌面端无回归。
+- `vue-tsc -b` 零错误 + `vite build` 通过
+- `vitest run`：8 文件 67/67 通过
+- Playwright 回归：四档视口无横向滚动、Hero 产出率格式正确、八条路由无
+  404、首屏渲染正常
 
 ---
 

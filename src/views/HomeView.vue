@@ -319,7 +319,7 @@ const displayActions = computed(() => hasActions.value ? actionQueue.value : fal
             <div class="core-label">星核能量</div>
           </div>
         </div>
-        <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">{{ rateDisplay }} /s</div>
+        <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">{{ rateDisplay }}</div>
         <!-- P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 -->
         <div class="hero-flow" aria-hidden="true"></div>
       </section>
