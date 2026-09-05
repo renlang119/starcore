@@ -5,7 +5,21 @@
 # 目标目录与站点域名通过环境变量或脚本顶部常量配置。
 
 DEST="${DEPLOY_DEST:-/var/www/starcore}"
-SITE_URL="${DEPLOY_URL:-https://example.com}"
+SITE_URL="${DEPLOY_URL:-}"
+
+# 可选部署配置：DEPLOY_DEST / DEPLOY_URL 环境变量，或用户侧 env 文件
+ENV_CANDIDATES=(
+  "$(dirname "${BASH_SOURCE[0]}")/.deploy.env"
+  "${XDG_CONFIG_HOME:-$HOME/.config}/starcore/deploy.env"
+)
+for f in "${ENV_CANDIDATES[@]}"; do
+  if [[ -f "$f" ]]; then
+    source "$f"
+  fi
+done
+DEST="${DEPLOY_DEST:-/var/www/starcore}"
+SITE_URL="${DEPLOY_URL:-$SITE_URL}"
+[[ -n "$SITE_URL" ]] || { echo "[FAIL] 未配置 DEPLOY_URL（环境变量或 .deploy.env）" >&2; exit 1; }
 
 SKIP_BUILD=0
 [[ "${1:-}" == "--skip-build" ]] && SKIP_BUILD=1
