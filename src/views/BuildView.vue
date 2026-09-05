@@ -8,6 +8,7 @@ import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import UpgradeCountdown from '@/components/ui/UpgradeCountdown.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 const game = useGameStore()
@@ -16,6 +17,11 @@ const activeSector = ref<SectorId>('energy')
 const sectors = Object.values(SECTORS)
 const buildingsInSector = computed(() => BUILDINGS.filter((b) => b.sector === activeSector.value))
 const completedTechs = computed(() => game.research.completed)
+
+// 空状态：当前扇区全部建筑已满级（无可操作项）
+const allMaxed = computed(
+  () => buildingsInSector.value.length > 0 && buildingsInSector.value.every((b) => isMaxed(b.id))
+)
 
 // P3-3 onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding('build', ['build-upgrade'])
@@ -62,8 +68,18 @@ function isMaxed(id: string): boolean {
     </div>
     <p class="sector-desc">{{ SECTORS[activeSector].desc }}</p>
 
+    <!-- 空状态：当前扇区全部建筑满级 -->
+    <EmptyState
+      v-if="allMaxed"
+      icon="i-nav-build"
+      text="暂无可建造的建筑"
+      hint="研究科技可解锁更多建筑类型"
+      action="前往科技"
+      to="/tech"
+    />
+
     <!-- 建筑列表 -->
-    <ul class="building-list" aria-label="建筑列表">
+    <ul v-else class="building-list" aria-label="建筑列表">
       <li
         v-for="b in buildingsInSector"
         :key="b.id"

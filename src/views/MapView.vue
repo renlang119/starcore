@@ -7,6 +7,7 @@ import { STRONGHOLD_TYPES } from '@/data/pve'
 import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 import { useRouter } from 'vue-router'
 
@@ -70,6 +71,11 @@ onUnmounted(() => {
 
 // 按层级分组
 const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep']
+
+// 空状态：全部探索节点均已完成
+const allNodesCompleted = computed(
+  () => EXPLORE_NODES.length > 0 && EXPLORE_NODES.every((n) => game.exploration.isCompleted(n.id))
+)
 const nodesByLayer = computed(() => {
   const map: Record<StarLayer, typeof EXPLORE_NODES> = { orbit: [], inner: [], outer: [], deep: [] }
   for (const n of EXPLORE_NODES) map[n.layer].push(n)
@@ -125,8 +131,19 @@ const availableStrongholds = computed(() => {
       @skip="skipAll"
     />
 
+    <!-- 空状态：已知星域全部探索完毕 -->
+    <EmptyState
+      v-if="allNodesCompleted"
+      icon="i-nav-explore"
+      text="已知星域已全部探索完毕"
+      hint="提升科技等级可解锁更远星域"
+      action="前往科技"
+      to="/tech"
+    />
+
     <!-- 星图层 -->
-    <div v-for="layer in layers" :key="layer" class="layer-section">
+    <template v-else>
+      <div v-for="layer in layers" :key="layer" class="layer-section">
       <div class="layer-header" :style="{ color: LAYER_INFO[layer].color }">
         <span class="layer-name">{{ LAYER_INFO[layer].name }}</span>
         <span class="layer-dist">{{ LAYER_INFO[layer].distance }}</span>
@@ -219,7 +236,8 @@ const availableStrongholds = computed(() => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </template>
 
     <!-- 已解锁据点 -->
     <div v-if="availableStrongholds.length > 0" class="stronghold-section">

@@ -8,6 +8,7 @@ import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 const game = useGameStore()
@@ -43,6 +44,14 @@ const atkMult = computed(() => game.atkMult)
 const defMult = computed(() => game.defMult)
 
 const formations = computed(() => game.military.formations)
+
+// 军事系统解锁状态：任一兵种解锁即可训练（military_basic）
+const armyUnlocked = computed(() => UNITS.some((u) => game.military.isUnlocked(u, completedTechs.value)))
+
+// 空状态（已解锁分支）：无已拥有部队且无训练中任务
+const hasAnyUnits = computed(
+  () => UNITS.some((u) => game.military.getOwned(u.id) > 0) || game.military.trainingQueue.length > 0
+)
 
 const totalPower = computed(() => game.military.totalPower(atkMult.value, defMult.value))
 
@@ -178,6 +187,24 @@ function removeAll(fid: string, uid: UnitId) {
 
     <!-- 兵营：训练 -->
     <div v-if="activeTab === 'barracks'" class="barracks">
+      <!-- 空状态 1：军事科技未解锁 -->
+      <EmptyState
+        v-if="!armyUnlocked"
+        icon="i-nav-army"
+        text="尚未组建部队"
+        hint="研究「军事基础」科技后可训练部队"
+        action="前往科技"
+        to="/tech"
+      />
+      <!-- 空状态 2：已解锁但尚无部队 -->
+      <EmptyState
+        v-else-if="!hasAnyUnits"
+        icon="i-nav-army"
+        text="部队尚未组建"
+        hint="训练你的第一支星际防卫军"
+        action="训练部队"
+      />
+      <template v-else>
       <div
         v-for="u in UNITS"
         :key="u.id"
@@ -269,6 +296,7 @@ function removeAll(fid: string, uid: UnitId) {
           <span class="q-time font-mono">{{ Math.ceil(task.remaining) }}s</span>
         </div>
       </div>
+      </template>
     </div>
 
     <!-- 编组 -->

@@ -5,6 +5,7 @@ import { TECHS, TECH_BRANCHES, type TechBranch } from '@/data/tech'
 import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 const game = useGameStore()
@@ -16,6 +17,11 @@ const techsToShow = computed(() => {
     activeBranch.value === 'all' ? TECHS : TECHS.filter((t) => t.branch === activeBranch.value)
   return [...list].sort((a, b) => a.tier - b.tier)
 })
+
+// 空状态：当前筛选分支下所有科技均已完成
+const allCompleted = computed(
+  () => techsToShow.value.length > 0 && techsToShow.value.every((t) => game.research.isCompleted(t.id))
+)
 
 // P3-3 onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding('tech', ['tech-research'])
@@ -76,8 +82,18 @@ function tryResearch(id: string) {
       </button>
     </div>
 
+    <!-- 空状态：全部科技已完成 -->
+    <EmptyState
+      v-if="allCompleted"
+      icon="i-nav-tech"
+      text="所有已知科技已研究完成"
+      hint="探索新星域可能发现未知科技"
+      action="前往探索"
+      to="/map"
+    />
+
     <!-- 科技列表 -->
-    <ul class="tech-list" aria-label="科技列表">
+    <ul v-else class="tech-list" aria-label="科技列表">
       <li v-for="t in techsToShow" :key="t.id" class="tech-card" :class="techStatus(t.id)">
         <div class="t-head">
           <div class="t-icon" :style="{ color: TECH_BRANCHES[t.branch].color }">
