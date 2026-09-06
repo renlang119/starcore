@@ -304,3 +304,122 @@ export function rollRelic(rarityBias = 0, rng: () => number = Math.random): Reli
 export function getRelicById(id: string): RelicDef | undefined {
   return RELIC_POOL.find((r) => r.id === id)
 }
+
+/**
+ * 套装定义（v0.61 玩法扩展方案 6）
+ * 按来源系别分 4 组：同系遗物装备 2 件触发小额加成，3 件（满套）翻倍。
+ * 加成走派生 RelicEffect 注入 equippedEffects 通道（EffectSystem 零改动）；
+ * 量级刻意压小额——套装是收集方向标，不是第二权力轴。
+ */
+export type RelicSetId = 'raiders' | 'beast' | 'ruin' | 'silencer'
+
+export interface RelicSetDef {
+  id: RelicSetId
+  name: string
+  /** 一句话主题（UI 套装区块展示） */
+  desc: string
+  color: string
+  /** 套装成员遗物 id（RELIC_POOL 内） */
+  memberIds: string[]
+  /** 2 件加成 */
+  partial: RelicEffect
+  /** 3 件（满套）加成 */
+  full: RelicEffect
+}
+
+export const RELIC_SETS: RelicSetDef[] = [
+  {
+    id: 'raiders',
+    name: '掠夺者战团',
+    desc: '从掠夺者残骸中回收的武器技术',
+    color: '#F43F5E',
+    memberIds: ['r_energy_1', 'r_alloy_1', 'r_combat_1', 'r_combat_2'],
+    partial: {
+      type: 'combat_mult',
+      target: 'attack',
+      value: 1.05,
+      label: '套装：攻击 +5%（掠夺者战团 2 件）',
+    },
+    full: {
+      type: 'combat_mult',
+      target: 'attack',
+      value: 1.1,
+      label: '满套：攻击 +10%（掠夺者战团）',
+    },
+  },
+  {
+    id: 'beast',
+    name: '巨兽血裔',
+    desc: '异星巨兽躯体内结晶的原始能量',
+    color: '#FFB627',
+    memberIds: ['r_energy_2', 'r_crystal_2', 'r_energy_3'],
+    partial: {
+      type: 'production_mult',
+      target: 'energy',
+      value: 1.06,
+      label: '套装：能量产出 +6%（巨兽血裔 2 件）',
+    },
+    full: {
+      type: 'production_mult',
+      target: 'energy',
+      value: 1.12,
+      label: '满套：能量产出 +12%（巨兽血裔）',
+    },
+  },
+  {
+    id: 'ruin',
+    name: '先驱遗产',
+    desc: '先驱文明遗迹中封存的智慧结晶',
+    color: '#A78BFA',
+    memberIds: [
+      'r_data_1',
+      'r_crystal_1',
+      'r_alloy_2',
+      'r_explore_1',
+      'r_offline_1',
+      'r_data_3',
+      'r_prestige_1',
+    ],
+    partial: {
+      type: 'production_mult',
+      target: 'data',
+      value: 1.06,
+      label: '套装：数据产出 +6%（先驱遗产 2 件）',
+    },
+    full: {
+      type: 'production_mult',
+      target: 'data',
+      value: 1.12,
+      label: '满套：数据产出 +12%（先驱遗产）',
+    },
+  },
+  {
+    id: 'silencer',
+    name: '沉默者回响',
+    desc: '沉默者造物中残留的低语',
+    color: '#94A3B8',
+    memberIds: ['r_dark_1', 'r_dark_2', 'r_dark_3', 'r_combat_3', 'r_omega', 'r_silence'],
+    partial: {
+      type: 'production_mult',
+      target: 'dark',
+      value: 1.06,
+      label: '套装：暗物质产出 +6%（沉默者回响 2 件）',
+    },
+    full: {
+      type: 'production_mult',
+      target: 'dark',
+      value: 1.12,
+      label: '满套：暗物质产出 +12%（沉默者回响）',
+    },
+  },
+]
+
+/** 遗物 id → 所属套装（O(1) 查找；模块加载时构建一次） */
+const RELIC_SET_MAP = new Map<string, RelicSetDef>(
+  RELIC_SETS.flatMap((s) => s.memberIds.map((id) => [id, s] as const))
+)
+
+/** 查询遗物所属套装 */
+export function getSetByRelic(relicId: string): RelicSetDef | undefined {
+  return RELIC_SET_MAP.get(relicId)
+}

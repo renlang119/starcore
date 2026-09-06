@@ -26,6 +26,7 @@ beforeEach(() => {
   // 默认外部指标全 0（各测试可自行覆盖）
   setAchievementExternalProviders({
     relicsOwned: () => 0,
+    relicKinds: () => 0,
     transcends: () => 0,
     playtime: () => 0,
   })
@@ -113,22 +114,36 @@ describe('achievements — 终身计数与解锁', () => {
 })
 
 describe('achievements — 外部现值指标', () => {
-  it('relicsOwned/transcends/playtime 走 provider', () => {
+  it('relicsOwned/relicKinds/transcends/playtime 走 provider', () => {
     setAchievementExternalProviders({
-      relicsOwned: () => 21,
+      relicsOwned: () => 25,
+      relicKinds: () => 20,
       transcends: () => 10,
       playtime: () => 180000,
     })
     const fresh = store.checkAndUnlock()
     const ids = fresh.map((a) => a.id)
-    expect(ids).toContain('ach_relic_4') // 集齐 21
+    expect(ids).toContain('ach_relic_4') // 集齐 20 种
     expect(ids).toContain('ach_transcend_4') // 10 次转生
     expect(ids).toContain('ach_time_3') // 50h
+  })
+
+  it('ach_relic_4 按种类数判定：持有件数多但种类不足不解锁（v0.61 修正）', () => {
+    setAchievementExternalProviders({
+      relicsOwned: () => 25, // 件数够（含重复）
+      relicKinds: () => 18, // 种类不足 20
+      transcends: () => 0,
+      playtime: () => 0,
+    })
+    const fresh = store.checkAndUnlock()
+    expect(fresh.map((a) => a.id)).not.toContain('ach_relic_4')
+    expect(store.isUnlocked('ach_relic_4')).toBe(false)
   })
 
   it('provider 未注入时指标为 0（不误解锁）', () => {
     setAchievementExternalProviders({
       relicsOwned: () => 0,
+      relicKinds: () => 0,
       transcends: () => 0,
       playtime: () => 0,
     })
