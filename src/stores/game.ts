@@ -53,6 +53,7 @@ export const useGameStore = defineStore('game', () => {
   // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
   setAchievementExternalProviders({
     relicsOwned: () => relics.ownedCount,
+    relicKinds: () => relics.ownedKinds,
     transcends: () => transcend.totalTranscends,
     playtime: () => totalPlayTime.value,
   })

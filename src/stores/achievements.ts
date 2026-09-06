@@ -29,7 +29,7 @@ export type BigLifetimeKey = 'energy' | 'dark'
 /** 终身计数中的整数指标（number） */
 export type IntLifetimeKey = 'upgrades' | 'maxBuildingLevel' | 'researches' | 'explores' | 'battles'
 /** 读外部现值的指标（不自持计数；playtime = game store 的 totalPlayTime，v7 起已入档） */
-export type ExternalMetric = 'relicsOwned' | 'transcends' | 'playtime'
+export type ExternalMetric = 'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime'
 
 export type LifetimeMetric = BigLifetimeKey | IntLifetimeKey
 
@@ -46,6 +46,7 @@ type ExternalProvider = () => number
 let externalProviders: Partial<Record<ExternalMetric, ExternalProvider>> = {}
 export function setAchievementExternalProviders(providers: {
   relicsOwned: ExternalProvider
+  relicKinds: ExternalProvider
   transcends: ExternalProvider
   playtime: ExternalProvider
 }): void {
@@ -80,6 +81,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
   /** 指标当前值（统一归一为 number 用于阈值比对；1e12 阈值内 double 精度安全） */
   function metricValue(metric: AchievementMetric): number {
     if (metric === 'relicsOwned') return externalProviders.relicsOwned?.() ?? 0
+    if (metric === 'relicKinds') return externalProviders.relicKinds?.() ?? 0
     if (metric === 'transcends') return externalProviders.transcends?.() ?? 0
     if (metric === 'playtime') return externalProviders.playtime?.() ?? 0
     if (metric === 'energy') return lifetimeBig.value.energy.toNumber()
