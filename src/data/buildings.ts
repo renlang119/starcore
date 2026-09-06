@@ -169,7 +169,7 @@ export const BUILDINGS: BuildingDef[] = [
     icon: 'i-bld-ion-casting',
     baseCost: { energy: 30000, crystal: 5000, alloy: 1200 },
     costGrowth: 1.13,
-    produces: { alloy: 0.35 },
+    produces: { alloy: 1.2 },
     requires: 'ion_casting',
     tier: 3,
   },
