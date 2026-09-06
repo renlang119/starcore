@@ -46,6 +46,8 @@ export interface MilitarySaveData {
 export interface CombatSaveData {
   garrisoned: Record<string, { strongholdId: string; formationId: string; startTime: number }>
   completed: string[]
+  /** 无尽远征历史最深层数（v0.60，跨转生保留；旧档缺失默认 0） */
+  expeditionBest?: number
 }
 export interface ExplorationSaveData {
   progress: Record<
