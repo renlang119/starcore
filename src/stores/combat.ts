@@ -6,6 +6,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Decimal } from '@/lib/decimal'
 import { STRONGHOLDS, getStronghold, type StrongholdDef } from '@/data/pve'
+import { MAX_ENDLESS_DEPTH, endlessStronghold, endlessUnlocked } from '@/data/endless'
 import { getUnit, type UnitId } from '@/data/units'
 import type { Formation } from './military'
 import { rollRelic, type RelicDef } from '@/data/relics'
@@ -50,6 +51,8 @@ interface CombatUnit {
 export const useCombatStore = defineStore('combat', () => {
   const garrisoned = ref<Record<string, GarrisonState>>({}) // strongholdId → state
   const completedStrongholds = ref<Set<string>>(new Set())
+  // 无尽远征历史最深层数（v0.60）：跨转生保留（reset(false) 不清），hardReset 才清零
+  const expeditionBest = ref(0)
 
   /**
    * 种子化 PRNG（mulberry32）—— 使战斗结果可复现
@@ -253,6 +256,32 @@ export const useCombatStore = defineStore('combat', () => {
     garrisoned.value[strongholdId] = { strongholdId, formationId, startTime: Date.now() }
     return true
   }
+
+  // —— 无尽远征（v0.60）——
+
+  /** 远征是否已解锁（本轮须已攻克解锁锚点据点） */
+  function isEndlessUnlocked(): boolean {
+    return endlessUnlocked(completedStrongholds.value)
+  }
+
+  /** 按深度取远征据点定义（合成，不入 STRONGHOLDS 表） */
+  function getEndlessStronghold(depth: number): StrongholdDef {
+    return endlessStronghold(depth)
+  }
+
+  /**
+   * 记录远征战果：仅「攻克当前前沿」（depth = expeditionBest + 1）的胜利推进深度。
+   * 重打已过深度不推进；失败由调用方短路（不调本函数）。
+   * @returns 深度是否被推进
+   */
+  function recordExpedition(depth: number, victory: boolean): boolean {
+    if (!victory) return false
+    const d = Math.max(1, Math.floor(depth))
+    if (d > MAX_ENDLESS_DEPTH) return false
+    if (d !== expeditionBest.value + 1) return false
+    expeditionBest.value = d
+    return true
+  }
   /** 撤回驻扎 */
   function ungarrison(strongholdId: string) {
     delete garrisoned.value[strongholdId]
@@ -279,30 +308,44 @@ export const useCombatStore = defineStore('combat', () => {
     return result
   })
 
-  function reset() {
+  function reset(fullReset = false) {
+    // 驻扎与本轮通关状态：转生与 hardReset 均清（沿用既有转生语义）
     garrisoned.value = {}
     completedStrongholds.value = new Set()
+    if (fullReset) {
+      // 远征深度为终身进度：仅 hardReset（fullReset）清零，转生保留
+      expeditionBest.value = 0
+    }
   }
 
   function serialize() {
     return {
       garrisoned: { ...garrisoned.value },
       completed: Array.from(completedStrongholds.value),
+      expeditionBest: expeditionBest.value,
     }
   }
   function hydrate(data: CombatSaveData | undefined) {
     if (!data) return
     if (data.garrisoned) garrisoned.value = { ...data.garrisoned }
     if (data.completed) completedStrongholds.value = new Set(data.completed)
+    // 远征深度：旧档缺失保持 0；防御性钳制非负整数
+    if (typeof data.expeditionBest === 'number' && isFinite(data.expeditionBest)) {
+      expeditionBest.value = Math.max(0, Math.floor(data.expeditionBest))
+    }
   }
 
   return {
     garrisoned,
     completedStrongholds,
+    expeditionBest,
     garrisonProduction,
     availableStrongholds,
     resolveBattle,
     garrison,
+    isEndlessUnlocked,
+    getEndlessStronghold,
+    recordExpedition,
     ungarrison,
     garrisonIdleReward,
     reset,

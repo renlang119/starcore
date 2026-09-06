@@ -119,6 +119,16 @@ function getNodeRewards(node: (typeof EXPLORE_NODES)[0]) {
 const availableStrongholds = computed(() => {
   return game.combat.availableStrongholds(completedNodes.value)
 })
+
+// —— 无尽远征（v0.60）——
+const endlessUnlockedNow = computed(() => game.combat.isEndlessUnlocked())
+const endlessBest = computed(() => game.combat.expeditionBest)
+/** 前沿深度 = 历史最深 + 1（攻克即推进） */
+const endlessFrontier = computed(() => endlessBest.value + 1)
+const endlessSection = {
+  title: '无尽远征',
+  desc: '来自星团深处的未知威胁，越深入越危险，收获也越丰',
+}
 </script>
 
 <template>
@@ -277,6 +287,45 @@ const availableStrongholds = computed(() => {
           </svg>
         </button>
       </div>
+    </div>
+
+    <!-- 无尽远征（v0.60）：独立区块，未解锁置灰可见 -->
+    <div class="endless-section" data-testid="endless-section">
+      <h3 class="section-title endless-title" :style="{ color: STRONGHOLD_TYPES.silencer.color }">
+        {{ endlessSection.title }}
+      </h3>
+      <p class="endless-desc">{{ endlessSection.desc }}</p>
+      <button
+        class="endless-card"
+        :class="{ unlocked: endlessUnlockedNow }"
+        :style="{ '--c': STRONGHOLD_TYPES.silencer.color }"
+        :disabled="!endlessUnlockedNow"
+        :data-testid="endlessUnlockedNow ? 'endless-card-unlocked' : 'endless-card-locked'"
+        @click="router.push('/battle/endless')"
+      >
+        <div class="s-icon">
+          <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
+            <use :href="'#' + STRONGHOLD_TYPES.silencer.icon" />
+          </svg>
+        </div>
+        <div class="s-info">
+          <div class="s-name">
+            {{ endlessUnlockedNow ? `深渊·第 ${endlessFrontier} 层` : '？？？' }}
+          </div>
+          <div class="s-type font-mono">
+            <template v-if="endlessUnlockedNow">历史最深 第 {{ endlessBest }} 层</template>
+            <template v-else>攻克「沉默者旗舰」后开放</template>
+          </div>
+        </div>
+        <svg
+          v-if="endlessUnlockedNow"
+          class="s-arrow"
+          style="width: var(--icon-md); height: var(--icon-md)"
+          aria-hidden="true"
+        >
+          <use href="#i-ui-arrow-right" />
+        </svg>
+      </button>
     </div>
 
     <!-- 点击反馈 toast -->
@@ -475,6 +524,41 @@ const availableStrongholds = computed(() => {
 }
 .s-arrow {
   color: var(--color-t-tertiary);
+}
+
+/* —— 无尽远征（v0.60）—— */
+.endless-section {
+  margin-top: var(--space-2);
+}
+.endless-title {
+  color: var(--color-t-primary);
+}
+.endless-desc {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.endless-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  opacity: 0.55;
+}
+.endless-card.unlocked {
+  border: 1px solid var(--c);
+  opacity: 1;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--c) 25%, transparent);
+}
+.endless-card.unlocked:active {
+  transform: scale(0.98);
+}
+.endless-card .s-icon {
+  color: var(--c);
 }
 
 .toast {

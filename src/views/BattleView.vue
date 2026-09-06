@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
 import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
+import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
 import { getUnit } from '@/data/units'
 import type { UnitId } from '@/data/units'
 import type { ResourceType } from '@/data/buildings'
@@ -16,7 +17,39 @@ const router = useRouter()
 const game = useGameStore()
 
 const strongholdId = computed(() => route.params.id as string)
-const stronghold = computed((): StrongholdDef | undefined => getStronghold(strongholdId.value))
+/** 是否无尽远征（/battle/endless） */
+const isEndless = computed(() => strongholdId.value === ENDLESS_STRONGHOLD_ID)
+
+// —— 无尽远征（v0.60）：深度选择 + 按深度合成据点 ——
+const endlessDepth = ref(1)
+const endlessBest = computed(() => game.combat.expeditionBest)
+/** 可选深度：1 ~ 前沿（历史最深+1），前沿胜利即推进 */
+const endlessMaxDepth = computed(() => endlessBest.value + 1)
+/** 用户手动调过深度后不再自动跟随前沿（只做越界钳制） */
+const endlessTouched = ref(false)
+const endlessStrongholdDef = computed<StrongholdDef>(() =>
+  game.combat.getEndlessStronghold(endlessDepth.value)
+)
+function setEndlessDepth(d: number, manual = false) {
+  if (manual) endlessTouched.value = true
+  endlessDepth.value = Math.max(1, Math.min(endlessMaxDepth.value, Math.floor(d) || 1))
+}
+function stepEndless(delta: number) {
+  setEndlessDepth(endlessDepth.value + delta, true)
+}
+// 默认跟随前沿（进页/推进后自动对齐到 best+1）；手动选过则只钳制越界
+watch(
+  endlessMaxDepth,
+  (max) => {
+    if (!endlessTouched.value) endlessDepth.value = max
+    else setEndlessDepth(endlessDepth.value)
+  },
+  { immediate: true }
+)
+
+const stronghold = computed((): StrongholdDef | undefined =>
+  isEndless.value ? endlessStrongholdDef.value : getStronghold(strongholdId.value)
+)
 
 const selectedFormation = ref(0)
 const battleLog = ref<any[] | null>(null)
@@ -96,7 +129,8 @@ function startBattle() {
   battleLog.value = result.log
   battleResult.value = result
   showResult.value = true
-  // 成就终身计数：据点攻克（胜利）次数
+  // 无尽远征：攻克当前前沿 → 推进历史最深深度（待奖励发放时执行，见 grantRewards）
+  // 成就终身计数：据点攻克（胜利）次数（远征战果同样计入战斗里程碑）
   if (result.victory) {
     game.achievements.recordBattle()
     game.achievements.checkAndUnlock()
@@ -114,6 +148,10 @@ function grantRewards() {
     if (v) game.resources.gain(k as ResourceType, v as number)
   }
   if (r.relic) game.relics.obtain(r.relic)
+  // 远征：奖励落袋的同时记录战果（攻克当前前沿才推进，重打不推进）
+  if (isEndless.value) {
+    game.combat.recordExpedition(endlessDepth.value, true)
+  }
 }
 
 function confirmResult() {
@@ -171,6 +209,36 @@ function cancelGarrison() {
       </div>
     </div>
 
+    <!-- 无尽远征：深度选择（仅 /battle/endless） -->
+    <div v-if="isEndless" class="endless-depth" data-testid="endless-depth-panel">
+      <h3 class="section-title">远征深度</h3>
+      <div class="depth-controls">
+        <button
+          class="depth-btn"
+          :disabled="endlessDepth <= 1"
+          data-testid="endless-depth-minus"
+          aria-label="降低深度"
+          @click="stepEndless(-1)"
+        >
+          −
+        </button>
+        <div class="depth-value font-mono" data-testid="endless-depth-value">
+          第 {{ endlessDepth }} 层
+          <span v-if="endlessDepth === endlessMaxDepth" class="depth-frontier">前沿</span>
+        </div>
+        <button
+          class="depth-btn"
+          :disabled="endlessDepth >= endlessMaxDepth"
+          data-testid="endless-depth-plus"
+          aria-label="提升深度"
+          @click="stepEndless(1)"
+        >
+          ＋
+        </button>
+      </div>
+      <p class="depth-hint">攻克「前沿」深度即可推进历史纪录；已通过层数可反复挑战</p>
+    </div>
+
     <!-- 敌方信息 -->
     <div class="enemy-section">
       <h3 class="section-title">敌方部署</h3>
@@ -224,6 +292,7 @@ function cancelGarrison() {
         出征
       </button>
       <button
+        v-if="!isEndless"
         class="btn-secondary"
         :class="{ 'garrison-active': isGarrisoned }"
         style="flex: 1"
@@ -440,6 +509,52 @@ function cancelGarrison() {
 .actions {
   display: flex;
   gap: var(--space-2);
+}
+
+/* —— 无尽远征深度选择（v0.60）—— */
+.endless-depth {
+  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-plasma) 45%, transparent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.depth-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.depth-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-line);
+  background: var(--color-surface-raised, var(--color-surface));
+  font-size: var(--text-lg);
+  color: var(--color-t-primary);
+  flex-shrink: 0;
+}
+.depth-btn:disabled {
+  opacity: 0.35;
+}
+.depth-value {
+  flex: 1;
+  text-align: center;
+  font-size: var(--text-md);
+  color: var(--color-plasma);
+}
+.depth-frontier {
+  display: inline-block;
+  margin-left: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-on-core);
+  background: var(--color-plasma);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-2);
+}
+.depth-hint {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
 }
 .garrison-active {
   background: var(--color-quantum) !important;
