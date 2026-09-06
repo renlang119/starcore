@@ -99,9 +99,11 @@ export function fmtTime(seconds: number): string {
   return d + 'd ' + (h % 24) + 'h'
 }
 
-/** 每秒产量格式化 "+1.2K/s" */
+/** 每秒产量格式化 "+1.2K /s"；零产出显示 "0 /s"（组件与按钮设计规范 §1.4） */
 export function fmtRate(v: Decimal.Value): string {
-  return (v instanceof Decimal && v.lt(0) ? '' : '+') + fmt(v) + '/s'
+  const d = v instanceof Decimal ? v : new Decimal(v)
+  if (d.isZero()) return '0 /s'
+  return (d.lt(0) ? '' : '+') + fmt(d) + ' /s'
 }
 
 /**
