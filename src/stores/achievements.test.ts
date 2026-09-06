@@ -270,16 +270,20 @@ describe('game store 集成 — 转生保留 / hardReset 清空 / tick 采集', 
     const game = useGameStore()
     const resources = useResourcesStore()
     const achv = game.achievements
-    // 直接抬高 totals 模拟本轮产出（tick 差值采集）
+    // v0.62 起 tick 会触发每日签到发奖（首签 +2e4 能量入 totals，差值采集照计终身）。
+    // 签到也烧在第一个 tick：此后 totals=2e4，终身=2e4
+    game.lastTickTime = Date.now() - 1000
+    game.tick()
+    // 直接抬高 totals 模拟本轮产出（tick 差值采集）：2e4 + 2e5
     resources.gain('energy', 2e5)
     game.lastTickTime = Date.now() - 1000
     game.tick()
-    expect(achv.metricValue('energy')).toBe(2e5)
+    expect(achv.metricValue('energy')).toBe(2.2e5) // 首签 2e4 + 本轮 2e5（签到计入终身是设计行为）
     expect(achv.isUnlocked('ach_energy_1')).toBe(true)
-    // 快照已对齐：再 tick 不重复计入
+    // 快照已对齐：再 tick 不重复计入（签到只发一次，之后无额外增量）
     game.lastTickTime = Date.now() - 1000
     game.tick()
-    expect(achv.metricValue('energy')).toBeLessThan(2.1e5) // 仅建筑产出微量增量（无建筑则不变）
+    expect(achv.metricValue('energy')).toBe(2.2e5)
   })
 
   it('升级建筑计入终身 upgrades（tryUpgradeBuilding 钩子）', () => {

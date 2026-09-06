@@ -134,6 +134,7 @@ function startBattle() {
   if (result.victory) {
     game.achievements.recordBattle()
     game.achievements.checkAndUnlock()
+    game.daily.bump('battles')
   }
   // 奖励发放推迟到 confirmResult/stayHere 时
 }
