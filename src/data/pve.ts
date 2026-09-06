@@ -23,6 +23,9 @@ export interface StrongholdDef {
   id: string
   name: string
   type: StrongholdType
+  /** 剧情章节标签（探索层级对应的叙事阶段），不代表难度排序；
+   *  同 tier 内强度可差一个数量级（如 ruin_3 与 silencer_2 同为 tier 4），
+   *  难度梯度以敌方总强度为准，见 endless.ts 的 TEMPLATE_NORMALIZE */
   tier: number
   desc: string
   icon: string
@@ -561,6 +564,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     ],
     rewards: {
       energy: 20000000,
+      crystal: 100000,
       alloy: 100000,
       data: 100000,
       dark: 100,

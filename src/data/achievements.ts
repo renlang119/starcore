@@ -112,7 +112,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'ach_energy_4',
     name: '银河熔炉',
-    desc: '累计产出 1e12 能量',
+    desc: '累计产出 1,000,000,000,000 能量',
     category: 'energy',
     icon: 'i-res-energy',
     metric: 'energy',
