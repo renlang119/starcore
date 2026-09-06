@@ -366,7 +366,7 @@ export const useGameStore = defineStore('game', () => {
     buildings.reset()
     research.reset()
     military.reset()
-    combat.reset()
+    combat.reset(true) // hardReset 连远征深度一并清零
     exploration.reset()
     relics.reset()
     transcend.reset(true)
@@ -415,7 +415,7 @@ export const useGameStore = defineStore('game', () => {
     buildings.reset()
     research.reset()
     military.reset()
-    combat.reset()
+    combat.reset() // 转生清驻扎/本轮通关，远征深度跨转生保留
     exploration.reset()
     // relics 保留
     // transcend 保留
