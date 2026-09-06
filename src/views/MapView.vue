@@ -70,14 +70,20 @@ onUnmounted(() => {
 })
 
 // 按层级分组
-const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep']
+const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep', 'stellar']
 
 // 空状态：全部探索节点均已完成
 const allNodesCompleted = computed(
   () => EXPLORE_NODES.length > 0 && EXPLORE_NODES.every((n) => game.exploration.isCompleted(n.id))
 )
 const nodesByLayer = computed(() => {
-  const map: Record<StarLayer, typeof EXPLORE_NODES> = { orbit: [], inner: [], outer: [], deep: [] }
+  const map: Record<StarLayer, typeof EXPLORE_NODES> = {
+    orbit: [],
+    inner: [],
+    outer: [],
+    deep: [],
+    stellar: [],
+  }
   for (const n of EXPLORE_NODES) map[n.layer].push(n)
   return map
 })

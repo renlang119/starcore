@@ -214,11 +214,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'ach_tech_3',
     name: '智慧之巅',
-    desc: '累计完成 39 项研究',
+    desc: '累计完成 43 项研究',
     category: 'tech',
     icon: 'i-nav-tech',
     metric: 'researches',
-    threshold: 39,
+    threshold: 43,
     effects: prod(3),
   },
   // —— 探索 ——

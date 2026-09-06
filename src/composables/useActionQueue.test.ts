@@ -56,7 +56,18 @@ describe('useActionQueue 行动队列', () => {
       game.resources.setAmount(r, 0)
     }
     const now = Date.now()
-    for (const n of ['node_orbit', 'node_inner', 'node_outer', 'node_deep']) {
+    for (const n of [
+      'node_orbit',
+      'node_inner',
+      'node_outer',
+      'node_deep',
+      'node_stellar_gate',
+      'node_stellar_mine',
+      'node_stellar_forge',
+      'node_stellar_dead',
+      'node_stellar_core',
+      'node_stellar_edge',
+    ]) {
       game.exploration.progress[n] = {
         nodeId: n,
         startTime: now - 1000,
