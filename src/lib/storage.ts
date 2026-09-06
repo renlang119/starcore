@@ -94,6 +94,33 @@ export interface AchievementsSaveData {
   unlocked: Record<string, number>
 }
 
+/** 每日签到/周期挑战存档（v0.62，可选字段：旧档缺失视为从未签到） */
+export interface DailySaveData {
+  /** 最后签到日（本地 YYYY-MM-DD） */
+  lastCheckIn: string
+  /** 连续签到天数 */
+  streak: number
+  /** 本周挑战计数（换周清零） */
+  weeklyCounters: {
+    battles: number
+    explores: number
+    researches: number
+    upgrades: number
+    transcends: number
+  }
+  /** 挑战所属周标识（YYYY-Www） */
+  challengeWeek: string
+  /** 本周 3 项挑战 */
+  weekChallenges: {
+    templateId: string
+    kind: 'battles' | 'explores' | 'researches' | 'upgrades' | 'transcends'
+    tier: number
+    target: number
+    rewardDark: number
+    claimed: boolean
+  }[]
+}
+
 /** 全量存档接口 */
 export interface SaveData {
   version: number
@@ -111,6 +138,8 @@ export interface SaveData {
   transcend: TranscendSaveData
   /** v7 起新增；旧档缺失，hydrate 自动取默认空值 */
   achievements?: AchievementsSaveData
+  /** 每日签到/周期挑战（v0.62 可选字段，旧档缺失从容处理） */
+  daily?: DailySaveData
 }
 
 /** 写入存档（IndexedDB + localStorage 备份，均带 checksum） */

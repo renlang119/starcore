@@ -6,6 +6,7 @@ import HeroCore from '@/components/home/HeroCore.vue'
 import ActionQueuePanel from '@/components/home/ActionQueuePanel.vue'
 import QuickActions from '@/components/home/QuickActions.vue'
 import OverviewPanel from '@/components/home/OverviewPanel.vue'
+import DailyCard from '@/components/home/DailyCard.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 // P3-3 新手引导（HomeView 3 步）
@@ -27,6 +28,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding('home', [
     </div>
 
     <QuickActions :active-step="activeStep" @dismiss="dismiss" @skip="skipAll" />
+    <DailyCard />
     <OverviewPanel />
   </div>
 </template>
