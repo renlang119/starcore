@@ -192,8 +192,8 @@ function fmtEta(r: ResourceResult): string {
 }
 
 function fmtRateStr(r: ResourceResult): string {
-  if (r.rate.gt(0)) return `+${fmt(r.rate)}/s`
-  return '+0/s'
+  if (r.rate.gt(0)) return `+${fmt(r.rate)} /s`
+  return '0 /s'
 }
 
 function isBottleneck(r: ResourceResult): boolean {

@@ -62,14 +62,16 @@ export function useActionQueue() {
       const node = getNode(nodeId)
       if (!node) continue
       const progress = game.exploration.getProgress(nodeId, game.exploreMult)
+      // 进度满格但未结算的条目转为可执行（组件与按钮设计规范 §2.2：progress >= 1 → actionable）
+      const done = progress >= 1
       items.push({
         id: `explore-${nodeId}`,
         label: `探索 ${node.name}`,
-        detail: progress >= 1 ? '已完成' : `${Math.floor(progress * 100)}%`,
+        detail: done ? '已完成' : `${Math.floor(progress * 100)}%`,
         path: '/map',
         color: '#2EE6A0',
         icon: 'i-nav-explore',
-        status: 'in-progress',
+        status: done ? 'actionable' : 'in-progress',
         progress,
       })
     }
