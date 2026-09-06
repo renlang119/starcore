@@ -17,6 +17,7 @@
 - **每日签到**：连击循环奖励 + 每周 3 项周期挑战
 
 详细设定与架构见 [docs/游戏设定与架构.md](docs/游戏设定与架构.md)，
+数值口径与梯度见 [docs/游戏数值设定规范.md](docs/游戏数值设定规范.md)，
 版本历史见 [changelog.md](changelog.md)（v0.51 起）；
 v0.01 - v0.50 历史条目见 [changelog-v0.01-v0.50.md](changelog-v0.01-v0.50.md)。
 
