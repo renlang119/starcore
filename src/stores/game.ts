@@ -17,6 +17,7 @@ import { useExplorationStore } from './exploration'
 import { useRelicsStore, setRelicSlotProvider } from './relics'
 import { useTranscendStore } from './transcend'
 import { useAchievementsStore, setAchievementExternalProviders } from './achievements'
+import { useDailyStore } from './daily'
 import {
   readSave,
   writeSave,
@@ -47,6 +48,7 @@ export const useGameStore = defineStore('game', () => {
   const relics = useRelicsStore()
   const transcend = useTranscendStore()
   const achievements = useAchievementsStore()
+  const daily = useDailyStore()
 
   // 显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
@@ -128,6 +130,30 @@ export const useGameStore = defineStore('game', () => {
     lifetimeTotalsSnapshot.dark = curDark
   }
 
+  // —— 每日签到/周期挑战（v0.62）——
+  /** 签到结果浮层（AppShell/DailyCard 消费后清除） */
+  const dailyToast = ref<{ text: string; at: number } | null>(null)
+  function setDailyToast(info: {
+    energy: number
+    dark: number
+    streakDay: number
+    returned: boolean
+  }): void {
+    const parts = [`+${info.energy} 能量`]
+    if (info.dark > 0) parts.push(`+${info.dark} 暗物质`)
+    const prefix = info.returned
+      ? `回归补偿 · 连击 ${info.streakDay} 天`
+      : `每日签到 · 连击 ${info.streakDay} 天`
+    dailyToast.value = { text: `${prefix}（${parts.join(' ')}）`, at: Date.now() }
+  }
+  /** 挑战奖励发放（DailyCard 领取按钮回调） */
+  function claimChallenge(templateId: string): { dark: number; streakBonus: number } | null {
+    const result = daily.claim(templateId)
+    if (!result) return null
+    resources.gain('dark', result.dark)
+    return result
+  }
+
   function tick() {
     const now = Date.now()
     let dt = (now - lastTickTime.value) / 1000
@@ -179,12 +205,24 @@ export const useGameStore = defineStore('game', () => {
         resources.gain(res as ResourceType, v as number)
       }
       achievements.recordExplore()
+      daily.bump('explores')
     }
 
     // 5. 成就：终身计数采集 + 解锁判定（31 条全表扫描，每秒一次开销可忽略）
     // playtime 指标直接读 totalPlayTime 现值（转生不清、hardReset 才清），无需单独累计
     collectLifetimeTotals()
     achievements.checkAndUnlock()
+
+    // 6. 每日签到/周期挑战（v0.62）：换天自动签到 + 换周重掷（字符串比对，开销忽略）
+    const checkIn = daily.onTickCheckIn()
+    if (checkIn) {
+      for (const [res, v] of Object.entries(checkIn)) {
+        if (res !== 'streakDay' && res !== 'returned' && v) {
+          resources.gain(res as ResourceType, v as number)
+        }
+      }
+      setDailyToast(checkIn)
+    }
   }
 
   /**
@@ -263,6 +301,7 @@ export const useGameStore = defineStore('game', () => {
       relics: relics.serialize(),
       transcend: transcend.serialize(),
       achievements: achievements.serialize(),
+      daily: daily.serialize(),
     }
   }
 
@@ -307,6 +346,7 @@ export const useGameStore = defineStore('game', () => {
     transcend.hydrate(data.transcend)
     relics.hydrate(data.relics)
     achievements.hydrate(data.achievements)
+    daily.hydrate(data.daily)
     // 终身计数快照对齐已恢复的 totals——否则首个 tick 会把整轮历史产量
     // 当作增量重复计入终身计数
     lifetimeTotalsSnapshot.energy = resources.getTotal('energy')
@@ -372,6 +412,7 @@ export const useGameStore = defineStore('game', () => {
     relics.reset()
     transcend.reset(true)
     achievements.reset()
+    daily.reset()
     lifetimeTotalsSnapshot.energy = D(0)
     lifetimeTotalsSnapshot.dark = D(0)
     offlineReport.value = null
@@ -411,6 +452,7 @@ export const useGameStore = defineStore('game', () => {
     lifetimeTotalsSnapshot.dark = D(0)
     // 执行转生
     transcend.transcend(gain)
+    daily.bump('transcends')
     // 重置非保留项
     resources.reset(true) // 保留暗物质
     buildings.reset()
@@ -440,6 +482,7 @@ export const useGameStore = defineStore('game', () => {
     if (!resources.spendCost(cost)) return false // spendCost 内部已含 canAfford 检查
     buildings.upgrade(id)
     achievements.recordUpgrade(buildings.getLevel(id))
+    daily.bump('upgrades')
     return true
   }
 
@@ -456,6 +499,7 @@ export const useGameStore = defineStore('game', () => {
     if (!resources.spendCost(adjustedCost)) return false
     research.complete(id)
     achievements.recordResearch()
+    daily.bump('researches')
     return true
   }
 
@@ -470,6 +514,8 @@ export const useGameStore = defineStore('game', () => {
     relics,
     transcend,
     achievements,
+    daily,
+    claimChallenge,
     // meta
     lastSaveTime,
     isRunning,
