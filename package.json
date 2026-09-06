@@ -1,7 +1,7 @@
 {
   "name": "starcore",
   "private": true,
-  "version": "0.59",
+  "version": "0.60",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
