@@ -3,7 +3,42 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.63
+> 当前版本：v0.64
+
+---
+
+## v0.64 — 修复: 文档一致性核对后的实现侧对齐
+
+**变更性质：修复（实现侧对齐）**
+**开发时间：2026-09-06**
+
+### 概述
+
+全量文档与代码一致性核对的实现侧收尾：修掉核对发现的三处「实现偏离规范」
+项，规范文档侧已在此前的文档回写中同步。
+
+### 变更明细
+
+1. **字号豁免外残留**：RelicView 合成工坊 `.material-tag`
+   `font-size: 10px` → `var(--text-xs)`，「除 .section-title 外零硬编码字
+   号」验收恢复达标
+2. **产出率格式对齐规范**（组件与按钮设计规范 §1.4）：`fmtRate` 输出
+   `+1K/s` → `+1K /s`（数字与后缀间补空格）；零产出 `+0/s` → `0 /s`；顺带
+   修复纯数字入参为负时误加 `+` 号的边界。UpgradeCountdown 的 `fmtRateStr`
+   同步口径。TopBar / HeroCore 显示随之更新
+3. **行动队列探索条目满格归类**：`useActionQueue` 探索条目 progress ≥ 1
+   （满格未结算）时由 in-progress 转 actionable（规范 §2.2 口径），详情文
+   案「已完成」不变
+
+### 验证
+
+- `corepack pnpm build`（含 vue-tsc）通过
+- `corepack pnpm test`：18 文件 202 用例全过（fmtRate 新增 2 用例：纯数字
+  负值、零值）
+- `lint:check` / `format:check` 零输出
+- 字号验收命令复跑：`font-size: \d+px` 全项目仅剩 .section-title 17px 豁免
+  项
+- Playwright 回归：v049 行动队列 + batchA Hero 产出率格式专项复跑通过
 
 ---
 
