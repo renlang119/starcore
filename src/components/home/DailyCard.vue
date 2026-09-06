@@ -65,10 +65,7 @@ function claim(templateId: string) {
         <div class="c-info">
           <span class="c-name">{{ challengeName(c) }}</span>
           <div class="c-bar">
-            <div
-              class="c-fill"
-              :style="{ width: game.daily.progressOf(c) * 100 + '%' }"
-            ></div>
+            <div class="c-fill" :style="{ width: game.daily.progressOf(c) * 100 + '%' }"></div>
           </div>
           <span class="c-count font-mono"
             >{{ Math.min(daily.weeklyCounters[c.kind], c.target) }}/{{ c.target }}</span
