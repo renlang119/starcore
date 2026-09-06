@@ -97,11 +97,20 @@ describe('pct', () => {
 
 describe('fmtRate', () => {
   it('positive rate', () => {
-    expect(fmtRate(1000)).toBe('+1K/s')
+    expect(fmtRate(1000)).toBe('+1K /s')
   })
 
   it('negative rate (from Decimal)', () => {
-    expect(fmtRate(D(-1000))).toBe('-1K/s')
+    expect(fmtRate(D(-1000))).toBe('-1K /s')
+  })
+
+  it('negative rate (plain number)', () => {
+    expect(fmtRate(-5)).toBe('-5 /s')
+  })
+
+  it('zero rate', () => {
+    expect(fmtRate(0)).toBe('0 /s')
+    expect(fmtRate(D(0))).toBe('0 /s')
   })
 })
 

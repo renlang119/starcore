@@ -527,7 +527,7 @@ onUnmounted(() => {
   position: absolute;
   top: var(--space-1);
   right: var(--space-1);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--color-on-core);
   border-radius: var(--radius-pill);
   padding: 0 var(--space-2);
