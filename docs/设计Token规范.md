@@ -4,7 +4,8 @@
 > **日期**：2026-07-16
 > **方案依据**：主界面 UI 总体推进方案 P0-5 / P0-6 章节（计划文档已退役，git 历史可查）
 > **本阶段定位**：只出规范，不改源码。前端拿到本文件后开始落地替换。
-> **落地方式**：CSS 自定义属性，写入 `style.css` `:root`（零运行时开销，符合项目现有模式）
+> **落地方式**：CSS 自定义属性，集中在 `src/styles/tokens.css` `:root`
+> （v0.55 起样式模块化；早期写 `style.css` `:root`，现 `style.css` 仅作 @import 聚合入口）
 
 ---
 
@@ -12,7 +13,7 @@
 
 ### 1.1 Token 定义（8 级，4px 基准）
 
-在 `style.css` `:root` 中新增以下变量：
+在 `src/styles/tokens.css` `:root` 中定义（早期为 `style.css`）：
 
 ```css
 /* —— 间距（4px 基准，8 级线性阶梯）—— */
@@ -94,7 +95,7 @@
 | `80px` | AppShell `.content` padding-bottom | 底部导航高度 + safe-area，非间距语义 |
 | `1px` | 各处 border-width、padding `1px` | 边框/微修饰，非间距语义 |
 | `2px` | outline-offset、border-radius `3px` | 非间距属性，不纳入间距 Token |
-| `180px / 160px` | UpgradeCountdown modal-log max-height | 固定容器尺寸，非间距 |
+| `180px / 160px` | ~~UpgradeCountdown modal-log max-height~~ | 已废止：v0.5x 折叠动画改为 `max-height: 500px`（组件迁入 `src/components/build/`） |
 | `32px / 36px / 100px` | log-round width、q-name width 等 | 固定宽度，非间距 |
 
 #### 1.3.4 迁移后验证
@@ -111,7 +112,7 @@ rg "(\bgap|padding|margin[a-z-]*)\s*:\s*\d+px" src/ --glob="*.{vue,css}" -n
 
 ### 2.1 Token 定义（7 级，1:1.250 模数）
 
-在 `style.css` `:root` 中新增以下变量：
+在 `src/styles/tokens.css` `:root` 中定义（早期为 `style.css`）：
 
 ```css
 /* —— 字号（1:1.250 模数，Major Third，base 16px）—— */
@@ -221,9 +222,12 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 ```
 
 > **口径修正（v0.52 回写）**：上述「零结果」预期有一个已知豁免——
-> P1-8 要求主标题 `17px`，落地为 `style.css` `.section-title { font-size: 17px }`，
-> 是全项目唯一硬编码字号（Token 表无 17px 档位）。P0-6 验收以此豁免为准，
+> P1-8 要求主标题 `17px`，落地为 `src/styles/utilities.css` `.section-title { font-size: 17px }`，
+> 是全项目唯一刻意保留的硬编码字号（Token 表无 17px 档位）。P0-6 验收以此豁免为准，
 > 即：除 `.section-title` 外零硬编码。
+>
+> **当前缺口（v0.63 核对）**：`src/views/RelicView.vue` `.material-tag { font-size: 10px }`
+> 系 v0.61 新增组件带入的豁免外残留，待修复。
 
 #### 2.3.5 Stylelint 防回潮（建议 P1 阶段引入）
 
@@ -247,7 +251,7 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 
 ## 三、Token CSS 落地参考
 
-前端拿到本文件后，在 `style.css` `:root` 中添加以下代码块（放在现有 `--radius` 和 `--ease-out` 之间）：
+前端拿到本文件后，在 `src/styles/tokens.css` `:root` 中添加以下代码块（放在现有 `--radius` 和 `--ease-out` 之间）：
 
 ```css
   /* —— 间距（4px 基准，8 级线性阶梯）—— */
@@ -287,7 +291,7 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 
 ## 五、补充登记（v0.52）
 
-**颜色 Token 遗漏补登**：`--color-core-deep: #006b7a`（style.css :root 定义，
+**颜色 Token 遗漏补登**：`--color-core-deep: #006b7a`（`src/styles/tokens.css` :root 定义，
 用于 App/SideNav 背景渐变的深青色端点）。该 Token 为全局颜色体系成员，
 此前未在本文档登记，现补记。
 
@@ -297,4 +301,4 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 
 ---
 
-> **交付状态**：规范已完成，待前端落地替换。本阶段未改动任何源码。
+> **交付状态**：规范已落地（v0.63 已按当前实现回写核对，含模块化落地位置与豁免口径更新）。
