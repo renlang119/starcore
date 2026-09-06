@@ -3,7 +3,57 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.65
+> 当前版本：v0.66
+
+---
+
+## v0.66 — 测试: 补齐四个 store 单元测试与数值规范守恒断言
+
+**变更性质：测试（补强 + 文档修正）**
+**开发时间：2026-09-07**
+
+### 概述
+
+补齐测试缺口：resources / buildings / exploration / research 四个 store 此
+前无单元测试（全游戏最底层的数值通道只被 game.test 间接覆盖）。新增 96 用
+例，其中「数值规范守恒」组把 docs/游戏数值设定规范.md 的关键梯度固化为机器
+断言，数值漂移即刻报错。
+
+### 变更明细
+
+1. **resources.test.ts**（21 用例）：初始状态 / gain 入 totals / spend 不
+   足拒绝 /canAfford 等额边界（gte 语义）与未知键白名单 / spendCost 原子性
+   /applyTick 速率推进与小数精度 / reset 含 keepDark 转生语义
+   /serialize-hydrate 往返与容缺
+2. **buildings.test.ts**（24 用例）：成本公式 ceil(base×growth^level) 逐资
+   源验证 /大数等级精度 / 产出 = 每级 × 等级 × 乘数 / 解锁判定 /
+   **规范守恒组**：增长率阶梯（1.18/1.15/1.13/1.10）、每级产出比 ≥×2（陷阱
+   层防线）、跳层无倒挂（同扇区 Lv0 回本单调不减）、离子铸造站 v0.65
+   修正口径
+3. **exploration.test.ts**（20 用例）：前置链校验 / 扣费原子性 / 重复开始
+   拒绝 /**完成时间锁定**（开始后 mult 变化不影响进行中探索）/ applyTick
+   幂等 /旧档无 endTime 动态补算兼容 / getProgress 三点采样 / reset 与
+   hydrate 白名单
+4. **research.test.ts**（31 用例）：前置判定（单/多/跨分支深链）/
+   unlockedSet 派生 /getMult 连乘与 extraEffects / getValue 累加 /
+   techCostMult /**规范守恒组**：43 科技 8 分支、5 根科技、requires 零悬
+   空、无循环依赖（拓扑排序全通过）、全研究后各资源乘数（能量 ×1.56 / 晶体
+   ×1.82 / 合金 ×1.75 /数据 ×1.95 / 暗物质 ×2.1 / 攻防 ×1.56 / 探索
+   ×4.095）、能量乘数最低口径、unlock 目标对照 BUILDINGS/UNITS 零悬空
+5. **规范文档修正（§三）**：原「边际交叉深度 ≤80 级可达带内」表述与实测不
+   符（晶体 T2→T3 交叉在 L≈125），替换为真正的硬约束「跳层无倒挂：同扇区
+   Lv0 回本逐层单调不减」。合金 T3 修正前正是倒挂（85714s 劣于 T4 的
+   50000s）才构成陷阱层；晶体 T3 虽慢热但必经，属踏脚层而非陷阱层。头部同
+   步注记更新为 v0.66
+
+### 验证
+
+- `corepack pnpm test`：**22 文件 298 用例**全过（202 基线 + 96 新增）
+- `corepack pnpm build`（含 vue-tsc）通过
+- `lint:check` / `format:check` 零输出（新测试文件曾触发 Prettier 折行，
+  format --write 修复后复跑通过）
+- 纯测试与文档变更，无运行时行为变化；Playwright 回归不受影响（未触 UI/数
+  据契约）
 
 ---
 
