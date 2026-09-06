@@ -7,7 +7,7 @@
  * - 遗物/转生次数两类指标读外部现值（遗物与转生进度本身跨转生保留）
  * - 奖励 = 小额永久加成，走 EffectSystem 既有通道；
  *   全拿满的乘数总量刻意压在无限树单个节点几级的量级内（顺路的糖，非第二权力轴）
- * - prestige_mult 仅「欧米茄传承」（集齐 21 遗物）1 个成就给 +10%，封顶无失控风险
+ * - prestige_mult 仅「欧米伽传承」（集齐 20 种遗物）1 个成就给 +10%，封顶无失控风险
  */
 /** 成就奖励效果（与转生树/科技/遗物效果同构，走 EffectSystem 聚合） */
 export interface AchievementEffect {
@@ -27,6 +27,7 @@ export type AchievementMetric =
   | 'explores' // 终身探索完成次数
   | 'battles' // 终身据点攻克次数
   | 'relicsOwned' // 当前遗物持有数（跨转生保留，读现值）
+  | 'relicKinds' // 遗物图鉴种类数（distinct id，不计重复件，读现值）
   | 'transcends' // 转生次数（跨转生保留，读现值）
   | 'playtime' // 终身在线秒数
 
@@ -317,11 +318,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'ach_relic_4',
     name: '欧米茄传承',
-    desc: '集齐全部 21 件遗物',
+    desc: '集齐全部 20 种遗物',
     category: 'relic',
     icon: 'i-nav-relic',
-    metric: 'relicsOwned',
-    threshold: 21,
+    metric: 'relicKinds',
+    threshold: 20,
     effects: [{ type: 'prestige_mult', value: 1.1, label: '负熵 +10%' }],
   },
   // —— 转生 ——
