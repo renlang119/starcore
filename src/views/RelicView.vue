@@ -1,16 +1,85 @@
 <script setup lang="ts">
 import { computed, ref, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { RARITY_INFO } from '@/data/relics'
+import { RARITY_INFO, getSetByRelic } from '@/data/relics'
+import type { RelicRarity } from '@/data/relics'
 import type { OwnedRelic } from '@/stores/relics'
 import Icons from '@/components/ui/Icons.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 
 const game = useGameStore()
 
 const owned = computed(() => game.relics.owned)
 const equipped = computed(() => game.relics.equipped)
 const equippedRelics = computed(() => game.relics.equippedRelics)
+const setProgress = computed(() => game.relics.setProgress)
+const ownedKinds = computed(() => game.relics.ownedKinds)
+
+// —— 合成工坊（v0.61）：选材模式下点卡选材料，非选材模式点卡装备 ——
+const selectedMaterials = ref<string[]>([])
+/** 选材模式开关：开启后图鉴卡点击=选材料 */
+const selectMode = ref(false)
+function toggleSelectMode() {
+  selectMode.value = !selectMode.value
+  if (!selectMode.value) clearSelection()
+}
+/** 是否可作为合成材料：未装备且非顶档 */
+function selectable(r: OwnedRelic): boolean {
+  return !game.relics.isEquipped(r.instanceId) && r.rarity !== 'legendary'
+}
+function isMaterialSelected(r: OwnedRelic): boolean {
+  return selectedMaterials.value.includes(r.instanceId)
+}
+function toggleMaterial(r: OwnedRelic) {
+  if (!selectable(r)) return
+  const i = selectedMaterials.value.indexOf(r.instanceId)
+  if (i >= 0) {
+    selectedMaterials.value.splice(i, 1)
+    return
+  }
+  // 选中组内稀有度须一致（先选什么稀有度，后续只能加同档）
+  if (selectedMaterials.value.length > 0 && materialRarity.value !== r.rarity) {
+    showToast('材料稀有度须一致')
+    return
+  }
+  if (selectedMaterials.value.length < 3) selectedMaterials.value.push(r.instanceId)
+}
+/** 选中组的稀有度（0 或 3 件时有值；3 件必同稀有度，由 toggle 保证） */
+const NEXT_RARITY_NAME: Record<string, string> = {
+  common: '稀有',
+  rare: '史诗',
+  epic: '传说',
+}
+const materialRarity = computed<RelicRarity | null>(() => {
+  if (selectedMaterials.value.length === 0) return null
+  const first = owned.value.find((r) => r.instanceId === selectedMaterials.value[0])
+  return first?.rarity ?? null
+})
+const canSynthesize = computed(() => {
+  if (selectedMaterials.value.length !== 3) return false
+  const mats = selectedMaterials.value
+    .map((id) => owned.value.find((r) => r.instanceId === id))
+    .filter(Boolean) as OwnedRelic[]
+  return mats.length === 3 && mats.every((m) => m.rarity === mats[0].rarity)
+})
+const synthResult = ref<OwnedRelic | null>(null)
+const synthFailMsg = ref('')
+
+function doSynthesize() {
+  synthFailMsg.value = ''
+  const result = game.relics.synthesize(selectedMaterials.value)
+  if (result) {
+    synthResult.value = result
+    selectedMaterials.value = []
+  } else {
+    synthFailMsg.value = '合成失败：需 3 件未装备的同稀有度遗物'
+  }
+}
+function clearSelection() {
+  selectedMaterials.value = []
+  synthFailMsg.value = ''
+}
 
 function equip(relic: OwnedRelic, slot: number) {
   // 槽位全满时 findIndex 返回 -1，需明确提示玩家
@@ -23,6 +92,19 @@ function equip(relic: OwnedRelic, slot: number) {
   } else {
     game.relics.equip(relic.instanceId, slot)
   }
+}
+
+/** 图鉴卡点击：点在丢弃按钮上不劫持；选材模式下点卡=选材料，否则=装备 */
+function onCardClick(r: OwnedRelic, e: MouseEvent) {
+  if ((e.target as HTMLElement).closest('.discard-btn')) return
+  if (selectMode.value) {
+    toggleMaterial(r)
+    return
+  }
+  equip(
+    r,
+    equipped.value.findIndex((s) => s === null)
+  )
 }
 
 // —— 装备槽满提示 toast ——
@@ -106,6 +188,86 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <!-- 合成工坊（v0.61） -->
+    <div class="fusion-section" data-testid="fusion-section">
+      <h3 class="section-title">合成工坊</h3>
+      <p class="fusion-hint">
+        点选 3 件同稀有度、未装备的遗物，合成 1 件高一档稀有度的随机遗物（传说为顶档，不可作材料）
+      </p>
+      <div class="fusion-panel">
+        <button
+          class="btn-ghost sm select-mode-btn"
+          :class="{ on: selectMode }"
+          data-testid="select-mode-button"
+          @click="toggleSelectMode"
+        >
+          {{ selectMode ? '✓ 选材中：点击图鉴卡加入材料（再点取消）' : '选择材料' }}
+        </button>
+        <div class="fusion-slots" data-testid="fusion-slots">
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="fusion-slot"
+            :class="{ filled: i <= selectedMaterials.length }"
+          >
+            <template v-if="i <= selectedMaterials.length">
+              {{ owned.find((r) => r.instanceId === selectedMaterials[i - 1])?.name }}
+            </template>
+            <template v-else>材料 {{ i }}</template>
+          </div>
+        </div>
+        <div class="fusion-actions">
+          <button
+            class="btn-accent sm"
+            style="--accent: var(--color-plasma)"
+            :disabled="!canSynthesize"
+            data-testid="fusion-button"
+            @click="doSynthesize"
+          >
+            合 成
+          </button>
+          <button v-if="selectedMaterials.length > 0" class="btn-ghost sm" @click="clearSelection">
+            清空
+          </button>
+        </div>
+        <p v-if="synthFailMsg" class="fusion-fail">{{ synthFailMsg }}</p>
+        <p v-else-if="materialRarity" class="fusion-rarity">
+          材料稀有度：{{ RARITY_INFO[materialRarity].name }} → 产物：{{
+            NEXT_RARITY_NAME[materialRarity]
+          }}
+        </p>
+      </div>
+    </div>
+
+    <!-- 套装（v0.61） -->
+    <div class="sets-section" data-testid="sets-section">
+      <h3 class="section-title">套装</h3>
+      <div class="sets-list">
+        <div
+          v-for="row in setProgress"
+          :key="row.set.id"
+          class="set-row"
+          :class="{ active: row.mode !== 'none', full: row.mode === 'full' }"
+          :style="{ '--c': row.set.color }"
+          :data-testid="'set-row-' + row.set.id"
+        >
+          <div class="set-name">{{ row.set.name }}</div>
+          <div class="set-count font-mono">{{ Math.min(row.count, 3) }}/3</div>
+          <div class="set-bonus">
+            <span v-if="row.mode === 'full'" class="set-bonus-on">{{ row.set.full.label }}</span>
+            <span v-else-if="row.mode === 'partial'" class="set-bonus-on">{{
+              row.set.partial.label
+            }}</span>
+            <span v-else class="set-bonus-off"
+              >2 件：{{ row.set.partial.label.split('：')[1] }} · 3 件：{{
+                row.set.full.label.split('：')[1]
+              }}</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 已装备效果 -->
     <div v-if="equippedRelics.length > 0" class="active-effects">
       <h3 class="section-title">当前效果</h3>
@@ -118,7 +280,7 @@ onUnmounted(() => {
 
     <!-- 遗物图鉴 -->
     <div class="inventory">
-      <h3 class="section-title">遗物收藏（{{ owned.length }}）</h3>
+      <h3 class="section-title">遗物收藏（{{ owned.length }} 件 / {{ ownedKinds }} 种）</h3>
       <div v-if="owned.length === 0" class="empty-inv">
         <EmptyState
           icon="i-nav-relic"
@@ -133,13 +295,12 @@ onUnmounted(() => {
           v-for="r in owned"
           :key="r.instanceId"
           class="relic-card"
+          :class="{
+            'material-selected': isMaterialSelected(r),
+            'material-disabled': !selectable(r),
+          }"
           :style="{ '--c': getRarityColor(r.rarity) }"
-          @click="
-            equip(
-              r,
-              equipped.findIndex((s) => s === null)
-            )
-          "
+          @click="onCardClick(r, $event)"
         >
           <div class="r-head">
             <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
@@ -148,6 +309,13 @@ onUnmounted(() => {
             <span class="rarity-badge" :style="{ background: getRarityColor(r.rarity) }">{{
               RARITY_INFO[r.rarity].name
             }}</span>
+            <span
+              v-if="getSetByRelic(r.id)"
+              class="set-badge"
+              :style="{ color: getSetByRelic(r.id)!.color }"
+              :title="getSetByRelic(r.id)!.name"
+              >◆</span
+            >
           </div>
           <div class="r-name">{{ r.name }}</div>
           <div class="r-desc">{{ r.desc }}</div>
@@ -155,6 +323,13 @@ onUnmounted(() => {
             <span v-for="(e, i) in r.effects" :key="i" class="eff-mini">{{ e.label }}</span>
           </div>
           <div v-if="game.relics.isEquipped(r.instanceId)" class="equipped-tag">已装备</div>
+          <div
+            v-if="isMaterialSelected(r)"
+            class="material-tag"
+            :style="{ background: getRarityColor(r.rarity) }"
+          >
+            已选为材料
+          </div>
           <button
             class="btn-ghost sm discard-btn"
             :class="{ pending: pendingDiscardId === r.instanceId }"
@@ -178,6 +353,43 @@ onUnmounted(() => {
     <Transition name="toast">
       <div v-if="toastMsg" class="toast">{{ toastMsg }}</div>
     </Transition>
+
+    <!-- 合成产物弹窗 -->
+    <ModalOverlay
+      :model-value="!!synthResult"
+      modal-class="synth-modal"
+      aria-label="合成结果"
+      @update:model-value="synthResult = null"
+      @overlay-click="synthResult = null"
+    >
+      <template v-if="synthResult">
+        <h2 class="result-title font-display">合成成功</h2>
+        <p class="result-sub">材料已消耗，获得新遗物</p>
+        <div
+          class="synth-product"
+          :style="{ '--c': getRarityColor(synthResult.rarity) }"
+          :data-testid="'synth-product-' + synthResult.rarity"
+        >
+          <div class="r-head">
+            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+              <use :href="'#' + synthResult.icon" />
+            </svg>
+            <span class="rarity-badge" :style="{ background: getRarityColor(synthResult.rarity) }">
+              {{ RARITY_INFO[synthResult.rarity].name }}
+            </span>
+          </div>
+          <div class="r-name">{{ synthResult.name }}</div>
+          <div class="r-effects">
+            <span v-for="(e, i) in synthResult.effects" :key="i" class="eff-mini">{{
+              e.label
+            }}</span>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn-primary" style="flex: 1" @click="synthResult = null">确认</button>
+        </div>
+      </template>
+    </ModalOverlay>
   </div>
 </template>
 
@@ -190,6 +402,149 @@ onUnmounted(() => {
 }
 .page-title {
   color: var(--color-amber);
+}
+
+/* —— 合成工坊（v0.61）—— */
+.fusion-section {
+  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-plasma) 40%, transparent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+.fusion-hint {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  margin-bottom: var(--space-2);
+}
+.select-mode-btn.on {
+  border-color: var(--color-plasma);
+  color: var(--color-plasma);
+}
+.fusion-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.fusion-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.fusion-slot {
+  aspect-ratio: 2.4;
+  border: 1px dashed var(--color-border-line);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  text-align: center;
+  padding: var(--space-1);
+  overflow: hidden;
+}
+.fusion-slot.filled {
+  border: 1px solid var(--color-plasma);
+  color: var(--color-t-primary);
+  background: color-mix(in srgb, var(--color-plasma) 10%, transparent);
+}
+.fusion-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+.fusion-fail {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-alert);
+}
+.fusion-rarity {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
+
+/* —— 套装（v0.61）—— */
+.sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  opacity: 0.6;
+}
+.set-row.active {
+  opacity: 1;
+  border-color: var(--c);
+}
+.set-row.full {
+  box-shadow: 0 0 10px color-mix(in srgb, var(--c) 25%, transparent);
+}
+.set-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--c);
+  flex-shrink: 0;
+}
+.set-count {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  flex-shrink: 0;
+}
+.set-bonus {
+  font-size: var(--text-xs);
+  flex: 1;
+  text-align: right;
+}
+.set-bonus-on {
+  color: var(--c);
+}
+.set-bonus-off {
+  color: var(--color-t-tertiary);
+}
+
+/* —— 图鉴卡材料态（v0.61）—— */
+.relic-card.material-selected {
+  outline: 2px solid var(--color-plasma);
+  outline-offset: 1px;
+}
+.relic-card.material-disabled {
+  opacity: 0.55;
+}
+.set-badge {
+  margin-left: auto;
+  font-size: var(--text-sm);
+}
+.material-tag {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  font-size: 10px;
+  color: var(--color-on-core);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-2);
+  pointer-events: none;
+}
+.relic-card {
+  position: relative;
+}
+.synth-modal .result-title {
+  color: var(--color-plasma);
+}
+.synth-product {
+  border: 1px solid var(--c);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
 }
 
 .slots-grid {

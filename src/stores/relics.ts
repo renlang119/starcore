@@ -4,7 +4,14 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed, watch, shallowRef } from 'vue'
-import { type RelicDef, type RelicEffect, getRelicById } from '@/data/relics'
+import {
+  type RelicDef,
+  type RelicEffect,
+  getRelicById,
+  RELIC_POOL,
+  RELIC_SETS,
+  getSetByRelic,
+} from '@/data/relics'
 import type { RelicSaveData } from '@/lib/storage'
 
 export interface OwnedRelic extends RelicDef {
@@ -95,12 +102,71 @@ export const useRelicsStore = defineStore('relics', () => {
     owned.value.push(r)
   }
 
-  /** 计算当前已装备遗物的所有效果 */
+  /** 计算当前已装备遗物的所有效果（含套装派生加成，v0.61） */
   const equippedEffects = computed<RelicEffect[]>(() => {
     const list: RelicEffect[] = []
     for (const r of equippedRelics.value) list.push(...r.effects)
+    for (const s of activeSetBonuses.value) {
+      if (s.mode === 'partial') list.push(s.set.partial)
+      else list.push(s.set.full)
+    }
     return list
   })
+
+  // —— 套装（v0.61）：按装备中遗物的所属系别统计件数 ——
+  const setProgress = computed(() => {
+    const rows = RELIC_SETS.map((set) => ({
+      set,
+      count: 0,
+      mode: 'none' as 'none' | 'partial' | 'full',
+    }))
+    const idx = new Map(rows.map((r, i) => [r.set.id, i]))
+    for (const r of equippedRelics.value) {
+      const set = getSetByRelic(r.id)
+      if (set) rows[idx.get(set.id)!].count++
+    }
+    for (const row of rows) {
+      row.mode = row.count >= 3 ? 'full' : row.count >= 2 ? 'partial' : 'none'
+    }
+    return rows
+  })
+
+  /** 已激活的套装加成（partial/full），供 equippedEffects 聚合 */
+  const activeSetBonuses = computed(() => setProgress.value.filter((r) => r.mode !== 'none'))
+
+  /** 遗物图鉴种类数（distinct id，不计重复件）——ach_relic_4 用 */
+  const ownedKinds = computed(() => new Set(owned.value.map((r) => r.id)).size)
+
+  // —— 合成（v0.61）：3 件同稀有度未装备遗物 → 高一档随机产物 ——
+  /** 稀有度升阶链（legendary 为顶档，不可作为材料） */
+  const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'] as const
+
+  /**
+   * 遗物合成：消耗 3 件同稀有度未装备遗物，产出高一档稀有度池中的随机一件。
+   * 校验失败返回 null（不做任何变动）；成功移除材料、产物入库并返回。
+   */
+  function synthesize(instanceIds: string[], rng: () => number = Math.random): OwnedRelic | null {
+    if (instanceIds.length !== 3) return null
+    if (new Set(instanceIds).size !== 3) return null
+    const materials: OwnedRelic[] = []
+    for (const id of instanceIds) {
+      const relic = owned.value.find((r) => r.instanceId === id)
+      if (!relic) return null
+      if (isEquipped(id)) return null
+      if (relic.rarity === 'legendary') return null
+      materials.push(relic)
+    }
+    const rarity = materials[0].rarity
+    if (!materials.every((m) => m.rarity === rarity)) return null
+    const nextRarity = RARITY_ORDER[RARITY_ORDER.indexOf(rarity) + 1]
+    if (!nextRarity) return null
+    const pool = RELIC_POOL.filter((r) => r.rarity === nextRarity)
+    if (pool.length === 0) return null
+    const product = pool[Math.floor(rng() * pool.length)]
+    // 原子提交：先移除材料再入库产物
+    for (const m of materials) discard(m.instanceId)
+    return obtain(product)
+  }
 
   /** 获取某类乘数 */
   function getMult(type: RelicEffect['type'], target?: string): number {
@@ -173,14 +239,17 @@ export const useRelicsStore = defineStore('relics', () => {
     owned,
     equipped,
     ownedCount,
+    ownedKinds,
     equippedRelics,
     equippedEffects,
+    setProgress,
     maxSlots,
     equip,
     unequip,
     isEquipped,
     obtain,
     discard,
+    synthesize,
     getMult,
     reset,
     serialize,
