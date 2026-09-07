@@ -158,13 +158,13 @@ describe('exploration — 完成时间锁定', () => {
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
     store.applyTick(D(1)) // orbit 完成，解锁 inner
-    // inner(120s) 与 outer 需先完成 inner——用两条独立支线验证并行：
+    // inner(120s) 与 outer 需先完成 inner，用两条独立支线验证并行：
     store.startExplore('node_inner', D(1), f.canAfford, f.spend)
     advance(120_000)
     store.applyTick(D(1)) // inner 完成，解锁 outer
     store.startExplore('node_outer', D(1), f.canAfford, f.spend)
     advance(300_000)
-    store.applyTick(D(1)) // outer 完成 600s？不足——再推进
+    store.applyTick(D(1)) // outer 完成 600s？不足，再推进
     expect(store.isCompleted('node_outer')).toBe(false)
     advance(300_000)
     const results = store.applyTick(D(1))
