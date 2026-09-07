@@ -228,4 +228,33 @@ describe('storage export/import', () => {
     const result = await importSave(exported)
     expect(result.ok).toBe(false)
   })
+
+  // —— v0.70 遗物强化 level 可选字段 ——
+  it('importSave accepts relic level field (v0.70)', async () => {
+    const data = makeValidSaveData()
+    data.relics = {
+      owned: [{ id: 'r_energy_1', instanceId: 'relic_test1', obtainedAt: Date.now(), level: 5 }],
+      equipped: ['relic_test1', null, null, null],
+    }
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.data.relics.owned[0].level).toBe(5)
+  })
+
+  it('importSave rejects invalid relic level values', async () => {
+    // 越上限/负数/非整数
+    for (const badLevel of [21, -1, 1.5]) {
+      const data = makeValidSaveData()
+      data.relics = {
+        owned: [
+          { id: 'r_energy_1', instanceId: 'relic_test1', obtainedAt: 1, level: badLevel as number },
+        ],
+        equipped: [null, null, null, null],
+      }
+      const exported = await exportSave(data)
+      const result = await importSave(exported)
+      expect(result.ok, `level=${badLevel} should be rejected`).toBe(false)
+    }
+  })
 })
