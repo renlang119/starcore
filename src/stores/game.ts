@@ -58,6 +58,7 @@ export const useGameStore = defineStore('game', () => {
     relicKinds: () => relics.ownedKinds,
     transcends: () => transcend.totalTranscends,
     playtime: () => totalPlayTime.value,
+    expeditionBest: () => combat.expeditionBest,
   })
   // 训练并行槽：基础 1 槽 + 科技加成（集群操练 I/II 各 +1），封顶 MAX_TRAINING_SLOTS
   setTrainingSlotProvider(() =>
