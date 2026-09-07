@@ -4,11 +4,16 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useRelicsStore } from './relics'
+import { setRelicEnhanceSpendProvider } from './relics'
 import {
   RELIC_POOL,
   RELIC_SETS,
   getRelicById,
   getSetByRelic,
+  MAX_RELIC_LEVEL,
+  enhanceCost,
+  enhanceValue,
+  enhanceLabel,
   type RelicDef,
   type RelicRarity,
 } from '../data/relics'
@@ -206,5 +211,141 @@ describe('relics — 存档兼容', () => {
     expect(other.ownedCount).toBe(1)
     expect(other.owned[0].id).toBe(product.id)
     expect(other.owned[0].effects).toEqual(product.effects)
+  })
+})
+
+describe('relics — 强化（v0.70）', () => {
+  let store: ReturnType<typeof useRelicsStore>
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    store = useRelicsStore()
+    // 重置模块级 provider，防止跨测试污染（slotProvider 同款先例）
+    setRelicEnhanceSpendProvider(() => true)
+  })
+
+  it('enhanceValue：正向放大与折扣加深统一公式', () => {
+    expect(enhanceValue(1.05, 0.04, 20)).toBeCloseTo(1.09, 10)
+    expect(enhanceValue(1.4, 0.04, 20)).toBeCloseTo(1.72, 10)
+    expect(enhanceValue(1.3, 0.04, 20)).toBeCloseTo(1.54, 10)
+    expect(enhanceValue(2.0, 0.01, 20)).toBeCloseTo(2.2, 10)
+    expect(enhanceValue(0.9, 0.01, 20)).toBeCloseTo(0.88, 10)
+    // Lv0 = 无变化
+    expect(enhanceValue(1.4, 0.04, 0)).toBeCloseTo(1.4, 10)
+  })
+
+  it('enhanceCost：base×growth^(Lv-1)，单调递增且跨稀有度分档', () => {
+    expect(enhanceCost('common', 1)).toBe(1e6)
+    expect(enhanceCost('common', 2)).toBe(1.5e6)
+    expect(enhanceCost('rare', 1)).toBe(5e6)
+    expect(enhanceCost('epic', 1)).toBe(2.5e7)
+    expect(enhanceCost('legendary', 1)).toBe(1.25e8)
+    expect(enhanceCost('legendary', 20)).toBe(Math.ceil(1.25e8 * Math.pow(1.5, 19)))
+    for (const r of ['common', 'rare', 'epic', 'legendary'] as const) {
+      for (let lv = 2; lv <= MAX_RELIC_LEVEL; lv++) {
+        expect(enhanceCost(r, lv)).toBeGreaterThan(enhanceCost(r, lv - 1))
+      }
+    }
+  })
+
+  it('enhanceLabel：±N% 与 ×N 形态替换', () => {
+    expect(enhanceLabel('能量产出 +5%', 1.05, 0.04, 20)).toBe('能量产出 +9%')
+    expect(enhanceLabel('能量产出 +40%', 1.4, 0.04, 20)).toBe('能量产出 +72%')
+    expect(enhanceLabel('攻击力 +30%', 1.3, 0.04, 20)).toBe('攻击力 +54%')
+    expect(enhanceLabel('科技成本 -10%', 0.9, 0.01, 20)).toBe('科技成本 -12%')
+    expect(enhanceLabel('转生负熵 ×2', 2.0, 0.01, 20)).toBe('转生负熵 ×2.2')
+    expect(enhanceLabel('转生负熵 +50%', 1.5, 0.01, 20)).toBe('转生负熵 +60%')
+  })
+
+  it('enhance：扣能量 level+1；成本随等级递增', () => {
+    const spent: number[] = []
+    setRelicEnhanceSpendProvider((c) => {
+      spent.push(c)
+      return true
+    })
+    const inst = inject(store, 'r_energy_1')[0]
+    expect(store.enhance(inst)).toBe(true)
+    expect(store.enhance(inst)).toBe(true)
+    expect(store.owned[0].level).toBe(2)
+    expect(spent).toEqual([1e6, 1.5e6])
+  })
+
+  it('enhance：余额不足（spend 返回 false）零副作用', () => {
+    setRelicEnhanceSpendProvider(() => false)
+    const inst = inject(store, 'r_energy_1')[0]
+    expect(store.enhance(inst)).toBe(false)
+    expect(store.owned[0].level).toBe(0)
+  })
+
+  it('enhance：满级与不存在实例拒绝', () => {
+    const inst = inject(store, 'r_energy_1')[0]
+    for (let i = 0; i < MAX_RELIC_LEVEL; i++) expect(store.enhance(inst)).toBe(true)
+    expect(store.owned[0].level).toBe(MAX_RELIC_LEVEL)
+    expect(store.enhance(inst)).toBe(false)
+    expect(store.enhance('relic_not_exist')).toBe(false)
+  })
+
+  it('nextEnhanceCost：未满级返回成本，满级返回 null', () => {
+    const inst = inject(store, 'r_energy_1')[0]
+    expect(store.nextEnhanceCost(inst)).toBe(1e6)
+    for (let i = 0; i < MAX_RELIC_LEVEL; i++) store.enhance(inst)
+    expect(store.nextEnhanceCost(inst)).toBeNull()
+    expect(store.nextEnhanceCost('relic_not_exist')).toBeNull()
+  })
+
+  it('equippedEffects：强化放大装备效果值并更新 label；套装加成不随强化变化', () => {
+    // 遗物：r_energy_3（epic 能量 +40%）+ r_data_1（common 数据 +5%，沉默者套装凑件）
+    const ids = [...inject(store, 'r_energy_3'), ...inject(store, 'r_dark_1')]
+    store.equip(ids[0], 0)
+    store.equip(ids[1], 1)
+    expect(store.getMult('production_mult', 'energy')).toBeCloseTo(1.4, 10)
+
+    // 强化 r_energy_3 至 Lv5：1.4 → 1 + 0.4×(1+0.04×5) = 1.48
+    for (let i = 0; i < 5; i++) store.enhance(ids[0])
+    const enhanced = store.equippedEffects.find(
+      (e) => e.type === 'production_mult' && e.target === 'energy'
+    )!
+    expect(enhanced.value).toBeCloseTo(1.48, 10)
+    expect(enhanced.label).toBe('能量产出 +48%')
+    // Lv20 不改变套装加成叠加逻辑（加成项本身不变）
+    expect(store.getMult('production_mult', 'energy')).toBeCloseTo(1.48, 10)
+  })
+
+  it('enhance 不影响同 id 其他实例', () => {
+    const ids = inject(store, 'r_energy_1', 2)
+    store.enhance(ids[0])
+    const a = store.owned.find((r) => r.instanceId === ids[0])!
+    const b = store.owned.find((r) => r.instanceId === ids[1])!
+    expect(a.level).toBe(1)
+    expect(b.level).toBe(0)
+  })
+
+  it('serialize/hydrate：level 往返；旧档无 level 默认 0 且上限钳制', () => {
+    const inst = inject(store, 'r_energy_1')[0]
+    store.enhance(inst)
+    store.enhance(inst)
+    const data = store.serialize()
+    expect(data.owned[0].level).toBe(2)
+
+    setActivePinia(createPinia())
+    const other = useRelicsStore()
+    other.hydrate(data)
+    expect(other.owned[0].level).toBe(2)
+
+    // 旧档（无 level 字段）
+    const legacy = { ...data, owned: [{ id: 'r_energy_1', instanceId: 'x', obtainedAt: 1 }] }
+    setActivePinia(createPinia())
+    const legacyStore = useRelicsStore()
+    legacyStore.hydrate(legacy as typeof data)
+    expect(legacyStore.owned[0].level).toBe(0)
+
+    // 越界防御：level 超出上限被钳制
+    const over = {
+      ...data,
+      owned: [{ id: 'r_energy_1', instanceId: 'y', obtainedAt: 1, level: 99 }],
+    }
+    setActivePinia(createPinia())
+    const overStore = useRelicsStore()
+    overStore.hydrate(over as typeof data)
+    expect(overStore.owned[0].level).toBe(MAX_RELIC_LEVEL)
   })
 })
