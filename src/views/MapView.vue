@@ -70,7 +70,7 @@ onUnmounted(() => {
 })
 
 // 按层级分组
-const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep', 'stellar']
+const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep', 'stellar', 'cluster']
 
 // 空状态：全部探索节点均已完成
 const allNodesCompleted = computed(
@@ -83,6 +83,7 @@ const nodesByLayer = computed(() => {
     outer: [],
     deep: [],
     stellar: [],
+    cluster: [],
   }
   for (const n of EXPLORE_NODES) map[n.layer].push(n)
   return map
