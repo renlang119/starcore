@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { RARITY_INFO, getSetByRelic } from '@/data/relics'
-import type { RelicRarity } from '@/data/relics'
-import type { OwnedRelic } from '@/stores/relics'
+import {
+  RARITY_INFO,
+  getSetByRelic,
+  MAX_RELIC_LEVEL,
+  ENHANCE_GAIN,
+  enhanceLabel,
+} from '@/data/relics'
+import type { RelicRarity, RelicEffect } from '@/data/relics'
+import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
+import { fmt } from '@/lib/format'
 import Icons from '@/components/ui/Icons.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
@@ -148,9 +155,53 @@ function handleDiscard(e: Event, relic: OwnedRelic) {
   }
 }
 
+// —— 强化（v0.70）：instance 级等级轴 ——
+const selectedEnhance = ref<OwnedRelic | null>(null)
+const enhanceToast = ref('')
+let enhanceToastTimer: ReturnType<typeof setTimeout> | null = null
+
+function openEnhance(r: OwnedRelic) {
+  selectedEnhance.value = r
+}
+function closeEnhance() {
+  selectedEnhance.value = null
+}
+function showEnhanceToast(msg: string) {
+  enhanceToast.value = msg
+  if (enhanceToastTimer) clearTimeout(enhanceToastTimer)
+  enhanceToastTimer = setTimeout(() => {
+    enhanceToast.value = ''
+  }, 2000)
+}
+/** 下一级成本（能量）；满级/不存在返回 null */
+const enhanceNextCost = computed<number | null>(() =>
+  selectedEnhance.value ? game.relics.nextEnhanceCost(selectedEnhance.value.instanceId) : null
+)
+const enhanceIsMax = computed(() => (selectedEnhance.value?.level ?? 0) >= MAX_RELIC_LEVEL)
+/** 强化后效果（当前级） */
+const enhanceCurrentEffects = computed<RelicEffect[]>(() =>
+  selectedEnhance.value ? enhancedEffectsOf(selectedEnhance.value) : []
+)
+/** 下一级效果预览（升到 level+1 的 label） */
+const enhanceNextEffects = computed<{ label: string; next: string }[]>(() => {
+  const r = selectedEnhance.value
+  if (!r || enhanceIsMax.value) return []
+  return r.effects.map((eff) => {
+    const gain = ENHANCE_GAIN[eff.type]
+    if (!gain) return { label: eff.label, next: eff.label }
+    return { label: eff.label, next: enhanceLabel(eff.label, eff.value, gain, r.level + 1) }
+  })
+})
+function doEnhance() {
+  if (!selectedEnhance.value) return
+  const ok = game.relics.enhance(selectedEnhance.value.instanceId)
+  if (!ok) showEnhanceToast('能量不足')
+}
+
 onUnmounted(() => {
   if (discardTimer) clearTimeout(discardTimer)
   if (toastTimer) clearTimeout(toastTimer)
+  if (enhanceToastTimer) clearTimeout(enhanceToastTimer)
 })
 </script>
 
@@ -320,7 +371,12 @@ onUnmounted(() => {
           <div class="r-name">{{ r.name }}</div>
           <div class="r-desc">{{ r.desc }}</div>
           <div class="r-effects">
-            <span v-for="(e, i) in r.effects" :key="i" class="eff-mini">{{ e.label }}</span>
+            <span v-for="(e, i) in enhancedEffectsOf(r)" :key="i" class="eff-mini">{{
+              e.label
+            }}</span>
+          </div>
+          <div v-if="r.level > 0" class="level-badge" data-testid="relic-level-badge">
+            Lv{{ r.level }}
           </div>
           <div v-if="game.relics.isEquipped(r.instanceId)" class="equipped-tag">已装备</div>
           <div
@@ -330,21 +386,30 @@ onUnmounted(() => {
           >
             已选为材料
           </div>
-          <button
-            class="btn-ghost sm discard-btn"
-            :class="{ pending: pendingDiscardId === r.instanceId }"
-            :disabled="game.relics.isEquipped(r.instanceId)"
-            :title="game.relics.isEquipped(r.instanceId) ? '请先卸下遗物' : ''"
-            @click="handleDiscard($event, r)"
-          >
-            {{
-              game.relics.isEquipped(r.instanceId)
-                ? '请先卸下'
-                : pendingDiscardId === r.instanceId
-                  ? '确认丢弃？'
-                  : '丢弃'
-            }}
-          </button>
+          <div class="card-actions">
+            <button
+              class="btn-ghost sm enhance-btn"
+              data-testid="enhance-button"
+              @click.stop="openEnhance(r)"
+            >
+              强化
+            </button>
+            <button
+              class="btn-ghost sm discard-btn"
+              :class="{ pending: pendingDiscardId === r.instanceId }"
+              :disabled="game.relics.isEquipped(r.instanceId)"
+              :title="game.relics.isEquipped(r.instanceId) ? '请先卸下遗物' : ''"
+              @click="handleDiscard($event, r)"
+            >
+              {{
+                game.relics.isEquipped(r.instanceId)
+                  ? '请先卸下'
+                  : pendingDiscardId === r.instanceId
+                    ? '确认丢弃？'
+                    : '丢弃'
+              }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -390,6 +455,73 @@ onUnmounted(() => {
         </div>
       </template>
     </ModalOverlay>
+    <!-- 强化面板（v0.70） -->
+    <ModalOverlay
+      v-if="selectedEnhance"
+      :model-value="!!selectedEnhance"
+      modal-class="enhance-modal"
+      aria-label="遗物强化"
+      @update:model-value="selectedEnhance = null"
+      @overlay-click="selectedEnhance = null"
+    >
+      <template v-if="selectedEnhance">
+        <h2 class="result-title font-display">遗物强化</h2>
+        <div
+          class="synth-product"
+          :style="{ '--c': getRarityColor(selectedEnhance.rarity) }"
+          data-testid="enhance-modal"
+        >
+          <div class="r-head">
+            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
+              <use :href="'#' + selectedEnhance.icon" />
+            </svg>
+            <span
+              class="rarity-badge"
+              :style="{ background: getRarityColor(selectedEnhance.rarity) }"
+            >
+              {{ RARITY_INFO[selectedEnhance.rarity].name }}
+            </span>
+          </div>
+          <div class="r-name">{{ selectedEnhance.name }}</div>
+          <div class="enhance-level" data-testid="enhance-level">
+            等级：{{ selectedEnhance.level }} / {{ MAX_RELIC_LEVEL }}
+          </div>
+          <div class="r-effects">
+            <span v-for="(e, i) in enhanceCurrentEffects" :key="i" class="eff-mini">{{
+              e.label
+            }}</span>
+          </div>
+          <div v-if="!enhanceIsMax && enhanceNextEffects.length > 0" class="enhance-preview">
+            <div v-for="(p, i) in enhanceNextEffects" :key="i" class="preview-row">
+              <span class="preview-from">{{ p.label }}</span>
+              <span class="preview-arrow">→</span>
+              <span class="preview-to">{{ p.next }}</span>
+            </div>
+          </div>
+          <div v-if="enhanceIsMax" class="enhance-max">已达上限</div>
+          <div v-else class="enhance-cost-row" data-testid="enhance-cost">
+            下一级消耗：<span class="font-mono">{{ fmt(enhanceNextCost ?? 0) }}</span> 能量
+          </div>
+        </div>
+        <div class="btn-group">
+          <button
+            v-if="!enhanceIsMax"
+            class="btn-primary"
+            style="flex: 1"
+            data-testid="enhance-confirm"
+            @click="doEnhance"
+          >
+            强化 ×1
+          </button>
+          <button class="btn-ghost" style="flex: 1" @click="closeEnhance">关闭</button>
+        </div>
+      </template>
+    </ModalOverlay>
+
+    <!-- 强化能量不足 toast -->
+    <Transition name="toast">
+      <div v-if="enhanceToast" class="toast">{{ enhanceToast }}</div>
+    </Transition>
   </div>
 </template>
 
@@ -673,6 +805,72 @@ onUnmounted(() => {
   color: var(--color-alert);
   background: rgba(244, 63, 94, 0.1);
   font-weight: 600;
+}
+
+/* —— 强化（v0.70）—— */
+.card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.card-actions .enhance-btn {
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-border-line);
+}
+.card-actions .enhance-btn:hover {
+  border-color: var(--color-amber);
+  color: var(--color-amber);
+}
+.level-badge {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-amber);
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber) 40%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 1px var(--space-2);
+}
+.enhance-level {
+  font-size: var(--text-sm);
+  color: var(--color-t-secondary);
+  margin: var(--space-1) 0;
+}
+.enhance-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: var(--space-2) 0;
+}
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+.preview-from {
+  color: var(--color-t-tertiary);
+  text-decoration: line-through;
+}
+.preview-arrow {
+  color: var(--color-t-tertiary);
+}
+.preview-to {
+  color: var(--color-amber);
+  font-weight: 600;
+}
+.enhance-max {
+  font-size: var(--text-sm);
+  color: var(--color-amber);
+  font-weight: 600;
+  margin: var(--space-2) 0;
+}
+.enhance-cost-row {
+  font-size: var(--text-sm);
+  color: var(--color-core);
+  margin: var(--space-2) 0;
 }
 
 /* 槽位满 toast：复用 MapView 同款样式 */

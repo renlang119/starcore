@@ -9,7 +9,7 @@ import { TECHS } from '@/data/tech'
 import { UNITS } from '@/data/units'
 import { EXPLORE_NODES } from '@/data/explore'
 import { STRONGHOLDS } from '@/data/pve'
-import { RELIC_POOL } from '@/data/relics'
+import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
 
 // —— 有效 ID 集合（用于 validateSaveData 内容范围校验）——
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
@@ -56,7 +56,7 @@ export interface ExplorationSaveData {
   >
 }
 export interface RelicSaveData {
-  owned: { id: string; instanceId: string; obtainedAt: number }[]
+  owned: { id: string; instanceId: string; obtainedAt: number; level?: number }[]
   equipped: (string | null)[]
 }
 export interface TranscendSaveData {
@@ -317,12 +317,24 @@ function validateSaveData(data: unknown): data is SaveData {
       return false
   }
 
-  // relics: owned 条目的 id 必须是有效遗物 ID
+  // relics: owned 条目的 id 必须是有效遗物 ID；level（v0.70 可选字段）非负整数 ≤ MAX_RELIC_LEVEL
   if (!_isObject(d.relics)) return false
   const rl = d.relics as Record<string, unknown>
   if (!Array.isArray(rl.owned)) return false
   if (
-    !rl.owned.every((r: unknown) => _isObject(r) && typeof r.id === 'string' && RELIC_IDS.has(r.id))
+    !rl.owned.every((r: unknown) => {
+      if (!_isObject(r) || typeof r.id !== 'string' || !RELIC_IDS.has(r.id)) return false
+      if (typeof r.instanceId !== 'string' || typeof r.obtainedAt !== 'number') return false
+      if (r.level !== undefined) {
+        if (
+          !Number.isInteger(r.level) ||
+          (r.level as number) < 0 ||
+          (r.level as number) > MAX_RELIC_LEVEL
+        )
+          return false
+      }
+      return true
+    })
   )
     return false
   if (!Array.isArray(rl.equipped)) return false
