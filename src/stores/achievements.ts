@@ -29,7 +29,8 @@ export type BigLifetimeKey = 'energy' | 'dark'
 /** 终身计数中的整数指标（number） */
 export type IntLifetimeKey = 'upgrades' | 'maxBuildingLevel' | 'researches' | 'explores' | 'battles'
 /** 读外部现值的指标（不自持计数；playtime = game store 的 totalPlayTime，v7 起已入档） */
-export type ExternalMetric = 'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime'
+export type ExternalMetric =
+  'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime' | 'expeditionBest'
 
 export type LifetimeMetric = BigLifetimeKey | IntLifetimeKey
 
@@ -49,6 +50,7 @@ export function setAchievementExternalProviders(providers: {
   relicKinds: ExternalProvider
   transcends: ExternalProvider
   playtime: ExternalProvider
+  expeditionBest: ExternalProvider
 }): void {
   externalProviders = providers
 }
@@ -84,6 +86,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
     if (metric === 'relicKinds') return externalProviders.relicKinds?.() ?? 0
     if (metric === 'transcends') return externalProviders.transcends?.() ?? 0
     if (metric === 'playtime') return externalProviders.playtime?.() ?? 0
+    if (metric === 'expeditionBest') return externalProviders.expeditionBest?.() ?? 0
     if (metric === 'energy') return lifetimeBig.value.energy.toNumber()
     if (metric === 'dark') return lifetimeBig.value.dark.toNumber()
     return lifetimeInt.value[metric as IntLifetimeKey] ?? 0
