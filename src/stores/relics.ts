@@ -11,12 +11,19 @@ import {
   RELIC_POOL,
   RELIC_SETS,
   getSetByRelic,
+  MAX_RELIC_LEVEL,
+  ENHANCE_GAIN,
+  enhanceCost,
+  enhanceValue,
+  enhanceLabel,
 } from '@/data/relics'
 import type { RelicSaveData } from '@/lib/storage'
 
 export interface OwnedRelic extends RelicDef {
   instanceId: string
   obtainedAt: number
+  /** 强化等级（v0.70，instance 级，0-20；旧档缺失默认 0） */
+  level: number
 }
 
 /** 外部传入的槽位扩展数（由 game.ts 注入，避免 setup 阶段隐式依赖 transcend store） */
@@ -25,6 +32,28 @@ export type RelicSlotProvider = () => number
 const slotProvider = shallowRef<RelicSlotProvider>(() => 0)
 export function setRelicSlotProvider(p: RelicSlotProvider) {
   slotProvider.value = p
+}
+
+/** 强化能量支出通道（由 game.ts 注入 resources.spend，避免 relics 隐式依赖 resources） */
+export type RelicEnhanceSpendProvider = (cost: number) => boolean
+
+const enhanceSpend = shallowRef<RelicEnhanceSpendProvider>(() => false)
+export function setRelicEnhanceSpendProvider(p: RelicEnhanceSpendProvider) {
+  enhanceSpend.value = p
+}
+
+/** 强化后效果副本（视图展示与 equippedEffects 共用；0 级返回原始效果） */
+export function enhancedEffectsOf(relic: OwnedRelic): RelicEffect[] {
+  if (relic.level <= 0) return relic.effects
+  return relic.effects.map((eff) => {
+    const gain = ENHANCE_GAIN[eff.type]
+    if (!gain) return eff
+    return {
+      ...eff,
+      value: enhanceValue(eff.value, gain, relic.level),
+      label: enhanceLabel(eff.label, eff.value, gain, relic.level),
+    }
+  })
 }
 
 export const useRelicsStore = defineStore('relics', () => {
@@ -93,6 +122,7 @@ export const useRelicsStore = defineStore('relics', () => {
       ...relic,
       instanceId: 'relic_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
       obtainedAt: Date.now(),
+      level: 0,
     }
     pushRelic(newRelic)
     return newRelic
@@ -102,10 +132,10 @@ export const useRelicsStore = defineStore('relics', () => {
     owned.value.push(r)
   }
 
-  /** 计算当前已装备遗物的所有效果（含套装派生加成，v0.61） */
+  /** 计算当前已装备遗物的所有效果（含强化放大与套装派生加成，v0.61/v0.70） */
   const equippedEffects = computed<RelicEffect[]>(() => {
     const list: RelicEffect[] = []
-    for (const r of equippedRelics.value) list.push(...r.effects)
+    for (const r of equippedRelics.value) list.push(...enhancedEffectsOf(r))
     for (const s of activeSetBonuses.value) {
       if (s.mode === 'partial') list.push(s.set.partial)
       else list.push(s.set.full)
@@ -179,6 +209,29 @@ export const useRelicsStore = defineStore('relics', () => {
     return mult
   }
 
+  // —— 强化（v0.70）：instance 级等级轴 ——
+
+  /** 该遗物下一级能量成本（满级返回 null） */
+  function nextEnhanceCost(instanceId: string): number | null {
+    const relic = owned.value.find((r) => r.instanceId === instanceId)
+    if (!relic || relic.level >= MAX_RELIC_LEVEL) return null
+    return enhanceCost(relic.rarity, relic.level + 1)
+  }
+
+  /**
+   * 强化 1 级：校验存在/未满级 → 扣能量 → level+1；任一失败零副作用返回 false。
+   * 能量支出走注入的 enhanceSpend 通道（game.ts 接入 resources.spend）。
+   */
+  function enhance(instanceId: string): boolean {
+    const relic = owned.value.find((r) => r.instanceId === instanceId)
+    if (!relic) return false
+    if (relic.level >= MAX_RELIC_LEVEL) return false
+    const cost = enhanceCost(relic.rarity, relic.level + 1)
+    if (!enhanceSpend.value(cost)) return false
+    relic.level += 1
+    return true
+  }
+
   function reset() {
     owned.value = []
     equipped.value = new Array(maxSlots.value).fill(null)
@@ -190,6 +243,7 @@ export const useRelicsStore = defineStore('relics', () => {
         id: r.id,
         instanceId: r.instanceId,
         obtainedAt: r.obtainedAt,
+        level: r.level,
       })),
       equipped: [...equipped.value],
     }
@@ -202,7 +256,12 @@ export const useRelicsStore = defineStore('relics', () => {
           // v4+：精简存档，从 RELIC_POOL 补全完整字段
           const def = getRelicById(r.id)
           if (def) {
-            return { ...def, instanceId: r.instanceId, obtainedAt: r.obtainedAt }
+            return {
+              ...def,
+              instanceId: r.instanceId,
+              obtainedAt: r.obtainedAt,
+              level: Math.min(MAX_RELIC_LEVEL, Math.max(0, r.level ?? 0)),
+            }
           }
           // 降级：id 在 RELIC_POOL 中找不到时，尝试从旧格式完整字段恢复
           // 旧格式 owned 条目包含 name/desc/rarity/icon/effects/source
@@ -218,6 +277,7 @@ export const useRelicsStore = defineStore('relics', () => {
               source: legacy.source ?? '',
               instanceId: r.instanceId,
               obtainedAt: r.obtainedAt,
+              level: Math.min(MAX_RELIC_LEVEL, Math.max(0, r.level ?? 0)),
             }
           }
           // 完全无法恢复，跳过该遗物
@@ -250,6 +310,8 @@ export const useRelicsStore = defineStore('relics', () => {
     obtain,
     discard,
     synthesize,
+    nextEnhanceCost,
+    enhance,
     getMult,
     reset,
     serialize,

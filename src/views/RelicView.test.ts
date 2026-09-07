@@ -16,7 +16,8 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import RelicView from './RelicView.vue'
 import { useRelicsStore } from '@/stores/relics'
-import { RELIC_POOL, RELIC_SETS } from '@/data/relics'
+import { useGameStore } from '@/stores/game'
+import { RELIC_POOL, RELIC_SETS, getRelicById } from '@/data/relics'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: {} }),
@@ -292,5 +293,71 @@ describe('RelicView — 丢弃', () => {
     await freeBtn.trigger('click')
     await wrapper.vm.$nextTick()
     expect(relics.owned.length).toBe(1)
+  })
+})
+
+describe('RelicView — 强化（v0.70）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+    pinia = createPinia()
+    setActivePinia(pinia)
+  })
+
+  afterEach(() => {
+    for (const w of wrappers) w.unmount()
+    wrappers.length = 0
+  })
+
+  it('打开强化面板：显示等级与下一级成本', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    game.relics.obtain(getRelicById('r_energy_3')!) // epic
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('[data-testid="enhance-button"]').trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="enhance-modal"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="enhance-level"]').text()).toContain('0 / 20')
+    // epic 首级成本 25M
+    expect(wrapper.find('[data-testid="enhance-cost"]').text()).toContain('25M')
+  })
+
+  it('强化成功：等级+1、能量扣除、卡面 Lv 与效果 label 更新', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    game.resources.setAmount('energy', 1e8)
+    game.relics.obtain(getRelicById('r_energy_3')!)
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('[data-testid="enhance-button"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.find('[data-testid="enhance-confirm"]').trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(game.relics.owned[0].level).toBe(1)
+    expect(wrapper.find('[data-testid="relic-level-badge"]').text()).toBe('Lv1')
+    // 卡面与面板内 label 更新为强化后值（Lv1 epic：+40% → +42%）
+    expect(wrapper.text()).toContain('能量产出 +42%')
+    expect(wrapper.find('[data-testid="enhance-level"]').text()).toContain('1 / 20')
+    // 能量扣除：10 亿 - 2500 万 = 7500 万
+    expect(game.resources.getAmount('energy').toNumber()).toBe(1e8 - 2.5e7)
+  })
+
+  it('能量不足：toast 提示且等级不变', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    game.relics.obtain(getRelicById('r_energy_3')!) // 新档能量 50，远低于 25M
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('[data-testid="enhance-button"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    await wrapper.find('[data-testid="enhance-confirm"]').trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toContain('能量不足')
+    expect(game.relics.owned[0].level).toBe(0)
+    expect(wrapper.find('[data-testid="relic-level-badge"]').exists()).toBe(false)
   })
 })

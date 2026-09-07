@@ -14,7 +14,7 @@ import { useResearchStore } from './research'
 import { useMilitaryStore, setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
 import { useCombatStore } from './combat'
 import { useExplorationStore } from './exploration'
-import { useRelicsStore, setRelicSlotProvider } from './relics'
+import { useRelicsStore, setRelicSlotProvider, setRelicEnhanceSpendProvider } from './relics'
 import { useTranscendStore } from './transcend'
 import { useAchievementsStore, setAchievementExternalProviders } from './achievements'
 import { useDailyStore } from './daily'
@@ -52,6 +52,8 @@ export const useGameStore = defineStore('game', () => {
 
   // 显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
+  // 强化能量支出通道（v0.70）：接入 resources.spend 原子扣费
+  setRelicEnhanceSpendProvider((cost) => resources.spend('energy', cost))
   // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
   setAchievementExternalProviders({
     relicsOwned: () => relics.ownedCount,

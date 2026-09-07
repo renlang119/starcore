@@ -423,3 +423,57 @@ const RELIC_SET_MAP = new Map<string, RelicSetDef>(
 export function getSetByRelic(relicId: string): RelicSetDef | undefined {
   return RELIC_SET_MAP.get(relicId)
 }
+
+/* ============ 强化等级轴（v0.70） ============ */
+
+/** 强化等级上限（统一封顶，不按稀有度分档） */
+export const MAX_RELIC_LEVEL = 20
+
+/**
+ * 每级相对增益 g：效果放大公式 1 + (v-1) × (1 + g × Lv)。
+ * 主效果 g=0.04（满级 ×1.8）；prestige/cost g=0.01（满级 ×1.2，
+ * 与转生树「prestige_mult 不无限化」口径同理，保留稀有强度）。
+ */
+export const ENHANCE_GAIN: Record<RelicEffect['type'], number> = {
+  production_mult: 0.04,
+  combat_mult: 0.04,
+  explore_mult: 0.04,
+  offline_bonus: 0.04,
+  prestige_mult: 0.01,
+  cost_mult: 0.01,
+}
+
+/** 强化成本：cost(Lv) = base × growth^(Lv-1)，base 按稀有度递增 */
+export const ENHANCE_COST_BASE: Record<RelicRarity, number> = {
+  common: 1e6,
+  rare: 5e6,
+  epic: 2.5e7,
+  legendary: 1.25e8,
+}
+export const ENHANCE_COST_GROWTH = 1.5
+
+/** 升到 nextLevel（1..MAX_RELIC_LEVEL）所需能量 */
+export function enhanceCost(rarity: RelicRarity, nextLevel: number): number {
+  return Math.ceil(ENHANCE_COST_BASE[rarity] * Math.pow(ENHANCE_COST_GROWTH, nextLevel - 1))
+}
+
+/** 强化后效果值：v → 1 + (v-1) × (1 + g × Lv)（正向放大、折扣加深统一公式） */
+export function enhanceValue(value: number, gain: number, level: number): number {
+  return 1 + (value - 1) * (1 + gain * level)
+}
+
+/** 强化后效果 label：替换原始 label 尾部的「±N%」或「×N」形态 */
+export function enhanceLabel(label: string, value: number, gain: number, level: number): string {
+  const v = enhanceValue(value, gain, level)
+  const pctM = label.match(/^(.+?) ([+-])\s*([\d.]+)%$/)
+  if (pctM) {
+    const pct = Math.round(Math.abs(v - 1) * 100)
+    return `${pctM[1]} ${v >= 1 ? '+' : '-'}${pct}%`
+  }
+  const multM = label.match(/^(.+?) ×\s*([\d.]+)$/)
+  if (multM) {
+    const n = Math.round(v * 10) / 10
+    return `${multM[1]} ×${n}`
+  }
+  return label
+}

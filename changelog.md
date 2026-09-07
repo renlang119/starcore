@@ -3,7 +3,60 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.69
+> 当前版本：v0.70
+
+---
+
+## v0.70 — 功能: 遗物强化等级轴（instance 级 0–20 级）
+
+**变更性质：功能（新玩法系统）**
+**开发时间：2026-09-07**
+
+### 概述
+
+新增遗物强化系统：每件遗物实例可独立强化，等级 0–20 统一封顶，消耗能量按稀
+有度分档的指数成本曲线（base × 1.5^(Lv−1)）逐级提升自身效果。定位为跨多轮
+转生的长线养成目标，量级压在与转生无限树单节点 Lv8（≈+114%）同级，非
+第二权力轴。
+
+### 变更明细
+
+- 数据层（data/relics.ts 新增强化参数与公式）：
+  - MAX_RELIC_LEVEL = 20（统一封顶，不按稀有度分档）
+  - ENHANCE_GAIN：主效果（production/combat/explore/offline）每级 0.04，
+    prestige/cost 每级 0.01（与转生树「prestige_mult 不无限化」口径同理）
+  - 成本 base×1.5^(Lv−1)：普通 1e6 / 稀有 5e6 / 史诗 2.5e7 / 传说 1.25e8
+    （普通满级累计 ≈6.6e9 ≈ 0.66 轮单轮收入；传说满级 ≈8.3e11）
+  - 效果放大统一公式 `v → 1 + (v−1) × (1 + g × Lv)`，同一公式覆盖正向放大
+    与折扣加深（科技成本 −10% → 满级 −12%，负熵 ×2 → ×2.2）
+- store 层（stores/relics.ts）：
+  - OwnedRelic 增加 level 字段；enhance(instanceId) 原子操作（校验存在/未
+    满级 → 扣能量 → level+1，任一失败零副作用）
+  - 能量支出走注入通道 setRelicEnhanceSpendProvider（game store 接入
+    resources.spend，与 slot provider / 训练槽 provider 同款跨 store 模
+    式）
+  - equippedEffects 在聚合时输出强化后效果副本（value 与 label 动态化），
+    EffectSystem 零改动（沿用 v0.61 套装派生先例）；套装加成不受强化影响
+- 存档（storage.ts）：owned 条目新增可选 level 字段（缺省 0），
+  validateSaveData 兼容双格式并校验非负整数 ≤ 20；SAVE_VERSION 保持 7，旧
+  档零迁移
+- 视图（RelicView.vue）：图鉴卡强化后显示 Lv 徽章与强化后效果 label，卡面
+  「强化」按钮打开强化面板（当前级/下一级预览/成本/强化 ×1），能量不足
+  toast 提示且零副作用
+- 数值规范 §八 增补强化轴梯度带与连乘实测封顶；满编（5 槽满 20 级）相对增
+  益实测：攻 +51% / 防 +25% / 能量产出 +111%
+- 兼容性：
+  - 存档新增可选字段，旧档缺失默认 0 级；SAVE_VERSION 保持 7
+  - 不改资源体系（消耗纯能量，暗物质仍为稀有通货）；不新增成就（成就 31 →
+    33 于 v0.69 完成，扩展另计）
+
+### 验证
+
+- build（含 vue-tsc）+ vitest 29 文件 378 用例全绿（+15：强化公式/成本曲线
+  /label 替换/原子扣费/满级与不存在拒绝/效果放大与套装不联动/序列化往返/视
+  图面板三例/存档校验两例）；lint:check / format:check 零输出
+- Playwright v061 遗物专项新增两组用例：强化流程（注档 Lv5 → 面板 → 强化
+  Lv6 → 卡面徽章与 label 更新）与移动视口（开面板无溢出）
 
 ---
 
