@@ -69,7 +69,7 @@ describe('AchievementsView — 挂载与汇总', () => {
     expect(wrapper.find('.bonus-value').text()).toBe('尚未获得加成')
   })
 
-  it('按分类分区渲染全部 31 个成就卡片', () => {
+  it('按分类分区渲染全部成就卡片', () => {
     const wrapper = mountView()
     const groups = groupByCategory()
     expect(wrapper.findAll('.ach-section').length).toBe(groups.length)

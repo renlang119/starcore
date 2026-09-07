@@ -2,7 +2,7 @@
  * achievements.test.ts — 成就/里程碑 store 测试（v0.57）
  *
  * 覆盖：
- * 1. 定义表完整性（31 成就、id 唯一、类别合法、阈值正数）
+ * 1. 定义表完整性（33 成就、id 唯一、类别合法、阈值正数）
  * 2. 终身计数累计与阈值解锁（含 toast 入队）
  * 3. 外部现值指标（relicsOwned/transcends/playtime 走 provider）
  * 4. 效果聚合（getMult 连乘，EffectSource 语义）
@@ -29,13 +29,14 @@ beforeEach(() => {
     relicKinds: () => 0,
     transcends: () => 0,
     playtime: () => 0,
+    expeditionBest: () => 0,
   })
 })
 
 describe('achievements — 定义表完整性', () => {
-  it('共 31 个成就，id 唯一', () => {
-    expect(ACHIEVEMENTS).toHaveLength(31)
-    expect(ACHIEVEMENT_IDS.size).toBe(31)
+  it('共 33 个成就，id 唯一', () => {
+    expect(ACHIEVEMENTS).toHaveLength(33)
+    expect(ACHIEVEMENT_IDS.size).toBe(33)
   })
 
   it('类别/指标/阈值/效果字段合法', () => {
@@ -120,6 +121,7 @@ describe('achievements — 外部现值指标', () => {
       relicKinds: () => 20,
       transcends: () => 10,
       playtime: () => 180000,
+      expeditionBest: () => 0,
     })
     const fresh = store.checkAndUnlock()
     const ids = fresh.map((a) => a.id)
@@ -134,6 +136,7 @@ describe('achievements — 外部现值指标', () => {
       relicKinds: () => 18, // 种类不足 20
       transcends: () => 0,
       playtime: () => 0,
+      expeditionBest: () => 0,
     })
     const fresh = store.checkAndUnlock()
     expect(fresh.map((a) => a.id)).not.toContain('ach_relic_4')
@@ -146,9 +149,44 @@ describe('achievements — 外部现值指标', () => {
       relicKinds: () => 0,
       transcends: () => 0,
       playtime: () => 0,
+      expeditionBest: () => 0,
     })
     const fresh = store.checkAndUnlock()
     expect(fresh).toHaveLength(0)
+  })
+
+  it('远征深度走 provider：D10/D20 里程碑阈值边界（v0.69）', () => {
+    // 9 层：不到首档
+    setAchievementExternalProviders({
+      relicsOwned: () => 0,
+      relicKinds: () => 0,
+      transcends: () => 0,
+      playtime: () => 0,
+      expeditionBest: () => 9,
+    })
+    expect(store.checkAndUnlock().map((a) => a.id)).not.toContain('ach_battle_4')
+    // 10 层：解锁首档、不到二档
+    setAchievementExternalProviders({
+      relicsOwned: () => 0,
+      relicKinds: () => 0,
+      transcends: () => 0,
+      playtime: () => 0,
+      expeditionBest: () => 10,
+    })
+    const fresh = store.checkAndUnlock()
+    expect(fresh.map((a) => a.id)).toContain('ach_battle_4')
+    expect(fresh.map((a) => a.id)).not.toContain('ach_battle_5')
+    // 20 层：二档解锁，攻防加成连乘 1.05 × 1.08
+    setAchievementExternalProviders({
+      relicsOwned: () => 0,
+      relicKinds: () => 0,
+      transcends: () => 0,
+      playtime: () => 0,
+      expeditionBest: () => 20,
+    })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_5')
+    expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(1.05 * 1.08, 10)
+    expect(store.getMult('combat_mult', 'defense').toNumber()).toBeCloseTo(1.05 * 1.08, 10)
   })
 })
 
