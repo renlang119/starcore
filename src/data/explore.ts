@@ -1,10 +1,10 @@
 /**
  * explore.ts — 探索星图节点定义
- * 星图按距离分 5 层：轨道带、内层系、外层系、深空、恒星系层
+ * 星图按距离分 6 层：轨道带、内层系、外层系、深空、恒星系层、星团层
  * 探索节点提供一次性奖励 + 解锁据点
  */
 
-export type StarLayer = 'orbit' | 'inner' | 'outer' | 'deep' | 'stellar'
+export type StarLayer = 'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster'
 
 export interface ExploreNode {
   id: string
@@ -40,6 +40,7 @@ export const LAYER_INFO: Record<
   outer: { id: 'outer', name: '外层星系', color: '#FFB627', distance: '50-5000 AU' },
   deep: { id: 'deep', name: '深空', color: '#A78BFA', distance: '>5000 AU' },
   stellar: { id: 'stellar', name: '恒星系层', color: '#E879F9', distance: '4.2 ly+' },
+  cluster: { id: 'cluster', name: '星团层', color: '#60A5FA', distance: '>10 kly' },
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
@@ -171,6 +172,82 @@ export const EXPLORE_NODES: ExploreNode[] = [
     unlocksStronghold: ['silencer_3', 'ruin_4'],
     story:
       '悬臂尽头，沉默者旗舰的残骸缓缓旋转。黑匣子的最后一段记录只有一句话：「我们并非沉默，我们是在倾听。星团深处，有什么在回应。」',
+  },
+  // —— 星团层（v0.71）——
+  {
+    id: 'node_cluster_gate',
+    name: '星团之眼',
+    layer: 'cluster',
+    desc: '跃出悬臂后的第一片深空，整片星团的异常射电背景在此张开',
+    time: 43200,
+    cost: { energy: 100000000, data: 200000, dark: 60 },
+    rewards: { energy: 600000000, data: 1200000, dark: 120 },
+    requires: ['node_stellar_edge'],
+    unlocksStronghold: ['raider_6'],
+    story:
+      '跃出悬臂，星团如眼睑在深空缓缓张开。扫描器捕捉到覆盖整片星团的异常射电背景，节奏与沉默者黑匣子的信号完全一致。',
+  },
+  {
+    id: 'node_cluster_swarm',
+    name: '晶云星团',
+    layer: 'cluster',
+    desc: '晶尘云笼罩的星团分支，漂浮着数以千计的静止殖民舰',
+    time: 57600,
+    cost: { energy: 300000000, data: 600000, dark: 90 },
+    rewards: { energy: 1500000000, crystal: 300000, data: 3000000, dark: 180 },
+    requires: ['node_cluster_gate'],
+    unlocksStronghold: ['beast_5'],
+    story: '晶尘云中漂浮着数以千计的静止殖民舰，舷窗内的面孔完好如初。它们不是死去，是在等待。',
+  },
+  {
+    id: 'node_cluster_ruin',
+    name: '红拱遗迹',
+    layer: 'cluster',
+    desc: '先驱者天文台残骸构成的星团分支，红色拱廊横跨星海',
+    time: 57600,
+    cost: { energy: 300000000, data: 600000, alloy: 200000, dark: 90 },
+    rewards: { energy: 1500000000, data: 3000000, alloy: 600000, dark: 180 },
+    requires: ['node_cluster_gate'],
+    unlocksStronghold: ['ruin_5'],
+    story:
+      '先驱者天文台残骸，记录着同一信号来源：星团核心，一支比先驱文明更古老的舰队。先驱者在记录末尾写道：「我们造了一扇门，却不知道门后面是谁。」',
+  },
+  {
+    id: 'node_cluster_heart',
+    name: '星团之心',
+    layer: 'cluster',
+    desc: '两条分支汇合处的星团核心，一座环状人工结构悬浮于此',
+    time: 72000,
+    cost: { energy: 800000000, data: 1500000, dark: 120 },
+    rewards: { energy: 4000000000, data: 8000000, crystal: 800000, dark: 240 },
+    requires: ['node_cluster_swarm', 'node_cluster_ruin'],
+    unlocksStronghold: ['raider_7'],
+    story: '星团核心是一座环状人工结构。回响定位完成：信号起源于它，且是持续发讯，已历数十亿年。',
+  },
+  {
+    id: 'node_cluster_hollow',
+    name: '虚无空洞',
+    layer: 'cluster',
+    desc: '环状结构内部的空腔，没有星体、没有尘埃，只有不断重复的询问',
+    time: 79200,
+    cost: { energy: 1500000000, data: 3000000, dark: 160 },
+    rewards: { energy: 7500000000, data: 15000000, dark: 320 },
+    requires: ['node_cluster_heart'],
+    story:
+      '结构内部空无一物，只有不断重复的询问。黑匣子接口接入后，询问终于获得回答：「开始回归。接收者已就绪。」',
+  },
+  {
+    id: 'node_cluster_silence',
+    name: '沉默之巢',
+    layer: 'cluster',
+    desc: '星团最深处的沉默者母港，一切信号的起点',
+    time: 86400,
+    cost: { energy: 3000000000, data: 6000000, dark: 200 },
+    rewards: { energy: 18000000000, data: 40000000, dark: 400 },
+    requires: ['node_cluster_hollow'],
+    unlocksStronghold: ['silencer_4'],
+    story:
+      '沉默者的母港。他们不是沉默，是在守门。门已在开启前的一瞬被冻结，文明在完成使命前的最后时刻停工，等待来自星团的「召回信号」。我们触发了它。',
   },
 ]
 

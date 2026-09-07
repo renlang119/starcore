@@ -2,7 +2,7 @@
  * MapView.test.ts — 星图/探索视图组件测试
  *
  * 重点测试：
- * 1. 组件挂载与五层星图渲染
+ * 1. 组件挂载与六层星图渲染
  * 2. 节点状态（锁定/可探索/探索中/已完成）
  * 3. 探索流程（原子操作通道）与据点/远征区块
  * 4. 全部完成空状态
@@ -64,11 +64,11 @@ describe('MapView — 挂载与渲染', () => {
     wrappers.length = 0
   })
 
-  it('正常挂载并渲染五层星图', () => {
+  it('正常挂载并渲染六层星图', () => {
     const wrapper = mountView()
     expect(wrapper.find('.map-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('探索星图')
-    // 五层区块（orbit/inner/outer/deep/stellar）
+    // 六层区块（orbit/inner/outer/deep/stellar/cluster）
     expect(wrapper.findAll('.layer-section').length).toBe(Object.keys(LAYER_INFO).length)
     // 全部节点卡
     expect(wrapper.findAll('.node-card').length).toBe(EXPLORE_NODES.length)
@@ -207,7 +207,7 @@ describe('MapView — 空状态', () => {
 
     expect(wrapper.find('.empty-state').exists()).toBe(true)
     expect(wrapper.text()).toContain('已知星域已全部探索完毕')
-    // 星图区块隐藏，据点区块保留（16 据点全部解锁）
+    // 星图区块隐藏，据点区块保留（21 据点全部解锁）
     expect(wrapper.findAll('.layer-section').length).toBe(0)
     expect(wrapper.find('.stronghold-section').exists()).toBe(true)
     expect(wrapper.findAll('.stronghold-card').length).toBe(STRONGHOLDS.length)
