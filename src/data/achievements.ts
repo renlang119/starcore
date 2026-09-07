@@ -26,6 +26,7 @@ export type AchievementMetric =
   | 'researches' // 终身科技研究次数
   | 'explores' // 终身探索完成次数
   | 'battles' // 终身据点攻克次数
+  | 'expeditionBest' // 远征历史最深层数（跨转生保留，读现值）
   | 'relicsOwned' // 当前遗物持有数（跨转生保留，读现值）
   | 'relicKinds' // 遗物图鉴种类数（distinct id，不计重复件，读现值）
   | 'transcends' // 转生次数（跨转生保留，读现值）
@@ -283,6 +284,27 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     metric: 'battles',
     threshold: 80,
     effects: combat(12),
+  },
+  // —— 远征深度（读外部现值 expeditionBest，跨转生保留，v0.69）——
+  {
+    id: 'ach_battle_4',
+    name: '深渊开拓者',
+    desc: '无尽远征推进至 10 层',
+    category: 'battle',
+    icon: 'i-ui-sword',
+    metric: 'expeditionBest',
+    threshold: 10,
+    effects: combat(5),
+  },
+  {
+    id: 'ach_battle_5',
+    name: '虚境征服者',
+    desc: '无尽远征推进至 20 层',
+    category: 'battle',
+    icon: 'i-ui-sword',
+    metric: 'expeditionBest',
+    threshold: 20,
+    effects: combat(8),
   },
   // —— 遗物收藏（按当前持有数，遗物跨转生保留）——
   {
