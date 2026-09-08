@@ -1,7 +1,7 @@
 {
   "name": "starcore",
   "private": true,
-  "version": "0.72",
+  "version": "0.73",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -17,7 +17,7 @@
     "format:check": "prettier --check src"
   },
   "dependencies": {
-    "@vue/devtools-api": "8.1.5",
+    "@vue/devtools-api": "8.2.1",
     "decimal.js": "^10.6.0",
     "localforage": "^1.10.0",
     "pinia": "^4.0.3",
@@ -33,12 +33,12 @@
     "@vue/tsconfig": "^0.9.1",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-vue": "^10.10.0",
+    "eslint-plugin-vue": "^10.11.0",
     "globals": "^17.12.0",
     "jsdom": "^30.0.1",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.69.0",
+    "typescript-eslint": "^8.70.0",
     "vite": "^8.2.2",
     "vitest": "^5.0.0",
     "vue-tsc": "^3.3.11"

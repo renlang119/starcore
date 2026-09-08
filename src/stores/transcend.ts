@@ -317,15 +317,10 @@ export const useTranscendStore = defineStore('transcend', () => {
       for (const saved of data.tree) {
         const node = tree.value.find((n) => n.id === saved.id)
         if (!node) continue
-        // 兼容旧格式（purchased: boolean，v5 及以前）与新格式（level: number）
-        const level =
-          'level' in saved && typeof saved.level === 'number'
-            ? saved.level
-            : 'purchased' in saved && saved.purchased
-              ? 1
-              : 0
+        // 防御：level 非法（缺失/非有限数）跳过该条目
+        if (typeof saved.level !== 'number' || !isFinite(saved.level)) continue
         // 防御：等级不得超过节点上限，且必须为非负整数
-        node.level = Math.max(0, Math.min(Math.floor(level), node.maxLevel ?? 1))
+        node.level = Math.max(0, Math.min(Math.floor(saved.level), node.maxLevel ?? 1))
       }
     }
   }

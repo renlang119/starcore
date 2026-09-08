@@ -3,6 +3,7 @@
  * 使用 localforage（IndexedDB）作为主存，localStorage 作为辅助
  */
 import localforage from 'localforage'
+import { fnv1a } from '@/lib/random'
 import type { UnitId } from '@/data/units'
 import { BUILDINGS } from '@/data/buildings'
 import { TECHS } from '@/data/tech'
@@ -62,8 +63,8 @@ export interface RelicSaveData {
 export interface TranscendSaveData {
   negativeEntropy: string
   totalTranscends: number
-  /** 新格式（v6+）：id + level；旧格式（v5-）：id + purchased，hydrate/迁移兼容 */
-  tree: ({ id: string; level: number } | { id: string; purchased: boolean })[]
+  /** id + level */
+  tree: { id: string; level: number }[]
 }
 export interface PlayerSaveData {
   id: string
@@ -229,12 +230,7 @@ function _parseBackup(raw: string): SaveData | null {
 
 /** FNV-1a 校验和——检测存档被篡改或损坏 */
 function _checksum(data: string): string {
-  let h = 0x811c9dc5
-  for (let i = 0; i < data.length; i++) {
-    h ^= data.charCodeAt(i)
-    h = Math.imul(h, 0x01000193)
-  }
-  return (h >>> 0).toString(16)
+  return fnv1a(data).toString(16)
 }
 
 /** 清除存档 */
@@ -340,8 +336,7 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!Array.isArray(rl.equipped)) return false
   if (!rl.equipped.every((e: unknown) => e === null || typeof e === 'string')) return false
 
-  // transcend: tree 条目结构校验（兼容新格式 level 与旧格式 purchased——
-  // 校验跑在迁移之前，旧档必须能过校验才有机会被迁移）
+  // transcend: tree 条目结构校验（id + 非负整数 level）
   if (!_isObject(d.transcend)) return false
   const tc = d.transcend as Record<string, unknown>
   if (typeof tc.negativeEntropy !== 'string' && tc.negativeEntropy !== undefined) return false
@@ -350,13 +345,12 @@ function validateSaveData(data: unknown): data is SaveData {
   if (
     !tc.tree.every((n: unknown) => {
       if (!_isObject(n) || typeof n.id !== 'string') return false
-      const hasPurchased = typeof n.purchased === 'boolean'
-      const hasLevel =
+      return (
         typeof n.level === 'number' &&
         Number.isInteger(n.level) &&
         n.level >= 0 &&
         isFinite(n.level)
-      return hasPurchased || hasLevel
+      )
     })
   )
     return false

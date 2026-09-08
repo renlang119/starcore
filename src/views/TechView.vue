@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { TECHS, TECH_BRANCHES, type TechBranch } from '@/data/tech'
+import { TECHS, TECH_BRANCHES, adjustedTechCost, type TechBranch } from '@/data/tech'
 import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
@@ -35,10 +35,7 @@ function techStatus(id: string): 'completed' | 'available' | 'locked' {
 }
 
 function getAdjustedCost(def: (typeof TECHS)[0]) {
-  const mult = game.techCostMult.toNumber()
-  const result: Record<string, number> = {}
-  for (const [k, v] of Object.entries(def.cost)) result[k] = Math.ceil((v as number) * mult)
-  return result
+  return adjustedTechCost(def.cost, game.techCostMult.toNumber())
 }
 
 function tryResearch(id: string) {

@@ -1,7 +1,7 @@
 /**
  * research.test.ts — 科技 store 测试
  * 覆盖：complete / available 前置判定 / unlockedSet 派生 / allEffects /
- * getMult 连乘聚合（含 extraEffects）/ getValue 累加 / techCostMult /
+ * getMult 连乘聚合 / getValue 累加 / cost_mult /
  * reset / serialize-hydrate / 数值规范守恒断言（docs/游戏数值设定规范.md §四）
  */
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -119,10 +119,10 @@ describe('research — 效果聚合', () => {
     expect(store.getMult('production_mult', 'crystal').toNumber()).toBe(1)
   })
 
-  it('getMult extraEffects 参与连乘（供 EffectSystem 之外的临时叠加）', () => {
+  it('getMult 连乘聚合：多源效果逐条相乘', () => {
     complete('energy_eff_1')
-    const extra = [{ type: 'production_mult' as const, target: 'energy', value: 2, label: 'x' }]
-    expect(store.getMult('production_mult', 'energy', extra).toNumber()).toBeCloseTo(2.4, 10)
+    complete('research_speed') // 另一类型，不应串扰
+    expect(store.getMult('production_mult', 'energy').toNumber()).toBeCloseTo(1.2, 10)
   })
 
   it('getMult 未研究恒为 1', () => {
@@ -141,10 +141,10 @@ describe('research — 效果聚合', () => {
     expect(store.getValue('training_slot')).toBe(0)
   })
 
-  it('techCostMult：研究加速 ×0.85（唯一 cost_mult 来源）', () => {
-    expect(store.techCostMult.toNumber()).toBe(1)
+  it('getMult cost_mult/tech：研究加速 ×0.85（techCostMult 已收敛至 game 聚合）', () => {
+    expect(store.getMult('cost_mult', 'tech').toNumber()).toBe(1)
     complete('research_speed')
-    expect(store.techCostMult.toNumber()).toBeCloseTo(0.85, 10)
+    expect(store.getMult('cost_mult', 'tech').toNumber()).toBeCloseTo(0.85, 10)
   })
 
   it('双效果科技逐条生效：fleet_logistics 攻防各 ×1.3', () => {

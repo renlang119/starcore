@@ -625,3 +625,15 @@ export function techAvailable(
   }
   return true
 }
+
+/**
+ * 按成本乘数换算科技实付成本（向上取整）
+ *
+ * v0.73 收敛：原 game/useActionQueue/TechView 三处重复循环统一调用本函数。
+ * 乘数由调用方传 game.techCostMult（含科技与遗物的 cost_mult/tech 全量聚合）。
+ */
+export function adjustedTechCost(cost: TechDef['cost'], mult: number): Record<string, number> {
+  const result: Record<string, number> = {}
+  for (const [k, v] of Object.entries(cost)) result[k] = Math.ceil(v * mult)
+  return result
+}

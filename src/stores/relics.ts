@@ -253,35 +253,15 @@ export const useRelicsStore = defineStore('relics', () => {
     if (data.owned) {
       owned.value = data.owned
         .map((r) => {
-          // v4+：精简存档，从 RELIC_POOL 补全完整字段
+          // 从 RELIC_POOL 补全完整字段；id 不在池中（损坏数据）跳过
           const def = getRelicById(r.id)
-          if (def) {
-            return {
-              ...def,
-              instanceId: r.instanceId,
-              obtainedAt: r.obtainedAt,
-              level: Math.min(MAX_RELIC_LEVEL, Math.max(0, r.level ?? 0)),
-            }
+          if (!def) return null
+          return {
+            ...def,
+            instanceId: r.instanceId,
+            obtainedAt: r.obtainedAt,
+            level: Math.min(MAX_RELIC_LEVEL, Math.max(0, r.level ?? 0)),
           }
-          // 降级：id 在 RELIC_POOL 中找不到时，尝试从旧格式完整字段恢复
-          // 旧格式 owned 条目包含 name/desc/rarity/icon/effects/source
-          const legacy = r as Partial<RelicDef>
-          if (legacy.name) {
-            return {
-              id: r.id,
-              name: legacy.name,
-              desc: legacy.desc ?? '',
-              rarity: legacy.rarity ?? 'common',
-              icon: legacy.icon ?? 'i-nav-relic',
-              effects: legacy.effects ?? [],
-              source: legacy.source ?? '',
-              instanceId: r.instanceId,
-              obtainedAt: r.obtainedAt,
-              level: Math.min(MAX_RELIC_LEVEL, Math.max(0, r.level ?? 0)),
-            }
-          }
-          // 完全无法恢复，跳过该遗物
-          return null
         })
         .filter((r): r is OwnedRelic => r !== null) as OwnedRelic[]
     }

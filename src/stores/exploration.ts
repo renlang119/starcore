@@ -71,14 +71,13 @@ export const useExplorationStore = defineStore('exploration', () => {
     return true
   }
 
-  /** tick：检查探索是否完成（基于锁定 endTime，不受 mult 变化影响） */
-  function applyTick(exploreMult: Decimal): {
+  /** tick：检查探索是否完成（基于锁定 endTime） */
+  function applyTick(): {
     nodeId: string
     rewards: Partial<Record<string, number>>
     story?: string
     unlocks: string[]
   }[] {
-    void exploreMult // 保留参数兼容但不再使用——完成时间在 startExplore 时已锁定
     const now = Date.now()
     const results: {
       nodeId: string
@@ -88,13 +87,6 @@ export const useExplorationStore = defineStore('exploration', () => {
     }[] = []
     for (const p of Object.values(progress.value)) {
       if (p.completed || p.startTime === 0) continue
-      // 向后兼容：旧存档无 endTime，回退到动态计算
-      if (!p.endTime || p.endTime === 0) {
-        const node = getNode(p.nodeId)
-        if (!node) continue
-        const required = node.time / exploreMult.toNumber()
-        p.endTime = p.startTime + required * 1000
-      }
       if (now >= p.endTime) {
         p.completed = true
         const node = getNode(p.nodeId)
@@ -111,17 +103,10 @@ export const useExplorationStore = defineStore('exploration', () => {
   }
 
   /** 探索进度百分比（基于锁定 endTime，与 tick 同步） */
-  function getProgress(nodeId: string, exploreMult: Decimal): number {
+  function getProgress(nodeId: string): number {
     const p = progress.value[nodeId]
     if (!p || p.startTime === 0) return 0
     if (p.completed) return 1
-    // 向后兼容：旧存档无 endTime
-    if (!p.endTime || p.endTime === 0) {
-      const node = getNode(nodeId)
-      if (!node) return 0
-      const required = node.time / exploreMult.toNumber()
-      return Math.min(1, (Date.now() - p.startTime) / 1000 / required)
-    }
     const now = Date.now()
     if (now >= p.endTime) return 1
     return Math.min(1, (now - p.startTime) / (p.endTime - p.startTime))

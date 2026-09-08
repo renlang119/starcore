@@ -9,7 +9,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { BUILDINGS } from '@/data/buildings'
-import { TECHS } from '@/data/tech'
+import { TECHS, adjustedTechCost } from '@/data/tech'
 import { getNode } from '@/data/explore'
 import { getUnit } from '@/data/units'
 
@@ -61,7 +61,7 @@ export function useActionQueue() {
       if (prog.startTime === 0 || prog.completed) continue
       const node = getNode(nodeId)
       if (!node) continue
-      const progress = game.exploration.getProgress(nodeId, game.exploreMult)
+      const progress = game.exploration.getProgress(nodeId)
       // 进度满格但未结算的条目转为可执行（组件与按钮设计规范 §2.2：progress >= 1 → actionable）
       const done = progress >= 1
       items.push({
@@ -120,9 +120,7 @@ export function useActionQueue() {
     for (const t of TECHS) {
       if (game.research.completed.has(t.id)) continue
       if (!game.research.available(t)) continue
-      const mult = game.techCostMult.toNumber()
-      const adjustedCost: Record<string, number> = {}
-      for (const [k, v] of Object.entries(t.cost)) adjustedCost[k] = Math.ceil((v as number) * mult)
+      const adjustedCost = adjustedTechCost(t.cost, game.techCostMult.toNumber())
       if (game.resources.canAfford(adjustedCost)) researchable++
     }
     if (researchable > 0) {

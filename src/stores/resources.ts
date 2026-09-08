@@ -8,6 +8,9 @@ import { Decimal, D, add, ser, deser, gte } from '@/lib/decimal'
 import type { ResourceType } from '@/data/buildings'
 import type { ResourceSaveData } from '@/lib/storage'
 
+/** 新档初始能量（新档/硬重置/转生统一引用） */
+export const START_ENERGY = 50
+
 export interface ResourceState {
   amount: Decimal
   total: Decimal // 历史总产出
@@ -31,7 +34,7 @@ const RES_META: Record<ResourceType, ResourceMeta> = {
 export const useResourcesStore = defineStore('resources', () => {
   // —— state ——
   const amounts = ref<Record<ResourceType, Decimal>>({
-    energy: D(50),
+    energy: D(START_ENERGY),
     crystal: D(0),
     alloy: D(0),
     data: D(0),
@@ -111,7 +114,13 @@ export const useResourcesStore = defineStore('resources', () => {
   /** 重置（转生用） */
   function reset(keepDark = false) {
     const darkKeep = keepDark ? amounts.value.dark : D(0)
-    amounts.value = { energy: D(50), crystal: D(0), alloy: D(0), data: D(0), dark: darkKeep }
+    amounts.value = {
+      energy: D(START_ENERGY),
+      crystal: D(0),
+      alloy: D(0),
+      data: D(0),
+      dark: darkKeep,
+    }
     totals.value = { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
     production.value = { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
   }
