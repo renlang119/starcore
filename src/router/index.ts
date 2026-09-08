@@ -1,7 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
-  { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
+  {
+    path: '/',
+    name: 'home',
+    component: () => import('@/views/HomeView.vue'),
+    meta: { wide: true },
+  },
   { path: '/build', name: 'build', component: () => import('@/views/BuildView.vue') },
   { path: '/tech', name: 'tech', component: () => import('@/views/TechView.vue') },
   { path: '/map', name: 'map', component: () => import('@/views/MapView.vue') },
@@ -14,6 +19,8 @@ const routes = [
     component: () => import('@/views/AchievementsView.vue'),
   },
   { path: '/battle/:id', name: 'battle', component: () => import('@/views/BattleView.vue') },
+  // 未知路径兜底：重定向首页（防空白页无出口，v0.77）
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
 const router = createRouter({

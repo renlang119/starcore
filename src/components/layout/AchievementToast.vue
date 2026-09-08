@@ -8,7 +8,6 @@
 import { ref, watch, onUnmounted } from 'vue'
 import { useAchievementsStore } from '@/stores/achievements'
 import { ACHIEVEMENTS } from '@/data/achievements'
-import Icons from '@/components/ui/Icons.vue'
 
 const ach = useAchievementsStore()
 const SHOW_MS = 2500
@@ -45,7 +44,6 @@ onUnmounted(() => {
 <template>
   <transition name="ach-toast">
     <div v-if="current" class="ach-toast" role="status" aria-live="polite">
-      <Icons />
       <svg class="toast-icon" aria-hidden="true">
         <use href="#i-ui-check" />
       </svg>
