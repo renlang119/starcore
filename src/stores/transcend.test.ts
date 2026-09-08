@@ -7,7 +7,7 @@
  * 3. 无限节点重复购买与成本指数递增（ceil(base × growth^level)）
  * 4. 余额不足拒绝
  * 5. 效果按 level 叠加（乘数型 = value^level；target 'all' 全资源匹配）
- * 6. serialize/hydrate 往返（新格式 level + 旧格式 purchased 兼容 + 防御截断）
+ * 6. serialize/hydrate 往返（level 格式校验 + 防御截断）
  * 7. reset(true) 后无限节点语义保留（Infinity 不被 JSON 克隆破坏）
  */
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -195,16 +195,20 @@ describe('transcend — serialize / hydrate', () => {
     expect(fresh.totalTranscends).toBe(3)
   })
 
-  it('旧格式兼容：purchased:true → level 1', () => {
+  it('非法格式（purchased 旧字段）hydrate 忽略该条目，等级保持 0', () => {
     store.hydrate({
       negativeEntropy: '7',
       totalTranscends: 2,
       tree: [
         { id: 't_energy_1', purchased: true },
-        { id: 't_alloy_1', purchased: false },
+        { id: 't_alloy_1', level: 0 },
       ],
+    } as unknown as {
+      negativeEntropy: string
+      totalTranscends: number
+      tree: { id: string; level: number }[]
     })
-    expect(node('t_energy_1').level).toBe(1)
+    expect(node('t_energy_1').level).toBe(0) // purchased 条目无 level，忽略
     expect(node('t_alloy_1').level).toBe(0)
     expect(store.negativeEntropy.toNumber()).toBe(7)
     expect(store.totalTranscends).toBe(2)

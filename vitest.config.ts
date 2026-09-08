@@ -11,6 +11,9 @@ export default mergeConfig(
       include: ['src/**/*.test.ts'],
       globals: true,
       setupFiles: ['./src/tests/setup.ts'],
+      // 单线程池内复用 worker（v0.73）：测试均用 fresh pinia/localStorage，
+      // 无跨文件状态依赖；若未来新增共享全局态的测试须回头复查此处
+      isolate: false,
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html'],

@@ -3,7 +3,67 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.72
+> 当前版本：v0.73
+
+---
+
+## v0.73 — 重构: 重复代码收敛与死代码清理
+
+**变更性质：重构（行为不变）**
+**开发时间：2026-09-08**
+
+### 概述
+
+科技成本换算、toast、FNV-1a/mulberry32 三类重复实现各收敛为唯一来源，清理
+确认无消费方的死代码与 any 类型，vitest 关闭 isolate 提速（33s → 约 9s），
+依赖锁定大版本内升级。游戏行为与数值零变化，存档零迁移。
+
+### 变更明细
+
+- 科技成本换算（三处收敛）：新增 data/tech.ts
+  `adjustedTechCost(cost, mult)` 纯函数，game.tryResearch / useActionQueue
+  / TechView.getAdjustedCost 统一调用；乘数仍由 game.techCostMult 全量聚合
+  （科技+遗物 cost_mult/tech）
+- 轻提示 toast（三处收敛）：新增 composables/useToast.ts +
+  components/ui/Toast.vue + styles/toast.css（全局样式）；
+  MapView/RelicView 浮层 toast 与 PrestigeView 行内提示
+  （saveMsg/importMsg，保留原展示位与 3s/5s 时长）统一走 useToast
+- 随机与哈希（三处收敛）：新增 lib/random.ts 导出 fnv1a/mulberry32，combat
+  （战斗种子/PRNG）、daily（hashStr 别名导出保持兼容）、storage（存档
+  checksum）改为引用，同种子同序列行为不变
+- 死代码清理：
+  - research store 删除 techCostMult computed（零消费方，game 用
+    effectSystem 聚合同名值）与 getMult 的 extraEffects 参数（从无实参），
+    对应测试改为 getMult('cost_mult','tech') 直测
+  - exploration.applyTick 移除误导性的 `void exploreMult`（参数保留：旧档
+    无 endTime 的回退计算仍使用，行为不变）
+  - BattleView.battleLog 由 any[] 改为 BattleLogEntry[] 精确类型
+  - 初始能量 50 提为 resources.ts 导出常量 START_ENERGY，新档/硬重置/转生
+    四处统一引用
+- 旧档兼容代码移除（项目测试阶段，无需跨版本存档迁移）：
+  - 删除 save-migrate.ts 迁移链（v1→v7）及其测试；SAVE_VERSION 7→1 重新起
+    算，加载存档不再做版本迁移（本条目之前的历史条目中「SAVE_VERSION
+    保持 7」均为当时点的真实记录，非笔误，不作回改）
+  - transcend hydrate 删除 purchased（v5-）双格式分支，仅接受 level 格式；
+    storage 校验与类型定义同步收窄；无 level 条目跳过
+  - relics hydrate 删除旧完整字段（name/desc/…）恢复分支，id 不在
+    RELIC_POOL 的条目直接跳过
+  - exploration 删除无 endTime 旧档的动态补算回退 ×2；
+    applyTick/getProgress 去掉 exploreMult 参数（遗留的假废弃）
+  - 防御性容缺保留：字段缺省守卫、损坏条目跳过、非法值钳制不变
+- 测试提速：vitest `isolate: false`（测试均 fresh pinia/localStorage，无跨
+  文件状态依赖），全量 28 文件 371 用例 33s → 8.9s
+- 依赖升级（锁定大版本内最新）：@vue/devtools-api 8.1.5→8.2.1、
+  eslint-plugin-vue 10.10.0→10.11.0、typescript-eslint 8.69.0→8.70.0；
+  @types/node 维持 24 跟运行时、typescript 7 待生态，不动
+
+### 验证
+
+- corepack pnpm build（含 vue-tsc）通过；lint/format 零输出
+- 单元测试 28 文件 371 用例全过（8.9s；兼容用例改写后 -7）
+- Playwright 十二脚本全过（本地 preview；v056 旧格式 seed 同步改 level 格
+  式）
+- 部署后线上版本串验证
 
 ---
 

@@ -5,6 +5,7 @@ import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
 import Icons from '@/components/ui/Icons.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import { useToast } from '@/composables/useToast'
 
 const game = useGameStore()
 const showConfirm = ref(false)
@@ -46,8 +47,8 @@ function cancelTranscend() {
 
 // 存档管理
 const importCode = ref('')
-const importMsg = ref('')
-const saveMsg = ref('')
+const importMsg = useToast()
+const saveMsg = useToast()
 const showExportCode = ref(false)
 const exportCodeDisplay = ref('')
 const showResetConfirm = ref(false)
@@ -89,34 +90,34 @@ async function doExport() {
   const code = await game.doExport()
   const copied = await copyToClipboard(code)
   if (copied) {
-    importMsg.value = '已导出并复制到剪贴板'
+    importMsg.show('已导出并复制到剪贴板', 5000)
     showExportCode.value = false
   } else {
     // 回退：把存档码填入只读文本域供手动复制
     exportCodeDisplay.value = code
     showExportCode.value = true
-    importMsg.value = '复制失败，请长按下方文本框手动复制'
+    importMsg.show('复制失败，请长按下方文本框手动复制', 5000)
   }
-  setTimeout(() => (importMsg.value = ''), 5000)
 }
 async function doImport() {
   if (!importCode.value) {
-    importMsg.value = '请先粘贴存档代码'
-    setTimeout(() => (importMsg.value = ''), 3000)
+    importMsg.show('请先粘贴存档代码', 3000)
     return
   }
   const result = await game.doImport(importCode.value)
-  importMsg.value = result.success ? '导入成功，页面将刷新' : result.message || '导入失败：存档无效'
+  importMsg.show(
+    result.success ? '导入成功，页面将刷新' : result.message || '导入失败：存档无效',
+    3000
+  )
   if (result.success) setTimeout(() => location.reload(), 1500)
 }
 async function manualSave() {
   try {
     await game.save()
-    saveMsg.value = '已保存'
+    saveMsg.show('已保存', 3000)
   } catch {
-    saveMsg.value = '保存失败'
+    saveMsg.show('保存失败', 3000)
   }
-  setTimeout(() => (saveMsg.value = ''), 3000)
 }
 function tryHardReset() {
   showResetConfirm.value = true
@@ -244,7 +245,7 @@ function cancelHardReset() {
           清除存档
         </button>
       </div>
-      <p v-if="saveMsg" class="save-msg">{{ saveMsg }}</p>
+      <p v-if="saveMsg.msg.value" class="save-msg">{{ saveMsg.msg.value }}</p>
       <!-- 导出码回退显示（剪贴板不可用时） -->
       <div v-if="showExportCode" class="export-fallback">
         <textarea
@@ -259,7 +260,7 @@ function cancelHardReset() {
         <textarea v-model="importCode" placeholder="粘贴存档代码…" rows="3"></textarea>
         <button class="btn-secondary sm" @click="doImport">导入存档</button>
       </div>
-      <p v-if="importMsg" class="import-msg">{{ importMsg }}</p>
+      <p v-if="importMsg.msg.value" class="import-msg">{{ importMsg.msg.value }}</p>
     </div>
 
     <!-- 转生确认弹窗 -->

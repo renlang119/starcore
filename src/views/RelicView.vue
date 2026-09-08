@@ -4,8 +4,10 @@ import { useGameStore } from '@/stores/game'
 import { RARITY_INFO, getSetByRelic } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
 import { useRelicFusion } from '@/composables/useRelicFusion'
+import { useToast } from '@/composables/useToast'
 import Icons from '@/components/ui/Icons.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import Toast from '@/components/ui/Toast.vue'
 import FusionPanel from '@/components/relics/FusionPanel.vue'
 import EnhanceModal from '@/components/relics/EnhanceModal.vue'
 
@@ -17,16 +19,9 @@ const equippedRelics = computed(() => game.relics.equippedRelics)
 const setProgress = computed(() => game.relics.setProgress)
 const ownedKinds = computed(() => game.relics.ownedKinds)
 
-// —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.72） ——
-const toastMsg = ref('')
-let toastTimer: ReturnType<typeof setTimeout> | null = null
-function showToast(msg: string) {
-  toastMsg.value = msg
-  if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => {
-    toastMsg.value = ''
-  }, 2000)
-}
+// —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.73 收敛至 useToast） ——
+const toast = useToast()
+const showToast = toast.show
 
 // —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
 const fusion = useRelicFusion({ notify: showToast })
@@ -100,7 +95,6 @@ function onEnhanceFail(msg: string) {
 
 onUnmounted(() => {
   if (discardTimer) clearTimeout(discardTimer)
-  if (toastTimer) clearTimeout(toastTimer)
 })
 </script>
 
@@ -266,9 +260,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 槽位满/合成混选/强化失败提示 toast -->
-    <Transition name="toast">
-      <div v-if="toastMsg" class="toast">{{ toastMsg }}</div>
-    </Transition>
+    <Toast :toast="toast" />
 
     <!-- 强化面板（v0.70，v0.72 拆出） -->
     <EnhanceModal
@@ -517,32 +509,5 @@ onUnmounted(() => {
   padding: 1px var(--space-2);
 }
 
-/* 槽位满 toast：复用 MapView 同款样式 */
-.toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-line);
-  color: var(--color-core);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-pill);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-  pointer-events: none;
-}
-.toast-enter-active,
-.toast-leave-active {
-  transition:
-    opacity 0.25s,
-    transform 0.25s;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(8px);
-}
+/* 槽位满 toast：样式已收敛至全局 styles/toast.css（v0.73） */
 </style>
