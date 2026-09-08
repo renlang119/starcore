@@ -70,9 +70,9 @@ describe('research — available 前置判定', () => {
 
   it('techAvailable 纯函数口径与 store 一致', () => {
     const def = getTech('energy_eff_1')!
-    expect(techAvailable(def, new Set(), new Set())).toBe(false)
-    expect(techAvailable(def, new Set(['fusion_tech']), new Set())).toBe(true)
-    expect(techAvailable(def, new Set(['fusion_tech', 'energy_eff_1']), new Set())).toBe(false)
+    expect(techAvailable(def, new Set())).toBe(false)
+    expect(techAvailable(def, new Set(['fusion_tech']))).toBe(true)
+    expect(techAvailable(def, new Set(['fusion_tech', 'energy_eff_1']))).toBe(false)
   })
 
   it('深链前置：singularity_theory 需 dyson_theory + dark_matter_theory（跨分支）', () => {

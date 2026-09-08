@@ -30,7 +30,7 @@ export const useResearchStore = defineStore('research', () => {
   })
 
   /** 科技是否可研究 */
-  const available = (def: TechDef) => techAvailable(def, completed.value, unlockedSet.value)
+  const available = (def: TechDef) => techAvailable(def, completed.value)
 
   /** 计算当前所有生效效果（按 type 聚合） */
   const allEffects = computed<TechEffect[]>(() => {

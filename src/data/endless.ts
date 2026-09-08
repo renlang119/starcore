@@ -17,7 +17,12 @@
 import type { EnemyUnit, StrongholdDef } from './pve'
 import { STRONGHOLDS } from './pve'
 
-/** 解锁锚点：本轮攻克沉默者旗舰（现最强据点）后开放远征 */
+/**
+ * 解锁锚点：本轮攻克沉默者旗舰 silencer_3 后开放远征。
+ * 注：silencer_3 已非全表最强据点（v0.71 星团层终章 silencer_4「沉默者母港」强度 592,300 更高），
+ * 锚定 silencer_3 为设计意图：远征是通关沉默者旗舰后的长尾入口，与后续更高难度据点解耦，
+ * 避免每新增一层据点就被动抬高远征门槛。
+ */
 export const ENDLESS_UNLOCK_STRONGHOLD = 'silencer_3'
 
 /** 远征合成据点固定 id（路由 /battle/endless） */
