@@ -3,7 +3,64 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.75
+> 当前版本：v0.76
+
+---
+
+## v0.76 — 工程化: 部署脚本加固与工具链收口
+
+**变更性质：工程化（部署安全与关卡收口，游戏行为与数值零变化）**
+**开发时间：2026-09-08**
+
+### 概述
+
+部署脚本此前没有失败即中断语义：构建失败仍会同步旧产物上线，目标
+目录校验只看前缀，`..` 穿越可绕过；工程关卡分散在多个命令里靠人
+记。本次为 `deploy.sh` 加严格模式、目标守卫与前置关卡，并收口工具链：
+新增 `pnpm check` 串行关卡、测试文件纳入类型检查（顺带修复 17 处
+存量类型错误）、清理失效的 eslint 忽略项、守恒脚本三处修正。纯工程，
+游戏行为与数值零变化，存档零迁移。
+
+### 变更明细
+
+- `deploy.sh`：
+  - `set -euo pipefail` 严格模式：关卡/构建失败即中断，不再部署旧产物
+  - 目标目录守卫：`realpath -m` 规范化 + 正则
+    `^/var/www/[A-Za-z0-9._-]+/?$`（拒绝空尾段与 `..` 穿越）
+  - 新增 [1/5] 前置关卡：`pnpm test` + `pnpm check:conservation`
+  - curl 全部加 `--max-time 15`；版本号 grep 的 `.` 转义（版本串不再
+    按通配匹配）
+- `package.json`：新增 `check` 串行脚本（build → test → conservation →
+  lint → format；脚本内用 corepack 前缀调用，环境无全局 pnpm）
+- `tsconfig.app.json`：测试文件纳入类型检查，修复随之暴露的 17 处存量
+  类型问题：
+  - `MilitarySaveData.owned` 与编队 `units` 改
+    `Partial<Record<UnitId, number>>`（校验器与 hydrate 本就允许缺键）
+  - game store 暴露 `lastTickTime`（测试此前赋值的是无效影子属性）
+  - storage 测试改用与生产一致的 base64 助手（去掉 Buffer 依赖）；
+    转生测试旧格式 `purchased` 断言改 `level`
+- `eslint.config.js`：清理已不存在的 `verify-*.cjs` / `start-dev.sh`
+  忽略项
+- `scripts/check-conservation.mjs`：
+  - threshold 正则支持科学计数法（`1e5` 不再被截断成 1）
+  - 据点口径从「只采集不比对」改实比对：局部场景值不得超真值，且必须
+    存在一条等于真值的全解锁断言
+  - 删 `ok.length` 死代码（HOME 兜底已随 PW 目录显式传参消解）
+- `src/data/endless.ts`：解锁锚点注释更新（现最强据点为 `silencer_4`，
+  锚定 `silencer_3` 为设计意图）；`techAvailable` 删死参数 `_unlocked`
+  （调用点同步）
+- `changelog.md`：v0.72 条目一处破折号（体例统一漏网）顺手清除
+
+### 验证
+
+- 全量关卡：build（含测试类型检查）/ test 28 文件 395 用例 /
+  conservation（含 Playwright 段）/ lint / format 全绿
+- deploy 沙箱实测：正路 exit 0（前置关卡 → 构建 → 同步 → 权限 → 版本
+  验证）；DEST 守卫 4 负例（`..` 穿越 / 空尾段 / 目录外 / 含空格）全部
+  拦截；构建失败注入 exit 1 且沙箱零写入；`.well-known` 探针保留、
+  `--delete` 生效、站点零 `.map`
+- 守恒漂移注入回归：单测断言 / Playwright 文案（低值与超真值）/ 文档
+  词表 / 科学计数法阈值 5 类全部捕获，注入文件逐一还原校验
 
 ---
 

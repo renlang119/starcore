@@ -233,7 +233,7 @@ describe('transcend — serialize / hydrate', () => {
     store.hydrate({
       negativeEntropy: '1',
       totalTranscends: 0,
-      tree: [{ id: 't_removed_legacy', purchased: true }],
+      tree: [{ id: 't_removed_legacy', level: 1 }],
     })
     expect(store.tree.every((n) => n.id !== 't_removed_legacy')).toBe(true)
   })
