@@ -63,6 +63,7 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
 
   // 驻扎挂机收益
   const garrisonGains: Record<string, string> = {}
+  const garrisonPerSec: Record<string, Decimal> = {}
   for (const [strongholdId] of Object.entries(garrisoned)) {
     const idle = garrisonIdleReward(strongholdId)
     for (const [res, v] of Object.entries(idle)) {
@@ -72,6 +73,8 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
         const existing = garrisonGains[res] ? deser(garrisonGains[res]) : D(0)
         garrisonGains[res] = ser(existing.plus(gained))
       }
+      // 每秒基准（随机事件回退用，与 duration 无关）
+      garrisonPerSec[res] = (garrisonPerSec[res] ?? D(0)).plus(v)
     }
   }
 
@@ -84,11 +87,16 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
     { msg: '捕获漂流的数据碎片', res: 'data', mult: 120 },
     { msg: '陨石带来少量合金', res: 'alloy', mult: 30 },
   ]
-  if (Math.random() < 0.2 && Object.keys(gains).length > 0) {
+  // 触发判定并入驻扎产出（v0.78）：纯驻扎挂机无建筑产出时也可摇到事件
+  if (
+    Math.random() < 0.2 &&
+    (Object.keys(gains).length > 0 || Object.keys(garrisonGains).length > 0)
+  ) {
     const ev = events[Math.floor(Math.random() * events.length)]
-    const evGain =
-      totalProduction[ev.res as keyof typeof totalProduction]?.times(ev.mult).times(offlineMult) ??
-      D(0)
+    // 事件基准：建筑产出优先，无建筑产出时回退到驻扎每秒产出
+    const buildingBase = totalProduction[ev.res as keyof typeof totalProduction]
+    const base = buildingBase?.gt(0) ? buildingBase : (garrisonPerSec[ev.res] ?? D(0))
+    const evGain = base.times(ev.mult).times(offlineMult)
     if (evGain.gt(0)) {
       gainResource(ev.res as ResourceType, evGain)
       const existing = gains[ev.res] ? deser(gains[ev.res]) : D(0)

@@ -3,7 +3,7 @@
  *
  * 功能：
  * - localStorage 持久化已完成的 step
- * - 10s 超时自动 dismiss
+ * - 10s 超时自动隐藏（只隐藏不标记完成，再次进入仍提示，直到 dismiss/skipAll）
  * - 支持 dismiss / skipAll
  *
  * 用法：
@@ -44,7 +44,8 @@ function saveCompleted(set: Set<string>) {
 
 /**
  * 使用引导流程
- * @param flow 流程 ID
+ * @param _flow 流程 ID：签名保留供调用点自解释（各流程共享同一存储 key 与 steps 列表），
+ *   当前实现不消费；未来若需按流程区分（如分流程独立存储）在此接入
  * @param steps 该流程的 step ID 列表（按顺序）
  * @returns activeStep — 当前应显示的 step（null 表示不显示）
  */
@@ -59,6 +60,8 @@ export function useOnboarding(_flow: OnboardingFlow, steps: string[]) {
     }
   }
 
+  // 超时只隐藏气泡（activeStep = null），不写入 completed：
+  // 玩家切走再回来仍会看到提示，直到主动 dismiss/skipAll 才记为完成
   function startTimeout() {
     clearTimer()
     timer = setTimeout(() => {
