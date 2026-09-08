@@ -3,7 +3,46 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.71
+> 当前版本：v0.72
+
+---
+
+## v0.72 — 重构: 工程精简与拆分（合成工坊/强化面板组件化、生产 sourcemap 收口）
+
+**变更性质：重构（行为不变，工程结构精简）**
+**开发时间：2026-09-08**
+
+### 概述
+
+生产 sourcemap 由「公网可下载」改为 hidden（产物不引用、部署不上传，线上减
+约 2MB 且不留「源码即读」入口）；RelicView 拆分为合成工坊与强化面板两个子
+组件，视图从 904 行降至 548 行。纯工程改动，游戏行为与数值零变化，存档零迁
+移。
+
+### 变更明细
+
+- 构建（vite.config.ts）：`build.sourcemap` true → 'hidden'；dist 仍生成
+  .map 供本地调试，但产物不再引用，配合部署脚本排除后公网不可达
+- 部署（deploy.sh）：rsync 增加 `--exclude='*.map'`，源映射文件一律不上传
+  站点目录
+- 组件拆分（src/components/relics/ 新目录）：
+  - 新增 useRelicFusion composable：合成选材状态与动作内聚（选材模式/稀有
+    度校验/合成执行），视图层经 props 桥接给工坊面板；稀有度混选拒绝提示经
+    notify 注入视图 toast，不再各写一套
+  - 新增 FusionPanel.vue：合成工坊区块 + 合成产物弹窗
+  - 新增 EnhanceModal.vue：强化弹窗全部逻辑（等级/成本/预览/执行），能量不
+    足提示经 fail 事件交视图层统一 toast
+  - RelicView.vue 保留装备槽/套装/图鉴卡与唯一 toast 实现，样式仅留视图自
+    身部分；弹窗内容的卡面样式随组件迁移
+  - 所有 data-testid 与 DOM 结构不变，单元测试与 Playwright 断言零改动
+- 全部既有测试（29 文件 378 用例）与十二个 Playwright 回归脚本通过
+
+### 验证
+
+- corepack pnpm build（含 vue-tsc）通过；lint/format 零输出
+- 单元测试 29 文件 378 用例全过
+- Playwright 十二脚本全过（preview 本地 + 部署后线上复跑）
+- 线上校验：.map 返回 404、站点目录无 .map 残留、版本串 v0.72
 
 ---
 

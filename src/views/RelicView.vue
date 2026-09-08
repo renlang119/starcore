@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
-import {
-  RARITY_INFO,
-  getSetByRelic,
-  MAX_RELIC_LEVEL,
-  ENHANCE_GAIN,
-  enhanceLabel,
-} from '@/data/relics'
-import type { RelicRarity, RelicEffect } from '@/data/relics'
+import { RARITY_INFO, getSetByRelic } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
-import { fmt } from '@/lib/format'
+import { useRelicFusion } from '@/composables/useRelicFusion'
 import Icons from '@/components/ui/Icons.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
-import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import FusionPanel from '@/components/relics/FusionPanel.vue'
+import EnhanceModal from '@/components/relics/EnhanceModal.vue'
 
 const game = useGameStore()
 
@@ -23,69 +17,31 @@ const equippedRelics = computed(() => game.relics.equippedRelics)
 const setProgress = computed(() => game.relics.setProgress)
 const ownedKinds = computed(() => game.relics.ownedKinds)
 
-// —— 合成工坊（v0.61）：选材模式下点卡选材料，非选材模式点卡装备 ——
-const selectedMaterials = ref<string[]>([])
-/** 选材模式开关：开启后图鉴卡点击=选材料 */
-const selectMode = ref(false)
-function toggleSelectMode() {
-  selectMode.value = !selectMode.value
-  if (!selectMode.value) clearSelection()
+// —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.72） ——
+const toastMsg = ref('')
+let toastTimer: ReturnType<typeof setTimeout> | null = null
+function showToast(msg: string) {
+  toastMsg.value = msg
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => {
+    toastMsg.value = ''
+  }, 2000)
 }
-/** 是否可作为合成材料：未装备且非顶档 */
-function selectable(r: OwnedRelic): boolean {
-  return !game.relics.isEquipped(r.instanceId) && r.rarity !== 'legendary'
-}
-function isMaterialSelected(r: OwnedRelic): boolean {
-  return selectedMaterials.value.includes(r.instanceId)
-}
-function toggleMaterial(r: OwnedRelic) {
-  if (!selectable(r)) return
-  const i = selectedMaterials.value.indexOf(r.instanceId)
-  if (i >= 0) {
-    selectedMaterials.value.splice(i, 1)
-    return
-  }
-  // 选中组内稀有度须一致（先选什么稀有度，后续只能加同档）
-  if (selectedMaterials.value.length > 0 && materialRarity.value !== r.rarity) {
-    showToast('材料稀有度须一致')
-    return
-  }
-  if (selectedMaterials.value.length < 3) selectedMaterials.value.push(r.instanceId)
-}
-/** 选中组的稀有度（0 或 3 件时有值；3 件必同稀有度，由 toggle 保证） */
-const NEXT_RARITY_NAME: Record<string, string> = {
-  common: '稀有',
-  rare: '史诗',
-  epic: '传说',
-}
-const materialRarity = computed<RelicRarity | null>(() => {
-  if (selectedMaterials.value.length === 0) return null
-  const first = owned.value.find((r) => r.instanceId === selectedMaterials.value[0])
-  return first?.rarity ?? null
-})
-const canSynthesize = computed(() => {
-  if (selectedMaterials.value.length !== 3) return false
-  const mats = selectedMaterials.value
-    .map((id) => owned.value.find((r) => r.instanceId === id))
-    .filter(Boolean) as OwnedRelic[]
-  return mats.length === 3 && mats.every((m) => m.rarity === mats[0].rarity)
-})
-const synthResult = ref<OwnedRelic | null>(null)
-const synthFailMsg = ref('')
 
-function doSynthesize() {
-  synthFailMsg.value = ''
-  const result = game.relics.synthesize(selectedMaterials.value)
-  if (result) {
-    synthResult.value = result
-    selectedMaterials.value = []
-  } else {
-    synthFailMsg.value = '合成失败：需 3 件未装备的同稀有度遗物'
+// —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
+const fusion = useRelicFusion({ notify: showToast })
+
+/** 图鉴卡点击：点在丢弃按钮上不劫持；选材模式下点卡=选材料，否则=装备 */
+function onCardClick(r: OwnedRelic, e: MouseEvent) {
+  if ((e.target as HTMLElement).closest('.discard-btn')) return
+  if (fusion.selectMode.value) {
+    fusion.toggleMaterial(r)
+    return
   }
-}
-function clearSelection() {
-  selectedMaterials.value = []
-  synthFailMsg.value = ''
+  equip(
+    r,
+    equipped.value.findIndex((s) => s === null)
+  )
 }
 
 function equip(relic: OwnedRelic, slot: number) {
@@ -99,30 +55,6 @@ function equip(relic: OwnedRelic, slot: number) {
   } else {
     game.relics.equip(relic.instanceId, slot)
   }
-}
-
-/** 图鉴卡点击：点在丢弃按钮上不劫持；选材模式下点卡=选材料，否则=装备 */
-function onCardClick(r: OwnedRelic, e: MouseEvent) {
-  if ((e.target as HTMLElement).closest('.discard-btn')) return
-  if (selectMode.value) {
-    toggleMaterial(r)
-    return
-  }
-  equip(
-    r,
-    equipped.value.findIndex((s) => s === null)
-  )
-}
-
-// —— 装备槽满提示 toast ——
-const toastMsg = ref('')
-let toastTimer: ReturnType<typeof setTimeout> | null = null
-function showToast(msg: string) {
-  toastMsg.value = msg
-  if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => {
-    toastMsg.value = ''
-  }, 2000)
 }
 
 function getRarityColor(rarity: string): string {
@@ -155,53 +87,20 @@ function handleDiscard(e: Event, relic: OwnedRelic) {
   }
 }
 
-// —— 强化（v0.70）：instance 级等级轴 ——
+// —— 强化（v0.70）：面板内聚于 EnhanceModal，此处只持开关与失败 toast ——
 const selectedEnhance = ref<OwnedRelic | null>(null)
-const enhanceToast = ref('')
-let enhanceToastTimer: ReturnType<typeof setTimeout> | null = null
 
 function openEnhance(r: OwnedRelic) {
   selectedEnhance.value = r
 }
-function closeEnhance() {
-  selectedEnhance.value = null
-}
-function showEnhanceToast(msg: string) {
-  enhanceToast.value = msg
-  if (enhanceToastTimer) clearTimeout(enhanceToastTimer)
-  enhanceToastTimer = setTimeout(() => {
-    enhanceToast.value = ''
-  }, 2000)
-}
-/** 下一级成本（能量）；满级/不存在返回 null */
-const enhanceNextCost = computed<number | null>(() =>
-  selectedEnhance.value ? game.relics.nextEnhanceCost(selectedEnhance.value.instanceId) : null
-)
-const enhanceIsMax = computed(() => (selectedEnhance.value?.level ?? 0) >= MAX_RELIC_LEVEL)
-/** 强化后效果（当前级） */
-const enhanceCurrentEffects = computed<RelicEffect[]>(() =>
-  selectedEnhance.value ? enhancedEffectsOf(selectedEnhance.value) : []
-)
-/** 下一级效果预览（升到 level+1 的 label） */
-const enhanceNextEffects = computed<{ label: string; next: string }[]>(() => {
-  const r = selectedEnhance.value
-  if (!r || enhanceIsMax.value) return []
-  return r.effects.map((eff) => {
-    const gain = ENHANCE_GAIN[eff.type]
-    if (!gain) return { label: eff.label, next: eff.label }
-    return { label: eff.label, next: enhanceLabel(eff.label, eff.value, gain, r.level + 1) }
-  })
-})
-function doEnhance() {
-  if (!selectedEnhance.value) return
-  const ok = game.relics.enhance(selectedEnhance.value.instanceId)
-  if (!ok) showEnhanceToast('能量不足')
+
+function onEnhanceFail(msg: string) {
+  showToast(msg)
 }
 
 onUnmounted(() => {
   if (discardTimer) clearTimeout(discardTimer)
   if (toastTimer) clearTimeout(toastTimer)
-  if (enhanceToastTimer) clearTimeout(enhanceToastTimer)
 })
 </script>
 
@@ -239,56 +138,8 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 合成工坊（v0.61） -->
-    <div class="fusion-section" data-testid="fusion-section">
-      <h3 class="section-title">合成工坊</h3>
-      <p class="fusion-hint">
-        点选 3 件同稀有度、未装备的遗物，合成 1 件高一档稀有度的随机遗物（传说为顶档，不可作材料）
-      </p>
-      <div class="fusion-panel">
-        <button
-          class="btn-ghost sm select-mode-btn"
-          :class="{ on: selectMode }"
-          data-testid="select-mode-button"
-          @click="toggleSelectMode"
-        >
-          {{ selectMode ? '✓ 选材中：点击图鉴卡加入材料（再点取消）' : '选择材料' }}
-        </button>
-        <div class="fusion-slots" data-testid="fusion-slots">
-          <div
-            v-for="i in 3"
-            :key="i"
-            class="fusion-slot"
-            :class="{ filled: i <= selectedMaterials.length }"
-          >
-            <template v-if="i <= selectedMaterials.length">
-              {{ owned.find((r) => r.instanceId === selectedMaterials[i - 1])?.name }}
-            </template>
-            <template v-else>材料 {{ i }}</template>
-          </div>
-        </div>
-        <div class="fusion-actions">
-          <button
-            class="btn-accent sm"
-            style="--accent: var(--color-plasma)"
-            :disabled="!canSynthesize"
-            data-testid="fusion-button"
-            @click="doSynthesize"
-          >
-            合 成
-          </button>
-          <button v-if="selectedMaterials.length > 0" class="btn-ghost sm" @click="clearSelection">
-            清空
-          </button>
-        </div>
-        <p v-if="synthFailMsg" class="fusion-fail">{{ synthFailMsg }}</p>
-        <p v-else-if="materialRarity" class="fusion-rarity">
-          材料稀有度：{{ RARITY_INFO[materialRarity].name }} → 产物：{{
-            NEXT_RARITY_NAME[materialRarity]
-          }}
-        </p>
-      </div>
-    </div>
+    <!-- 合成工坊 + 产物弹窗（v0.72 拆出） -->
+    <FusionPanel :fusion="fusion" />
 
     <!-- 套装（v0.61） -->
     <div class="sets-section" data-testid="sets-section">
@@ -347,8 +198,8 @@ onUnmounted(() => {
           :key="r.instanceId"
           class="relic-card"
           :class="{
-            'material-selected': isMaterialSelected(r),
-            'material-disabled': !selectable(r),
+            'material-selected': fusion.isMaterialSelected(r),
+            'material-disabled': !fusion.selectable(r),
           }"
           :style="{ '--c': getRarityColor(r.rarity) }"
           @click="onCardClick(r, $event)"
@@ -380,7 +231,7 @@ onUnmounted(() => {
           </div>
           <div v-if="game.relics.isEquipped(r.instanceId)" class="equipped-tag">已装备</div>
           <div
-            v-if="isMaterialSelected(r)"
+            v-if="fusion.isMaterialSelected(r)"
             class="material-tag"
             :style="{ background: getRarityColor(r.rarity) }"
           >
@@ -414,114 +265,19 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 槽位满提示 toast -->
+    <!-- 槽位满/合成混选/强化失败提示 toast -->
     <Transition name="toast">
       <div v-if="toastMsg" class="toast">{{ toastMsg }}</div>
     </Transition>
 
-    <!-- 合成产物弹窗 -->
-    <ModalOverlay
-      :model-value="!!synthResult"
-      modal-class="synth-modal"
-      aria-label="合成结果"
-      @update:model-value="synthResult = null"
-      @overlay-click="synthResult = null"
-    >
-      <template v-if="synthResult">
-        <h2 class="result-title font-display">合成成功</h2>
-        <p class="result-sub">材料已消耗，获得新遗物</p>
-        <div
-          class="synth-product"
-          :style="{ '--c': getRarityColor(synthResult.rarity) }"
-          :data-testid="'synth-product-' + synthResult.rarity"
-        >
-          <div class="r-head">
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-              <use :href="'#' + synthResult.icon" />
-            </svg>
-            <span class="rarity-badge" :style="{ background: getRarityColor(synthResult.rarity) }">
-              {{ RARITY_INFO[synthResult.rarity].name }}
-            </span>
-          </div>
-          <div class="r-name">{{ synthResult.name }}</div>
-          <div class="r-effects">
-            <span v-for="(e, i) in synthResult.effects" :key="i" class="eff-mini">{{
-              e.label
-            }}</span>
-          </div>
-        </div>
-        <div class="btn-group">
-          <button class="btn-primary" style="flex: 1" @click="synthResult = null">确认</button>
-        </div>
-      </template>
-    </ModalOverlay>
-    <!-- 强化面板（v0.70） -->
-    <ModalOverlay
+    <!-- 强化面板（v0.70，v0.72 拆出） -->
+    <EnhanceModal
       v-if="selectedEnhance"
-      :model-value="!!selectedEnhance"
-      modal-class="enhance-modal"
-      aria-label="遗物强化"
-      @update:model-value="selectedEnhance = null"
-      @overlay-click="selectedEnhance = null"
-    >
-      <template v-if="selectedEnhance">
-        <h2 class="result-title font-display">遗物强化</h2>
-        <div
-          class="synth-product"
-          :style="{ '--c': getRarityColor(selectedEnhance.rarity) }"
-          data-testid="enhance-modal"
-        >
-          <div class="r-head">
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-              <use :href="'#' + selectedEnhance.icon" />
-            </svg>
-            <span
-              class="rarity-badge"
-              :style="{ background: getRarityColor(selectedEnhance.rarity) }"
-            >
-              {{ RARITY_INFO[selectedEnhance.rarity].name }}
-            </span>
-          </div>
-          <div class="r-name">{{ selectedEnhance.name }}</div>
-          <div class="enhance-level" data-testid="enhance-level">
-            等级：{{ selectedEnhance.level }} / {{ MAX_RELIC_LEVEL }}
-          </div>
-          <div class="r-effects">
-            <span v-for="(e, i) in enhanceCurrentEffects" :key="i" class="eff-mini">{{
-              e.label
-            }}</span>
-          </div>
-          <div v-if="!enhanceIsMax && enhanceNextEffects.length > 0" class="enhance-preview">
-            <div v-for="(p, i) in enhanceNextEffects" :key="i" class="preview-row">
-              <span class="preview-from">{{ p.label }}</span>
-              <span class="preview-arrow">→</span>
-              <span class="preview-to">{{ p.next }}</span>
-            </div>
-          </div>
-          <div v-if="enhanceIsMax" class="enhance-max">已达上限</div>
-          <div v-else class="enhance-cost-row" data-testid="enhance-cost">
-            下一级消耗：<span class="font-mono">{{ fmt(enhanceNextCost ?? 0) }}</span> 能量
-          </div>
-        </div>
-        <div class="btn-group">
-          <button
-            v-if="!enhanceIsMax"
-            class="btn-primary"
-            style="flex: 1"
-            data-testid="enhance-confirm"
-            @click="doEnhance"
-          >
-            强化 ×1
-          </button>
-          <button class="btn-ghost" style="flex: 1" @click="closeEnhance">关闭</button>
-        </div>
-      </template>
-    </ModalOverlay>
-
-    <!-- 强化能量不足 toast -->
-    <Transition name="toast">
-      <div v-if="enhanceToast" class="toast">{{ enhanceToast }}</div>
-    </Transition>
+      :key="selectedEnhance.instanceId"
+      :relic="selectedEnhance"
+      @close="selectedEnhance = null"
+      @fail="onEnhanceFail"
+    />
   </div>
 </template>
 
@@ -534,67 +290,6 @@ onUnmounted(() => {
 }
 .page-title {
   color: var(--color-amber);
-}
-
-/* —— 合成工坊（v0.61）—— */
-.fusion-section {
-  background: var(--color-surface);
-  border: 1px solid color-mix(in srgb, var(--color-plasma) 40%, transparent);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3);
-}
-.fusion-hint {
-  font-size: var(--text-xs);
-  color: var(--color-t-secondary);
-  margin-bottom: var(--space-2);
-}
-.select-mode-btn.on {
-  border-color: var(--color-plasma);
-  color: var(--color-plasma);
-}
-.fusion-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.fusion-slots {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-.fusion-slot {
-  aspect-ratio: 2.4;
-  border: 1px dashed var(--color-border-line);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-xs);
-  color: var(--color-t-tertiary);
-  text-align: center;
-  padding: var(--space-1);
-  overflow: hidden;
-}
-.fusion-slot.filled {
-  border: 1px solid var(--color-plasma);
-  color: var(--color-t-primary);
-  background: color-mix(in srgb, var(--color-plasma) 10%, transparent);
-}
-.fusion-actions {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-.fusion-fail {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--color-alert);
-}
-.fusion-rarity {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--color-t-secondary);
 }
 
 /* —— 套装（v0.61）—— */
@@ -643,7 +338,15 @@ onUnmounted(() => {
   color: var(--color-t-tertiary);
 }
 
-/* —— 图鉴卡材料态（v0.61）—— */
+/* —— 图鉴卡 —— */
+.relic-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-line);
+  border-left: 3px solid var(--c);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
 .relic-card.material-selected {
   outline: 2px solid var(--color-plasma);
   outline-offset: 1px;
@@ -664,19 +367,6 @@ onUnmounted(() => {
   border-radius: var(--radius-pill);
   padding: 0 var(--space-2);
   pointer-events: none;
-}
-.relic-card {
-  position: relative;
-}
-.synth-modal .result-title {
-  color: var(--color-plasma);
-}
-.synth-product {
-  border: 1px solid var(--c);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
-  padding: var(--space-3);
-  margin: var(--space-3) 0;
 }
 
 .slots-grid {
@@ -744,13 +434,6 @@ onUnmounted(() => {
   flex-direction: column;
   gap: var(--space-2);
 }
-.relic-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-line);
-  border-left: 3px solid var(--c);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-}
 .r-head {
   display: flex;
   justify-content: space-between;
@@ -807,7 +490,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* —— 强化（v0.70）—— */
+/* —— 强化入口（v0.70）—— */
 .card-actions {
   display: flex;
   align-items: center;
@@ -832,45 +515,6 @@ onUnmounted(() => {
   border: 1px solid color-mix(in srgb, var(--color-amber) 40%, transparent);
   border-radius: var(--radius-pill);
   padding: 1px var(--space-2);
-}
-.enhance-level {
-  font-size: var(--text-sm);
-  color: var(--color-t-secondary);
-  margin: var(--space-1) 0;
-}
-.enhance-preview {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  margin: var(--space-2) 0;
-}
-.preview-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-}
-.preview-from {
-  color: var(--color-t-tertiary);
-  text-decoration: line-through;
-}
-.preview-arrow {
-  color: var(--color-t-tertiary);
-}
-.preview-to {
-  color: var(--color-amber);
-  font-weight: 600;
-}
-.enhance-max {
-  font-size: var(--text-sm);
-  color: var(--color-amber);
-  font-weight: 600;
-  margin: var(--space-2) 0;
-}
-.enhance-cost-row {
-  font-size: var(--text-sm);
-  color: var(--color-core);
-  margin: var(--space-2) 0;
 }
 
 /* 槽位满 toast：复用 MapView 同款样式 */
