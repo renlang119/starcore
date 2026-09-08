@@ -4,7 +4,6 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { localDateStr } from '@/stores/daily'
-import Icons from '@/components/ui/Icons.vue'
 
 const game = useGameStore()
 const daily = computed(() => game.daily)
@@ -33,7 +32,6 @@ function claim(templateId: string) {
 
 <template>
   <div class="daily-card" data-testid="daily-card">
-    <Icons />
     <div class="daily-head">
       <h3 class="section-title">每日签到 · 周期挑战</h3>
       <span class="checkin-badge" :class="{ done: checkedInToday }" data-testid="checkin-badge">

@@ -4,14 +4,18 @@ import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
 import { BUILDINGS, SECTORS, type SectorId } from '@/data/buildings'
 import { getTech } from '@/data/tech'
-import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import UpgradeCountdown from '@/components/build/UpgradeCountdown.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import Toast from '@/components/ui/Toast.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
+import { useToast } from '@/composables/useToast'
 
 const game = useGameStore()
+// 全局轻提示（v0.77：建造开始反馈）
+const toast = useToast()
+const showToast = toast.show
 const activeSector = ref<SectorId>('energy')
 
 const sectors = Object.values(SECTORS)
@@ -28,7 +32,10 @@ const { activeStep, dismiss, skipAll } = useOnboarding('build', ['build-upgrade'
 
 // 3.12：使用原子操作替代 canAfford + spendCost + upgrade 三步
 function tryUpgrade(id: string) {
-  game.tryUpgradeBuilding(id)
+  if (!game.tryUpgradeBuilding(id)) return
+  // 资源消耗操作受理反馈（v0.77 反馈口径）
+  const name = BUILDINGS.find((b) => b.id === id)?.name ?? id
+  showToast(`开始建造：${name}`)
 }
 
 function isMaxed(id: string): boolean {
@@ -40,7 +47,6 @@ function isMaxed(id: string): boolean {
 
 <template>
   <div class="build-view">
-    <Icons />
     <h2 class="page-title font-display">建造</h2>
     <p v-if="game.autoBuild" class="auto-badge" title="建造协议已激活：自动升级买得起的已解锁建筑">
       ⚙ 建造协议进行中
@@ -134,6 +140,9 @@ function isMaxed(id: string): boolean {
         </template>
       </li>
     </ul>
+
+    <!-- 建造开始轻提示（v0.77） -->
+    <Toast :toast="toast" />
   </div>
 </template>
 

@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
-import Icons from '@/components/ui/Icons.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import { useToast } from '@/composables/useToast'
 
@@ -134,7 +133,6 @@ function cancelHardReset() {
 
 <template>
   <div class="prestige-view">
-    <Icons />
     <h2 class="page-title font-display">奇点重启</h2>
     <p class="page-sub">重置大部分进度，获得负熵永久强化</p>
 

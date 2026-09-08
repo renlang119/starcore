@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { fmt } from '@/lib/format'
+import { fmt, fmtTime } from '@/lib/format'
 import { UNITS, getUnit, type UnitId } from '@/data/units'
 import { getTech } from '@/data/tech'
-import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import Toast from '@/components/ui/Toast.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
+import { useToast } from '@/composables/useToast'
 
 const game = useGameStore()
+// 全局轻提示（v0.77：训练开始反馈）
+const toast = useToast()
+const showToast = toast.show
 const activeTab = ref<'barracks' | 'formation'>('barracks')
 const trainCount = ref<Record<UnitId, number>>({ assault: 0, guard: 0, heavy: 0, psionic: 0 })
 const selectedFormation = ref(0)
@@ -71,12 +75,22 @@ const slotHint = computed(() => {
 function tryTrain(unitId: UnitId) {
   const count = trainCount.value[unitId]
   if (count <= 0) return
-  game.military.startTraining(
+  const ok = game.military.startTraining(
     unitId,
     count,
     (c) => game.resources.canAfford(c),
     (c) => game.resources.spendCost(c)
   )
+  // 长周期操作「开始」反馈（v0.77 反馈口径）
+  if (ok) showToast(`开始训练：${getUnit(unitId)?.name ?? unitId} ×${count}`)
+}
+
+/** 编队卡键盘可达（v0.77，照 HeroCore 正面例）：Enter/空格选中编队 */
+function onFormationKey(idx: number, e: KeyboardEvent) {
+  if (e.target !== e.currentTarget) return // 内层按钮按键不冒泡触发
+  if (e.key !== 'Enter' && e.key !== ' ') return
+  e.preventDefault()
+  selectedFormation.value = idx
 }
 
 function getUnitCost(unitId: UnitId, count: number) {
@@ -145,7 +159,6 @@ function removeAll(fid: string, uid: UnitId) {
 
 <template>
   <div class="army-view">
-    <Icons />
     <h2 class="page-title font-display">部队</h2>
 
     <!-- P3-3 onboarding -->
@@ -278,7 +291,7 @@ function removeAll(fid: string, uid: UnitId) {
             <!-- 成本 -->
             <div class="u-cost">
               <CostTag :cost="getUnitCost(u.id, trainCount[u.id])" />
-              <span class="time-tag font-mono">{{ u.trainTime * trainCount[u.id] }}s</span>
+              <span class="time-tag font-mono">{{ fmtTime(u.trainTime * trainCount[u.id]) }}</span>
             </div>
 
             <button
@@ -312,7 +325,7 @@ function removeAll(fid: string, uid: UnitId) {
                 :style="{ width: (1 - task.remaining / task.totalTime) * 100 + '%' }"
               ></div>
             </div>
-            <span class="q-time font-mono">{{ Math.ceil(task.remaining) }}s</span>
+            <span class="q-time font-mono">{{ fmtTime(task.remaining) }}</span>
           </div>
         </div>
       </template>
@@ -325,7 +338,11 @@ function removeAll(fid: string, uid: UnitId) {
         :key="f.id"
         class="formation-card"
         :class="{ selected: selectedFormation === idx }"
+        role="button"
+        tabindex="0"
+        :aria-label="`选择编队 ${f.name}`"
         @click="selectedFormation = idx"
+        @keydown="onFormationKey(idx, $event)"
       >
         <div class="f-head">
           <span class="f-name">{{ f.name }}</span>
@@ -395,6 +412,9 @@ function removeAll(fid: string, uid: UnitId) {
         </div>
       </div>
     </div>
+
+    <!-- 训练开始等轻提示（v0.77） -->
+    <Toast :toast="toast" />
 
     <!-- 批量操作确认弹窗 -->
     <ModalOverlay
