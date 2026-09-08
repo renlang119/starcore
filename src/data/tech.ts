@@ -614,11 +614,7 @@ const TECH_MAP = new Map(TECHS.map((t) => [t.id, t]))
 export const getTech = (id: string): TechDef | undefined => TECH_MAP.get(id)
 
 /** 判断科技是否可研究（前置已满足且未完成） */
-export function techAvailable(
-  def: TechDef,
-  completed: Set<string>,
-  _unlocked: Set<string>
-): boolean {
+export function techAvailable(def: TechDef, completed: Set<string>): boolean {
   if (completed.has(def.id)) return false
   if (def.requires) {
     for (const r of def.requires) if (!completed.has(r)) return false

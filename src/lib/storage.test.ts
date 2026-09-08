@@ -7,6 +7,9 @@
 import { describe, it, expect } from 'vitest'
 import { exportSave, importSave, type SaveData, type DailySaveData } from './storage'
 
+/** 与 storage 内部一致（btoa + UTF-8 安全）的 base64 编码，构造测试载荷用 */
+const toBase64 = (s: string) => btoa(String.fromCharCode(...new TextEncoder().encode(s)))
+
 function makeValidSaveData(): SaveData {
   return {
     version: 1,
@@ -96,7 +99,7 @@ describe('storage export/import', () => {
 
   it('importSave rejects corrupted (valid base64 but bad JSON)', async () => {
     // SCB- + valid base64 of non-JSON content
-    const fakeB64 = Buffer.from('not json at all').toString('base64')
+    const fakeB64 = toBase64('not json at all')
     const result = await importSave('SCB-' + fakeB64)
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.reason).toBe('invalid')
@@ -360,7 +363,7 @@ describe('storage — 存档加固（v0.75）', () => {
     const marker = `"endTime":${data.exploration.progress.node_orbit.endTime}`
     const tampered = json.replace(marker, '"endTime":1e999')
     expect(tampered).not.toBe(json) // 替换命中
-    const result = await importSave('SCB-' + Buffer.from(tampered, 'utf8').toString('base64'))
+    const result = await importSave('SCB-' + toBase64(tampered))
     expect(result.ok).toBe(false)
   })
 

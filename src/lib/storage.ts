@@ -43,9 +43,11 @@ export interface ResearchSaveData {
   completed: string[]
 }
 export interface MilitarySaveData {
-  owned: Record<UnitId, number>
+  /** 兵力：允许缺键（旧档可能没有全部兵种，hydrate 缺省补零），键限兵种白名单 */
+  owned: Partial<Record<UnitId, number>>
   training: { id: string; unitId: UnitId; count: number; remaining: number; totalTime: number }[]
-  formations: { id: string; name: string; units: Record<UnitId, number> }[]
+  /** 编队兵力：同样允许缺键（v0.75 hydrate 缺键补零防 NaN） */
+  formations: { id: string; name: string; units: Partial<Record<UnitId, number>> }[]
 }
 export interface CombatSaveData {
   garrisoned: Record<string, { strongholdId: string; formationId: string; startTime: number }>
