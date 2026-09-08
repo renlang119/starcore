@@ -51,6 +51,7 @@ fi
 echo "[2/4] 同步到 $DEST ..."
 sudo rsync -rcv --delete \
   --exclude='.well-known/' \
+  --exclude='*.map' \
   dist/ "$DEST/"
 
 # 3. 权限
