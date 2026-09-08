@@ -6,7 +6,7 @@
  * - 每 400ms 生成 1 个
  * - 每资源上限 3 个，全局上限 15 个
  * - visibilitychange 自动暂停
- * - prefers-reduced-motion 降级为不生成
+ * - prefers-reduced-motion 降级为不生成（v0.78 起监听运行时切换）
  */
 import { ref, onMounted, onUnmounted } from 'vue'
 
@@ -30,9 +30,15 @@ export function useResourceParticles(
   const particles = ref<Particle[]>([])
   let nextId = 0
   let spawnTimer: ReturnType<typeof setInterval> | null = null
+  let disposed = false
 
-  const prefersReducedMotion =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // 减少动效偏好：初始化读一次，并在运行时监听切换（v0.78）
+  const motionMql =
+    typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null
+  let reducedMotion = motionMql ? motionMql.matches : false
+
+  /** 粒子到期移除定时器：卸载时统一清理，回调再以 disposed 兜底（v0.78） */
+  const removeTimers = new Set<ReturnType<typeof setTimeout>>()
 
   function spawn() {
     if (document.hidden) return
@@ -54,13 +60,16 @@ export function useResourceParticles(
     particles.value.push({ id, resourceId: resId, duration })
 
     // 动画结束后移除（与 --duration 同步）
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      removeTimers.delete(timer)
+      if (disposed) return
       particles.value = particles.value.filter((p) => p.id !== id)
     }, duration)
+    removeTimers.add(timer)
   }
 
   function start() {
-    if (prefersReducedMotion) return
+    if (reducedMotion) return
     if (spawnTimer) return
     spawnTimer = setInterval(spawn, SPAWN_INTERVAL)
   }
@@ -72,6 +81,12 @@ export function useResourceParticles(
     }
   }
 
+  function onMotionChange(e: MediaQueryListEvent) {
+    reducedMotion = e.matches
+    if (reducedMotion) stop()
+    else start()
+  }
+
   function onVisibilityChange() {
     if (document.hidden) {
       stop()
@@ -81,14 +96,17 @@ export function useResourceParticles(
   }
 
   onMounted(() => {
-    if (!prefersReducedMotion) {
-      start()
-      document.addEventListener('visibilitychange', onVisibilityChange)
-    }
+    motionMql?.addEventListener('change', onMotionChange)
+    if (!reducedMotion) start()
+    document.addEventListener('visibilitychange', onVisibilityChange)
   })
 
   onUnmounted(() => {
+    disposed = true
     stop()
+    for (const t of removeTimers) clearTimeout(t)
+    removeTimers.clear()
+    motionMql?.removeEventListener('change', onMotionChange)
     document.removeEventListener('visibilitychange', onVisibilityChange)
   })
 

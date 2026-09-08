@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// 遗物图标（含 i-nav-relic 导航兜底 + i-relic-omega r_omega 遗物占用）
+// 遗物图标（含 i-nav-relic 导航兜底 + i-relic-omega r_omega 遗物占用；v0.78 补 i-relic-armor / i-relic-capsule）
 </script>
 
 <template>
@@ -214,6 +214,19 @@
         <circle cx="12" cy="12" r="2" fill="currentColor" />
       </symbol>
       <symbol
+        id="i-relic-armor"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 3L5 6v6c0 4 3 7 7 8 4-1 7-4 7-8V6l-7-3z" />
+        <path d="M9 9.5h6M9 12.5h6" />
+        <path d="M10.5 15.5h3" />
+      </symbol>
+      <symbol
         id="i-relic-explore"
         viewBox="0 0 24 24"
         fill="none"
@@ -238,6 +251,19 @@
         <circle cx="12" cy="12" r="8" />
         <path d="M12 8v4M12 12l3 2" />
         <path d="M5 9l3 1 2 4 4 1" />
+      </symbol>
+      <symbol
+        id="i-relic-capsule"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="7" y="4" width="10" height="16" rx="5" />
+        <circle cx="12" cy="12" r="3.5" />
+        <path d="M12 10.3V12l1.5 1" />
       </symbol>
       <symbol
         id="i-relic-silence"
