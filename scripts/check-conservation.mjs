@@ -7,7 +7,8 @@
  * 文档计数词表」四方核对机械化，任何一处漏改直接报错退出。
  *
  * 用法：node scripts/check-conservation.mjs
- *   --pw-dir <dir>  Playwright 脚本目录（默认 ./playwright）
+ *   --pw-dir <dir>  Playwright 脚本目录（也可用环境变量 STARCORE_PW_DIR
+ *                   指定；两者皆无时跳过该段检查）
  * 退出码：0 = 全部守恒；1 = 存在漂移（差异表打到 stdout）
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
@@ -18,7 +19,7 @@ import { execSync } from 'node:child_process'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const pwDirIdx = args.indexOf('--pw-dir')
-const PW_DIR = pwDirIdx >= 0 ? args[pwDirIdx + 1] : './playwright'
+const PW_DIR = pwDirIdx >= 0 ? args[pwDirIdx + 1] : process.env.STARCORE_PW_DIR || null
 
 // ---------------------------------------------------------------
 // 1. 数据源真值：直接 import TS 数据文件（tsx 不引入，用正则数条目）
@@ -295,34 +296,39 @@ if (!new RegExp(`全部 ${T.relicPool} 种`).test(T.achRelic4Desc ?? '')) {
 } else ok('ach_relic_4 文案联动', `desc 含「${T.relicPool} 种」`)
 
 // —— 3b. Playwright 硬断言 ——
-console.log('\n== Playwright 硬断言（' + PW_DIR + '/starcore-*.mjs）==')
-const pwPatterns = [
-  { re: /\.tech-card'\)\.count\(\)\) === (\d+)/g, label: '科技卡数', expect: T.techs },
-  { re: /\.ach-card'\)\.count\(\)\) === (\d+)/g, label: '成就卡数', expect: T.achievements },
-  { re: /sections\.count\(\)\) === (\d+)/g, label: '成就分区数', expect: T.achCategories },
-  { re: /已解锁据点 (\d+) 个（实际 \$\{shCount\}/g, label: '据点全解锁口径', expect: T.strongholds, dynamic: true },
-]
-const pwFiles = existsSync(PW_DIR) ? readdirSync(PW_DIR).filter((f) => f.startsWith('starcore-') && f.endsWith('.mjs')) : []
-if (pwFiles.length === 0) bad('Playwright 目录', `${PW_DIR} 未找到 starcore-*.mjs`)
-for (const p of pwPatterns) {
-  const found = scanDir(PW_DIR, '.mjs', [p])
-  if (found.length === 0) {
-    console.log(`  - ${p.label}: 无断言（跳过）`)
-    continue
+if (PW_DIR === null) {
+  console.log('\n== Playwright 硬断言 ==')
+  console.log('  （未提供 --pw-dir / STARCORE_PW_DIR，跳过）')
+} else {
+  console.log('\n== Playwright 硬断言（' + PW_DIR + '/starcore-*.mjs）==')
+  const pwPatterns = [
+    { re: /\.tech-card'\)\.count\(\)\) === (\d+)/g, label: '科技卡数', expect: T.techs },
+    { re: /\.ach-card'\)\.count\(\)\) === (\d+)/g, label: '成就卡数', expect: T.achievements },
+    { re: /sections\.count\(\)\) === (\d+)/g, label: '成就分区数', expect: T.achCategories },
+    { re: /已解锁据点 (\d+) 个（实际 \$\{shCount\}/g, label: '据点全解锁口径', expect: T.strongholds, dynamic: true },
+  ]
+  const pwFiles = existsSync(PW_DIR) ? readdirSync(PW_DIR).filter((f) => f.startsWith('starcore-') && f.endsWith('.mjs')) : []
+  if (pwFiles.length === 0) bad('Playwright 目录', `${PW_DIR} 未找到 starcore-*.mjs`)
+  for (const p of pwPatterns) {
+    const found = scanDir(PW_DIR, '.mjs', [p])
+    if (found.length === 0) {
+      console.log(`  - ${p.label}: 无断言（跳过）`)
+      continue
+    }
+    const wrong = p.dynamic ? [] : found.filter((f) => f.value !== p.expect)
+    if (wrong.length > 0) {
+      for (const w of wrong) bad(p.label, `${w.file}:${w.line} 断言 ${w.value} ≠ 真值 ${p.expect}`)
+    } else {
+      ok(p.label, `${found.length} 处断言全部 = ${p.expect}`)
+    }
   }
-  const wrong = p.dynamic ? [] : found.filter((f) => f.value !== p.expect)
-  if (wrong.length > 0) {
-    for (const w of wrong) bad(p.label, `${w.file}:${w.line} 断言 ${w.value} ≠ 真值 ${p.expect}`)
-  } else {
-    ok(p.label, `${found.length} 处断言全部 = ${p.expect}`)
+  // 「N 卡/汇总 N/34」等模板串里的成就数
+  const achTpl = scanDir(PW_DIR, '.mjs', [{ re: /(\d+) 张成就卡/g }, { re: /汇总 (\d+)\/(\d+)/g }])
+  for (const h of achTpl.filter((h) => h.raw.includes('张成就卡') || h.raw.includes('汇总'))) {
+    const nums = [...h.raw.matchAll(/\d+/g)].map((x) => Number(x[0]))
+    const total = h.raw.includes('张成就卡') ? nums[0] : nums[1]
+    if (total !== T.achievements) bad('成就卡数（模板串）', `${h.file}:${h.line}「${h.raw.trim()}」总数 ${total} ≠ ${T.achievements}`)
   }
-}
-// 「N 卡/汇总 N/34」等模板串里的成就数
-const achTpl = scanDir(PW_DIR, '.mjs', [{ re: /(\d+) 张成就卡/g }, { re: /汇总 (\d+)\/(\d+)/g }])
-for (const h of achTpl.filter((h) => h.raw.includes('张成就卡') || h.raw.includes('汇总'))) {
-  const nums = [...h.raw.matchAll(/\d+/g)].map((x) => Number(x[0]))
-  const total = h.raw.includes('张成就卡') ? nums[0] : nums[1]
-  if (total !== T.achievements) bad('成就卡数（模板串）', `${h.file}:${h.line}「${h.raw.trim()}」总数 ${total} ≠ ${T.achievements}`)
 }
 ok.length // noop
 
