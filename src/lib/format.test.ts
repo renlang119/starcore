@@ -35,6 +35,13 @@ describe('fmt — number formatting', () => {
     expect(fmt(D(2500))).toBe('2.5K')
   })
 
+  it('进位边界（v0.78：999,999.5 → 1M，不再输出 1000K）', () => {
+    expect(fmt(D('999999.5'))).toBe('1M')
+    expect(fmt(D(999999))).toBe('1M')
+    expect(fmt(D('999949'))).toBe('999.9K')
+    expect(fmt(D('-999999.5'))).toBe('-1M')
+  })
+
   it('very large numbers (no Infinity)', () => {
     const big = D('1e30')
     const result = fmt(big)
@@ -92,6 +99,12 @@ describe('pct', () => {
 
   it('decimal input', () => {
     expect(pct(D(0.25))).toBe('25.0%')
+  })
+
+  it('NaN/Infinity 兜底（v0.78）', () => {
+    expect(pct(NaN)).toBe('0.0%')
+    expect(pct(Infinity)).toBe('0.0%')
+    expect(pct(D(NaN))).toBe('0.0%')
   })
 })
 

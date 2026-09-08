@@ -64,13 +64,25 @@ export function fmt(v: Decimal.Value, fixed = 2): string {
     return d.toExponential(2).replace('e+', 'e')
   }
   const tier = Math.floor(e / 3)
-  const suffix = UNITS[tier]
-  const scaled = abs.div(D_POWERS[tier])
+  // 进位修正（v0.78）：scaled 达到 999.95 时必须升档
+  // （例：999,999.5 应升为 1M；截断配置下进位后尾数恒为 1）
+  const carry = abs.div(D_POWERS[tier]).gte(999.95)
+  if (carry && tier + 1 >= UNITS.length) {
+    return d.toExponential(2).replace('e+', 'e')
+  }
+  const idx = carry ? tier + 1 : tier
+  const suffix = UNITS[idx]
   let s: string
-  if (scaled.gte(100)) s = scaled.toFixed(1)
-  else if (scaled.gte(10)) s = scaled.toFixed(2)
-  else s = scaled.toFixed(2)
-  s = s.replace(/\.?0+$/, '')
+  if (carry) {
+    // 进位后 scaled ∈ [0.99995, 1)，显示精度下即 1
+    s = '1'
+  } else {
+    const scaled = abs.div(D_POWERS[idx])
+    if (scaled.gte(100)) s = scaled.toFixed(1)
+    else if (scaled.gte(10)) s = scaled.toFixed(2)
+    else s = scaled.toFixed(2)
+    s = s.replace(/\.?0+$/, '')
+  }
   return (d.lt(0) ? '-' : '') + s + suffix
 }
 
@@ -81,9 +93,10 @@ export function fmtInt(v: number | Decimal.Value): string {
   return Math.floor(n).toLocaleString('en-US')
 }
 
-/** 百分比 */
+/** 百分比；NaN/Infinity 兜底为 0（v0.78） */
 export function pct(v: number | Decimal.Value, fixed = 1): string {
   const n = typeof v === 'number' ? v : new Decimal(v).toNumber()
+  if (!isFinite(n)) return (0).toFixed(fixed) + '%'
   return (n * 100).toFixed(fixed) + '%'
 }
 
