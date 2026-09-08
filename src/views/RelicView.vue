@@ -5,7 +5,6 @@ import { RARITY_INFO, getSetByRelic } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
 import { useRelicFusion } from '@/composables/useRelicFusion'
 import { useToast } from '@/composables/useToast'
-import Icons from '@/components/ui/Icons.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import Toast from '@/components/ui/Toast.vue'
 import FusionPanel from '@/components/relics/FusionPanel.vue'
@@ -26,9 +25,8 @@ const showToast = toast.show
 // —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
 const fusion = useRelicFusion({ notify: showToast })
 
-/** 图鉴卡点击：点在丢弃按钮上不劫持；选材模式下点卡=选材料，否则=装备 */
-function onCardClick(r: OwnedRelic, e: MouseEvent) {
-  if ((e.target as HTMLElement).closest('.discard-btn')) return
+/** 图鉴卡点击：选材模式下点卡=选材料，否则=装备 */
+function onCardClick(r: OwnedRelic) {
   if (fusion.selectMode.value) {
     fusion.toggleMaterial(r)
     return
@@ -37,6 +35,27 @@ function onCardClick(r: OwnedRelic, e: MouseEvent) {
     r,
     equipped.value.findIndex((s) => s === null)
   )
+}
+
+/** 图鉴卡键盘可达（v0.77，照 HeroCore 正面例）：Enter/空格触发卡片主操作 */
+function onCardKey(r: OwnedRelic, e: KeyboardEvent) {
+  if (e.target !== e.currentTarget) return // 内层按钮按键不冒泡触发
+  if (e.key !== 'Enter' && e.key !== ' ') return
+  e.preventDefault()
+  onCardClick(r)
+}
+
+/** 装备槽激活：卸下该槽位遗物（空槽无操作） */
+function onSlotActivate(idx: number) {
+  if (equipped.value[idx]) game.relics.unequip(idx)
+}
+
+/** 装备槽无障碍标签 */
+function slotLabel(idx: number): string {
+  const id = equipped.value[idx]
+  if (!id) return `空槽位 ${idx + 1}`
+  const relic = owned.value.find((r) => r.instanceId === id)
+  return relic ? `卸下 ${relic.name}` : '卸下该槽位遗物'
 }
 
 function equip(relic: OwnedRelic, slot: number) {
@@ -100,7 +119,6 @@ onUnmounted(() => {
 
 <template>
   <div class="relic-view">
-    <Icons />
     <h2 class="page-title font-display">遗物</h2>
     <p class="page-sub">装备遗物获得永久增益（{{ game.relics.maxSlots }} 个槽位）</p>
 
@@ -110,7 +128,12 @@ onUnmounted(() => {
         v-for="(slotRelic, idx) in equipped"
         :key="idx"
         class="slot"
-        @click="slotRelic && game.relics.unequip(idx)"
+        role="button"
+        :tabindex="slotRelic ? 0 : -1"
+        :aria-label="slotLabel(idx)"
+        @click="onSlotActivate(idx)"
+        @keydown.enter="onSlotActivate(idx)"
+        @keydown.space.prevent="onSlotActivate(idx)"
       >
         <div
           v-if="slotRelic"
@@ -196,7 +219,11 @@ onUnmounted(() => {
             'material-disabled': !fusion.selectable(r),
           }"
           :style="{ '--c': getRarityColor(r.rarity) }"
-          @click="onCardClick(r, $event)"
+          role="button"
+          tabindex="0"
+          :aria-label="`${r.name}（${RARITY_INFO[r.rarity].name}）`"
+          @click="onCardClick(r)"
+          @keydown="onCardKey(r, $event)"
         >
           <div class="r-head">
             <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
