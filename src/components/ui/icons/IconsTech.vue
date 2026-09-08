@@ -63,8 +63,9 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <path d="M12 5L18 12L12 19L6 12Z" />
-        <path d="M12 8v8M9 13l3 3 3-3" />
+        <path d="M12 3v8M9 8l3 3 3-3" />
+        <path d="M4 14h16" />
+        <path d="M7 14l5 6 5-6" />
       </symbol>
       <!-- 科技图标（Phase 2） -->
       <symbol
