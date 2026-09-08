@@ -19,7 +19,8 @@ const emit = defineEmits<{
 
 const modalRef = ref<HTMLElement | null>(null)
 const trapActive = computed(() => props.modelValue)
-useFocusTrap(modalRef, trapActive)
+// Escape 与「点击遮罩」同语义：交由使用点处理关闭/取消（v0.77）
+useFocusTrap(modalRef, trapActive, { onEscape: () => emit('overlayClick') })
 
 function onOverlayClick() {
   emit('overlayClick')

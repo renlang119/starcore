@@ -4,7 +4,6 @@ import { useGameStore } from '@/stores/game'
 import { fmt, fmtTime } from '@/lib/format'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLD_TYPES } from '@/data/pve'
-import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -126,7 +125,6 @@ const endlessSection = {
 
 <template>
   <div class="map-view">
-    <Icons />
     <h2 class="page-title font-display">探索星图</h2>
     <p class="page-sub">探索未知星域，解锁据点与资源</p>
     <p v-if="game.autoExplore" class="auto-badge" title="探索协议已激活：自动开始可探索的星域节点">

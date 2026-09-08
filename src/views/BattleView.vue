@@ -10,8 +10,8 @@ import type { BattleLogEntry } from '@/stores/combat'
 import { getUnit } from '@/data/units'
 import type { UnitId } from '@/data/units'
 import type { ResourceType } from '@/data/buildings'
-import Icons from '@/components/ui/Icons.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -54,7 +54,9 @@ const stronghold = computed((): StrongholdDef | undefined =>
 
 const selectedFormation = ref(0)
 const battleLog = ref<BattleLogEntry[] | null>(null)
-const battleResult = ref<any | null>(null)
+/** 战斗结果类型由 store 推导（v0.77，替换 any） */
+type BattleResult = ReturnType<typeof game.combat.resolveBattle>
+const battleResult = ref<BattleResult | null>(null)
 const showResult = ref(false)
 const showGarrisonConfirm = ref(false)
 const rewardsGranted = ref(false) // 防止奖励重复发放
@@ -192,7 +194,6 @@ function cancelGarrison() {
 
 <template>
   <div v-if="stronghold" class="battle-view">
-    <Icons />
     <button class="back-btn" @click="router.push('/map')">← 返回星图</button>
 
     <!-- 据点信息 -->
@@ -309,7 +310,12 @@ function cancelGarrison() {
     <div v-if="battleLog && !showResult" class="battle-log">
       <h3 class="section-title">战斗日志</h3>
       <div class="log-list">
-        <div v-for="entry in battleLog" :key="entry.round" class="log-entry" :class="entry.side">
+        <div
+          v-for="(entry, i) in battleLog"
+          :key="`${entry.round}-${i}`"
+          class="log-entry"
+          :class="entry.side"
+        >
           <span class="log-round">R{{ entry.round }}</span>
           <span class="log-msg">{{ entry.msg }}</span>
         </div>
@@ -319,7 +325,7 @@ function cancelGarrison() {
     <!-- 结果弹窗 -->
     <ModalOverlay
       v-model="showResult"
-      :modal-class="{ victory: battleResult?.victory, defeat: !battleResult?.victory }"
+      :modal-class="{ victory: battleResult?.victory === true, defeat: !battleResult?.victory }"
       :aria-label="battleResult?.victory ? '战斗胜利' : '战斗失败'"
       @overlay-click="battleResult?.victory ? stayHere() : confirmResult()"
     >
@@ -357,7 +363,12 @@ function cancelGarrison() {
       <div v-if="battleLog && battleLog.length" class="result-log">
         <h4>战报</h4>
         <div class="modal-log-list">
-          <div v-for="entry in battleLog" :key="entry.round" class="log-entry" :class="entry.side">
+          <div
+            v-for="(entry, i) in battleLog"
+            :key="`${entry.round}-${i}`"
+            class="log-entry"
+            :class="entry.side"
+          >
             <span class="log-round">R{{ entry.round }}</span>
             <span class="log-msg">{{ entry.msg }}</span>
           </div>
@@ -406,6 +417,14 @@ function cancelGarrison() {
       </div>
     </ModalOverlay>
   </div>
+  <EmptyState
+    v-else
+    icon="i-nav-map"
+    text="据点不存在"
+    hint="该据点可能已被移除，请返回星图重新选择"
+    action="返回星图"
+    to="/map"
+  />
 </template>
 
 <style scoped>
@@ -541,7 +560,7 @@ function cancelGarrison() {
 .depth-value {
   flex: 1;
   text-align: center;
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   color: var(--color-plasma);
 }
 .depth-frontier {

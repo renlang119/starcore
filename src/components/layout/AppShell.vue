@@ -7,10 +7,14 @@ import BottomNav from './BottomNav.vue'
 import SideNav from './SideNav.vue'
 import OfflineReport from './OfflineReport.vue'
 import AchievementToast from './AchievementToast.vue'
+import Icons from '@/components/ui/Icons.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { isDesktop } = useBreakpoint()
+
+/** 宽版内容区：路由 meta.wide 控制（首页双列需要更宽的 max-width） */
+const isWideContent = computed(() => route.meta.wide === true)
 
 /** P2-2 星点闪烁 — 背景星点配置（替代 6 个静态 span） */
 const stars = [
@@ -73,12 +77,16 @@ const showBattleBack = computed(() => route.path.startsWith('/battle'))
 
 // P3-5 路由跃迁白光 overlay 触发控制
 const warpFlash = ref(false)
+let warpTimer: ReturnType<typeof setTimeout> | null = null
 watch(
   () => route.path,
   () => {
+    // 防抖：新触发先清旧 timer，避免上一次的熄灭回调提前中断本次白光
+    if (warpTimer) clearTimeout(warpTimer)
     warpFlash.value = true
-    setTimeout(() => {
+    warpTimer = setTimeout(() => {
       warpFlash.value = false
+      warpTimer = null
     }, 350)
   }
 )
@@ -86,6 +94,9 @@ watch(
 
 <template>
   <div class="app-shell">
+    <!-- 图标符号表：全应用只挂载一次（v0.77 收敛，消除各视图与成就提示的重复 symbol） -->
+    <Icons />
+
     <!-- P2-2 星点闪烁 -->
     <div class="star-field" aria-hidden="true">
       <span
@@ -110,7 +121,7 @@ watch(
     <!-- 主区域 -->
     <div class="main-area">
       <TopBar />
-      <main class="content">
+      <main class="content" :class="{ 'content--wide': isWideContent }">
         <router-view v-slot="{ Component }">
           <transition name="warp" mode="out-in">
             <component :is="Component" />
@@ -163,6 +174,25 @@ watch(
   .content {
     padding: var(--space-6);
     padding-bottom: var(--space-6);
+  }
+}
+/* 宽版内容（首页双列）：按 route.meta.wide 加宽，替代视图中失效的 :deep 覆盖（v0.77） */
+.content--wide {
+  max-width: 720px;
+}
+@media (min-width: 768px) {
+  .content--wide {
+    max-width: 1040px;
+  }
+}
+@media (min-width: 1024px) {
+  .content--wide {
+    max-width: 1280px;
+  }
+}
+@media (min-width: 1440px) {
+  .content--wide {
+    max-width: 1440px;
   }
 }
 .extra-nav {

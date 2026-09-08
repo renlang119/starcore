@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { TECHS, TECH_BRANCHES, adjustedTechCost, type TechBranch } from '@/data/tech'
-import Icons from '@/components/ui/Icons.vue'
 import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -45,7 +44,6 @@ function tryResearch(id: string) {
 
 <template>
   <div class="tech-view">
-    <Icons />
     <h2 class="page-title font-display">科技树</h2>
     <p class="page-sub">研究新技术解锁建筑、兵种和系统</p>
     <p v-if="game.autoResearch" class="auto-badge" title="研究协议已激活：自动研究买得起的可用科技">

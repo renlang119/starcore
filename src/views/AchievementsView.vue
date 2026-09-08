@@ -13,7 +13,6 @@ import {
   type AchievementDef,
   type AchievementMetric,
 } from '@/data/achievements'
-import Icons from '@/components/ui/Icons.vue'
 
 const game = useGameStore()
 const ach = game.achievements
@@ -74,7 +73,6 @@ const bonusSummary = computed(() => {
 
 <template>
   <div class="achievements-view">
-    <Icons />
     <h2 class="page-title font-display">成就殿堂</h2>
     <p class="page-sub">跨越轮回的里程碑，点亮永久加成</p>
 

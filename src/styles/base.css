@@ -91,9 +91,3 @@ a {
   background: var(--color-border-glow);
   border-radius: 3px;
 }
-.no-scrollbar {
-  scrollbar-width: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}

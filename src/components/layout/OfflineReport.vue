@@ -9,7 +9,7 @@ const game = useGameStore()
 const report = computed(() => game.offlineReport)
 const visible = computed(() => !!report.value)
 const modalRef = ref<HTMLElement | null>(null)
-useFocusTrap(modalRef, visible)
+useFocusTrap(modalRef, visible, { onEscape: dismiss })
 const gainsList = computed(() => {
   if (!report.value) return []
   const metaMap = game.resources.allMeta
