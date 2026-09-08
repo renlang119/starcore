@@ -28,9 +28,9 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <circle cx="12" cy="12" r="3" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(30 12 12)" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" />
+        <circle cx="12" cy="12" r="8" />
+        <ellipse cx="12" cy="12" rx="8" ry="3" />
+        <ellipse cx="12" cy="12" rx="3" ry="8" />
       </symbol>
       <symbol
         id="i-tech-refine"
@@ -106,10 +106,9 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <circle cx="12" cy="12" r="2" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" />
-        <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)" />
-        <path d="M12 10v-4M12 14v4" stroke-dasharray="1 2" />
+        <circle cx="12" cy="12" r="5" />
+        <path d="M7 12h10" stroke-dasharray="1 2" />
+        <ellipse cx="12" cy="12" rx="10" ry="3" transform="rotate(-20 12 12)" />
       </symbol>
       <!-- 合金扇区扩展建筑图标 -->
       <symbol
@@ -206,12 +205,11 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <circle cx="12" cy="12" r="3" />
-        <circle cx="5" cy="5" r="2" />
-        <circle cx="19" cy="5" r="2" />
-        <circle cx="5" cy="19" r="2" />
-        <circle cx="19" cy="19" r="2" />
-        <path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3" />
+        <circle cx="5" cy="8" r="2" />
+        <circle cx="5" cy="16" r="2" />
+        <circle cx="12" cy="12" r="2" />
+        <circle cx="18" cy="12" r="2" />
+        <path d="M7 9l3 3M7 15l3-3M14 12h2" />
       </symbol>
       <symbol
         id="i-bld-holo-core"
