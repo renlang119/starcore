@@ -3,7 +3,42 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.73
+> 当前版本：v0.74
+
+---
+
+## v0.74 — 工具: 计数守恒自动检查脚本（check-conservation）
+
+**变更性质：工具（新增仓库内校验脚本，不进 bundle）**
+**开发时间：2026-09-08**
+
+### 概述
+
+星层扩展的「守恒触点」人工核对清单机械化。脚本从数据文件提取计数真值（科
+技/分支/节点/据点/遗物/建筑/成就/类别/转生买断与无限节点），与三处消费面自
+动比对：单元测试硬断言、Playwright 脚本硬断言、README 与 docs 计数词表；另
+校验 ach_tech_3 / ach_relic_4 阈值与文案对科技/遗物总数的联动。任何一处漏
+改以差异表报错退出（exit 1）。
+
+### 变更明细
+
+- 新增 scripts/check-conservation.mjs（Node 24 直跑，零依赖）：
+  - 真值提取：正则解析 src/data/*.ts 的数组条目数与 Record 键数（跳过类型
+    注解与注释）、achievements 条目 threshold/desc 联动、transcend
+    DEFAULT_NODES 买断/无限节点拆分
+  - 断言扫描：src/**/*.test.ts 的 toHaveLength 硬断言（含套装并集等价守护
+    形态）、Playwright 回归脚本（`--pw-dir` 指定目录）的 .tech-card /
+    .ach-card / 分区数 / 据点全解锁口径断言、三份文档计数词表
+  - 豁免机制：层级局部口径（如「6 节点 5 据点」）不按全量词表误报
+  - 已验证三种漂移形态均可捕获：文档计数错、成就文案联动漏改、单测断言漏改
+    （各注入假漂移实测 exit 1，恢复后 exit 0）
+- package.json 增加 `check:conservation`；收尾必跑清单增补此步（位于
+  build/test 之后、Playwright 之前）
+
+### 验证
+
+- `corepack pnpm check:conservation` 全绿（当前基线全部守恒）
+- build / 28 文件 371 用例 / lint / format 均通过（脚本不进运行时）
 
 ---
 

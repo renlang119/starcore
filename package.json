@@ -1,7 +1,7 @@
 {
   "name": "starcore",
   "private": true,
-  "version": "0.73",
+  "version": "0.74",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -13,6 +13,7 @@
     "test:cov": "vitest run --coverage",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
+    "check:conservation": "node scripts/check-conservation.mjs",
     "format": "prettier --write src",
     "format:check": "prettier --check src"
   },
