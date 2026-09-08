@@ -546,6 +546,7 @@ export const useGameStore = defineStore('game', () => {
     claimChallenge,
     // meta
     lastSaveTime,
+    lastTickTime, // 上次 tick 时间戳（测试用于模拟时间推进）
     isRunning,
     totalPlayTime,
     player,

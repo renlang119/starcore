@@ -35,6 +35,7 @@ corepack pnpm build         # 类型检查 + 生产构建，产物在 dist/
 corepack pnpm test          # 运行单元/组件测试
 corepack pnpm lint:check    # ESLint 检查
 corepack pnpm format:check  # Prettier 检查
+corepack pnpm check         # 全量关卡（build + test + 守恒 + lint + format）
 ```
 
 ## 技术栈

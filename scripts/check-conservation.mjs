@@ -123,7 +123,8 @@ function achievementField(id, field) {
   if (start < 0) throw new Error(`achievements.ts 找不到 ${anchor}`)
   const seg = src.slice(start, start + 600)
   if (field === 'threshold') {
-    const m = seg.match(/threshold:\s*(\d+)/)
+    // 支持科学计数法形态（如 1e5），避免被截断成 1
+    const m = seg.match(/threshold:\s*(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/)
     return m ? Number(m[1]) : null
   }
   if (field === 'desc') {
@@ -305,7 +306,7 @@ if (PW_DIR === null) {
     { re: /\.tech-card'\)\.count\(\)\) === (\d+)/g, label: '科技卡数', expect: T.techs },
     { re: /\.ach-card'\)\.count\(\)\) === (\d+)/g, label: '成就卡数', expect: T.achievements },
     { re: /sections\.count\(\)\) === (\d+)/g, label: '成就分区数', expect: T.achCategories },
-    { re: /已解锁据点 (\d+) 个（实际 \$\{shCount\}/g, label: '据点全解锁口径', expect: T.strongholds, dynamic: true },
+    { re: /已解锁据点 (\d+) 个（实际 \$\{shCount\}/g, label: '据点全解锁口径', expect: T.strongholds, mode: 'max' },
   ]
   const pwFiles = existsSync(PW_DIR) ? readdirSync(PW_DIR).filter((f) => f.startsWith('starcore-') && f.endsWith('.mjs')) : []
   if (pwFiles.length === 0) bad('Playwright 目录', `${PW_DIR} 未找到 starcore-*.mjs`)
@@ -315,7 +316,21 @@ if (PW_DIR === null) {
       console.log(`  - ${p.label}: 无断言（跳过）`)
       continue
     }
-    const wrong = p.dynamic ? [] : found.filter((f) => f.value !== p.expect)
+    if (p.mode === 'max') {
+      // 据点口径：套件含全解锁场景（应等于真值）与局部场景（如 9/10 节点解锁 14 个）。
+      // 局部值不参与等于比对，但不得超真值；且必须存在一条等于真值的全解锁断言。
+      const over = found.filter((f) => f.value > p.expect)
+      const maxV = Math.max(...found.map((f) => f.value))
+      if (over.length > 0) {
+        for (const w of over) bad(p.label, `${w.file}:${w.line} 断言 ${w.value} 超过真值 ${p.expect}`)
+      } else if (maxV !== p.expect) {
+        bad(p.label, `最大断言 ${maxV} ≠ 全解锁真值 ${p.expect}`)
+      } else {
+        ok(p.label, `${found.length} 处断言（最大 ${maxV} = 全解锁口径）`)
+      }
+      continue
+    }
+    const wrong = found.filter((f) => f.value !== p.expect)
     if (wrong.length > 0) {
       for (const w of wrong) bad(p.label, `${w.file}:${w.line} 断言 ${w.value} ≠ 真值 ${p.expect}`)
     } else {
@@ -330,7 +345,6 @@ if (PW_DIR === null) {
     if (total !== T.achievements) bad('成就卡数（模板串）', `${h.file}:${h.line}「${h.raw.trim()}」总数 ${total} ≠ ${T.achievements}`)
   }
 }
-ok.length // noop
 
 // —— 3c. 文档计数词表 ——
 console.log('\n== 文档计数词表（README + docs）==')
