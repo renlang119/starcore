@@ -3,8 +3,10 @@
  *
  * 测试 tick 循环、离线补算、转生重置的核心流程。
  * 各 Store 需按正确顺序初始化（Pinia createPinia）。
+ *
+ * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
@@ -12,9 +14,13 @@ import { useBuildingsStore } from './buildings'
 import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
 import { useResearchStore } from './research'
+import { useCombatStore } from './combat'
 import { D } from '@/lib/decimal'
 import { rollRelic } from '@/data/relics'
 import { setRelicSlotProvider } from './relics'
+import { fnv1a } from '@/lib/random'
+import { importSave, type SaveData } from '@/lib/storage'
+import type { Formation } from './military'
 
 /** 基础能量采集建筑 ID */
 const SOLAR = 'solar_collector'
@@ -233,5 +239,102 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     expect(game.autoExplore).toBe(true)
     expect(game.autoBuild).toBe(false)
     expect(buildings.getLevel(SOLAR)).toBe(0)
+  })
+})
+
+// —— v0.75：初始化错误态（兜底：读档/hydrate 异常不静默卡加载屏）——
+// 走真实 readSave 通道：把存档写进 localStorage 备份键（jsdom 环境），
+// 不用模块 mock（vitest isolate:false 下模块注册表跨文件复用，mock 不可靠）
+const BACKUP_KEY = 'starcore_save_v1_backup'
+
+function writeBackupSave(data: SaveData): void {
+  const json = JSON.stringify(data)
+  localStorage.setItem(BACKUP_KEY, JSON.stringify({ d: json, c: fnv1a(json).toString(16) }))
+}
+
+describe('game store — 初始化错误态（v0.75）', () => {
+  function validSave(): SaveData {
+    return {
+      version: 1,
+      savedAt: Date.now(),
+      player: { id: 'p1', name: '指挥官' },
+      totalPlayTime: 0,
+      resources: { amounts: { energy: '100' }, totals: { energy: '100' } },
+      buildings: { levels: {} },
+      research: { completed: [] },
+      military: { owned: {}, training: [], formations: [] },
+      combat: { garrisoned: {}, completed: [] },
+      exploration: { progress: {} },
+      relics: { owned: [], equipped: [] },
+      transcend: { negativeEntropy: '0', totalTranscends: 0, tree: [] },
+    }
+  }
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    setRelicSlotProvider(() => 0)
+    localStorage.removeItem(BACKUP_KEY)
+  })
+
+  it('版本过新：initError=too_new，不启动游戏循环', async () => {
+    writeBackupSave({ ...validSave(), version: 2 })
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBe('too_new')
+    expect(game.isRunning).toBe(false)
+  })
+
+  it('hydrate 抛错：initError=failed，不启动游戏循环', async () => {
+    writeBackupSave(validSave())
+    const combat = useCombatStore()
+    const spy = vi.spyOn(combat, 'hydrate').mockImplementation(() => {
+      throw new Error('boom')
+    })
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBe('failed')
+    expect(game.isRunning).toBe(false)
+    spy.mockRestore()
+  })
+
+  it('无档：正常启动（回归，不误入错误态）', async () => {
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBeNull()
+    expect(game.isRunning).toBe(true)
+    game.stop()
+  })
+
+  it('hardReset 清除错误态并启动', async () => {
+    writeBackupSave({ ...validSave(), version: 2 })
+    const game = useGameStore()
+    await game.init()
+    expect(game.initError).toBe('too_new')
+    await game.hardReset()
+    expect(game.initError).toBeNull()
+    expect(game.isRunning).toBe(true)
+    game.stop()
+  })
+
+  it('A1 端到端：远征胜利后整档导出/导入通过', async () => {
+    const game = useGameStore()
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('silencer_3') // 解锁远征
+    const stronghold = combat.getEndlessStronghold(1)
+    const formation = {
+      id: 'f1',
+      name: '回归编队',
+      units: { assault: 100000, guard: 0, heavy: 0, psionic: 0 },
+    } as Formation
+    const result = combat.resolveBattle(formation, stronghold, game.atkMult, game.defMult)
+    expect(result.victory).toBe(true)
+    // 胜利后 'endless' 不入 completed → 整档可过校验（修复前此处必挂）
+    const code = await game.doExport()
+    const imported = await importSave(code)
+    expect(imported.ok).toBe(true)
+    if (imported.ok) expect(imported.data.combat.completed).not.toContain('endless')
   })
 })

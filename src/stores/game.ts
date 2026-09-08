@@ -24,14 +24,13 @@ import {
   clearSave,
   exportSave,
   importSave,
+  SAVE_VERSION,
   type SaveData,
 } from '@/lib/storage'
 import { TECHS, adjustedTechCost } from '@/data/tech'
 import { BUILDINGS } from '@/data/buildings'
 import type { ResourceType } from '@/data/buildings'
 
-// 存档版本号（测试阶段重新起算；旧版本迁移链已随 v0.73 精简移除）
-const SAVE_VERSION = 1
 const TICK_INTERVAL = 1000 // ms
 // 后台 tick 补算后，仅当离线时长超过此阈值才弹窗展示报告；
 // 低于阈值时静默补算资源/训练进度，避免浏览器对不活跃标签页 setInterval
@@ -74,6 +73,12 @@ export const useGameStore = defineStore('game', () => {
   const totalPlayTime = ref(0)
   const player = ref({ id: 'local', name: '指挥官' })
   const offlineReport = ref<OfflineReport | null>(null)
+  /**
+   * 初始化错误态（A2 兜底）：读档/hydrate 异常或存档版本过新时置位。
+   * 置位后不启动 tick 与自动存档（保护原始存档不被空状态覆盖），
+   * App 展示错误屏，由玩家选择「清除存档重开」。
+   */
+  const initError = ref<'too_new' | 'failed' | null>(null)
 
   // —— 统一效果系统（6.2：替代三处重复 getMax 逻辑）——
   const effectSystem = new EffectSystem()
@@ -211,7 +216,7 @@ export const useGameStore = defineStore('game', () => {
       daily.bump('explores')
     }
 
-    // 5. 成就：终身计数采集 + 解锁判定（31 条全表扫描，每秒一次开销可忽略）
+    // 5. 成就：终身计数采集 + 解锁判定（34 条全表扫描，每秒一次开销可忽略）
     // playtime 指标直接读 totalPlayTime 现值（转生不清、hardReset 才清），无需单独累计
     collectLifetimeTotals()
     achievements.checkAndUnlock()
@@ -320,17 +325,28 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function load(): Promise<boolean> {
-    const data = await readSave()
-    if (!data) return false
-    hydrateAll(data)
-    return true
+    try {
+      const outcome = await readSave()
+      if (outcome.status === 'too_new') {
+        // 版本过新：不静默 hydrate 未知结构，进入错误态等玩家处理
+        initError.value = 'too_new'
+        return false
+      }
+      if (outcome.status === 'none') return false
+      hydrateAll(outcome.data)
+      return true
+    } catch {
+      // 读档/hydrate 异常（数据损坏/解析失败）：进入错误态，不启动游戏循环
+      initError.value = 'failed'
+      return false
+    }
   }
 
   function hydrateAll(data: SaveData) {
     if (data.player) player.value = { ...player.value, ...data.player }
     // 恢复上次保存时间，否则 computeOfflineGains 会因 elapsed≈0 直接 return null
     if (data.savedAt) lastSaveTime.value = data.savedAt
-    // v7 起终身游玩时长入档；旧档缺失保持 0
+    // 终身游玩时长入档（旧档缺失保持 0）
     if (
       typeof data.totalPlayTime === 'number' &&
       isFinite(data.totalPlayTime) &&
@@ -377,6 +393,8 @@ export const useGameStore = defineStore('game', () => {
 
   async function init(): Promise<boolean> {
     const loaded = await load()
+    // 错误态：不启动 tick 与自动存档，等待玩家在错误屏选择清档重开
+    if (initError.value) return false
     if (loaded) {
       const report = doComputeOfflineGains()
       setOfflineReport(report)
@@ -393,17 +411,28 @@ export const useGameStore = defineStore('game', () => {
   async function doImport(code: string): Promise<{ success: boolean; message?: string }> {
     const result = await importSave(code)
     if (!result.ok) {
-      const msg = result.reason === 'corrupted' ? '存档数据已损坏或被篡改' : '存档无效或已损坏'
+      const msg =
+        result.reason === 'corrupted'
+          ? '存档数据已损坏或被篡改'
+          : result.reason === 'too_new'
+            ? '存档来自更新的游戏版本，无法导入'
+            : '存档无效或已损坏'
       return { success: false, message: msg }
     }
-    hydrateAll(result.data)
-    await save()
-    return { success: true }
+    try {
+      hydrateAll(result.data)
+      await save()
+      return { success: true }
+    } catch {
+      // hydrate 异常兜底：不再裸抛中断导入流程
+      return { success: false, message: '存档数据异常，导入失败' }
+    }
   }
 
   async function hardReset() {
     stop()
     await clearSave()
+    initError.value = null
     resources.reset()
     buildings.reset()
     research.reset()
@@ -521,6 +550,7 @@ export const useGameStore = defineStore('game', () => {
     totalPlayTime,
     player,
     offlineReport,
+    initError,
     // computed（直接暴露，无需包装函数）
     productionMults,
     atkMult,

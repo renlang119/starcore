@@ -190,10 +190,23 @@ export const useMilitaryStore = defineStore('military', () => {
   }
   function hydrate(data: MilitarySaveData | undefined) {
     if (!data) return
-    if (data.owned) owned.value = { ...owned.value, ...data.owned }
+    if (data.owned) {
+      // 兵力取整（防御小数兵力：存档校验已拒非整数，此处兜底直接 hydrate 调用）
+      const next = { ...owned.value }
+      for (const [uid, n] of Object.entries(data.owned)) {
+        if (uid in next && typeof n === 'number' && isFinite(n)) {
+          next[uid as UnitId] = Math.max(0, Math.floor(n))
+        }
+      }
+      owned.value = next
+    }
     if (data.training) trainingQueue.value = data.training.map((t) => ({ ...t }))
     if (data.formations)
-      formations.value = data.formations.map((f) => ({ ...f, units: { ...f.units } }))
+      // units 缺键补零：防 f.units[id] += n 对缺键产 NaN
+      formations.value = data.formations.map((f) => ({
+        ...f,
+        units: Object.assign({ assault: 0, guard: 0, heavy: 0, psionic: 0 }, f.units),
+      }))
   }
 
   return {
