@@ -28,7 +28,7 @@ import {
 export type BigLifetimeKey = 'energy' | 'dark'
 /** 终身计数中的整数指标（number） */
 export type IntLifetimeKey = 'upgrades' | 'maxBuildingLevel' | 'researches' | 'explores' | 'battles'
-/** 读外部现值的指标（不自持计数；playtime = game store 的 totalPlayTime，v7 起已入档） */
+/** 读外部现值的指标（不自持计数；playtime = game store 的 totalPlayTime，已入档） */
 export type ExternalMetric =
   'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime' | 'expeditionBest'
 
@@ -125,7 +125,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
   }
 
   /**
-   * 全表扫描解锁判定（31 条，tick 尾部每秒一次，开销可忽略）。
+   * 全表扫描解锁判定（34 条，tick 尾部每秒一次，开销可忽略）。
    * 新解锁成就入 toast 队列并返回定义列表。
    */
   function checkAndUnlock(): typeof ACHIEVEMENTS {
@@ -187,7 +187,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
     }
   }
   /**
-   * 旧档（v6 及以前）无 achievements 字段：data 为 undefined，终身计数从零起算。
+   * 旧档无 achievements 字段：data 为 undefined，终身计数从零起算。
    * 历史产量不追溯（无数据来源）；hydrate 后首次 checkAndUnlock 会按当时
    * 可见现值补发遗物/转生类成就。
    */

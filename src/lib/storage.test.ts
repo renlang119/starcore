@@ -5,7 +5,7 @@
  * 不涉及 IndexedDB / localStorage（需要浏览器环境）。
  */
 import { describe, it, expect } from 'vitest'
-import { exportSave, importSave, type SaveData } from './storage'
+import { exportSave, importSave, type SaveData, type DailySaveData } from './storage'
 
 function makeValidSaveData(): SaveData {
   return {
@@ -252,5 +252,153 @@ describe('storage export/import', () => {
       const result = await importSave(exported)
       expect(result.ok, `level=${badLevel} should be rejected`).toBe(false)
     }
+  })
+})
+
+/**
+ * v0.75 存档安全与校验加固批回归：
+ * A1 远征通关集污染自愈 / A2 空串裂缝 / 版本上限 / 校验体系补齐（training/formations/garrisoned/exploration/daily/兵力整数）
+ */
+describe('storage — 存档加固（v0.75）', () => {
+  it('A1 自愈：completed 含远征 id "endless" 剥离后继续（不再整档拒绝）', async () => {
+    const data = makeValidSaveData()
+    data.combat.completed = ['raider_1', 'endless']
+    const result = await importSave(await exportSave(data))
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.data.combat.completed).toEqual(['raider_1'])
+  })
+
+  it('A2 空串裂缝：数值串空串/空白/非数形态一律拒绝', async () => {
+    for (const bad of ['', '   ', 'abc', '1.2.3', '+5', '0x10', '1e']) {
+      const data = makeValidSaveData()
+      data.resources.amounts.energy = bad
+      const result = await importSave(await exportSave(data))
+      expect(result.ok, `amounts.energy=${JSON.stringify(bad)} 应拒绝`).toBe(false)
+    }
+  })
+
+  it('A2 合法数值串形态仍接受（整数/小数/科学计数法）', async () => {
+    for (const good of ['0', '100', '3.14', '1e+61', '2.5e-31']) {
+      const data = makeValidSaveData()
+      data.resources.amounts.energy = good
+      const result = await importSave(await exportSave(data))
+      expect(result.ok, `amounts.energy=${good} 应接受`).toBe(true)
+    }
+  })
+
+  it('A2 终身计数与负熵同规（空串 / "abc" 拒绝）', async () => {
+    const withAch = makeValidSaveData()
+    withAch.achievements = {
+      lifetime: {
+        energy: '',
+        dark: '0',
+        upgrades: 0,
+        maxBuildingLevel: 0,
+        researches: 0,
+        explores: 0,
+        battles: 0,
+      },
+      unlocked: {},
+    }
+    expect((await importSave(await exportSave(withAch))).ok).toBe(false)
+
+    const withNe = makeValidSaveData()
+    withNe.transcend.negativeEntropy = 'abc'
+    expect((await importSave(await exportSave(withNe))).ok).toBe(false)
+  })
+
+  it('版本上限：version > SAVE_VERSION 拒绝且 reason=too_new', async () => {
+    const data = makeValidSaveData()
+    data.version = 2
+    const result = await importSave(await exportSave(data))
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.reason).toBe('too_new')
+  })
+
+  it('military.owned 拒绝小数兵力', async () => {
+    const data = makeValidSaveData()
+    data.military.owned = { assault: 1.5 } as unknown as typeof data.military.owned
+    expect((await importSave(await exportSave(data))).ok).toBe(false)
+  })
+
+  it('training 条目校验：未知兵种 / 非有限数字拒绝', async () => {
+    const badUnit = makeValidSaveData()
+    badUnit.military.training = [
+      { id: 't1', unitId: 'dragon' as never, count: 1, remaining: 5, totalTime: 5 },
+    ]
+    expect((await importSave(await exportSave(badUnit))).ok).toBe(false)
+
+    // NaN 经 JSON 序列化为 null → 非 number 形态拒绝（旧校验完全不看 training 条目）
+    const badNum = makeValidSaveData()
+    badNum.military.training = [
+      { id: 't1', unitId: 'assault', count: 1, remaining: NaN, totalTime: 5 },
+    ]
+    expect((await importSave(await exportSave(badNum))).ok).toBe(false)
+  })
+
+  it('formations 条目校验：未知单位键拒绝；缺键条目接受（hydrate 补零）', async () => {
+    const bad = makeValidSaveData()
+    bad.military.formations = [{ id: 'f1', name: '编队', units: { dragon: 1 } as never }]
+    expect((await importSave(await exportSave(bad))).ok).toBe(false)
+
+    const missingKey = makeValidSaveData()
+    missingKey.military.formations = [{ id: 'f1', name: '编队', units: { assault: 2 } as never }]
+    expect((await importSave(await exportSave(missingKey))).ok).toBe(true)
+  })
+
+  it('garrisoned 白名单：未知据点拒绝', async () => {
+    const data = makeValidSaveData()
+    data.combat.garrisoned = {
+      fake_fort: { strongholdId: 'fake_fort', formationId: 'f1', startTime: 1 },
+    }
+    expect((await importSave(await exportSave(data))).ok).toBe(false)
+  })
+
+  it('exploration：时间戳非有限拒绝（1e999 → Infinity）', async () => {
+    const data = makeValidSaveData()
+    const json = JSON.stringify(data)
+    const marker = `"endTime":${data.exploration.progress.node_orbit.endTime}`
+    const tampered = json.replace(marker, '"endTime":1e999')
+    expect(tampered).not.toBe(json) // 替换命中
+    const result = await importSave('SCB-' + Buffer.from(tampered, 'utf8').toString('base64'))
+    expect(result.ok).toBe(false)
+  })
+
+  it('exploration：未知节点条目丢弃（不整档拒绝）', async () => {
+    const data = makeValidSaveData()
+    ;(data.exploration.progress as Record<string, unknown>).ghost_node = {
+      nodeId: 'ghost_node',
+      startTime: 0,
+      endTime: 0,
+      completed: false,
+    }
+    expect((await importSave(await exportSave(data))).ok).toBe(true)
+  })
+
+  it('daily 结构校验：weekChallenges 非数组 / 计数器缺字段拒绝', async () => {
+    const base: DailySaveData = {
+      lastCheckIn: '2026-09-07',
+      streak: 1,
+      weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      challengeWeek: '2026-W37',
+      weekChallenges: [],
+    }
+    const badChallenges = makeValidSaveData()
+    badChallenges.daily = {
+      ...base,
+      weekChallenges: 'garbage' as unknown as DailySaveData['weekChallenges'],
+    }
+    expect((await importSave(await exportSave(badChallenges))).ok).toBe(false)
+
+    const badCounters = makeValidSaveData()
+    badCounters.daily = {
+      ...base,
+      weeklyCounters: { battles: 0 } as unknown as DailySaveData['weeklyCounters'],
+    }
+    expect((await importSave(await exportSave(badCounters))).ok).toBe(false)
+
+    const good = makeValidSaveData()
+    good.daily = base
+    expect((await importSave(await exportSave(good))).ok).toBe(true)
   })
 })

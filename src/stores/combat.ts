@@ -6,7 +6,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Decimal } from '@/lib/decimal'
 import { STRONGHOLDS, getStronghold, type StrongholdDef } from '@/data/pve'
-import { MAX_ENDLESS_DEPTH, endlessStronghold, endlessUnlocked } from '@/data/endless'
+import {
+  MAX_ENDLESS_DEPTH,
+  ENDLESS_STRONGHOLD_ID,
+  endlessStronghold,
+  endlessUnlocked,
+} from '@/data/endless'
 import { getUnit, type UnitId } from '@/data/units'
 import type { Formation } from './military'
 import { rollRelic, type RelicDef } from '@/data/relics'
@@ -48,6 +53,9 @@ interface CombatUnit {
   defRef?: UnitId // 关联玩家兵种定义用于克制判断
   counteredBy?: UnitId[] // 敌方单位被哪些玩家兵种克制
 }
+
+/** 正式据点 id 集合（远征合成据点 'endless' 不在其中） */
+const STRONGHOLD_ID_SET = new Set(STRONGHOLDS.map((s) => s.id))
 
 export const useCombatStore = defineStore('combat', () => {
   const garrisoned = ref<Record<string, GarrisonState>>({}) // strongholdId → state
@@ -233,7 +241,11 @@ export const useCombatStore = defineStore('combat', () => {
         relic = rollRelic(r.relicRarityBias ?? 0, rng)
         trimmedLog.push({ round: rounds, msg: `发现遗物：${relic.name}！`, side: 'system' })
       }
-      completedStrongholds.value.add(stronghold.id)
+      // 远征合成据点（id='endless'，不在 STRONGHOLDS 白名单内）不入正式通关集：
+      // 其进度由 expeditionBest 独立承担，误入会导致存档校验整档失败
+      if (stronghold.id !== ENDLESS_STRONGHOLD_ID) {
+        completedStrongholds.value.add(stronghold.id)
+      }
     }
     return { victory, log: trimmedLog, rewards, relic, losses, rounds }
   }
@@ -309,14 +321,18 @@ export const useCombatStore = defineStore('combat', () => {
   function serialize() {
     return {
       garrisoned: { ...garrisoned.value },
-      completed: Array.from(completedStrongholds.value),
+      // 双保险：白名单过滤（buildResult 已排除远征合成据点，此处兜底任何来源的非法 id）
+      completed: Array.from(completedStrongholds.value).filter((id) => STRONGHOLD_ID_SET.has(id)),
       expeditionBest: expeditionBest.value,
     }
   }
   function hydrate(data: CombatSaveData | undefined) {
     if (!data) return
     if (data.garrisoned) garrisoned.value = { ...data.garrisoned }
-    if (data.completed) completedStrongholds.value = new Set(data.completed)
+    // 白名单过滤：非正式据点 id（含远征 'endless'）一律不载入通关集
+    if (data.completed) {
+      completedStrongholds.value = new Set(data.completed.filter((id) => STRONGHOLD_ID_SET.has(id)))
+    }
     // 远征深度：旧档缺失保持 0；防御性钳制非负整数
     if (typeof data.expeditionBest === 'number' && isFinite(data.expeditionBest)) {
       expeditionBest.value = Math.max(0, Math.floor(data.expeditionBest))

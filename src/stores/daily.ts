@@ -240,10 +240,30 @@ export const useDailyStore = defineStore('daily', () => {
     }
     if (typeof data.challengeWeek === 'string') challengeWeek.value = data.challengeWeek
     if (Array.isArray(data.weekChallenges)) {
-      // 只认模板池内条目（防注入/损坏）；claimed 容缺为 false
+      // 只认模板池内条目，且 kind/target/rewardDark 一律按 templateId+tier 重推导，
+      // 不信存档值（防伪造 target:0 / rewardDark 白领奖励；tier 越界条目丢弃）
       weekChallenges.value = data.weekChallenges
-        .filter((c) => CHALLENGE_TEMPLATES.some((t) => t.templateId === c?.templateId))
-        .map((c) => ({ ...c, claimed: c.claimed === true }))
+        .map((c): WeeklyChallenge | null => {
+          const tpl = CHALLENGE_TEMPLATES.find((t) => t.templateId === c?.templateId)
+          if (!tpl) return null
+          const tier = c.tier
+          if (
+            typeof tier !== 'number' ||
+            !Number.isInteger(tier) ||
+            tier < 0 ||
+            tier >= tpl.targets.length
+          )
+            return null
+          return {
+            templateId: tpl.templateId,
+            kind: tpl.kind,
+            tier,
+            target: tpl.targets[tier],
+            rewardDark: tpl.rewardDark[tier],
+            claimed: c.claimed === true,
+          }
+        })
+        .filter((c): c is WeeklyChallenge => c !== null)
     }
     // 存档周标识落后于当前周（跨周回来）→ 立即重掷，等下一次 onTickCheckIn 也可
     ensureWeek()
