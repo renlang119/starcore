@@ -251,4 +251,15 @@ describe('exploration — reset / serialize / hydrate', () => {
     store.hydrate(undefined)
     expect(store.count).toBe(0)
   })
+
+  // —— v0.75：isExploring 未知节点返回 false（原 undefined !== 0 误判为 true）——
+  it('isExploring 未知节点/空 id 返回 false', () => {
+    expect(store.isExploring('node_ghost')).toBe(false)
+    expect(store.isExploring('')).toBe(false)
+    // 未开始/已完成仍为 false，进行中为 true（回归）
+    expect(store.isExploring('node_orbit')).toBe(false)
+    const f = makeFunds()
+    store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
+    expect(store.isExploring('node_orbit')).toBe(true)
+  })
 })

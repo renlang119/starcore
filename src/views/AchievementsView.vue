@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * AchievementsView.vue — 成就/里程碑页（v0.57 玩法扩展方案 2）
- * 按类别分区展示 33 个成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
+ * 按类别分区展示 34 个成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
  */
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'

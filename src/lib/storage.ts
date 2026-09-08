@@ -15,7 +15,7 @@ import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
 // —— 有效 ID 集合（用于 validateSaveData 内容范围校验）——
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
 const TECH_IDS = new Set(TECHS.map((t) => t.id))
-const UNIT_IDS = new Set(UNITS.map((u) => u.id))
+const UNIT_IDS = new Set<string>(UNITS.map((u) => u.id))
 const EXPLORE_NODE_IDS = new Set(EXPLORE_NODES.map((n) => n.id))
 const STRONGHOLD_IDS = new Set(STRONGHOLDS.map((s) => s.id))
 const RELIC_IDS = new Set(RELIC_POOL.map((r) => r.id))
@@ -27,6 +27,9 @@ const STORE = localforage.createInstance({
 })
 
 export const SAVE_KEY = 'starcore_save_v1'
+
+/** 存档版本号（测试阶段重新起算；旧版本迁移链已随 v0.73 精简移除） */
+export const SAVE_VERSION = 1
 
 // —— 各 store 的序列化类型 ——
 export interface ResourceSaveData {
@@ -72,7 +75,7 @@ export interface PlayerSaveData {
 }
 
 /**
- * 成就存档（v7+）。旧档（v6 及以前）无此字段，hydrate 时终身计数从零起算，
+ * 成就存档（可选字段）。旧档无此字段，hydrate 时终身计数从零起算，
  * 历史产量不追溯（无数据来源）。
  */
 export interface AchievementsSaveData {
@@ -127,7 +130,7 @@ export interface SaveData {
   version: number
   savedAt: number
   player: PlayerSaveData
-  /** 终身游玩时长（秒）。v7 起入档（此前刷新归零）；旧档缺失时按 0 处理 */
+  /** 终身游玩时长（秒）。入档保存（此前刷新归零）；旧档缺失时按 0 处理 */
   totalPlayTime?: number
   resources: ResourceSaveData
   buildings: BuildingSaveData
@@ -137,7 +140,7 @@ export interface SaveData {
   exploration: ExplorationSaveData
   relics: RelicSaveData
   transcend: TranscendSaveData
-  /** v7 起新增；旧档缺失，hydrate 自动取默认空值 */
+  /** 成就存档（可选字段）；旧档缺失，hydrate 自动取默认空值 */
   achievements?: AchievementsSaveData
   /** 每日签到/周期挑战（v0.62 可选字段，旧档缺失从容处理） */
   daily?: DailySaveData
@@ -170,8 +173,12 @@ export function writeSaveSync(data: SaveData): void {
   }
 }
 
+/** 读档结果：成功 / 版本过新（不静默 hydrate）/ 无档 */
+export type SaveReadOutcome =
+  { status: 'ok'; data: SaveData } | { status: 'too_new'; version: number } | { status: 'none' }
+
 /** 读取存档（优先 IndexedDB，带 checksum 校验） */
-export async function readSave(): Promise<SaveData | null> {
+export async function readSave(): Promise<SaveReadOutcome> {
   try {
     const stored = await STORE.getItem<unknown>(SAVE_KEY)
     if (stored) {
@@ -183,49 +190,83 @@ export async function readSave(): Promise<SaveData | null> {
   }
   try {
     const bak = localStorage.getItem(SAVE_KEY + '_backup')
-    if (bak) return _parseBackup(bak)
+    if (bak) {
+      const parsed = _parseBackup(bak)
+      if (parsed) return parsed
+    }
   } catch {
     /* noop */
   }
-  return null
+  return { status: 'none' }
 }
 
 /** 解析 IndexedDB 存储的值（兼容新格式 { d, c } 和旧格式裸对象） */
-function _parseStored(stored: unknown): SaveData | null {
+function _parseStored(stored: unknown): SaveReadOutcome | null {
   if (!_isObject(stored)) return null
   // 新格式：{ d: json, c: checksum }
   if (typeof stored.d === 'string' && typeof stored.c === 'string') {
     if (_checksum(stored.d) !== stored.c) return null // 校验失败——被篡改或损坏
     try {
       const data = JSON.parse(stored.d)
-      if (!validateSaveData(data)) return null
-      return data
+      const tooNew = _tooNewVersion(data)
+      if (tooNew !== null) return { status: 'too_new', version: tooNew }
+      if (!_validateAndRepair(data)) return null
+      return { status: 'ok', data }
     } catch {
       return null
     }
   }
   // 旧格式兼容：裸 SaveData 对象
-  if (validateSaveData(stored)) return stored as SaveData
+  const tooNew = _tooNewVersion(stored)
+  if (tooNew !== null) return { status: 'too_new', version: tooNew }
+  if (_validateAndRepair(stored)) return { status: 'ok', data: stored as SaveData }
   return null
 }
 
 /** 解析 localStorage 备份，验证校验和防篡改 */
-function _parseBackup(raw: string): SaveData | null {
+function _parseBackup(raw: string): SaveReadOutcome | null {
   try {
     const parsed = JSON.parse(raw)
     // 新格式：{ d: json, c: checksum }
     if (parsed && typeof parsed.d === 'string' && typeof parsed.c === 'string') {
       if (_checksum(parsed.d) !== parsed.c) return null // 校验失败——被篡改或损坏
       const data = JSON.parse(parsed.d)
-      if (!validateSaveData(data)) return null
-      return data
+      const tooNew = _tooNewVersion(data)
+      if (tooNew !== null) return { status: 'too_new', version: tooNew }
+      if (!_validateAndRepair(data)) return null
+      return { status: 'ok', data }
     }
     // 旧格式兼容：直接是 SaveData JSON
-    if (validateSaveData(parsed)) return parsed as SaveData
+    const tooNew = _tooNewVersion(parsed)
+    if (tooNew !== null) return { status: 'too_new', version: tooNew }
+    if (_validateAndRepair(parsed)) return { status: 'ok', data: parsed as SaveData }
     return null
   } catch {
     return null
   }
+}
+
+/** 存档版本高于当前版本 → 返回该版本号（不静默 hydrate 未知结构），否则 null */
+function _tooNewVersion(data: unknown): number | null {
+  if (!_isObject(data)) return null
+  const v = data.version
+  if (typeof v === 'number' && isFinite(v) && v > SAVE_VERSION) return v
+  return null
+}
+
+/**
+ * 修复历史存档已知缺陷后再校验：
+ * completed 混入非正式据点 id（v0.60 远征胜利会把 'endless' 写入通关集，
+ * 主备档双双过不了白名单校验）→ 剥离该条目继续，不整档拒绝。
+ */
+function _validateAndRepair(data: unknown): data is SaveData {
+  if (_isObject(data)) {
+    const cb = data.combat
+    if (_isObject(cb) && Array.isArray(cb.completed)) {
+      cb.completed = cb.completed.filter((id) => typeof id === 'string' && STRONGHOLD_IDS.has(id))
+    }
+  }
+  return validateSaveData(data)
 }
 
 /** FNV-1a 校验和——检测存档被篡改或损坏 */
@@ -253,10 +294,16 @@ export async function clearSave(): Promise<void> {
 function validateSaveData(data: unknown): data is SaveData {
   if (data == null || typeof data !== 'object') return false
   const d = data as Record<string, unknown>
-  if (typeof d.version !== 'number' || !isFinite(d.version) || d.version < 1) return false
+  if (
+    typeof d.version !== 'number' ||
+    !isFinite(d.version) ||
+    d.version < 1 ||
+    d.version > SAVE_VERSION
+  )
+    return false
   if (typeof d.savedAt !== 'number' || !isFinite(d.savedAt) || d.savedAt < 0) return false
   if (d.player != null && !_isObject(d.player)) return false
-  // totalPlayTime（v7+ 可选字段）：存在则必须是非负有限数字
+  // totalPlayTime（可选字段）：存在则必须是非负有限数字
   if (
     d.totalPlayTime !== undefined &&
     (typeof d.totalPlayTime !== 'number' || !isFinite(d.totalPlayTime) || d.totalPlayTime < 0)
@@ -281,33 +328,73 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!research.completed.every((id: unknown) => typeof id === 'string' && TECH_IDS.has(id)))
     return false
 
-  // military: owned key 必须是有效兵种 ID，value 非负
+  // military: owned key 必须是有效兵种 ID，value 非负整数（兵力不可为小数）
   if (!_isObject(d.military)) return false
   const mil = d.military as Record<string, unknown>
-  if (!_isValidIdNumberRecord(mil.owned, UNIT_IDS, false)) return false
+  if (!_isValidIdNumberRecord(mil.owned, UNIT_IDS, true)) return false
+  // training: 条目结构 + unitId 白名单 + 数字字段有限（防 NaN 任务占死训练槽）
   if (!Array.isArray(mil.training)) return false
+  if (
+    !mil.training.every((t: unknown) => {
+      if (!_isObject(t)) return false
+      if (typeof t.id !== 'string') return false
+      if (typeof t.unitId !== 'string' || !UNIT_IDS.has(t.unitId)) return false
+      for (const k of ['count', 'remaining', 'totalTime']) {
+        if (typeof t[k] !== 'number' || !isFinite(t[k]) || (t[k] as number) < 0) return false
+      }
+      return true
+    })
+  )
+    return false
+  // formations: 条目结构 + units 键白名单 + 值有限（防缺键加法产 NaN）
   if (!Array.isArray(mil.formations)) return false
+  if (
+    !mil.formations.every((f: unknown) => {
+      if (!_isObject(f)) return false
+      if (typeof f.id !== 'string' || typeof f.name !== 'string') return false
+      if (!_isObject(f.units)) return false
+      for (const [uid, n] of Object.entries(f.units)) {
+        if (!UNIT_IDS.has(uid)) return false
+        if (typeof n !== 'number' || !isFinite(n) || n < 0) return false
+      }
+      return true
+    })
+  )
+    return false
 
-  // combat: completed 元素必须是有效据点 ID
+  // combat: completed 元素必须是有效据点 ID；garrisoned 键与条目须在据点白名单内
   if (!_isObject(d.combat)) return false
   const cb = d.combat as Record<string, unknown>
-  if (!_isObject(cb.garrisoned) && cb.garrisoned !== undefined) return false
+  if (cb.garrisoned !== undefined) {
+    if (!_isObject(cb.garrisoned)) return false
+    for (const [sid, g] of Object.entries(cb.garrisoned)) {
+      if (!STRONGHOLD_IDS.has(sid)) return false
+      if (!_isObject(g)) return false
+      if (typeof g.strongholdId !== 'string' || !STRONGHOLD_IDS.has(g.strongholdId)) return false
+      if (typeof g.formationId !== 'string') return false
+      if (typeof g.startTime !== 'number' || !isFinite(g.startTime) || g.startTime < 0) return false
+    }
+  }
   if (!Array.isArray(cb.completed)) return false
   if (!cb.completed.every((id: unknown) => typeof id === 'string' && STRONGHOLD_IDS.has(id)))
     return false
 
-  // exploration: progress key 必须是有效探索节点 ID，value 结构合法
+  // exploration: progress 条目须结构合法且时间戳有限；未知节点条目丢弃（hydrate 只取已知节点）
   if (!_isObject(d.exploration)) return false
   const expProg = (d.exploration as Record<string, unknown>).progress
   if (!_isObject(expProg)) return false
   for (const [key, val] of Object.entries(expProg)) {
-    if (!EXPLORE_NODE_IDS.has(key)) return false
+    if (!EXPLORE_NODE_IDS.has(key)) continue
     if (!_isObject(val)) return false
     const p = val as Record<string, unknown>
+    if (p.nodeId !== key) return false
     if (
-      typeof p.nodeId !== 'string' ||
       typeof p.startTime !== 'number' ||
+      !isFinite(p.startTime) ||
+      p.startTime < 0 ||
       typeof p.endTime !== 'number' ||
+      !isFinite(p.endTime) ||
+      p.endTime < 0 ||
       typeof p.completed !== 'boolean'
     )
       return false
@@ -339,7 +426,7 @@ function validateSaveData(data: unknown): data is SaveData {
   // transcend: tree 条目结构校验（id + 非负整数 level）
   if (!_isObject(d.transcend)) return false
   const tc = d.transcend as Record<string, unknown>
-  if (typeof tc.negativeEntropy !== 'string' && tc.negativeEntropy !== undefined) return false
+  if (tc.negativeEntropy !== undefined && !_isNonNegNumberStr(tc.negativeEntropy)) return false
   if (typeof tc.totalTranscends !== 'number' && tc.totalTranscends !== undefined) return false
   if (!Array.isArray(tc.tree)) return false
   if (
@@ -355,7 +442,7 @@ function validateSaveData(data: unknown): data is SaveData {
   )
     return false
 
-  // achievements（v7+ 可选字段）：存在则校验结构；id 白名单在 hydrate 层过滤
+  // achievements（可选字段）：存在则校验结构；id 白名单在 hydrate 层过滤
   if (d.achievements !== undefined) {
     if (!_isObject(d.achievements)) return false
     const ach = d.achievements as Record<string, unknown>
@@ -372,6 +459,28 @@ function validateSaveData(data: unknown): data is SaveData {
       if (typeof v !== 'number' || !isFinite(v) || v < 0) return false
     }
   }
+
+  // daily（可选字段）：结构校验。挑战条目的 kind/target/rewardDark 不可信存档值，
+  // 由 hydrate 按模板池 + tier 重推导（防伪造 target:0 白领奖励）
+  if (d.daily !== undefined) {
+    if (!_isObject(d.daily)) return false
+    const dl = d.daily as Record<string, unknown>
+    if (typeof dl.lastCheckIn !== 'string') return false
+    if (typeof dl.streak !== 'number' || !isFinite(dl.streak) || dl.streak < 0) return false
+    if (!_isObject(dl.weeklyCounters)) return false
+    const wc = dl.weeklyCounters as Record<string, unknown>
+    for (const k of ['battles', 'explores', 'researches', 'upgrades', 'transcends']) {
+      if (typeof wc[k] !== 'number' || !isFinite(wc[k]) || (wc[k] as number) < 0) return false
+    }
+    if (typeof dl.challengeWeek !== 'string') return false
+    if (!Array.isArray(dl.weekChallenges)) return false
+    for (const c of dl.weekChallenges) {
+      if (!_isObject(c)) return false
+      if (typeof c.templateId !== 'string') return false
+      if (typeof c.tier !== 'number' || !isFinite(c.tier) || c.tier < 0) return false
+      if (typeof c.claimed !== 'boolean') return false
+    }
+  }
   return true
 }
 
@@ -379,11 +488,13 @@ function _isObject(v: unknown): v is Record<string, unknown> {
   return v != null && typeof v === 'object' && !Array.isArray(v)
 }
 
-/** 检查值是非负有限数字字符串（如 "100", "3.14"）——拒绝 "Infinity", "-999", "NaN" */
+/**
+ * 检查值是非负有限数字字符串（如 "100"、"3.14"、"1e+61"）——
+ * 白名单形态判定：空串/空白/Infinity/NaN/负数/前导符号一律拒绝
+ * （此前用 Number(v) 判定，Number('')===0 会放行空串，deser 时抛 DecimalError）
+ */
 function _isNonNegNumberStr(v: unknown): boolean {
-  if (typeof v !== 'string') return false
-  const n = Number(v)
-  return isFinite(n) && n >= 0
+  return typeof v === 'string' && /^\d+(\.\d+)?([eE][+-]?\d+)?$/.test(v)
 }
 
 function _isNonNegNumberStrRecord(v: unknown): boolean {
@@ -423,7 +534,7 @@ function _isValidIdNumberRecord(v: unknown, validIds: Set<string>, intOnly: bool
 
 /** 导入结果类型 */
 export type ImportResult =
-  { ok: true; data: SaveData } | { ok: false; reason: 'invalid' | 'corrupted' }
+  { ok: true; data: SaveData } | { ok: false; reason: 'invalid' | 'corrupted' | 'too_new' }
 
 /** UTF-8 字符串 → Base64 */
 function _toB64(str: string): string {
@@ -451,7 +562,9 @@ export async function importSave(code: string): Promise<ImportResult> {
     try {
       const json = _fromB64(trimmed.slice(4))
       const data = JSON.parse(json)
-      if (!validateSaveData(data)) return { ok: false, reason: 'corrupted' }
+      const tooNew = _tooNewVersion(data)
+      if (tooNew !== null) return { ok: false, reason: 'too_new' }
+      if (!_validateAndRepair(data)) return { ok: false, reason: 'corrupted' }
       return { ok: true, data }
     } catch {
       return { ok: false, reason: 'invalid' }
@@ -463,7 +576,9 @@ export async function importSave(code: string): Promise<ImportResult> {
     try {
       const json = _fromB64(trimmed.slice(4))
       const data = JSON.parse(json)
-      if (!validateSaveData(data)) return { ok: false, reason: 'corrupted' }
+      const tooNew = _tooNewVersion(data)
+      if (tooNew !== null) return { ok: false, reason: 'too_new' }
+      if (!_validateAndRepair(data)) return { ok: false, reason: 'corrupted' }
       return { ok: true, data }
     } catch {
       return { ok: false, reason: 'invalid' }

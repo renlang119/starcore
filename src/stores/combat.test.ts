@@ -158,4 +158,28 @@ describe('combat store', () => {
     const s = combat.getEndlessStronghold(1)
     expect(s.id).toBe('endless')
   })
+
+  // —— v0.75：远征通关集污染修复——
+
+  it('远征胜利不写入正式通关集；serialize 白名单过滤兜底', () => {
+    const combat = useCombatStore()
+    const stronghold = combat.getEndlessStronghold(1)
+    const formation = makeFormation('f1', { assault: 100000 })
+    const result = combat.resolveBattle(formation, stronghold, D(1), D(1))
+    expect(result.victory).toBe(true)
+    // 不污染 completed（否则存档校验整档失败）
+    expect(combat.completedStrongholds.has('endless')).toBe(false)
+    expect(combat.serialize().completed).not.toContain('endless')
+    // 双保险：即使非法 id 混入内存集合，serialize 也按白名单过滤
+    combat.completedStrongholds.add('endless')
+    combat.completedStrongholds.add('raider_1')
+    expect(combat.serialize().completed).toEqual(['raider_1'])
+  })
+
+  it('hydrate 白名单过滤：completed 含 endless 不载入', () => {
+    const combat = useCombatStore()
+    combat.hydrate({ garrisoned: {}, completed: ['raider_1', 'endless'] })
+    expect(combat.completedStrongholds.has('raider_1')).toBe(true)
+    expect(combat.completedStrongholds.has('endless')).toBe(false)
+  })
 })
