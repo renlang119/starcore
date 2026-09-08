@@ -98,3 +98,7 @@ starcore/
 
 纯静态 SPA。构建产物在 `dist/`，由 `./deploy.sh` 同步至静态站点
 （站点地址/目录经环境变量配置，见脚本内说明）。
+
+## 许可证
+
+[MIT](LICENSE) © 2026 renlang119
