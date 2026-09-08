@@ -7,8 +7,7 @@ import { ref, computed } from 'vue'
 import { D, Decimal, add } from '@/lib/decimal'
 import { EffectSystem, type EffectSource } from '@/lib/effect-system'
 import { computeOfflineGains as calcOfflineGains, type OfflineReport } from '@/lib/offline-gains'
-import { migrateSave } from '@/lib/save-migrate'
-import { useResourcesStore } from './resources'
+import { useResourcesStore, START_ENERGY } from './resources'
 import { useBuildingsStore } from './buildings'
 import { useResearchStore } from './research'
 import { useMilitaryStore, setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
@@ -27,11 +26,12 @@ import {
   importSave,
   type SaveData,
 } from '@/lib/storage'
-import { TECHS } from '@/data/tech'
+import { TECHS, adjustedTechCost } from '@/data/tech'
 import { BUILDINGS } from '@/data/buildings'
 import type { ResourceType } from '@/data/buildings'
 
-const SAVE_VERSION = 7
+// 存档版本号（测试阶段重新起算；旧版本迁移链已随 v0.73 精简移除）
+const SAVE_VERSION = 1
 const TICK_INTERVAL = 1000 // ms
 // 后台 tick 补算后，仅当离线时长超过此阈值才弹窗展示报告；
 // 低于阈值时静默补算资源/训练进度，避免浏览器对不活跃标签页 setInterval
@@ -201,7 +201,7 @@ export const useGameStore = defineStore('game', () => {
     military.applyTick(dt)
 
     // 4. 探索进度
-    const exploreResults = exploration.applyTick(exploreMult.value)
+    const exploreResults = exploration.applyTick()
     for (const r of exploreResults) {
       // 发放探索奖励
       for (const [res, v] of Object.entries(r.rewards)) {
@@ -327,8 +327,6 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function hydrateAll(data: SaveData) {
-    // 存档版本迁移——确保向后兼容
-    migrateSave(data, SAVE_VERSION)
     if (data.player) player.value = { ...player.value, ...data.player }
     // 恢复上次保存时间，否则 computeOfflineGains 会因 elapsed≈0 直接 return null
     if (data.savedAt) lastSaveTime.value = data.savedAt
@@ -421,7 +419,7 @@ export const useGameStore = defineStore('game', () => {
     offlineReport.value = null
     totalPlayTime.value = 0
     // 给初始资源
-    resources.setAmount('energy', 50)
+    resources.setAmount('energy', START_ENERGY)
     start()
   }
 
@@ -468,7 +466,7 @@ export const useGameStore = defineStore('game', () => {
     // 初始能量加成
     const startingMult = transcend.getValue('starting_energy')
     if (startingMult > 0) {
-      resources.setAmount('energy', 50 * startingMult)
+      resources.setAmount('energy', START_ENERGY * startingMult)
     }
     // 转生次数类成就即时判定（不等下一个 tick）
     achievements.checkAndUnlock()
@@ -495,9 +493,7 @@ export const useGameStore = defineStore('game', () => {
   function tryResearch(id: string): boolean {
     const def = TECHS.find((t) => t.id === id)
     if (!def) return false
-    const mult = techCostMult.value.toNumber()
-    const adjustedCost: Record<string, number> = {}
-    for (const [k, v] of Object.entries(def.cost)) adjustedCost[k] = Math.ceil((v as number) * mult)
+    const adjustedCost = adjustedTechCost(def.cost, techCostMult.value.toNumber())
     if (!research.available(def)) return false
     if (!resources.spendCost(adjustedCost)) return false
     research.complete(id)

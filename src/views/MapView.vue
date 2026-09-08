@@ -9,6 +9,8 @@ import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
+import { useToast } from '@/composables/useToast'
+import Toast from '@/components/ui/Toast.vue'
 import { useRouter } from 'vue-router'
 
 const game = useGameStore()
@@ -56,18 +58,8 @@ onUnmounted(() => {
 })
 
 // 点击反馈 toast
-const toastMsg = ref('')
-let toastTimer: ReturnType<typeof setTimeout> | null = null
-function showToast(msg: string) {
-  toastMsg.value = msg
-  if (toastTimer) clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => {
-    toastMsg.value = ''
-  }, 2000)
-}
-onUnmounted(() => {
-  if (toastTimer) clearTimeout(toastTimer)
-})
+const toast = useToast()
+const showToast = toast.show
 
 // 按层级分组
 const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep', 'stellar', 'cluster']
@@ -105,7 +97,7 @@ function tryExplore(nodeId: string) {
 function getProgress(nodeId: string) {
   // 读取 now.value 使计算依赖响应式时间，驱动进度条自动刷新
   void now.value
-  return game.exploration.getProgress(nodeId, exploreMult.value)
+  return game.exploration.getProgress(nodeId)
 }
 
 function getNodeRewards(node: (typeof EXPLORE_NODES)[0]) {
@@ -330,9 +322,7 @@ const endlessSection = {
     </div>
 
     <!-- 点击反馈 toast -->
-    <Transition name="toast">
-      <div v-if="toastMsg" class="toast">{{ toastMsg }}</div>
-    </Transition>
+    <Toast :toast="toast" />
   </div>
 </template>
 
@@ -560,34 +550,6 @@ const endlessSection = {
 }
 .endless-card .s-icon {
   color: var(--c);
-}
-
-.toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-line);
-  color: var(--color-core);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-pill);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-  pointer-events: none;
-}
-.toast-enter-active,
-.toast-leave-active {
-  transition:
-    opacity 0.25s,
-    transform 0.25s;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(8px);
 }
 
 /* P3-3 onboarding */

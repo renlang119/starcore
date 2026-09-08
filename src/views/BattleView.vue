@@ -6,6 +6,7 @@ import { fmt } from '@/lib/format'
 import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
+import type { BattleLogEntry } from '@/stores/combat'
 import { getUnit } from '@/data/units'
 import type { UnitId } from '@/data/units'
 import type { ResourceType } from '@/data/buildings'
@@ -52,7 +53,7 @@ const stronghold = computed((): StrongholdDef | undefined =>
 )
 
 const selectedFormation = ref(0)
-const battleLog = ref<any[] | null>(null)
+const battleLog = ref<BattleLogEntry[] | null>(null)
 const battleResult = ref<any | null>(null)
 const showResult = ref(false)
 const showGarrisonConfirm = ref(false)
