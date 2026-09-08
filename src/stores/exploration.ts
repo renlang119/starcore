@@ -34,7 +34,8 @@ export const useExplorationStore = defineStore('exploration', () => {
     return progress.value[id]?.completed ?? false
   }
   function isExploring(id: string) {
-    return progress.value[id]?.startTime !== 0 && !progress.value[id]?.completed
+    const p = progress.value[id]
+    return !!p && p.startTime > 0 && !p.completed
   }
 
   /** 可探索的节点 */

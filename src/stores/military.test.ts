@@ -87,3 +87,34 @@ describe('集群操练科技数据契约', () => {
     expect(BASE_TRAINING_SLOTS + 1 + 1).toBe(MAX_TRAINING_SLOTS)
   })
 })
+
+// —— v0.75：hydrate 加固（小数兵力取整 / 编队缺键补零防 NaN）——
+describe('military — hydrate 加固（v0.75）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('owned 小数兵力取整（防御直接 hydrate 调用）', () => {
+    const m = useMilitaryStore()
+    m.hydrate({
+      owned: { assault: 3.7, guard: 2 } as never,
+      training: [],
+      formations: [],
+    })
+    expect(m.getOwned('assault')).toBe(3)
+    expect(m.getOwned('guard')).toBe(2)
+  })
+
+  it('formations 缺键补零：编队操作不再产 NaN', () => {
+    const m = useMilitaryStore()
+    m.hydrate({
+      owned: { assault: 0, guard: 3, heavy: 0, psionic: 0 },
+      training: [],
+      formations: [{ id: 'f1', name: '编队', units: { assault: 1 } as never }],
+    })
+    expect(m.formations[0].units.psionic).toBe(0)
+    expect(m.assignToFormation('f1', 'guard', 2)).toBe(true)
+    expect(m.formations[0].units.guard).toBe(2) // 缺键补零后正常累加，非 NaN
+    expect(Number.isNaN(m.formations[0].units.guard)).toBe(false)
+  })
+})

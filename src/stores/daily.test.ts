@@ -231,6 +231,67 @@ describe('daily — 存档', () => {
     expect(store.weekChallenges[0].templateId).toBe('wk_battles')
   })
 
+  // —— v0.75：伪造挑战条目按模板重推导（防 target:0 白领奖励）——
+
+  it('伪造 target/rewardDark/kind：hydrate 一律按模板重推导', () => {
+    setActivePinia(createPinia())
+    const store = useDailyStore()
+    store.hydrate({
+      lastCheckIn: '2026-09-07',
+      streak: 1,
+      weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      challengeWeek: weekStr(),
+      weekChallenges: [
+        {
+          templateId: 'wk_battles',
+          kind: 'upgrades' as never,
+          tier: 0,
+          target: 0,
+          rewardDark: 999999,
+          claimed: false,
+        },
+      ],
+    })
+    expect(store.weekChallenges).toHaveLength(1)
+    const c = store.weekChallenges[0]
+    expect(c.kind).toBe('battles') // 模板 kind，非存档伪造值
+    expect(c.target).toBe(5) // 模板 targets[0]
+    expect(c.rewardDark).toBe(3) // 模板 rewardDark[0]
+    // 伪造 target:0 不再恒真可领
+    expect(store.claimable(c)).toBe(false)
+    expect(store.claim(c.templateId)).toBeNull()
+  })
+
+  it('tier 越界/非整数条目丢弃', () => {
+    setActivePinia(createPinia())
+    const store = useDailyStore()
+    store.hydrate({
+      lastCheckIn: '2026-09-07',
+      streak: 1,
+      weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      challengeWeek: weekStr(),
+      weekChallenges: [
+        {
+          templateId: 'wk_battles',
+          kind: 'battles',
+          tier: 99,
+          target: 1,
+          rewardDark: 1,
+          claimed: false,
+        },
+        {
+          templateId: 'wk_explores',
+          kind: 'explores',
+          tier: 1.5,
+          target: 1,
+          rewardDark: 1,
+          claimed: false,
+        },
+      ],
+    })
+    expect(store.weekChallenges).toHaveLength(0)
+  })
+
   it('hardReset 语义：reset() 全清', () => {
     setActivePinia(createPinia())
     const store = useDailyStore()
