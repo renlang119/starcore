@@ -419,7 +419,7 @@ function cancelGarrison() {
   </div>
   <EmptyState
     v-else
-    icon="i-nav-map"
+    icon="i-nav-explore"
     text="据点不存在"
     hint="该据点可能已被移除，请返回星图重新选择"
     action="返回星图"
