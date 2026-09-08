@@ -2,7 +2,7 @@
  * exploration.test.ts — 探索 store 测试
  * 覆盖：初始进度 / availableNodes 前置链 / startExplore 校验与扣费 /
  * 完成时间锁定（mult 变化不影响进行中探索）/ applyTick 奖励发放 /
- * 旧档无 endTime 兼容 / getProgress / reset / serialize-hydrate
+ * endTime=0 容缺 / getProgress / reset / serialize-hydrate
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
@@ -50,7 +50,7 @@ describe('exploration — 初始状态', () => {
     for (const n of EXPLORE_NODES) {
       expect(store.isCompleted(n.id)).toBe(false)
       expect(store.isExploring(n.id)).toBe(false)
-      expect(store.getProgress(n.id, D(1))).toBe(0)
+      expect(store.getProgress(n.id)).toBe(0)
     }
     expect(store.count).toBe(0)
   })
@@ -109,7 +109,7 @@ describe('exploration — startExplore 校验', () => {
     // 先完成 orbit
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    const results = store.applyTick(D(1))
+    const results = store.applyTick()
     expect(results).toHaveLength(1)
     // 再开始 inner：time=120s, mult=2 → 60s 后完成
     expect(store.startExplore('node_inner', D(2), f.canAfford, f.spend)).toBe(true)
@@ -125,9 +125,9 @@ describe('exploration — 完成时间锁定', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend) // 30s
     advance(20_000)
-    expect(store.applyTick(D(10))).toHaveLength(0) // mult 变大也不提前
+    expect(store.applyTick()).toHaveLength(0) // mult 变大也不提前
     advance(10_000)
-    const results = store.applyTick(D(0.5))
+    const results = store.applyTick()
     expect(results).toHaveLength(1)
     expect(results[0].nodeId).toBe('node_orbit')
   })
@@ -136,7 +136,7 @@ describe('exploration — 完成时间锁定', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    const [r] = store.applyTick(D(1))
+    const [r] = store.applyTick()
     expect(r.rewards).toEqual({ energy: 300, crystal: 10, alloy: 20 })
     expect(r.unlocks).toEqual(['raider_1'])
     expect(r.story).toBeTruthy()
@@ -147,56 +147,43 @@ describe('exploration — 完成时间锁定', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    expect(store.applyTick(D(1))).toHaveLength(1)
-    expect(store.applyTick(D(1))).toHaveLength(0)
+    expect(store.applyTick()).toHaveLength(1)
+    expect(store.applyTick()).toHaveLength(0)
     advance(60_000)
-    expect(store.applyTick(D(1))).toHaveLength(0)
+    expect(store.applyTick()).toHaveLength(0)
   })
 
   it('多节点并行：同 tick 一起完成', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    store.applyTick(D(1)) // orbit 完成，解锁 inner
+    store.applyTick() // orbit 完成，解锁 inner
     // inner(120s) 与 outer 需先完成 inner，用两条独立支线验证并行：
     store.startExplore('node_inner', D(1), f.canAfford, f.spend)
     advance(120_000)
-    store.applyTick(D(1)) // inner 完成，解锁 outer
+    store.applyTick() // inner 完成，解锁 outer
     store.startExplore('node_outer', D(1), f.canAfford, f.spend)
     advance(300_000)
-    store.applyTick(D(1)) // outer 完成 600s？不足，再推进
+    store.applyTick() // outer 完成 600s？不足，再推进
     expect(store.isCompleted('node_outer')).toBe(false)
     advance(300_000)
-    const results = store.applyTick(D(1))
+    const results = store.applyTick()
     expect(results.map((r) => r.nodeId)).toEqual(['node_outer'])
   })
 })
 
-describe('exploration — 旧档兼容（无 endTime 动态计算）', () => {
-  it('hydrate 旧格式（endTime=0）：applyTick 按当前 mult 补算 endTime', () => {
+describe('exploration — 损坏数据容缺（endTime=0 直接完成结算）', () => {
+  it('endTime=0 的进行中条目视为已完成：applyTick 结算一次后归于一致', () => {
     store.hydrate({
       progress: {
         node_orbit: { nodeId: 'node_orbit', startTime: T0 - 10_000, endTime: 0, completed: false },
       },
     })
-    // mult=1 → 需 30s，已过 10s，未完成
-    expect(store.applyTick(D(1))).toHaveLength(0)
-    expect(store.progress['node_orbit'].endTime).toBe(T0 + 20_000) // 补算锁定
-    advance(20_000)
-    expect(store.applyTick(D(1))).toHaveLength(1)
-  })
-
-  it('旧档补算后 mult 变化不再影响（endTime 已写回）', () => {
-    store.hydrate({
-      progress: {
-        node_orbit: { nodeId: 'node_orbit', startTime: T0, endTime: 0, completed: false },
-      },
-    })
-    store.applyTick(D(1)) // 补算 endTime = T0 + 30s
-    advance(29_000)
-    expect(store.applyTick(D(100))).toHaveLength(0) // 即使 mult 巨大也不提前
-    advance(1_000)
-    expect(store.applyTick(D(100))).toHaveLength(1)
+    // 兼容代码已移除：不再按 mult 补算，now >= 0 直接完成（防死锁的容缺路径）
+    expect(store.applyTick()).toHaveLength(1)
+    expect(store.progress['node_orbit'].completed).toBe(true)
+    // 幂等：已完成不重复结算
+    expect(store.applyTick()).toHaveLength(0)
   })
 })
 
@@ -204,20 +191,20 @@ describe('exploration — getProgress', () => {
   it('0 → 0.5 → 1 三点采样', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend) // 30s
-    expect(store.getProgress('node_orbit', D(1))).toBe(0)
+    expect(store.getProgress('node_orbit')).toBe(0)
     advance(15_000)
-    expect(store.getProgress('node_orbit', D(1))).toBeCloseTo(0.5)
+    expect(store.getProgress('node_orbit')).toBeCloseTo(0.5)
     advance(20_000) // 超时钳制为 1
-    expect(store.getProgress('node_orbit', D(1))).toBe(1)
+    expect(store.getProgress('node_orbit')).toBe(1)
   })
 
   it('已完成恒为 1；未开始恒为 0', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    store.applyTick(D(1))
-    expect(store.getProgress('node_orbit', D(1))).toBe(1)
-    expect(store.getProgress('node_deep', D(1))).toBe(0)
+    store.applyTick()
+    expect(store.getProgress('node_orbit')).toBe(1)
+    expect(store.getProgress('node_deep')).toBe(0)
   })
 })
 
@@ -226,7 +213,7 @@ describe('exploration — reset / serialize / hydrate', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    store.applyTick(D(1))
+    store.applyTick()
     store.reset()
     expect(store.count).toBe(0)
     expect(store.availableNodes().map((n) => n.id)).toEqual(['node_orbit'])
@@ -236,7 +223,7 @@ describe('exploration — reset / serialize / hydrate', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
-    store.applyTick(D(1))
+    store.applyTick()
     store.startExplore('node_inner', D(1), f.canAfford, f.spend)
     const data = store.serialize()
 

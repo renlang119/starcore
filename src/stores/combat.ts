@@ -11,6 +11,7 @@ import { getUnit, type UnitId } from '@/data/units'
 import type { Formation } from './military'
 import { rollRelic, type RelicDef } from '@/data/relics'
 import type { CombatSaveData } from '@/lib/storage'
+import { fnv1a, mulberry32 } from '@/lib/random'
 
 export interface BattleLogEntry {
   round: number
@@ -55,31 +56,18 @@ export const useCombatStore = defineStore('combat', () => {
   const expeditionBest = ref(0)
 
   /**
-   * 种子化 PRNG（mulberry32）—— 使战斗结果可复现
+   * 使战斗结果可复现（mulberry32，见 lib/random）
    *
    * 同一编队打同一据点，相同种子下结果完全一致，
    * 避免 SL 刷随机目标的投机行为。
    * 种子 = 编队内容哈希 + 据点 id + 当前时间分钟数
    */
-  function _makeRng(seed: number): () => number {
-    let s = seed >>> 0
-    return () => {
-      s = (s + 0x6d2b79f5) >>> 0
-      let t = Math.imul(s ^ (s >>> 15), 1 | s)
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-    }
-  }
+  const _makeRng = mulberry32
 
   /** 从编队和据点信息派生战斗种子 */
   function _battleSeed(formation: Formation, strongholdId: string): number {
-    let h = 0x811c9dc5
     const str = formation.id + ':' + strongholdId + ':' + Math.floor(Date.now() / 60000)
-    for (let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i)
-      h = Math.imul(h, 0x01000193)
-    }
-    return h >>> 0
+    return fnv1a(str)
   }
 
   /** 解锁的据点列表 */

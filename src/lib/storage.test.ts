@@ -9,7 +9,7 @@ import { exportSave, importSave, type SaveData } from './storage'
 
 function makeValidSaveData(): SaveData {
   return {
-    version: 6,
+    version: 1,
     savedAt: Date.now(),
     player: { id: 'p1', name: '指挥官' },
     resources: {
@@ -102,17 +102,16 @@ describe('storage export/import', () => {
     if (!result.ok) expect(result.reason).toBe('invalid')
   })
 
-  // —— v0.56 转生树双格式校验（旧档 purchased 必须能过校验才有机会被迁移）——
-  it('importSave accepts legacy purchased-format tree (v5 档)', async () => {
+  // —— 转生树格式校验（purchased 旧格式已随 v0.73 兼容精简移除，仅 level 合法）——
+  it('importSave rejects legacy purchased-format tree entries', async () => {
     const data = makeValidSaveData()
-    data.version = 5
     data.transcend.tree = [
       { id: 't_slot', purchased: true },
       { id: 't_starting', purchased: false },
-    ]
+    ] as unknown as typeof data.transcend.tree
     const exported = await exportSave(data)
     const result = await importSave(exported)
-    expect(result.ok).toBe(true)
+    expect(result.ok).toBe(false)
   })
 
   it('importSave rejects invalid level values', async () => {
@@ -133,10 +132,10 @@ describe('storage export/import', () => {
     expect(result.ok).toBe(false)
   })
 
-  // —— v0.57 成就字段校验 ——
-  it('importSave accepts v7 save with achievements + totalPlayTime', async () => {
+  // —— 成就字段校验 ——
+  it('importSave accepts save with achievements + totalPlayTime', async () => {
     const data = makeValidSaveData()
-    data.version = 7
+    data.version = 1
     data.totalPlayTime = 3600
     data.achievements = {
       lifetime: {
@@ -159,9 +158,8 @@ describe('storage export/import', () => {
     }
   })
 
-  it('importSave accepts v6 save without achievements (旧档)', async () => {
+  it('importSave accepts save without achievements (可选字段)', async () => {
     const data = makeValidSaveData()
-    data.version = 6
     delete data.achievements
     delete data.totalPlayTime
     const exported = await exportSave(data)
@@ -210,7 +208,6 @@ describe('storage export/import', () => {
     ]
     for (const ach of bad) {
       const data = makeValidSaveData()
-      data.version = 7
       data.achievements = ach as typeof data.achievements
       const exported = await exportSave(data)
       const result = await importSave(exported)
@@ -222,15 +219,14 @@ describe('storage export/import', () => {
 
   it('importSave rejects invalid totalPlayTime', async () => {
     const data = makeValidSaveData()
-    data.version = 7
     data.totalPlayTime = -100
     const exported = await exportSave(data)
     const result = await importSave(exported)
     expect(result.ok).toBe(false)
   })
 
-  // —— v0.70 遗物强化 level 可选字段 ——
-  it('importSave accepts relic level field (v0.70)', async () => {
+  // —— 遗物强化 level 可选字段 ——
+  it('importSave accepts relic level field', async () => {
     const data = makeValidSaveData()
     data.relics = {
       owned: [{ id: 'r_energy_1', instanceId: 'relic_test1', obtainedAt: Date.now(), level: 5 }],
