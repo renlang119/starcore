@@ -105,6 +105,19 @@ describe('military — hydrate 加固（v0.75）', () => {
     expect(m.getOwned('guard')).toBe(2)
   })
 
+  it('v0.81：training.count 小数兜底取整，完成后 owned 保持整数', () => {
+    const m = useMilitaryStore()
+    m.hydrate({
+      owned: {},
+      training: [{ id: 't1', unitId: 'assault', count: 2.7, remaining: 0.5, totalTime: 5 }],
+      formations: [],
+    })
+    expect(m.trainingQueue[0].count).toBe(2)
+    m.applyTick(1) // 完成训练
+    expect(m.getOwned('assault')).toBe(2)
+    expect(Number.isInteger(m.getOwned('assault'))).toBe(true)
+  })
+
   it('formations 缺键补零：编队操作不再产 NaN', () => {
     const m = useMilitaryStore()
     m.hydrate({

@@ -61,7 +61,11 @@ const showResult = ref(false)
 const showGarrisonConfirm = ref(false)
 const rewardsGranted = ref(false) // 防止奖励重复发放
 
-const formation = computed(() => game.military.formations[selectedFormation.value])
+// 编队兜底（v0.81）：注入档/异常档可能编队数不足，选中的下标越界时回退首支，
+// 仍无编队（正常档经 storage 自愈后不会发生）时模板层显示空态，不再读 undefined 崩页
+const formation = computed(
+  () => game.military.formations[selectedFormation.value] ?? game.military.formations[0]
+)
 
 const isGarrisoned = computed(() => !!game.combat.garrisoned[strongholdId.value])
 
@@ -93,6 +97,7 @@ interface FormationUnitRow {
 }
 const formationRows = computed<FormationUnitRow[]>(() => {
   const f = formation.value
+  if (!f) return []
   return (Object.keys(f.units) as Array<keyof typeof f.units>)
     .map((uid) => {
       const def = getUnit(uid)
@@ -121,7 +126,7 @@ const hasNoLoss = computed(
 )
 
 function startBattle() {
-  if (!stronghold.value) return
+  if (!stronghold.value || !formation.value) return
   rewardsGranted.value = false // 新战斗重置发放标志
   const result = game.combat.resolveBattle(
     formation.value,
@@ -183,7 +188,7 @@ function toggleGarrison() {
 }
 
 function confirmGarrison() {
-  game.combat.garrison(strongholdId.value, formation.value.id)
+  if (formation.value) game.combat.garrison(strongholdId.value, formation.value.id)
   showGarrisonConfirm.value = false
 }
 

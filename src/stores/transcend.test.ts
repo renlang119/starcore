@@ -237,6 +237,68 @@ describe('transcend — serialize / hydrate', () => {
     })
     expect(store.tree.every((n) => n.id !== 't_removed_legacy')).toBe(true)
   })
+
+  it('v0.81：totalTranscends=0 合法写入（导入替换语义可清零）', () => {
+    store.totalTranscends = 5
+    store.hydrate({ negativeEntropy: '0', totalTranscends: 0, tree: [] })
+    expect(store.totalTranscends).toBe(0)
+  })
+
+  it('v0.81：负熵非有限值兜底钳 0，不入游戏状态', () => {
+    store.negativeEntropy = D(50)
+    // "1e99999999999999999" 在旧校验下曾可入档 → deser 产 Infinity
+    store.hydrate({ negativeEntropy: '1e99999999999999999', totalTranscends: 0, tree: [] })
+    expect(store.negativeEntropy.isFinite()).toBe(true)
+    expect(store.negativeEntropy.toNumber()).toBe(0)
+  })
+
+  it('v0.81 幂聚合：Lv1000 乘数 = value^level，allEffects 不物化 level 份', () => {
+    store.hydrate({
+      negativeEntropy: '0',
+      totalTranscends: 0,
+      tree: [{ id: 't_inf_prod', level: 1000 }],
+    })
+    expect(node('t_inf_prod').level).toBe(1000)
+    // allEffects 条目数与 level 解耦（幂聚合核心断言）
+    expect(store.allEffects.length).toBe(1)
+    // 相对精度比对：Math.pow 与 Decimal.pow 的绝对差在 e41 量级无意义，
+    // 比对 15 位有效数字的相对误差
+    const got = store.getMult('production_mult', 'energy').toNumber()
+    const expected = Math.pow(1.1, 1000)
+    expect(Math.abs(got / expected - 1)).toBeLessThan(1e-12)
+    // 其余资源命中同一 'all' 条目，乘数一致
+    for (const res of ['crystal', 'alloy', 'data', 'dark']) {
+      expect(store.getMult('production_mult', res).toNumber()).toBe(got)
+    }
+  })
+
+  it('v0.81 幂聚合与逐级连乘等价（Lv3 精确比对 + 加法型 = value×level）', () => {
+    // 等价基准：旧语义下 t_inf_combat Lv3 = 1.05^3（attack/defense 各 1 条 effects）
+    store.hydrate({
+      negativeEntropy: '0',
+      totalTranscends: 0,
+      tree: [{ id: 't_inf_combat', level: 3 }],
+    })
+    const expected = Math.pow(1.05, 3)
+    expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(expected, 10)
+    expect(store.allEffects.length).toBe(2) // attack + defense 各聚合为 1 条
+    // 新 store 验证买断+无限混合（hydrate 不清树，跨节点断言须隔离）
+    setActivePinia(createPinia())
+    store = useTranscendStore()
+    store.hydrate({
+      negativeEntropy: '0',
+      totalTranscends: 0,
+      tree: [
+        { id: 't_energy_1', level: 1 },
+        { id: 't_inf_prod', level: 2 },
+      ],
+    })
+    expect(store.getMult('production_mult', 'energy').toNumber()).toBeCloseTo(1.5 * 1.1 * 1.1, 10)
+    expect(store.getMult('production_mult', 'crystal').toNumber()).toBeCloseTo(1.1 * 1.1, 10)
+    // 两节点、每节点一条聚合条目（repeat 携带等级，不展开）
+    expect(store.allEffects.length).toBe(2)
+    expect(store.allEffects.every((e) => e.repeat >= 1)).toBe(true)
+  })
 })
 
 describe('transcend — reset', () => {

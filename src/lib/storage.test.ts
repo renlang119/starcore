@@ -405,3 +405,113 @@ describe('storage — 存档加固（v0.75）', () => {
     expect((await importSave(await exportSave(good))).ok).toBe(true)
   })
 })
+
+/**
+ * v0.81 存档安全批回归：
+ * 指数限位 / 无限节点等级上限 / training.count 整数 / 空编队自愈 /
+ * totalTranscends 非负整数 / SCE 前缀合并兼容 / b64 中文往返 /
+ * 双档取 savedAt 新者（readSave 真通道，jsdom）
+ */
+describe('storage — 存档安全（v0.81）', () => {
+  it('指数限位：超长指数拒绝，6 位内科学计数法接受', async () => {
+    // "1e99999999999999999"（17 位指数）旧正则放行 → deser Infinity → ser 出 "Infinity" → 整档判废
+    for (const bad of ['1e99999999999999999', '1e9999999999999', '2.5e12345678901']) {
+      const data = makeValidSaveData()
+      data.resources.amounts.energy = bad
+      const result = await importSave(await exportSave(data))
+      expect(result.ok, `energy=${bad} 应拒绝`).toBe(false)
+    }
+    for (const good of ['1e999999', '2.5e+123456', '7e-999999', '1e0']) {
+      const data = makeValidSaveData()
+      data.resources.amounts.energy = good
+      const result = await importSave(await exportSave(data))
+      expect(result.ok, `energy=${good} 应接受`).toBe(true)
+    }
+  })
+
+  it('无限节点 level 硬上限：超限拒绝，上限值本身接受', async () => {
+    const data = makeValidSaveData()
+    data.transcend.tree = [{ id: 't_inf_prod', level: 1_000_001 }]
+    expect((await importSave(await exportSave(data))).ok).toBe(false)
+
+    const okData = makeValidSaveData()
+    okData.transcend.tree = [{ id: 't_inf_prod', level: 1_000_000 }]
+    expect((await importSave(await exportSave(okData))).ok).toBe(true)
+  })
+
+  it('买断节点不受无限节点上限约束（上限仅按 INFINITE_NODE_IDS 生效）', async () => {
+    const data = makeValidSaveData()
+    // 买断节点 hydrate 层封顶 1，校验层只查无限节点上限
+    data.transcend.tree = [{ id: 't_energy_1', level: 9 }]
+    expect((await importSave(await exportSave(data))).ok).toBe(true)
+  })
+
+  it('training.count 小数拒绝，整数与浮点秒数接受', async () => {
+    const bad = makeValidSaveData()
+    bad.military.training = [
+      { id: 't1', unitId: 'assault', count: 1.5, remaining: 5, totalTime: 5 },
+    ]
+    expect((await importSave(await exportSave(bad))).ok).toBe(false)
+
+    const good = makeValidSaveData()
+    good.military.training = [
+      { id: 't1', unitId: 'assault', count: 3, remaining: 5.5, totalTime: 6.5 },
+    ]
+    expect((await importSave(await exportSave(good))).ok).toBe(true)
+  })
+
+  it('空编队数组自愈：formations=[] 通过校验并补齐 f1/f2/f3', async () => {
+    const data = makeValidSaveData()
+    data.military.formations = []
+    const result = await importSave(await exportSave(data))
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.military.formations.map((f) => f.id)).toEqual(['f1', 'f2', 'f3'])
+      expect(result.data.military.formations[0].units.assault).toBe(0)
+    }
+  })
+
+  it('totalTranscends：负数/小数拒绝，0 与正整数接受', async () => {
+    for (const bad of [-1, 1.5]) {
+      const data = makeValidSaveData()
+      data.transcend.totalTranscends = bad
+      expect((await importSave(await exportSave(data))).ok, `totalTranscends=${bad} 应拒绝`).toBe(
+        false
+      )
+    }
+    for (const good of [0, 42]) {
+      const data = makeValidSaveData()
+      data.transcend.totalTranscends = good
+      expect((await importSave(await exportSave(data))).ok, `totalTranscends=${good} 应接受`).toBe(
+        true
+      )
+    }
+  })
+
+  it('SCE- 旧前缀仍按 Base64(JSON) 解析（与 SCB- 同路径）', async () => {
+    const data = makeValidSaveData()
+    const code = 'SCE-' + toBase64(JSON.stringify(data))
+    const result = await importSave(code)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.data.transcend.totalTranscends).toBe(1)
+  })
+
+  it('中文与 emoji 经导出/导入往返无损', async () => {
+    const data = makeValidSaveData()
+    data.player.name = '测试指挥官🌌'
+    const exported = await exportSave(data)
+    const result = await importSave(exported)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.data.player.name).toBe('测试指挥官🌌')
+  })
+
+  it('标准编码与旧 escape/unescape 实现产物互通（存量导出码不失效）', async () => {
+    // 旧实现（escape/unescape）编码的中文存档，新实现必须能解
+    const data = makeValidSaveData()
+    data.player.name = '中文名'
+    const legacyB64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))))
+    const result = await importSave('SCB-' + legacyB64)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.data.player.name).toBe('中文名')
+  })
+})

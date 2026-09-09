@@ -232,16 +232,34 @@ function cloneDefaultNodes(): TranscendNode[] {
   return DEFAULT_NODES.map((n) => ({ ...n, effects: n.effects.map((e) => ({ ...e })) }))
 }
 
+/**
+ * 无限节点 id 集合与等级硬上限（v0.81 存档安全）：
+ * 校验层拒绝 level 超限的条目，防超大等级值经 allEffects 物化数组挂死首帧。
+ * 上限远超正常进度可达值（按 costGrowth 1.5 的指数成本，正收益玩法内不可能触顶）。
+ */
+export const INFINITE_NODE_IDS: ReadonlySet<string> = new Set(
+  DEFAULT_NODES.filter(isInfiniteNode).map((n) => n.id)
+)
+export const MAX_INFINITE_NODE_LEVEL = 1_000_000
+
 export const useTranscendStore = defineStore('transcend', () => {
   const negativeEntropy = ref<Decimal>(D(0)) // 负熵余额
   const totalTranscends = ref(0) // 转生次数
   const tree = ref<TranscendNode[]>(cloneDefaultNodes())
 
-  /** 转生树已购节点的效果汇总（效果按等级叠加：每级推入一份） */
+  /**
+   * 转生树已购节点的效果汇总（v0.81 幂聚合：不再按等级物化数组）。
+   * 同一节点 effects 只出现一次，重复次数记入 repeat：
+   * 乘数型（getMult 乘法通道）实际乘数 = value^repeat，
+   * 加法型（getValue 累加通道）实际值 = value×repeat。
+   * 旧实现按 level 逐份 push，超大等级值的存档会在 init 首帧同步物化
+   * 数十亿元素挂死主线程——校验层等级上限之外的第二道防线
+   */
   const allEffects = computed(() => {
-    const list: TranscendNode['effects'] = []
+    const list: (TranscendEffect & { repeat: number })[] = []
     for (const node of tree.value) {
-      for (let i = 0; i < node.level; i++) list.push(...node.effects)
+      if (node.level <= 0) continue
+      for (const eff of node.effects) list.push({ ...eff, repeat: node.level })
     }
     return list
   })
@@ -251,7 +269,7 @@ export const useTranscendStore = defineStore('transcend', () => {
     for (const eff of allEffects.value) {
       if (eff.type !== type) continue
       if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
-      m = m.times(eff.value)
+      m = m.times(D(eff.value).pow(eff.repeat))
     }
     return m
   }
@@ -260,7 +278,7 @@ export const useTranscendStore = defineStore('transcend', () => {
   function getValue(type: string): number {
     let v = 0
     for (const eff of allEffects.value) {
-      if (eff.type === type) v += eff.value
+      if (eff.type === type) v += eff.value * eff.repeat
     }
     return v
   }
@@ -311,8 +329,14 @@ export const useTranscendStore = defineStore('transcend', () => {
   }
   function hydrate(data: TranscendSaveData | undefined) {
     if (!data) return
-    if (data.negativeEntropy) negativeEntropy.value = deser(data.negativeEntropy)
-    if (data.totalTranscends) totalTranscends.value = data.totalTranscends
+    if (data.negativeEntropy) {
+      const v = deser(data.negativeEntropy)
+      // 兜底钳 0（v0.81 双道防线之二）：deser 结果非有限（如极端指数）时取 0，
+      // 不让非有限值进入游戏状态经 ser 再写出不可读档的串
+      negativeEntropy.value = v.isFinite() ? v : D(0)
+    }
+    // 0 是合法值（导入替换语义需能清零），仅跳过 undefined
+    if (data.totalTranscends !== undefined) totalTranscends.value = data.totalTranscends
     if (data.tree) {
       for (const saved of data.tree) {
         const node = tree.value.find((n) => n.id === saved.id)
