@@ -38,10 +38,11 @@ export const useExplorationStore = defineStore('exploration', () => {
     return !!p && p.startTime > 0 && !p.completed
   }
 
-  /** 可探索的节点 */
+  /** 可探索的节点（不含已完成与进行中；行动队列曾对进行中节点重复计数，v0.81 收口） */
   function availableNodes(): ExploreNode[] {
     return EXPLORE_NODES.filter((n) => {
       if (isCompleted(n.id)) return false
+      if (isExploring(n.id)) return false
       if (!n.requires) return true
       return n.requires.every((r) => isCompleted(r))
     })

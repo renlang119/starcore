@@ -1,10 +1,11 @@
-/**
+/*
  * useActionQueue — 首页行动队列数据组装（v0.54 从 HomeView 抽出）
  *
  * 口径：进行中全保留（天然上限 19 = 16 节点 + 3 训练槽，进度信息不丢），
  * 可执行补足至总数 ≤6（进行中 ≥6 时不显示可执行项）；
  * 训练中不再显示「N 支部队训练中」汇总卡（进度由进行中条目承担），
  * 无训练任务时显示「训练部队」引导。
+ * 可探索口径：availableNodes 已排除进行中节点（v0.81 收口），待探索数不重复计数。
  */
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'

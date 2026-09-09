@@ -11,6 +11,7 @@ import { UNITS } from '@/data/units'
 import { EXPLORE_NODES } from '@/data/explore'
 import { STRONGHOLDS } from '@/data/pve'
 import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
+import { INFINITE_NODE_IDS, MAX_INFINITE_NODE_LEVEL } from '@/stores/transcend'
 
 // —— 有效 ID 集合（用于 validateSaveData 内容范围校验）——
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
@@ -175,17 +176,32 @@ export function writeSaveSync(data: SaveData): void {
   }
 }
 
-/** 读档结果：成功 / 版本过新（不静默 hydrate）/ 无档 */
+/** 读档结果：成功 / 版本过新（不静默 hydrate）/ 存储有值但损坏（不静默清档）/ 无档 */
 export type SaveReadOutcome =
-  { status: 'ok'; data: SaveData } | { status: 'too_new'; version: number } | { status: 'none' }
+  | { status: 'ok'; data: SaveData }
+  | { status: 'too_new'; version: number }
+  | { status: 'corrupt'; raw?: string }
+  | { status: 'none' }
 
-/** 读取存档（优先 IndexedDB，带 checksum 校验） */
+/** 读取存档：IndexedDB 主存与 localStorage 备份双通道都尝试，取 savedAt 更新的一档 */
 export async function readSave(): Promise<SaveReadOutcome> {
+  let best: SaveReadOutcome | null = null
+  let bestSavedAt = -1
+  let sawAnyValue = false // 双通道是否真的存在过存储值（区分「无档」与「有值但损坏」）
+  let rawBackup: string | null = null
+  // savedAt 相同（含双档都不可用的 -1 垫底值）时保序：先到者（IndexedDB 主档）优先
+  const consider = (candidate: SaveReadOutcome, savedAt: number): void => {
+    if (savedAt >= bestSavedAt) {
+      best = candidate
+      bestSavedAt = savedAt
+    }
+  }
   try {
     const stored = await STORE.getItem<unknown>(SAVE_KEY)
     if (stored) {
+      sawAnyValue = true
       const parsed = _parseStored(stored)
-      if (parsed) return parsed
+      if (parsed) consider(parsed, _savedAtOf(parsed))
     }
   } catch {
     /* noop */
@@ -193,13 +209,27 @@ export async function readSave(): Promise<SaveReadOutcome> {
   try {
     const bak = localStorage.getItem(SAVE_KEY + '_backup')
     if (bak) {
+      sawAnyValue = true
+      rawBackup = bak
       const parsed = _parseBackup(bak)
-      if (parsed) return parsed
+      if (parsed) consider(parsed, _savedAtOf(parsed))
     }
   } catch {
     /* noop */
   }
+  if (best) return best
+  // 有存储值但都不可用：报告 corrupt（附原始备份载荷供导出），
+  // 与「无档」严格区分——后续流程不得静默清档或用空状态覆盖
+  if (sawAnyValue) return { status: 'corrupt', raw: rawBackup ?? undefined }
   return { status: 'none' }
+}
+
+/** 从读档结果提取 savedAt（不可用/损坏档返回 -1，在双档比较中垫底） */
+function _savedAtOf(outcome: SaveReadOutcome): number {
+  if (outcome.status === 'ok' && typeof outcome.data.savedAt === 'number') {
+    return outcome.data.savedAt
+  }
+  return -1
 }
 
 /** 解析 IndexedDB 存储的值（兼容新格式 { d, c } 和旧格式裸对象） */
@@ -257,9 +287,11 @@ function _tooNewVersion(data: unknown): number | null {
 }
 
 /**
- * 修复历史存档已知缺陷后再校验：
- * completed 混入非正式据点 id（v0.60 远征胜利会把 'endless' 写入通关集，
- * 主备档双双过不了白名单校验）→ 剥离该条目继续，不整档拒绝。
+ * 修复历史存档已知缺陷后再校验（自愈项不改语义，只把可推导的缺失补齐）：
+ * 1. completed 混入非正式据点 id（v0.60 远征胜利会把 'endless' 写入通关集，
+ *    主备档双双过不了白名单校验）→ 剥离该条目继续，不整档拒绝。
+ * 2. formations 空数组（v0.81）：空数组能通过 every 校验但 hydrate 后编队为 0 支，
+ *    战斗页直接读 formations[idx].units 崩溃 → 按默认 f1/f2/f3 补齐空编队。
  */
 function _validateAndRepair(data: unknown): data is SaveData {
   if (_isObject(data)) {
@@ -267,9 +299,20 @@ function _validateAndRepair(data: unknown): data is SaveData {
     if (_isObject(cb) && Array.isArray(cb.completed)) {
       cb.completed = cb.completed.filter((id) => typeof id === 'string' && STRONGHOLD_IDS.has(id))
     }
+    const mil = data.military
+    if (_isObject(mil) && Array.isArray(mil.formations) && mil.formations.length === 0) {
+      mil.formations = DEFAULT_FORMATIONS.map((f) => ({ ...f, units: { ...f.units } }))
+    }
   }
   return validateSaveData(data)
 }
+
+/** 默认编队骨架（与 military store 初始态一致；storage 不 import store 防循环依赖） */
+const DEFAULT_FORMATIONS: { id: string; name: string; units: Record<string, number> }[] = [
+  { id: 'f1', name: '先锋编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+  { id: 'f2', name: '第二编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+  { id: 'f3', name: '第三编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+]
 
 /** FNV-1a 校验和——检测存档被篡改或损坏 */
 function _checksum(data: string): string {
@@ -334,14 +377,18 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!_isObject(d.military)) return false
   const mil = d.military as Record<string, unknown>
   if (!_isValidIdNumberRecord(mil.owned, UNIT_IDS, true)) return false
-  // training: 条目结构 + unitId 白名单 + 数字字段有限（防 NaN 任务占死训练槽）
+  // training: 条目结构 + unitId 白名单 + 数字字段有限（防 NaN 任务占死训练槽）；
+  // count 必须为非负整数（v0.81：小数 count 完成后 owned += count 产小数兵力，
+  // 被 owned 的 intOnly 校验拒绝 → 整档判废）；remaining/totalTime 为秒数，浮点合法
   if (!Array.isArray(mil.training)) return false
   if (
     !mil.training.every((t: unknown) => {
       if (!_isObject(t)) return false
       if (typeof t.id !== 'string') return false
       if (typeof t.unitId !== 'string' || !UNIT_IDS.has(t.unitId)) return false
-      for (const k of ['count', 'remaining', 'totalTime']) {
+      if (typeof t.count !== 'number' || !isFinite(t.count) || t.count < 0) return false
+      if (!Number.isInteger(t.count)) return false
+      for (const k of ['remaining', 'totalTime']) {
         if (typeof t[k] !== 'number' || !isFinite(t[k]) || (t[k] as number) < 0) return false
       }
       return true
@@ -425,21 +472,31 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!Array.isArray(rl.equipped)) return false
   if (!rl.equipped.every((e: unknown) => e === null || typeof e === 'string')) return false
 
-  // transcend: tree 条目结构校验（id + 非负整数 level）
+  // transcend: tree 条目结构校验（id + 非负整数 level）；
+  // 无限节点 level 设硬上限（v0.81：超大等级值曾可经 allEffects 物化数组挂死首帧）
   if (!_isObject(d.transcend)) return false
   const tc = d.transcend as Record<string, unknown>
   if (tc.negativeEntropy !== undefined && !_isNonNegNumberStr(tc.negativeEntropy)) return false
-  if (typeof tc.totalTranscends !== 'number' && tc.totalTranscends !== undefined) return false
+  // totalTranscends：存在则必须是非负整数（v0.81 收口：NaN/负值/Infinity 曾可入档，
+  // 负值使首转保底 +1 永久失效）
+  if (tc.totalTranscends !== undefined) {
+    if (typeof tc.totalTranscends !== 'number' || !Number.isInteger(tc.totalTranscends))
+      return false
+    if ((tc.totalTranscends as number) < 0) return false
+  }
   if (!Array.isArray(tc.tree)) return false
   if (
     !tc.tree.every((n: unknown) => {
       if (!_isObject(n) || typeof n.id !== 'string') return false
-      return (
+      if (!(
         typeof n.level === 'number' &&
         Number.isInteger(n.level) &&
         n.level >= 0 &&
         isFinite(n.level)
-      )
+      ))
+        return false
+      if (INFINITE_NODE_IDS.has(n.id) && (n.level as number) > MAX_INFINITE_NODE_LEVEL) return false
+      return true
     })
   )
     return false
@@ -493,10 +550,13 @@ function _isObject(v: unknown): v is Record<string, unknown> {
 /**
  * 检查值是非负有限数字字符串（如 "100"、"3.14"、"1e+61"）——
  * 白名单形态判定：空串/空白/Infinity/NaN/负数/前导符号一律拒绝
- * （此前用 Number(v) 判定，Number('')===0 会放行空串，deser 时抛 DecimalError）
+ * （此前用 Number(v) 判定，Number('')===0 会放行空串，deser 时抛 DecimalError）。
+ * 指数位数限 1~6 位（v0.81 收口）：不限位时 "1e999…" 可绕过校验构造 Infinity，
+ * ser(Infinity) 写出 "Infinity" 后下一轮读档被本正则拒绝 → 整档判废；
+ * 6 位上限覆盖到 1e999999（绝对值远超游戏任意数值），正常存档零影响
  */
 function _isNonNegNumberStr(v: unknown): boolean {
-  return typeof v === 'string' && /^\d+(\.\d+)?([eE][+-]?\d+)?$/.test(v)
+  return typeof v === 'string' && /^\d+(\.\d+)?([eE][+-]?\d{1,6})?$/.test(v)
 }
 
 function _isNonNegNumberStrRecord(v: unknown): boolean {
@@ -520,8 +580,9 @@ function _isValidIdNumberRecord(v: unknown, validIds: Set<string>, intOnly: bool
 
 // ─── 导出编码 ──────────────────────────────────────────────
 //
-// 方案：Base64 编码 + FNV-1a 校验和
-// 前缀 SCB-（StarCore Base64）标识新格式，旧 SCE- 格式在导入时兼容
+// 方案：Base64(JSON) 文本编码
+// 前缀 SCB-（StarCore Base64）标识现行格式，旧 SCE- 前缀在导入时按同格式兼容
+// （不带 FNV-1a 校验和；完整性由 JSON.parse 与存档结构校验兜底）
 //
 // ⚠️ 安全边界声明：
 // Base64 编码不是加密。任何人都能通过 atob() 解码。
@@ -531,21 +592,26 @@ function _isValidIdNumberRecord(v: unknown, validIds: Set<string>, intOnly: bool
 //   ✓ 无意识的复制粘贴
 // 不足以防御：
 //   ✗ 有目的的查看/篡改（atob 即可解码）
-//   ✗ 精确篡改（FNV-1a 仅检测意外损坏，非 HMAC）
 // 若需更高安全性，需要引入服务端签名验证。
 
 /** 导入结果类型 */
 export type ImportResult =
   { ok: true; data: SaveData } | { ok: false; reason: 'invalid' | 'corrupted' | 'too_new' }
 
-/** UTF-8 字符串 → Base64 */
+/** UTF-8 字符串 → Base64（TextEncoder 标准实现；escape/unescape 已废弃） */
 function _toB64(str: string): string {
-  return btoa(unescape(encodeURIComponent(str)))
+  const bytes = new TextEncoder().encode(str)
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin)
 }
 
 /** Base64 → UTF-8 字符串 */
 function _fromB64(b64: string): string {
-  return decodeURIComponent(escape(atob(b64)))
+  const bin = atob(b64)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return new TextDecoder().decode(bytes)
 }
 
 /** 导出存档为 Base64 字符串（前缀 SCB-） */
@@ -554,27 +620,13 @@ export async function exportSave(data: SaveData): Promise<string> {
   return 'SCB-' + _toB64(json)
 }
 
-/** 从编码字符串导入存档（含完整性校验，兼容旧 SCE- 格式） */
+/** 从编码字符串导入存档（含完整性校验，兼容旧 SCE- 前缀） */
 export async function importSave(code: string): Promise<ImportResult> {
   const trimmed = code.trim()
   if (!trimmed) return { ok: false, reason: 'invalid' }
 
-  // 新格式 SCB-：Base64 编码
-  if (trimmed.startsWith('SCB-')) {
-    try {
-      const json = _fromB64(trimmed.slice(4))
-      const data = JSON.parse(json)
-      const tooNew = _tooNewVersion(data)
-      if (tooNew !== null) return { ok: false, reason: 'too_new' }
-      if (!_validateAndRepair(data)) return { ok: false, reason: 'corrupted' }
-      return { ok: true, data }
-    } catch {
-      return { ok: false, reason: 'invalid' }
-    }
-  }
-
-  // 旧格式 SCE- 兼容：尝试 Base64 解码（旧 XOR 加密产物的 base64 部分无法直接解码为 JSON，会 catch 返回 invalid）
-  if (trimmed.startsWith('SCE-')) {
+  // SCB-（现行）与 SCE-（旧前缀兼容）均为 Base64(JSON)，解析路径相同
+  if (trimmed.startsWith('SCB-') || trimmed.startsWith('SCE-')) {
     try {
       const json = _fromB64(trimmed.slice(4))
       const data = JSON.parse(json)

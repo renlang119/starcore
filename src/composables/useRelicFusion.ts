@@ -1,9 +1,12 @@
-/**
+/*
  * useRelicFusion — 遗物合成工坊的状态与动作
  *
  * 自 RelicView 拆出（v0.72）：选材点击发生在图鉴卡上，状态由视图层持有，
  * 合成面板（FusionPanel）通过 props/emit 与之桥接。
  * notify：提示消息注入口（稀有度混选等），由视图接入自己的 toast 实现。
+ * 桥接约定：视图层经 props 把 owned 传给面板，composable 内只读 game store
+ * 的_owned_数据做选材校验（v0.81 注记勘误：原注释「选材状态内聚于本文件」与
+ * 实现不符——选材点击在图鉴卡，状态确实在本文件，但 owned 数据流经视图层）。
  */
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'

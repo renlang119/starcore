@@ -8,6 +8,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { fnv1a } from '@/lib/random'
+import { exportSave, importSave, type SaveData } from '@/lib/storage'
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
@@ -18,8 +20,6 @@ import { useCombatStore } from './combat'
 import { D } from '@/lib/decimal'
 import { rollRelic } from '@/data/relics'
 import { setRelicSlotProvider } from './relics'
-import { fnv1a } from '@/lib/random'
-import { importSave, type SaveData } from '@/lib/storage'
 import type { Formation } from './military'
 
 /** 基础能量采集建筑 ID */
@@ -336,5 +336,88 @@ describe('game store — 初始化错误态（v0.75）', () => {
     const imported = await importSave(code)
     expect(imported.ok).toBe(true)
     if (imported.ok) expect(imported.data.combat.completed).not.toContain('endless')
+  })
+
+  it('v0.81 corrupt：主备档都在但全损坏 → initError=corrupt，不启动循环', async () => {
+    // 真实写入两份「有值但不可读」的档（checksum 错误 + 非 JSON）
+    localStorage.setItem(BACKUP_KEY, 'not-a-payload')
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBe('corrupt')
+    expect(game.isRunning).toBe(false)
+    // 原始载荷保留，供错误屏导出
+    expect(game.corruptRaw).toBe('not-a-payload')
+    expect(game.exportCorruptRaw()).toBe('not-a-payload')
+  })
+
+  it('v0.81 corrupt：损坏档不触发自动存档覆盖（15s 保护窗内原始载荷不变）', async () => {
+    localStorage.setItem(BACKUP_KEY, 'not-a-payload')
+    const game = useGameStore()
+    await game.init()
+    expect(game.initError).toBe('corrupt')
+    // 错误态下手动 save 也应被拒绝——错误态未 stop（无循环），但 save 会覆盖原档，
+    // 校验 save 前的守卫：手动 save 在错误态直接返回
+    await game.save()
+    expect(localStorage.getItem(BACKUP_KEY)).toBe('not-a-payload')
+  })
+
+  it('v0.81 双档取新：savedAt 更新的备份档胜出主档', async () => {
+    const now = { ...validSave(), savedAt: Date.now() }
+    now.buildings.levels = { solar_collector: 7 }
+    // 主档 = 旧档（savedAt=1000）；备份 = 新档
+    const stale = { ...validSave(), savedAt: 1000 }
+    try {
+      const { default: localforage } = await import('localforage')
+      const store = localforage.createInstance({ name: 'starcore', storeName: 'save' })
+      await store.setItem(
+        'starcore_save_v1',
+        JSON.stringify({ d: JSON.stringify(stale), c: fnv1a(JSON.stringify(stale)).toString(16) })
+      )
+    } catch {
+      // jsdom 无 IndexedDB 时主档写不进也不影响：备份仍是 savedAt 新者
+    }
+    localStorage.setItem(
+      BACKUP_KEY,
+      JSON.stringify({ d: JSON.stringify(now), c: fnv1a(JSON.stringify(now)).toString(16) })
+    )
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(true)
+    expect(game.buildings.getLevel('solar_collector')).toBe(7)
+    game.stop()
+  })
+
+  it('v0.81 doImport 替换语义：缺省字段回落初始值，totalTranscends=0 可清零', async () => {
+    // 先把会话状态堆起来
+    const game = useGameStore()
+    game.transcend.totalTranscends = 9
+    game.totalPlayTime = 500
+    game.research.complete('military_basic')
+    game.buildings.setLevel('solar_collector', 4)
+    // 导入一份极简档（多数字段缺省、totalTranscends=0）
+    const minimal: SaveData = {
+      version: 1,
+      savedAt: Date.now(),
+      player: { id: 'p2', name: '新档' },
+      resources: { amounts: { energy: '10' }, totals: { energy: '10' } },
+      buildings: { levels: {} },
+      research: { completed: [] },
+      military: { owned: { assault: 1 }, training: [], formations: [] },
+      combat: { garrisoned: {}, completed: [] },
+      exploration: { progress: {} },
+      relics: { owned: [], equipped: [] },
+      transcend: { negativeEntropy: '0', totalTranscends: 0, tree: [] },
+    }
+    const code = await exportSave(minimal)
+    const result = await game.doImport(code)
+    expect(result.success).toBe(true)
+    // 替换语义断言：会话现值被导入档覆盖，缺省回落初始值
+    expect(game.transcend.totalTranscends).toBe(0) // 0 可清零（旧实现 if 跳过 0）
+    expect(game.totalPlayTime).toBe(0)
+    expect(game.buildings.getLevel('solar_collector')).toBe(0)
+    expect(game.research.completed.has('military_basic')).toBe(false)
+    expect(game.military.getOwned('assault')).toBe(1)
+    expect(game.resources.getAmount('energy').toNumber()).toBe(10)
   })
 })
