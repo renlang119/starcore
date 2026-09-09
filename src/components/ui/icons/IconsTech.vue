@@ -281,6 +281,32 @@
         <path d="M9 12A3 3 0 1 1 12 15" />
         <circle cx="12" cy="12" r="1" fill="currentColor" />
       </symbol>
+      <!-- 分支补全图标（形状去重批）：能量学/暗物质学不再借用资源图标 -->
+      <symbol
+        id="i-branch-energy"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M13 6L8 13h3l-1 5 5-7h-3l1-5z" />
+      </symbol>
+      <symbol
+        id="i-branch-dark"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="9" stroke-dasharray="1 3" />
+        <path d="M13 10C13 7.5 15.5 6.5 17.5 7M11 14C11 16.5 8.5 17.5 6.5 17" />
+        <circle cx="12" cy="12" r="1" fill="currentColor" />
+      </symbol>
     </defs>
   </svg>
 </template>
