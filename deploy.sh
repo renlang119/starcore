@@ -31,6 +31,8 @@ fi
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 
+VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
+
 echo "==== 星核纪元 · 部署 ===="
 
 # 0. 前置校验：目标规范化后必须是 /var/www/ 下的站点目录
@@ -53,7 +55,13 @@ if [[ $SKIP_BUILD -eq 0 ]]; then
   corepack pnpm build
 else
   [[ -f dist/index.html ]] || { echo "[FAIL] dist/ 不存在，先构建" >&2; exit 1; }
-  echo "[2/5] 跳过构建（--skip-build）"
+  echo "[2/5] 跳过构建（--skip-build），预检本地产物版本 ..."
+  LOCAL_BUNDLE=$(grep -oE 'index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1 || true)
+  if [[ -z "$LOCAL_BUNDLE" ]] || ! grep -qE "\"${VERSION//./\\.}\"" "dist/assets/$LOCAL_BUNDLE"; then
+    echo "[FAIL] 本地产物版本与 package.json（v$VERSION）不符，先重新构建" >&2
+    exit 1
+  fi
+  echo "  [OK] 本地产物 v$VERSION（$LOCAL_BUNDLE）"
 fi
 
 # 3. 同步产物
@@ -72,7 +80,6 @@ sudo chmod -R a+rX "$DEST"
 
 # 5. 验证：线上入口 + 版本号
 echo "[5/5] 验证 ..."
-VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
 VERSION_RE="${VERSION//./\\.}"
 LOCAL_CODE=$(curl -s --max-time 15 -o /dev/null -w '%{http_code}' "$SITE_URL/?t=$(date +%s)" || true)
 BUNDLE=$(curl -s --max-time 15 "$SITE_URL/?t=$(date +%s)" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1 || true)
