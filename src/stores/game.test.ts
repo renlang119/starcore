@@ -198,6 +198,34 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     expect(buildings.getLevel(SOLAR)).toBeGreaterThanOrEqual(1)
   })
 
+  it('v0.82 正例：研究完成后 requires 建筑进入自动升级（传 completed 而非 unlockedSet）', () => {
+    const game = buyNodes(['t_auto_build'])
+    const resources = useResourcesStore()
+    const buildings = useBuildingsStore()
+    const research = useResearchStore()
+    // 先完成 fusion_tech（fusion_reactor 的 requires）
+    resources.setAmount('data', 1e9)
+    resources.setAmount('crystal', 1e9)
+    resources.setAmount('energy', 1e12)
+    expect(game.tryResearch('fusion_tech')).toBe(true)
+    expect(research.isCompleted('fusion_tech')).toBe(true)
+    resources.setAmount('energy', 1e12)
+    game.lastTickTime = Date.now() - 1000
+    game.tick()
+    // 修复前：runAutomation 传 unlockedSet（建筑 id 集合），isUnlocked 查科技 id 永不相交
+    expect(buildings.getLevel('fusion_reactor')).toBe(1)
+  })
+
+  it('v0.82：tryUpgradeBuilding 未知建筑 id 拒绝且不记账', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 1e9)
+    const upgradesBefore = game.achievements.metricValue('upgrades')
+    expect(game.tryUpgradeBuilding('ghost_building')).toBe(false)
+    expect(game.achievements.metricValue('upgrades')).toBe(upgradesBefore)
+    expect(game.buildings.getLevel('ghost_building')).toBe(0)
+  })
+
   it('购买研究协议：tick 自动完成可用科技（成就联动）', () => {
     const game = buyNodes(['t_auto_research'])
     const resources = useResourcesStore()
