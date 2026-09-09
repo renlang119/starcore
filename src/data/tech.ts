@@ -46,7 +46,7 @@ export const TECH_BRANCHES: Record<
   TechBranch,
   { id: TechBranch; name: string; color: string; icon: string }
 > = {
-  energy: { id: 'energy', name: '能量学', color: '#00E5FF', icon: 'i-res-energy' },
+  energy: { id: 'energy', name: '能量学', color: '#00E5FF', icon: 'i-branch-energy' },
   crystallography: {
     id: 'crystallography',
     name: '晶脉学',
@@ -57,7 +57,7 @@ export const TECH_BRANCHES: Record<
   computing: { id: 'computing', name: '计算学', color: '#A78BFA', icon: 'i-branch-computing' },
   military: { id: 'military', name: '军事学', color: '#F43F5E', icon: 'i-branch-military' },
   exploration: { id: 'exploration', name: '探索学', color: '#2EE6A0', icon: 'i-branch-explore' },
-  dark: { id: 'dark', name: '暗物质学', color: '#94A3B8', icon: 'i-res-dark' },
+  dark: { id: 'dark', name: '暗物质学', color: '#94A3B8', icon: 'i-branch-dark' },
   singularity: {
     id: 'singularity',
     name: '奇点学',
