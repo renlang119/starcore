@@ -77,6 +77,7 @@ function tryResearch(id: string) {
         :style="{ '--c': b.color }"
         @click="activeBranch = b.id"
       >
+        <svg class="b-icon" aria-hidden="true"><use :href="'#' + b.icon" /></svg>
         {{ b.name }}
       </button>
     </div>
@@ -176,6 +177,9 @@ function tryResearch(id: string) {
 }
 .branch-tab {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
@@ -183,6 +187,10 @@ function tryResearch(id: string) {
   font-size: var(--text-xs);
   font-weight: 500;
   color: var(--color-t-secondary);
+}
+.b-icon {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
 }
 .branch-tab.active {
   background: color-mix(in srgb, var(--c, #00e5ff) 12%, transparent);
