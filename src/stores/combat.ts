@@ -57,6 +57,16 @@ interface CombatUnit {
 /** 正式据点 id 集合（远征合成据点 'endless' 不在其中） */
 const STRONGHOLD_ID_SET = new Set(STRONGHOLDS.map((s) => s.id))
 
+/**
+ * 驻扎前置守卫注入（v0.82 驻扎校验）：
+ * game store setup 阶段注入闭包（探索解锁/编队存在/编队未被占用等跨 store 校验），
+ * combat store 不直接引用其他 store（同 setTrainingSlotProvider 模式）。
+ */
+let garrisonGuard: ((strongholdId: string, formationId: string) => boolean) | null = null
+export function setGarrisonGuard(fn: (strongholdId: string, formationId: string) => boolean) {
+  garrisonGuard = fn
+}
+
 export const useCombatStore = defineStore('combat', () => {
   const garrisoned = ref<Record<string, GarrisonState>>({}) // strongholdId → state
   const completedStrongholds = ref<Set<string>>(new Set())
@@ -253,6 +263,10 @@ export const useCombatStore = defineStore('combat', () => {
   /** 驻扎据点（挂机） */
   function garrison(strongholdId: string, formationId: string): boolean {
     if (garrisoned.value[strongholdId]) return false
+    // 驻扎前置校验由 game store 注入（依赖探索解锁/编队状态等跨 store 数据，
+    // 同 setTrainingSlotProvider 注入模式）；未注入时仅本 store 可查的已攻克门槛仍生效
+    if (!completedStrongholds.value.has(strongholdId)) return false
+    if (garrisonGuard && !garrisonGuard(strongholdId, formationId)) return false
     garrisoned.value[strongholdId] = { strongholdId, formationId, startTime: Date.now() }
     return true
   }
