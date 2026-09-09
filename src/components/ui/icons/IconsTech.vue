@@ -307,6 +307,260 @@
         <path d="M13 10C13 7.5 15.5 6.5 17.5 7M11 14C11 16.5 8.5 17.5 6.5 17" />
         <circle cx="12" cy="12" r="1" fill="currentColor" />
       </symbol>
+      <!-- 科技独立化图标（跨类借用清偿批）：19 枚自有图标，系列徽记沿用 §7.4 语言 -->
+      <symbol
+        id="i-tech-fusion"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M12 6a6 6 0 0 1 5.2 3M12 18a6 6 0 0 1-5.2-3M6.8 9A6 6 0 0 1 12 6M17.2 15a6 6 0 0 1-5.2 3"
+        />
+        <circle cx="12" cy="4.5" r="1" fill="currentColor" />
+        <circle cx="12" cy="19.5" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-energy-1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M11 5L6.5 12H10l-1 7L14 11h-3.5L11 5z" />
+        <path d="M17 9h5M19.5 6.5v5" />
+      </symbol>
+      <symbol
+        id="i-tech-core-mine"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="8" r="4.5" />
+        <path
+          d="M12 5.5a2.5 2.5 0 0 1 2.5 2.5M9 20h6M10.5 16.5L9.5 20M13.5 16.5l1 3.5M12 12.5V16"
+        />
+      </symbol>
+      <symbol
+        id="i-tech-crystal-1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M8 5L13 10L8 15L3 10Z" />
+        <path d="M17 9h4M19 7v4" />
+      </symbol>
+      <symbol
+        id="i-tech-alloy-1"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M8 5L3 8v5l5 3 5-3V8L8 5z" />
+        <path d="M17 9h4M19 7v4" />
+      </symbol>
+      <symbol
+        id="i-tech-quantum"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="7" cy="12" r="1.6" />
+        <circle cx="17" cy="12" r="1.6" />
+        <path d="M8.6 12h6.8" />
+        <path d="M7 10.4C7 6 17 6 17 10.4M17 13.6c0 4.4-10 4.4-10 0" />
+      </symbol>
+      <symbol
+        id="i-tech-data-flow"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="3" y="4" width="5" height="5" rx="1" />
+        <rect x="16" y="4" width="5" height="5" rx="1" />
+        <rect x="9.5" y="15" width="5" height="5" rx="1" />
+        <path d="M5.5 9v2.5h13V9M12 11.5V15" />
+      </symbol>
+      <symbol
+        id="i-tech-neural"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="5" cy="12" r="1.6" />
+        <circle cx="12" cy="6" r="1.6" />
+        <circle cx="12" cy="18" r="1.6" />
+        <circle cx="19" cy="12" r="1.6" />
+        <path d="M6.4 11.2l4.2-4M6.4 12.8l4.2 4M13.4 6.9l4.2 4M13.4 17.1l4.2-4" />
+      </symbol>
+      <symbol
+        id="i-tech-holo"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 4L19 8v8l-7 4-7-4V8l7-4z" />
+        <path d="M12 4v8M12 12l7-4M12 12l-7-4" stroke-dasharray="2 2" />
+        <circle cx="12" cy="12" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-adv-units"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M8.5 3l5 5M3 8.5l5 5M9 7l-5 5 3.5 3.5L12 11z" />
+        <path d="M13 13l4 4M14.5 18.5L20 13M17 15l3-3" />
+      </symbol>
+      <symbol
+        id="i-tech-fleet"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 18h18l-2 3H5l-2-3z" />
+        <path d="M6.5 18l1.2-6h8.6l1.2 6" />
+        <circle cx="9" cy="9" r="1" fill="currentColor" />
+        <circle cx="15" cy="9" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-deep-space"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="2" />
+        <path d="M5.5 5.5L10 10M14 14l4.5 4.5" />
+        <path d="M3 8l3.5 1M8 3l1 3.5M21 16l-3.5-1M16 21l-1-3.5" />
+        <circle cx="18" cy="6" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-scan"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="11" cy="11" r="6.5" stroke-dasharray="1 2.5" />
+        <path d="M15.8 15.8L20.5 20.5" />
+        <circle cx="11" cy="11" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-theory"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M12 3.5a8.5 8.5 0 0 1 0 17 4.25 4.25 0 0 1 0-8.5 4.25 4.25 0 0 0 0-8.5z" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-capture"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="5" />
+        <path
+          d="M12 7c0-2.2 1.8-4 4-4M17 12c2.2 0 4 1.8 4 4M12 17c0 2.2-1.8 4-4 4M7 12c-2.2 0-4-1.8-4-4"
+        />
+        <circle cx="12" cy="12" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-well"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <ellipse cx="12" cy="12" rx="9.5" ry="3.5" />
+        <circle cx="12" cy="12" r="4.5" />
+        <circle cx="12" cy="12" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-singularity"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="2.5" />
+        <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+        <circle cx="12" cy="12" r="6.5" stroke-dasharray="1 2.5" />
+      </symbol>
+      <symbol
+        id="i-tech-mil-drill"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M4 4l6 6M20 4l-6 6M4 20l6-6M20 20l-6-6" />
+        <circle cx="12" cy="12" r="2.5" />
+      </symbol>
+      <symbol
+        id="i-tech-flagship"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 2v14M8 5h8l-1.5 4h-5L8 5z" />
+        <path d="M3 20c2.5-3 5.5-4 9-4s6.5 1 9 4" />
+        <circle cx="12" cy="19" r="1.5" />
+      </symbol>
     </defs>
   </svg>
 </template>
