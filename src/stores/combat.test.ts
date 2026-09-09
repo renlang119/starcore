@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useCombatStore } from './combat'
+import { useCombatStore, setGarrisonGuard } from './combat'
 import { D } from '@/lib/decimal'
 import { STRONGHOLDS } from '@/data/pve'
 import type { Formation } from './military'
@@ -15,6 +15,10 @@ function makeFormation(id: string, units: Record<string, number>): Formation {
 describe('combat store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    // 守卫是模块级单例（isolate:false 下跨文件共享）：全量跑时 game.test 可能已注入
+    // 持有其 pinia 实例的守卫，会拒绝本文件新实例的驻扎 → 每用例重置为全放行，
+    // 本体门槛（已攻克）不受影响；守卫行为由注入测试与 Playwright 端到端覆盖
+    setGarrisonGuard(() => true)
   })
 
   it('empty formation → defeat', () => {
@@ -70,6 +74,8 @@ describe('combat store', () => {
 
   it('serialize / hydrate round-trip', () => {
     const combat = useCombatStore()
+    // v0.82 起驻扎须先攻克（completedStrongholds 门槛），测试先补攻克状态
+    combat.completedStrongholds.add('raider_1')
     combat.garrison('raider_1', 'f1')
     const data = combat.serialize()
     expect(data.garrisoned['raider_1']).toBeDefined()
@@ -107,6 +113,7 @@ describe('combat store', () => {
   it('转生 reset() 保留远征深度、清本轮通关；hardReset reset(true) 全清', () => {
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
+    combat.completedStrongholds.add('raider_2')
     combat.garrison('raider_2', 'f1')
     combat.recordExpedition(1, true)
     combat.recordExpedition(2, true)
@@ -181,5 +188,24 @@ describe('combat store', () => {
     combat.hydrate({ garrisoned: {}, completed: ['raider_1', 'endless'] })
     expect(combat.completedStrongholds.has('raider_1')).toBe(true)
     expect(combat.completedStrongholds.has('endless')).toBe(false)
+  })
+
+  // —— v0.82：驻扎校验——
+
+  it('驻扎门槛：未攻克据点拒绝驻扎（combat 本体校验）', () => {
+    const combat = useCombatStore()
+    expect(combat.garrison('raider_1', 'f1')).toBe(false)
+    combat.completedStrongholds.add('raider_1')
+    expect(combat.garrison('raider_1', 'f1')).toBe(true)
+  })
+
+  it('驻扎守卫：注入的跨 store 校验（解锁/编队存在/未被占用）生效', () => {
+    const combat = useCombatStore()
+    // 模拟 game store 注入：编队必须存在（第二参数 fX 存在才放行）
+    combat.completedStrongholds.add('raider_1')
+    setGarrisonGuard((_sid, fid) => fid !== 'fGhost')
+    expect(combat.garrison('raider_1', 'fGhost')).toBe(false)
+    expect(combat.garrison('raider_1', 'f1')).toBe(true)
+    setGarrisonGuard(() => true) // 还原守卫，防跨文件状态泄漏（isolate:false）
   })
 })

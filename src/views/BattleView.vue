@@ -12,6 +12,8 @@ import type { UnitId } from '@/data/units'
 import type { ResourceType } from '@/data/buildings'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import { useToast } from '@/composables/useToast'
+import Toast from '@/components/ui/Toast.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -68,6 +70,26 @@ const formation = computed(
 )
 
 const isGarrisoned = computed(() => !!game.combat.garrisoned[strongholdId.value])
+
+// —— v0.82 驻扎/出征校验：据点须解锁且已攻克（远征分支除外）——
+const strongholdUnlocked = computed(() => {
+  if (isEndless.value) return game.combat.isEndlessUnlocked()
+  const def = getStronghold(strongholdId.value)
+  if (!def) return false
+  if (def.requires && !game.exploration.isCompleted(def.requires)) return false
+  return true
+})
+/** 已攻克：正式据点须在通关集内（未攻克可出战但不可驻扎） */
+const strongholdConquered = computed(
+  () => isEndless.value || game.combat.completedStrongholds.has(strongholdId.value)
+)
+/** 出征禁用 = 编队空或据点未解锁 */
+const battleDisabled = computed(() => isFormationEmpty.value || !strongholdUnlocked.value)
+/** 驻扎禁用 = 编队空或据点未攻克 */
+const garrisonDisabled = computed(() => isFormationEmpty.value || !strongholdConquered.value)
+
+// 战损 toast（v0.82 战损结算：编队减员即时提示）
+const toast = useToast()
 
 // 驻扎收益预览（每秒 + 每小时）
 const garrisonPreview = computed(() => {
@@ -137,6 +159,7 @@ function startBattle() {
   battleLog.value = result.log
   battleResult.value = result
   showResult.value = true
+  applyBattleLosses(result)
   // 无尽远征：攻克当前前沿 → 推进历史最深深度（待奖励发放时执行，见 grantRewards）
   // 成就终身计数：据点攻克（胜利）次数（远征战果同样计入战斗里程碑）
   if (result.victory) {
@@ -145,6 +168,33 @@ function startBattle() {
     game.daily.bump('battles')
   }
   // 奖励发放推迟到 confirmResult/stayHere 时
+}
+
+/**
+ * 战损结算（v0.82 战损接线）：胜负都按 losses 从编队扣兵，战报「损失 N 支」由此为真。
+ * 编队全灭清空该编队；若该编队驻扎中自动撤驻（收益随撤驻停止）并 toast 提示。
+ */
+function applyBattleLosses(result: ReturnType<typeof game.combat.resolveBattle>) {
+  const f = formation.value
+  if (!f) return
+  game.military.applyLosses(f, result.losses as never)
+  const totalLoss = Object.values(result.losses).reduce((a, b) => a + b, 0)
+  if (totalLoss > 0) {
+    const survivors = Object.values(f.units).reduce((a, b) => a + b, 0)
+    if (survivors === 0) {
+      toast.show(`${f.name} 全军覆没，已清空编队`)
+      // 全灭的编队若驻扎中，自动撤驻
+      for (const [sid, g] of Object.entries(game.combat.garrisoned)) {
+        if (g.formationId === f.id) {
+          game.combat.ungarrison(sid)
+          toast.show(`${f.name} 已从驻扎撤回`)
+          break
+        }
+      }
+    } else if (totalLoss > 0) {
+      toast.show(`${f.name} 损失 ${totalLoss} 支部队`)
+    }
+  }
 }
 
 /** 发放战斗奖励（仅在用户确认弹窗结果时调用，通过 rewardsGranted 防重入） */
@@ -188,7 +238,15 @@ function toggleGarrison() {
 }
 
 function confirmGarrison() {
-  if (formation.value) game.combat.garrison(strongholdId.value, formation.value.id)
+  if (!formation.value) {
+    showGarrisonConfirm.value = false
+    return
+  }
+  const ok = game.combat.garrison(strongholdId.value, formation.value.id)
+  if (!ok) {
+    // 守卫拒绝（未攻克/编队被他处占用等）：提示而非静默
+    toast.show(isGarrisoned.value ? '该据点已有编队驻扎' : '当前无法驻扎：据点未攻克或编队不可用')
+  }
   showGarrisonConfirm.value = false
 }
 
@@ -283,15 +341,22 @@ function cancelGarrison() {
           <span class="font-mono">×{{ r.count }}</span>
         </div>
         <div v-if="isFormationEmpty" class="empty-msg">编队为空，请先在部队页面分配兵力</div>
+        <div v-else-if="!strongholdUnlocked && !isEndless" class="empty-msg">
+          据点尚未解锁，无法出征
+        </div>
       </div>
     </div>
+
+    <!-- 点击反馈 toast（战损/驻扎提示） -->
+    <Toast :toast="toast" />
 
     <!-- 操作 -->
     <div class="actions">
       <button
         class="btn-accent"
         style="flex: 2; --accent: var(--color-alert)"
-        :disabled="isFormationEmpty"
+        :disabled="battleDisabled"
+        data-testid="battle-start"
         @click="startBattle"
       >
         <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
@@ -304,7 +369,8 @@ function cancelGarrison() {
         class="btn-secondary"
         :class="{ 'garrison-active': isGarrisoned }"
         style="flex: 1"
-        :disabled="isFormationEmpty"
+        :disabled="garrisonDisabled"
+        data-testid="battle-garrison"
         @click="toggleGarrison"
       >
         {{ isGarrisoned ? '撤回驻扎' : '挂机驻扎' }}
@@ -622,11 +688,13 @@ function cancelGarrison() {
   flex-shrink: 0;
 }
 
-.modal.victory {
+/* 弹窗本体挂载在 ModalOverlay 内部（只带 ModalOverlay 的 data-v），
+   本视图 scoped 规则须经 :deep() 穿透才能命中（v0.77 RelicView 同源坑补齐） */
+:deep(.modal.victory) {
   border-color: var(--color-quantum);
   box-shadow: 0 0 40px rgba(46, 230, 160, 0.2);
 }
-.modal.defeat {
+:deep(.modal.defeat) {
   border-color: var(--color-alert);
   box-shadow: 0 0 40px rgba(244, 63, 94, 0.2);
 }
@@ -636,10 +704,10 @@ function cancelGarrison() {
   text-align: center;
   margin-bottom: var(--space-1);
 }
-.modal.victory .result-title {
+:deep(.modal.victory) .result-title {
   color: var(--color-quantum);
 }
-.modal.defeat .result-title {
+:deep(.modal.defeat) .result-title {
   color: var(--color-alert);
 }
 .result-sub {
@@ -699,7 +767,7 @@ function cancelGarrison() {
   display: flex;
   gap: var(--space-2);
 }
-.garrison-confirm-modal {
+:deep(.garrison-confirm-modal) {
   border-color: var(--color-quantum);
   box-shadow: 0 0 40px rgba(46, 230, 160, 0.15);
 }
