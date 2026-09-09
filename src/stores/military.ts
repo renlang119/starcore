@@ -200,7 +200,14 @@ export const useMilitaryStore = defineStore('military', () => {
       }
       owned.value = next
     }
-    if (data.training) trainingQueue.value = data.training.map((t) => ({ ...t }))
+    if (data.training) {
+      // count 取整兜底（v0.81）：校验层已拒小数，此处兜底直连 hydrate 的调用
+      // （完成后 owned += count，小数 count 产小数兵力 → owned intOnly 拒 → 整档判废）
+      trainingQueue.value = data.training.map((t) => ({
+        ...t,
+        count: Math.max(0, Math.floor(t.count)),
+      }))
+    }
     if (data.formations)
       // units 缺键补零：防 f.units[id] += n 对缺键产 NaN
       formations.value = data.formations.map((f) => ({

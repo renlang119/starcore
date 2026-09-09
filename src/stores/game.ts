@@ -49,7 +49,7 @@ export const useGameStore = defineStore('game', () => {
   const achievements = useAchievementsStore()
   const daily = useDailyStore()
 
-  // 显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
+  // 修复：显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
   // 强化能量支出通道（v0.70）：接入 resources.spend 原子扣费
   setRelicEnhanceSpendProvider((cost) => resources.spend('energy', cost))
@@ -76,9 +76,13 @@ export const useGameStore = defineStore('game', () => {
   /**
    * 初始化错误态（A2 兜底）：读档/hydrate 异常或存档版本过新时置位。
    * 置位后不启动 tick 与自动存档（保护原始存档不被空状态覆盖），
-   * App 展示错误屏，由玩家选择「清除存档重开」。
+   * App 展示错误屏，由玩家选择导出原始存档或「清除存档重开」。
+   * corrupt（v0.81）：主备档都存在但全部不可读——与「无档」严格区分，
+   * 不静默开新档（旧路径 15 秒后自动存档会用空状态覆盖损坏档，造成数据丢失）。
+   * corruptRaw 保存原始存档载荷，供错误屏「导出原始存档」。
    */
-  const initError = ref<'too_new' | 'failed' | null>(null)
+  const initError = ref<'too_new' | 'corrupt' | 'failed' | null>(null)
+  const corruptRaw = ref<string | null>(null)
 
   // —— 统一效果系统（6.2：替代三处重复 getMax 逻辑）——
   const effectSystem = new EffectSystem()
@@ -313,13 +317,16 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  // —— 存档（错误态守卫：initError 置位时拒绝一切写入，防空状态覆盖原始存档）——
   async function save(): Promise<void> {
+    if (initError.value) return
     lastSaveTime.value = Date.now()
     await writeSave(buildSaveData())
   }
 
   /** 同步存档（仅 localStorage），用于 beforeunload 场景 */
   function saveSync(): void {
+    if (initError.value) return
     lastSaveTime.value = Date.now()
     writeSaveSync(buildSaveData())
   }
@@ -330,6 +337,13 @@ export const useGameStore = defineStore('game', () => {
       if (outcome.status === 'too_new') {
         // 版本过新：不静默 hydrate 未知结构，进入错误态等玩家处理
         initError.value = 'too_new'
+        return false
+      }
+      if (outcome.status === 'corrupt') {
+        // 主备档都在但都不可读（v0.81）：进错误屏给导出/清除出口，
+        // 绝不按无档处理——否则 15 秒自动存档会用空状态覆盖损坏档
+        initError.value = 'corrupt'
+        corruptRaw.value = outcome.raw ?? null
         return false
       }
       if (outcome.status === 'none') return false
@@ -408,6 +422,10 @@ export const useGameStore = defineStore('game', () => {
   async function doExport(): Promise<string> {
     return exportSave(buildSaveData())
   }
+  /** 错误屏「导出原始存档」：把损坏档的原始载荷原样交出（不解析不改写） */
+  function exportCorruptRaw(): string {
+    return corruptRaw.value ?? ''
+  }
   async function doImport(code: string): Promise<{ success: boolean; message?: string }> {
     const result = await importSave(code)
     if (!result.ok) {
@@ -420,6 +438,22 @@ export const useGameStore = defineStore('game', () => {
       return { success: false, message: msg }
     }
     try {
+      // 导入 = 替换语义（v0.81）：hydrate 各 store 只覆盖出现的键，
+      // 不先 reset 的话导入档缺省字段会保留会话现值（totalTranscends=0 也无法清零）。
+      // 重置清单对齐 hardReset（resources.reset() 回到含初始能量的新档状态；
+      // combat 传 fullReset 清远征深度），但不清存档、不停游戏循环；
+      // reset 后由 hydrateAll 恢复导入档快照，终身计数不重复计入
+      resources.reset()
+      buildings.reset()
+      research.reset()
+      military.reset()
+      combat.reset(true)
+      exploration.reset()
+      relics.reset()
+      transcend.reset(true)
+      achievements.reset()
+      daily.reset()
+      totalPlayTime.value = 0
       hydrateAll(result.data)
       await save()
       return { success: true }
@@ -433,6 +467,7 @@ export const useGameStore = defineStore('game', () => {
     stop()
     await clearSave()
     initError.value = null
+    corruptRaw.value = null
     resources.reset()
     buildings.reset()
     research.reset()
@@ -578,6 +613,8 @@ export const useGameStore = defineStore('game', () => {
     // import/export
     doExport,
     doImport,
+    corruptRaw,
+    exportCorruptRaw,
     // atomic actions (3.12)
     tryUpgradeBuilding,
     tryResearch,
