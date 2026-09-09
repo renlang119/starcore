@@ -11,7 +11,7 @@ import { useResourcesStore, START_ENERGY } from './resources'
 import { useBuildingsStore } from './buildings'
 import { useResearchStore } from './research'
 import { useMilitaryStore, setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
-import { useCombatStore } from './combat'
+import { useCombatStore, setGarrisonGuard } from './combat'
 import { useExplorationStore } from './exploration'
 import { useRelicsStore, setRelicSlotProvider, setRelicEnhanceSpendProvider } from './relics'
 import { useTranscendStore } from './transcend'
@@ -29,6 +29,7 @@ import {
 } from '@/lib/storage'
 import { TECHS, adjustedTechCost } from '@/data/tech'
 import { BUILDINGS } from '@/data/buildings'
+import { getStronghold } from '@/data/pve'
 import type { ResourceType } from '@/data/buildings'
 
 const TICK_INTERVAL = 1000 // ms
@@ -65,6 +66,19 @@ export const useGameStore = defineStore('game', () => {
   setTrainingSlotProvider(() =>
     Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
   )
+  // 驻扎前置守卫（v0.82 驻扎校验）：据点须解锁（探索前置完成）+ 编队存在且未被其他据点占用。
+  // 据点已攻克门槛由 combat.garrison 本体校验（completedStrongholds 属 combat 自身状态）
+  setGarrisonGuard((strongholdId, formationId) => {
+    const def = getStronghold(strongholdId)
+    if (!def) return false
+    if (def.requires && !exploration.isCompleted(def.requires)) return false
+    const f = military.formations.find((f) => f.id === formationId)
+    if (!f) return false
+    for (const [sid, g] of Object.entries(combat.garrisoned)) {
+      if (sid !== strongholdId && g.formationId === formationId) return false
+    }
+    return true
+  })
 
   // —— game meta state ——
   const lastSaveTime = ref(Date.now())
@@ -247,7 +261,9 @@ export const useGameStore = defineStore('game', () => {
   function runAutomation(): void {
     if (autoBuild.value) {
       for (const b of BUILDINGS) {
-        if (!buildings.isUnlocked(b, research.unlockedSet)) continue
+        // isUnlocked 查 b.requires（科技 id），须传已完成科技集合；
+        // 传 unlockedSet（unlock 效果目标=建筑 id）两集合永不相交，17/20 建筑永不自动升级
+        if (!buildings.isUnlocked(b, research.completed)) continue
         tryUpgradeBuilding(b.id)
       }
     }
@@ -543,6 +559,8 @@ export const useGameStore = defineStore('game', () => {
    * 替代视图中 canAfford → spendCost → upgrade 的三步非原子调用
    */
   function tryUpgradeBuilding(id: string): boolean {
+    const def = BUILDINGS.find((b) => b.id === id)
+    if (!def) return false // 未知建筑 id：失败路径不记账不扣费
     const cost = buildings.getCost(id)
     if (!resources.spendCost(cost)) return false // spendCost 内部已含 canAfford 检查
     buildings.upgrade(id)

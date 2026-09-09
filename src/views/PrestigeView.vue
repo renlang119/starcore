@@ -534,7 +534,8 @@ function cancelHardReset() {
   color: var(--color-core);
 }
 
-.modal {
+/* 弹窗本体挂载在 ModalOverlay 内部，本视图 scoped 规则须经 :deep() 穿透（v0.82） */
+:deep(.modal) {
   border-color: var(--color-amber);
 }
 .confirm-title {
