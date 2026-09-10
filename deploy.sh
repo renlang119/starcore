@@ -21,7 +21,7 @@ for f in "${ENV_CANDIDATES[@]}"; do
 done
 DEST="${DEPLOY_DEST:-/var/www/starcore}"
 SITE_URL="${DEPLOY_URL:-$SITE_URL}"
-[[ -n "$SITE_URL" ]] || { echo "[FAIL] 未配置 DEPLOY_URL（环境变量或 .deploy.env）" >&2; exit 1; }
+[[ -n "$SITE_URL" ]] || { echo "[FAIL] 未配置 DEPLOY_URL（环境变量或配置文件）" >&2; exit 1; }
 
 SKIP_BUILD=0
 if [[ "${1:-}" == "--skip-build" ]]; then
