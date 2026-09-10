@@ -70,7 +70,7 @@ const stars = [
 
 /**
  * 战斗页面 (/battle/:id) 不在常规导航中，
- * 移动端需要一个浮动「返回」按钮让用户回到主界面。
+ * 移动端需要一个浮动「返回」按钮让玩家回到主界面。
  * 遗物/奇点重启已收入底部导航「更多」菜单，不再需要额外入口。
  */
 const showBattleBack = computed(() => route.path.startsWith('/battle'))

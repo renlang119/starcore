@@ -169,7 +169,7 @@ export const useGameStore = defineStore('game', () => {
       const report = doComputeOfflineGains(dt)
       // 短时离线（<5分钟）静默补算不弹窗——浏览器对不活跃标签页的
       // setInterval 有节流（常降至 1 次/分钟甚至更低），或系统短暂
-      // 休眠唤醒，都会导致 dt 突然超过 60 秒。这种情况下用户并未真正
+      // 休眠唤醒，都会导致 dt 突然超过 60 秒。这种情况下玩家并未真正
       // "离开"，弹窗打扰体验。补算逻辑照常执行，仅抑制弹窗。
       if (report && dt >= OFFLINE_REPORT_THRESHOLD) setOfflineReport(report)
       dt = 1

@@ -28,7 +28,7 @@ const endlessDepth = ref(1)
 const endlessBest = computed(() => game.combat.expeditionBest)
 /** 可选深度：1 ~ 前沿（历史最深+1），前沿胜利即推进 */
 const endlessMaxDepth = computed(() => endlessBest.value + 1)
-/** 用户手动调过深度后不再自动跟随前沿（只做越界钳制） */
+/** 玩家手动调过深度后不再自动跟随前沿（只做越界钳制） */
 const endlessTouched = ref(false)
 const endlessStrongholdDef = computed<StrongholdDef>(() =>
   game.combat.getEndlessStronghold(endlessDepth.value)
@@ -197,7 +197,7 @@ function applyBattleLosses(result: ReturnType<typeof game.combat.resolveBattle>)
   }
 }
 
-/** 发放战斗奖励（仅在用户确认弹窗结果时调用，通过 rewardsGranted 防重入） */
+/** 发放战斗奖励（仅在玩家确认弹窗结果时调用，通过 rewardsGranted 防重入） */
 function grantRewards() {
   if (rewardsGranted.value) return
   const r = battleResult.value
