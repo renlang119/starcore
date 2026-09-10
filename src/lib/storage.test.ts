@@ -259,7 +259,7 @@ describe('storage export/import', () => {
 })
 
 /**
- * v0.75 存档安全与校验加固批回归：
+ * v0.75 存档安全与校验加固回归：
  * A1 远征通关集污染自愈 / A2 空串裂缝 / 版本上限 / 校验体系补齐（training/formations/garrisoned/exploration/daily/兵力整数）
  */
 describe('storage — 存档加固（v0.75）', () => {
@@ -407,7 +407,7 @@ describe('storage — 存档加固（v0.75）', () => {
 })
 
 /**
- * v0.81 存档安全批回归：
+ * v0.81 存档安全回归：
  * 指数限位 / 无限节点等级上限 / training.count 整数 / 空编队自愈 /
  * totalTranscends 非负整数 / SCE 前缀合并兼容 / b64 中文往返 /
  * 双档取 savedAt 新者（readSave 真通道，jsdom）
