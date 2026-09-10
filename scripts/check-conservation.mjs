@@ -53,19 +53,17 @@ function countArrayEntries(file, exportName) {
   const body = src.slice(bracket + 1, end)
   // 去掉块注释与行注释，避免注释里的 { 干扰
   const clean = body.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
-  // 顶层条目 = 深度 1 处的 "id: '" 出现数（每个条目必有 id 首字段）
+  // 顶层条目 = 深度 1 处的 "id:" 出现数（每个条目必有 id 首字段；
+  // 兼容单引号/双引号与 id 非首字段的历史形态）
   let d = 0
   let count = 0
   for (let i = 0; i < clean.length; i++) {
     const ch = clean[i]
     if (ch === '{' || ch === '[') d++
     else if (ch === '}' || ch === ']') d--
-    else if (
-      d === 1 &&
-      clean.startsWith("id: '", i)
-    ) {
+    else if (d === 1 && clean.startsWith('id:', i)) {
       count++
-      i += 4
+      i += 3
     }
   }
   return count
@@ -94,7 +92,10 @@ function countRecordKeys(file, exportName) {
       }
     }
   }
-  const body = src.slice(brace + 1, end).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+  const body = src
+    .slice(brace + 1, end)
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
   // 顶层键 = 深度 1 处的 "key: {"（缩进不定，TECH_BRANCHES 2 空格 / ACHIEVEMENT_CATEGORIES 4 空格）
   let d = 0
   let count = 0
@@ -157,7 +158,8 @@ function transcendTreeStats() {
   const body = src.slice(bracket + 1, end)
   const entries = body.split(/\n\s*\},/).map((x) => x)
   let infinite = 0
-  const total = (body.match(/^\s{2,4}id: '/gm) ?? []).length
+  // 条目 id 行缩进不固定（2–4 空格均有），用 \s+ 泛化匹配
+  const total = (body.match(/^\s+id: '/gm) ?? []).length
   for (const e of entries) {
     if (/maxLevel:\s*Infinity/.test(e)) infinite++
   }
@@ -197,15 +199,22 @@ const bad = (area, detail) => {
   issues.push({ area, detail })
 }
 
-function scanDir(dir, ext, patterns) {
+function scanDir(dir, ext, patterns, nameFilter = null) {
   const hits = []
   if (!existsSync(dir)) return hits
   for (const f of readdirSync(dir)) {
     if (!f.endsWith(ext)) continue
+    if (nameFilter && !nameFilter(f)) continue
     const text = readFileSync(join(dir, f), 'utf8')
     for (const p of patterns) {
       for (const m of text.matchAll(p.re)) {
-        hits.push({ file: f, path: join(dir, f), value: Number(m[1]), line: text.slice(0, m.index).split('\n').length, raw: m[0] })
+        hits.push({
+          file: f,
+          path: join(dir, f),
+          value: Number(m[1]),
+          line: text.slice(0, m.index).split('\n').length,
+          raw: m[0],
+        })
       }
     }
   }
@@ -228,7 +237,8 @@ function scanUnitOptional(re, label, expectOf) {
   const found = []
   for (const p of unitTests) {
     const text = readFileSync(p, 'utf8')
-    for (const m of text.matchAll(re)) found.push({ file: p.replace(ROOT + '/', ''), value: Number(m[1]) })
+    for (const m of text.matchAll(re))
+      found.push({ file: p.replace(ROOT + '/', ''), value: Number(m[1]) })
   }
   if (found.length === 0) {
     console.log(`  - ${label}: 无直测断言（存在等价守护即可）`)
@@ -264,22 +274,18 @@ scanUnit(/TECHS\)\.toHaveLength\((\d+)\)/g, '科技总数（TECHS toHaveLength�
 scanUnit(/EXPLORE_NODES\)\.toHaveLength\((\d+)\)/g, '探索节点数（EXPLORE_NODES）', T.exploreNodes)
 scanUnit(/ACHIEVEMENTS\)\.toHaveLength\((\d+)\)/g, '成就总数（ACHIEVEMENTS）', T.achievements)
 scanUnit(/BUILDINGS\)\.toHaveLength\((\d+)\)/g, '建筑总数（BUILDINGS）', T.buildings)
-scanUnitOptional(/RELIC_POOL[\s\S]{0,40}?toHaveLength\((\d+)\)/g, '遗物种数（RELIC_POOL 直测）', T.relicPool)
-  scanUnit(
-    /RELIC_SETS\.flatMap[\s\S]{0,60}?toHaveLength\((\d+)\)/g,
-    '遗物种数（套装成员并集等价断言）',
-    T.relicPool
-  )
-  scanUnit(
-    /!isInfiniteNode\([^)]*\)\)+\.toHaveLength\((\d+)\)/g,
-    '转生买断节点数',
-    T.treeBuyout
-  )
-  scanUnit(
-    /[^!]isInfiniteNode\([^)]*\)\)+\.toHaveLength\((\d+)\)/g,
-    '转生无限节点数',
-    T.treeInfinite
-  )
+scanUnitOptional(
+  /RELIC_POOL[\s\S]{0,40}?toHaveLength\((\d+)\)/g,
+  '遗物种数（RELIC_POOL 直测）',
+  T.relicPool
+)
+scanUnit(
+  /RELIC_SETS\.flatMap[\s\S]{0,60}?toHaveLength\((\d+)\)/g,
+  '遗物种数（套装成员并集等价断言）',
+  T.relicPool
+)
+scanUnit(/!isInfiniteNode\([^)]*\)\)+\.toHaveLength\((\d+)\)/g, '转生买断节点数', T.treeBuyout)
+scanUnit(/[^!]isInfiniteNode\([^)]*\)\)+\.toHaveLength\((\d+)\)/g, '转生无限节点数', T.treeInfinite)
 scanUnit(/Object\.keys\(TECH_BRANCHES\)\)\.toHaveLength\((\d+)\)/g, '科技分支数', T.techBranches)
 
 // 成就阈值联动（ach_tech_3 threshold = 科技总数；ach_relic_4 threshold = 遗物种数）
@@ -299,19 +305,31 @@ if (!new RegExp(`全部 ${T.relicPool} 种`).test(T.achRelic4Desc ?? '')) {
 // —— 3b. Playwright 硬断言 ——
 if (PW_DIR === null) {
   console.log('\n== Playwright 硬断言 ==')
-  console.log('  （未提供 --pw-dir / STARCORE_PW_DIR，跳过）')
+  console.log(
+    '  （未提供 --pw-dir / STARCORE_PW_DIR，跳过该段；将脚本目录以绝对路径传入即启用）'
+  )
+} else if (PW_DIR === undefined || PW_DIR === true || String(PW_DIR).startsWith('-')) {
+  bad('Playwright 目录', '--pw-dir 缺少目录参数（请补绝对路径，如 --pw-dir <脚本目录>），本次跳过该段')
 } else {
   console.log('\n== Playwright 硬断言（' + PW_DIR + '/starcore-*.mjs）==')
   const pwPatterns = [
     { re: /\.tech-card'\)\.count\(\)\) === (\d+)/g, label: '科技卡数', expect: T.techs },
     { re: /\.ach-card'\)\.count\(\)\) === (\d+)/g, label: '成就卡数', expect: T.achievements },
     { re: /sections\.count\(\)\) === (\d+)/g, label: '成就分区数', expect: T.achCategories },
-    { re: /已解锁据点 (\d+) 个（实际 \$\{shCount\}/g, label: '据点全解锁口径', expect: T.strongholds, mode: 'max' },
+    {
+      re: /已解锁据点 (\d+) 个（实际 \$\{shCount\}/g,
+      label: '据点全解锁口径',
+      expect: T.strongholds,
+      mode: 'max',
+    },
   ]
-  const pwFiles = existsSync(PW_DIR) ? readdirSync(PW_DIR).filter((f) => f.startsWith('starcore-') && f.endsWith('.mjs')) : []
+  const pwFiles = existsSync(PW_DIR)
+    ? readdirSync(PW_DIR).filter((f) => f.startsWith('starcore-') && f.endsWith('.mjs'))
+    : []
   if (pwFiles.length === 0) bad('Playwright 目录', `${PW_DIR} 未找到 starcore-*.mjs`)
   for (const p of pwPatterns) {
-    const found = scanDir(PW_DIR, '.mjs', [p])
+    // 只扫套件脚本 starcore-*.mjs，非套件脚本（诊断/overlay 等）不参与守恒断言
+    const found = scanDir(PW_DIR, '.mjs', [p], (f) => f.startsWith('starcore-'))
     if (found.length === 0) {
       console.log(`  - ${p.label}: 无断言（跳过）`)
       continue
@@ -322,7 +340,8 @@ if (PW_DIR === null) {
       const over = found.filter((f) => f.value > p.expect)
       const maxV = Math.max(...found.map((f) => f.value))
       if (over.length > 0) {
-        for (const w of over) bad(p.label, `${w.file}:${w.line} 断言 ${w.value} 超过真值 ${p.expect}`)
+        for (const w of over)
+          bad(p.label, `${w.file}:${w.line} 断言 ${w.value} 超过真值 ${p.expect}`)
       } else if (maxV !== p.expect) {
         bad(p.label, `最大断言 ${maxV} ≠ 全解锁真值 ${p.expect}`)
       } else {
@@ -338,37 +357,109 @@ if (PW_DIR === null) {
     }
   }
   // 「N 卡/汇总 N/34」等模板串里的成就数
-  const achTpl = scanDir(PW_DIR, '.mjs', [{ re: /(\d+) 张成就卡/g }, { re: /汇总 (\d+)\/(\d+)/g }])
+  const achTpl = scanDir(
+    PW_DIR,
+    '.mjs',
+    [{ re: /(\d+) 张成就卡/g }, { re: /汇总 (\d+)\/(\d+)/g }],
+    (f) => f.startsWith('starcore-')
+  )
+  // 豁免：同一字符串内的成就数为「解锁数/总数」形态时取分母（汇总 N/M 取 M），
+  // 解锁数随场景变化是合法的
   for (const h of achTpl.filter((h) => h.raw.includes('张成就卡') || h.raw.includes('汇总'))) {
     const nums = [...h.raw.matchAll(/\d+/g)].map((x) => Number(x[0]))
     const total = h.raw.includes('张成就卡') ? nums[0] : nums[1]
-    if (total !== T.achievements) bad('成就卡数（模板串）', `${h.file}:${h.line}「${h.raw.trim()}」总数 ${total} ≠ ${T.achievements}`)
+    if (total !== T.achievements)
+      bad(
+        '成就卡数（模板串）',
+        `${h.file}:${h.line}「${h.raw.trim()}」总数 ${total} ≠ ${T.achievements}`
+      )
   }
 }
 
 // —— 3c. 文档计数词表 ——
 console.log('\n== 文档计数词表（README + docs）==')
+// symbol 总数真值：7 个图标 SFC 的 <symbol 计数（须在 docRules 定义前算好）
+function countSymbols() {
+  const dir = join(ROOT, 'src', 'components', 'ui', 'icons')
+  let n = 0
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith('.vue')) continue
+    n += (readFileSync(join(dir, f), 'utf8').match(/<symbol\s/g) ?? []).length
+  }
+  return n
+}
+T.symbols = countSymbols()
+// 测试基线真值：src 递归数 .test.ts 文件与 it( 用例数
+function testBaseline() {
+  let files = 0
+  let cases = 0
+  ;(function walk(d) {
+    for (const f of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, f.name)
+      if (f.isDirectory()) walk(p)
+      else if (f.name.endsWith('.test.ts')) {
+        files++
+        cases += (readFileSync(p, 'utf8').match(/\bit\(/g) ?? []).length
+      }
+    }
+  })(join(ROOT, 'src'))
+  return { files, cases }
+}
+const baseline = testBaseline()
+T.testFiles = baseline.files
+T.testCases = baseline.cases
+
 const docFiles = [
   { p: join(ROOT, 'README.md'), name: 'README.md' },
   { p: join(ROOT, 'docs', '游戏数值设定规范.md'), name: '游戏数值设定规范.md' },
   { p: join(ROOT, 'docs', '游戏设定与架构.md'), name: '游戏设定与架构.md' },
+  { p: join(ROOT, 'docs', '图标设计规范.md'), name: '图标设计规范.md' },
 ]
+// 宽匹配规则（v0.83）：「数字 + 关键词邻域」——数字两侧出现关键词即命中，
+// 不要求完整短语，覆盖「47 项，8 大分支」「20 种，分属 5 资源扇区」「14 买断 +
+// 4 无限」「34 个，9 类里程碑」等分隔形态。规则顺序即优先级：先长形态后短形态，
+// 命中即消费（同一段文本不被两条规则重复计数）。
 const docRules = [
-  { re: /(\d+) 项科技/, label: '科技（N 项科技）', expect: T.techs },
-  { re: /(\d+) 大分支/, label: '科技分支（N 大分支）', expect: T.techBranches },
-  { re: /(\d+) 个节点/, label: '探索节点（N 个节点）', expect: T.exploreNodes },
-  { re: /(\d+) 种建筑/, label: '建筑（N 种建筑）', expect: T.buildings },
-  { re: /(\d+) 据点/, label: '据点（N 据点）', expect: T.strongholds },
-  { re: /(\d+) 个里程碑/, label: '成就（N 个里程碑）', expect: T.achievements },
-  { re: /(\d+) 种稀有度池/, label: '遗物（N 种稀有度池）', expect: T.relicPool },
-  { re: /科技 (\d+)/, label: '科技（科技 N）', expect: T.techs },
-  { re: /成就 (\d+) 类/, label: '成就类别（成就 N 类）', expect: T.achCategories },
-  { re: /成就 (\d+)(?! 类)/, label: '成就（成就 N）', expect: T.achievements },
-  { re: /(\d+) 节点（星核层/, label: '探索节点（N 节点（星核层）', expect: T.exploreNodes },
-  { re: /池.*?(\d+) 种（common/, label: '遗物池（N 种（common…）', expect: T.relicPool },
+  { re: /(\d+)\s*(?:大\s*)?分支/, label: '科技分支（N 分支）', expect: T.techBranches },
+  { re: /(\d+)\s*项科技/, label: '科技（N 项科技）', expect: T.techs },
+  { re: /科技\s*(\d+)/, label: '科技（科技 N）', expect: T.techs },
+  { re: /(\d+)\s*(?:个|座)?\s*据点/, label: '据点（N 据点）', expect: T.strongholds },
+  { re: /(\d+)\s*种建筑/, label: '建筑（N 种建筑）', expect: T.buildings },
+  { re: /(\d+)\s*(?:个|项)?\s*里程碑/, label: '成就（N 里程碑）', expect: T.achievements },
+  { re: /成就\s*(\d+)\s*类/, label: '成就类别（成就 N 类）', expect: T.achCategories },
+  { re: /成就\s*(\d+)(?!\s*类)/, label: '成就（成就 N）', expect: T.achievements },
+  { re: /(\d+)\s*种稀有度池/, label: '遗物（N 种稀有度池）', expect: T.relicPool },
+  {
+    re: /池[^。\d]{0,12}(\d+)\s*种（common/,
+    label: '遗物池（N 种（common…）',
+    expect: T.relicPool,
+  },
+  { re: /(\d+)\s*个节点/, label: '探索节点（N 个节点）', expect: T.exploreNodes },
+  { re: /(\d+)\s*节点（星核层/, label: '探索节点（N 节点（星核层）', expect: T.exploreNodes },
+  { re: /(\d+)\s*买断/, label: '转生买断（N 买断）', expect: T.treeBuyout },
+  { re: /(\d+)\s*无限/, label: '转生无限（N 无限）', expect: T.treeInfinite },
+  { re: /symbol 总数\s*(\d+)/, label: '图标 symbol 总数', expect: T.symbols },
+  { re: /(\d+)\s*个 symbol/, label: '图标 symbol（N 个 symbol）', expect: T.symbols },
+  { re: /全部 (\d+) 个图标/, label: '图标（全部 N 个图标）', expect: T.symbols },
+  {
+    re: /(\d+)\s*个测试文件\s*(\d+)\s*个?用例/,
+    label: '测试基线（N 文件 M 用例）',
+    expect: T.testFiles,
+    secondExpect: () => T.testCases,
+  },
 ]
 // 豁免上下文：层级局部口径（如「6 节点 5 据点，」= 星团层局部，非全量 21）
-const docContextExempt = [/\d+ 节点 \d+ 据点/]
+const docContextExempt = [
+  /\d+ 节点 \d+ 据点/,
+  /\d+ 节点 \d+ 据点，/, // 逗号结尾的层内口径
+  /\d+ 买断协议节点/, // 「3 买断协议节点」= 自动协议子集，非全量买断 14
+  /协议节点（/, // 协议节点括号说明行
+  /总数 \d+→\d+/, // 版本历史行「symbol 总数 87→89」= 当时点口径，非现值
+  /→\d+。/, // 版本历史行尾态
+]
+
+// 命中清单输出（消除「仅报漂移」的覆盖错觉）：每条规则命中数可见
+const ruleHits = new Map()
 for (const d of docFiles) {
   if (!existsSync(d.p)) {
     bad('文档缺失', d.name)
@@ -378,21 +469,41 @@ for (const d of docFiles) {
   for (const r of docRules) {
     for (const m of text.matchAll(new RegExp(r.re, 'g'))) {
       const v = Number(m[1])
-      const ctx = text.slice(Math.max(0, m.index - 20), m.index + m[0].length + 10)
+      const ctx = text.slice(Math.max(0, m.index - 24), m.index + m[0].length + 14)
       if (docContextExempt.some((ex) => ex.test(ctx))) continue
+      ruleHits.set(r.label, (ruleHits.get(r.label) ?? 0) + 1)
+      const line = text.slice(0, m.index).split('\n').length
+      // 双数字规则（测试基线 N 文件 M 用例）分别校验
+      if (r.secondExpect) {
+        const m2 = m[2] !== undefined ? Number(m[2]) : null
+        const exp2 = r.secondExpect()
+        if (v !== r.expect || m2 !== exp2) {
+          bad(
+            `${d.name} · ${r.label}`,
+            `第 ${line} 行「${m[0]}」= ${v}/${m2} ≠ 真值 ${r.expect}/${exp2}`
+          )
+        }
+        continue
+      }
       if (v !== r.expect) {
-        const line = text.slice(0, m.index).split('\n').length
         bad(`${d.name} · ${r.label}`, `第 ${line} 行「${m[0]}」= ${v} ≠ 真值 ${r.expect}`)
       }
     }
   }
 }
-console.log('  （文档词表仅报漂移，无漂移不打点）')
+console.log('  命中清单（规则: 命中处数，覆盖可见）:')
+for (const [label, n] of ruleHits) console.log(`    · ${label}: ${n} 处`)
+for (const r of docRules) {
+  if (!ruleHits.has(r.label)) console.log(`    · ${r.label}: 0 处（无覆盖）`)
+}
+console.log('  （漂移会逐条列出；无漂移仅打命中清单）')
 
 // —— 3d. 汇总 ——
 console.log('\n== 汇总 ==')
 if (issues.length === 0) {
-  console.log(`全部守恒 ✓（数据真值：科技 ${T.techs} / 分支 ${T.techBranches} / 节点 ${T.exploreNodes} / 据点 ${T.strongholds} / 遗物 ${T.relicPool} / 建筑 ${T.buildings} / 成就 ${T.achievements}（${T.achCategories} 类）/ 转生买断 ${T.treeBuyout}+无限 ${T.treeInfinite}）`)
+  console.log(
+    `全部守恒 ✓（数据真值：科技 ${T.techs} / 分支 ${T.techBranches} / 节点 ${T.exploreNodes} / 据点 ${T.strongholds} / 遗物 ${T.relicPool} / 建筑 ${T.buildings} / 成就 ${T.achievements}（${T.achCategories} 类）/ 转生买断 ${T.treeBuyout}+无限 ${T.treeInfinite}）`
+  )
   process.exit(0)
 } else {
   console.log(`发现 ${issues.length} 处计数漂移：`)
