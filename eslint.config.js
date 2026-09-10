@@ -7,7 +7,7 @@ import globals from 'globals'
 export default [
   // 忽略目录
   {
-    ignores: ['dist/**', 'node_modules/**', 'deploy.sh'],
+    ignores: ['dist/**', 'node_modules/**'],
   },
 
   // 基础 JS 推荐规则
@@ -24,7 +24,7 @@ export default [
 
   // 项目特定配置
   {
-    files: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.vue'],
+    files: ['src/**/*.ts', 'src/**/*.vue'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -59,7 +59,7 @@ export default [
 
   // 配置文件
   {
-    files: ['*.config.ts', 'vitest.config.ts', 'vite.config.ts'],
+    files: ['*.config.ts'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

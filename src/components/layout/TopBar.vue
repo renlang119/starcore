@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
 import { APP_VERSION } from '@/version'
@@ -13,6 +13,8 @@ const res = game.resources
 // 使用 ref + watchEffect 替代 computed 内突变 reactive，消除副作用
 const flashState = ref<Record<string, boolean>>({})
 const prevAmounts: Record<string, string> = {}
+/** 高亮熄灭定时器句柄（按资源 id；重触发清旧、卸载全清，v0.84） */
+const flashTimers: Record<string, ReturnType<typeof setTimeout>> = {}
 
 const resourceList = computed(() => {
   const items: {
@@ -47,12 +49,19 @@ watchEffect(() => {
     const prev = prevAmounts[id]
     if (prev !== undefined && prev !== amountStr) {
       flashState.value[id] = true
-      setTimeout(() => {
+      const old = flashTimers[id]
+      if (old) clearTimeout(old)
+      flashTimers[id] = setTimeout(() => {
         flashState.value[id] = false
+        delete flashTimers[id]
       }, 300)
     }
     prevAmounts[id] = amountStr
   }
+})
+
+onUnmounted(() => {
+  for (const t of Object.values(flashTimers)) clearTimeout(t)
 })
 
 // P3-6 资源产出粒子动画 — 仅 rate > 0 的资源才生成粒子

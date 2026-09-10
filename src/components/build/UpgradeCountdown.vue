@@ -443,11 +443,6 @@ function toggleExpand() {
 .countdown-text .cd-time {
   color: var(--color-t-primary);
 }
-.countdown-text .cd-res {
-  color: var(--color-t-tertiary);
-  font-family: var(--font-body);
-  margin-left: var(--space-1);
-}
 
 /* 展开提示 */
 .cd-hint {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // HeroCore — 星核核心视觉（v0.54 从 HomeView 拆出）
 // 核心能量值 + 产出率 + 三层状态环 + 点击跳转建造页
-import { computed, ref } from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
@@ -78,13 +78,20 @@ const r3Phase = computed(() => {
 
 // P2-4 核心点击脉动
 const coreClicked = ref(false)
+let clickTimer: ReturnType<typeof setTimeout> | null = null
 function onCoreClick() {
   coreClicked.value = true
-  setTimeout(() => {
+  if (clickTimer) clearTimeout(clickTimer)
+  clickTimer = setTimeout(() => {
     coreClicked.value = false
+    clickTimer = null
   }, 600)
   router.push('/build')
 }
+
+onUnmounted(() => {
+  if (clickTimer) clearTimeout(clickTimer)
+})
 
 // 产出率（带 /s 后缀，负值时变红）
 const rateDisplay = computed(() => {
@@ -115,6 +122,7 @@ const isNegativeRate = computed(() => game.resources.getRate('energy').lt(0))
       aria-label="星核核心，点击进入建造页面"
       @click="onCoreClick"
       @keydown.enter="onCoreClick"
+      @keydown.space.prevent="onCoreClick"
     >
       <div class="core-ring r1" :class="r1Phase"></div>
       <div class="core-ring r2" :class="r2Phase"></div>
@@ -260,8 +268,6 @@ const isNegativeRate = computed(() => game.resources.getRate('energy').lt(0))
 
 .core-glow {
   position: absolute;
-  width: 80px;
-  height: 80px;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -328,10 +334,6 @@ const isNegativeRate = computed(() => game.resources.getRate('energy').lt(0))
   .core-visual::after {
     width: 288px;
     height: 288px;
-  }
-  .core-glow {
-    width: 96px;
-    height: 96px;
   }
   .core-value {
     font-size: var(--text-display);
