@@ -27,7 +27,7 @@ const STORE = localforage.createInstance({
   description: '星核纪元存档',
 })
 
-export const SAVE_KEY = 'starcore_save_v1'
+const SAVE_KEY = 'starcore_save_v1'
 
 /** 存档版本号（测试阶段重新起算；旧版本迁移链已随 v0.73 精简移除） */
 export const SAVE_VERSION = 1

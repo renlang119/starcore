@@ -89,7 +89,6 @@ function closeResult(fusion: RelicFusionApi) {
       :model-value="!!fusion.synthResult.value"
       modal-class="synth-modal"
       aria-label="合成结果"
-      @update:model-value="closeResult(fusion)"
       @overlay-click="closeResult(fusion)"
     >
       <template v-if="fusion.synthResult.value">

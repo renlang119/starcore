@@ -13,7 +13,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
   (e: 'overlayClick'): void
 }>()
 
@@ -29,7 +28,7 @@ function onOverlayClick() {
 
 <template>
   <transition name="fade">
-    <div v-if="modelValue" class="modal-overlay active" @click.self="onOverlayClick">
+    <div v-if="modelValue" class="modal-overlay" @click.self="onOverlayClick">
       <div
         ref="modalRef"
         class="modal"

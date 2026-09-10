@@ -55,7 +55,6 @@ function rarityColor(rarity: string): string {
     :model-value="true"
     modal-class="enhance-modal"
     aria-label="遗物强化"
-    @update:model-value="emit('close')"
     @overlay-click="emit('close')"
   >
     <template v-if="relic">

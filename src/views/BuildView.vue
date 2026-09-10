@@ -226,9 +226,6 @@ function isMaxed(id: string): boolean {
   border-color: var(--color-border-glow);
   box-shadow: var(--elevation-2); /* P2-6 */
 }
-.build-card.locked {
-  /* P2-7: 不降低 opacity，通过 --color-locked 区分 */
-}
 .b-head {
   display: flex;
   justify-content: space-between;

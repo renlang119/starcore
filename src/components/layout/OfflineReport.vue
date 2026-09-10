@@ -40,7 +40,7 @@ function dismiss() {
 
 <template>
   <transition name="fade">
-    <div v-if="visible" class="modal-overlay active lighter" @click.self="dismiss">
+    <div v-if="visible" class="modal-overlay lighter" @click.self="dismiss">
       <div ref="modalRef" class="modal" role="dialog" aria-modal="true" aria-label="离线收益报告">
         <h2 class="title font-display">离线收益报告</h2>
         <p class="subtitle">你离开了 {{ fmtTime(report?.duration ?? 0) }}</p>

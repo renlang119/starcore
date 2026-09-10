@@ -384,9 +384,6 @@ const endlessSection = {
   border-color: var(--color-quantum);
   opacity: 0.8;
 }
-.node-card.locked {
-  /* P2-7: 不降低 opacity，通过 --color-locked 区分 */
-}
 .n-head {
   display: flex;
   align-items: center;
@@ -518,9 +515,6 @@ const endlessSection = {
 /* —— 无尽远征（v0.60）—— */
 .endless-section {
   margin-top: var(--space-2);
-}
-.endless-title {
-  color: var(--color-t-primary);
 }
 .endless-desc {
   font-size: var(--text-xs);
