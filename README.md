@@ -1,5 +1,7 @@
 # 星核纪元 · StarCore Era
 
+**简体中文** | [English](README.en.md)
+
 ![星核纪元](public/og.png)
 
 科幻题材的放置/挂机网页游戏：公元 2387 年，殖民舰抵达仙女座星系的戴森球遗迹，
