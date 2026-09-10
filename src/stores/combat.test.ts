@@ -166,7 +166,7 @@ describe('combat store', () => {
     expect(s.id).toBe('endless')
   })
 
-  // —— v0.75：远征通关集污染修复——
+  // —— v0.75：远征通关集污染修复 ——
 
   it('远征胜利不写入正式通关集；serialize 白名单过滤兜底', () => {
     const combat = useCombatStore()
@@ -190,7 +190,7 @@ describe('combat store', () => {
     expect(combat.completedStrongholds.has('endless')).toBe(false)
   })
 
-  // —— v0.82：驻扎校验——
+  // —— v0.82：驻扎校验 ——
 
   it('驻扎门槛：未攻克据点拒绝驻扎（combat 本体校验）', () => {
     const combat = useCombatStore()

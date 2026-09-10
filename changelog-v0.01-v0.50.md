@@ -435,7 +435,7 @@ v0.43，v0.42 的 6 项修复一并上线。
   - `src/stores/game.test.ts`：显式断言替代 if 包裹
   - `vite.config.ts`：sourcemap + manualChunks + server.host 127.0.0.1
   - `start-dev.sh`：set -e + BASH_SOURCE + pnpm
-- 安全提醒：v0.42 已修复 `deploy.py` 中的 SSH 密码硬编码问题（改为环境变量
+- 安全提醒：v0.42 已修复 `deploy.py` 中的凭据硬编码问题（改为环境变量
   读取）。
 
 ### 验证
@@ -1467,20 +1467,20 @@ Icons.vue 进行 facade 工程重构，将单体大组件拆分为 7 个子组�
 
 ---
 
-## v0.21-24 — 修复: 代码评审 P2/P3 修复与 TypeScript 严格度提升
+## v0.21-24 — 修复: 代码评审修复与 TypeScript 严格度提升
 
-**变更性质：修复（代码评审 P2/P3 问题修复与严格模式收口）**
+**变更性质：修复（代码评审问题修复与严格模式收口）**
 **开发时间：2026-07-12**
 
 ### 概述
 
-共修复 6 个评审问题（2 项 P2 + 4 项 P3），含复查阶段修复的 2 个逻辑缺陷。
+共修复 6 个评审问题，含复查阶段修复的 2 个逻辑缺陷。
 同时启用 TypeScript 严格模式的两项未使用检查，清理 20 处未使用导入/变量，
 构建与测试全绿。
 
 ### 变更明细
 
-- P2 修复：
+- 优先修复：
   - 移除冗余 computed 包装函数：`game.ts` 暴露了 7 个 `computeXxx()` 函
     数，每个仅返回对应 `computed.value`，属 Options API 遗留风格。移除包装
     函数，直接暴露 computed 属性（`atkMult`、`defMult` 等），5 个调用方改
@@ -1492,7 +1492,7 @@ Icons.vue 进行 facade 工程重构，将单体大组件拆分为 7 个子组�
     明，明确「防君子不防小人」的混淆定位、纯前端单机游戏的固有约束、足以/
     不足以防御的场景。
     - 涉及文件：`src/lib/storage.ts`
-- P3 修复：
+- 常规修复：
   - 驻扎收益改为 computed 缓存：`combat.ts` 新增 `garrisonProduction`
     computed，仅在 `garrisoned` 变化时重算合并产出，替代原每 tick 遍历所有
     驻扎据点；`game.ts` 的 tick 改为直接读取该 computed。
