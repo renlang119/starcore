@@ -422,7 +422,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 
   it('v0.81 doImport 替换语义：缺省字段回落初始值，totalTranscends=0 可清零', async () => {
-    // 先把会话状态堆起来
+    // 先把内存状态堆起来
     const game = useGameStore()
     game.transcend.totalTranscends = 9
     game.totalPlayTime = 500
@@ -445,7 +445,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
     const code = await exportSave(minimal)
     const result = await game.doImport(code)
     expect(result.success).toBe(true)
-    // 替换语义断言：会话现值被导入档覆盖，缺省回落初始值
+    // 替换语义断言：内存现值被导入档覆盖，缺省回落初始值
     expect(game.transcend.totalTranscends).toBe(0) // 0 可清零（旧实现 if 跳过 0）
     expect(game.totalPlayTime).toBe(0)
     expect(game.buildings.getLevel('solar_collector')).toBe(0)
