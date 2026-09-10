@@ -228,6 +228,9 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 >
 > **当前缺口（v0.63 核对）**：`src/views/RelicView.vue` `.material-tag { font-size: 10px }`
 > 系 v0.61 新增组件带入的豁免外残留，待修复。
+>
+> **缺口销项（v0.83 核对）**：`.material-tag` 现为 `font-size: var(--text-xs)`，
+> 上述缺口已修复，本条仅留档。
 
 #### 2.3.5 Stylelint 防回潮（建议 P1 阶段引入）
 

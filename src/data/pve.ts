@@ -611,7 +611,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
         counteredBy: ['guard', 'psionic'],
       },
     ],
-    rewards: { energy: 8000000, dark: 15, relicChance: 0.6 },
+    rewards: { energy: 8000000, alloy: 80000, dark: 15, relicChance: 0.6 },
     idle: { energy: 3500, alloy: 200, dark: 2 },
     requires: 'node_cluster_gate',
   },

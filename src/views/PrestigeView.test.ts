@@ -129,9 +129,10 @@ describe('PrestigeView — 清除存档确认', () => {
       },
     })
 
-    // 找到清除存档按钮（btn-danger class）
-    const resetBtn = wrapper.find('.btn-danger')
-    if (resetBtn.exists()) {
+    // 找到清除存档按钮（v0.83 校正：按钮实际类为 btn-ghost sm + alert 色，
+    // 原断言找 .btn-danger 恒不存在 → if 恒假整个用例空转；改按文本找）
+    const resetBtn = wrapper.findAll('button').find((b) => b.text().includes('清除存档'))
+    if (resetBtn) {
       await resetBtn.trigger('click')
       await wrapper.vm.$nextTick()
 

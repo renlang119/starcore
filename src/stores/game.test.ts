@@ -66,8 +66,13 @@ describe('game store — tick integration', () => {
     const before = resources.getAmount('energy').toNumber()
     game.tick()
     const after = resources.getAmount('energy').toNumber()
-    // 升级消耗能量，tick 应增加能量（生产量 > 0）
-    expect(after).toBeGreaterThanOrEqual(before)
+    // 产出断言（v0.83 强化：原 ≥ 弱断言改为精确区间）。
+    // delta = 每日签到自动首签 20000（v0.62 设计行为：签到 tick 驱动，
+    // 新档首 tick 必触发）+ solar L1 产出 0.5×dt（dt 为真实时钟差，
+    // 测试环境远小于 1s，不确定），故用区间断言锁签到值 + 产出上界
+    const delta = after - before
+    expect(delta).toBeGreaterThanOrEqual(20000) // 签到 20000
+    expect(delta).toBeLessThan(20001) // + 产出 0.5×(<1s)，升级消耗已在 before 之前
   })
 })
 
