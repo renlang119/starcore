@@ -18,10 +18,21 @@ function nav(path: string) {
 const negEntropy = computed(() => fmt(game.transcend.negativeEntropy))
 
 // P2-8 SideNav 可折叠 — 状态记忆 localStorage（纯客户端 SPA，无 SSR 风险）
-const COLLAPSE_KEY = 'starcore:sidenav-collapsed'
+const COLLAPSE_KEY = 'starcore_sidenav_collapsed'
+/** 旧键（冒号风格）：读取一次后迁移清除，保持键名规范统一（v0.84） */
+const COLLAPSE_KEY_LEGACY = 'starcore:sidenav-collapsed'
 const collapsed = ref(false)
 try {
-  collapsed.value = localStorage.getItem(COLLAPSE_KEY) === 'true'
+  let stored = localStorage.getItem(COLLAPSE_KEY)
+  if (stored === null) {
+    const legacy = localStorage.getItem(COLLAPSE_KEY_LEGACY)
+    if (legacy !== null) {
+      stored = legacy
+      localStorage.setItem(COLLAPSE_KEY, legacy)
+      localStorage.removeItem(COLLAPSE_KEY_LEGACY)
+    }
+  }
+  collapsed.value = stored === 'true'
 } catch {
   /* localStorage 不可用时静默降级 */
 }

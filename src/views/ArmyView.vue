@@ -418,7 +418,7 @@ function removeAll(fid: string, uid: UnitId) {
 
     <!-- 批量操作确认弹窗 -->
     <ModalOverlay
-      v-model="showBulkModal"
+      :model-value="showBulkModal"
       :aria-label="pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤'"
       @overlay-click="cancelBulkAction"
     >

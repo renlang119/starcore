@@ -12,6 +12,8 @@ defineProps<{ toast: ToastApi }>()
 
 <template>
   <Transition name="toast">
-    <div v-if="toast.msg.value" class="toast">{{ toast.msg.value }}</div>
+    <div v-if="toast.msg.value" class="toast" role="status" aria-live="polite">
+      {{ toast.msg.value }}
+    </div>
   </Transition>
 </template>
