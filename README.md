@@ -1,5 +1,7 @@
 # 星核纪元 · StarCore Era
 
+![星核纪元](public/og.png)
+
 科幻题材的放置/挂机网页游戏：公元 2387 年，殖民舰抵达仙女座星系的戴森球遗迹，
 玩家经营星核文明，在「文明与熵的永恒博弈」中积累能量、探索星域、征战据点、
 收集遗物，并通过「奇点重启」转生循环不断成长。
@@ -103,3 +105,5 @@ starcore/
 ## 许可证
 
 [MIT](LICENSE) © 2026 renlang119
+
+界面字体 Orbitron 与 JetBrains Mono 均以 SIL Open Font License 1.1 授权。
