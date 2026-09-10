@@ -59,7 +59,7 @@ function slotLabel(idx: number): string {
 }
 
 function equip(relic: OwnedRelic, slot: number) {
-  // 槽位全满时 findIndex 返回 -1，需明确提示用户
+  // 槽位全满时 findIndex 返回 -1，需明确提示玩家
   if (slot < 0) {
     showToast('装备槽位已满，请先卸下一个遗物')
     return
