@@ -215,10 +215,6 @@ watch(
   font-size: var(--text-xs);
   color: var(--color-t-secondary);
 }
-.extra-nav button.active {
-  background: var(--color-core);
-  color: var(--color-on-core);
-}
 
 /* P3-5 路由跃迁白光 overlay — 全屏覆盖，350ms 闪过 */
 .warp-overlay {

@@ -79,7 +79,6 @@ export function fmt(v: Decimal.Value, fixed = 2): string {
   } else {
     const scaled = abs.div(D_POWERS[idx])
     if (scaled.gte(100)) s = scaled.toFixed(1)
-    else if (scaled.gte(10)) s = scaled.toFixed(2)
     else s = scaled.toFixed(2)
     s = s.replace(/\.?0+$/, '')
   }

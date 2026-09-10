@@ -108,13 +108,7 @@ export const useGameStore = defineStore('game', () => {
 
   // —— 计算全局乘数（5.1：改为 computed 缓存，仅在依赖变化时重算）——
   const productionMults = computed<Record<string, Decimal>>(() => {
-    const result: Record<string, Decimal> = {
-      energy: D(1),
-      crystal: D(1),
-      alloy: D(1),
-      data: D(1),
-      dark: D(1),
-    }
+    const result: Record<string, Decimal> = {}
     for (const res of ['energy', 'crystal', 'alloy', 'data', 'dark']) {
       result[res] = effectSystem.getMult('production_mult', res)
     }
@@ -157,21 +151,6 @@ export const useGameStore = defineStore('game', () => {
   }
 
   // —— 每日签到/周期挑战（v0.62）——
-  /** 签到结果浮层（AppShell/DailyCard 消费后清除） */
-  const dailyToast = ref<{ text: string; at: number } | null>(null)
-  function setDailyToast(info: {
-    energy: number
-    dark: number
-    streakDay: number
-    returned: boolean
-  }): void {
-    const parts = [`+${info.energy} 能量`]
-    if (info.dark > 0) parts.push(`+${info.dark} 暗物质`)
-    const prefix = info.returned
-      ? `回归补偿 · 连击 ${info.streakDay} 天`
-      : `每日签到 · 连击 ${info.streakDay} 天`
-    dailyToast.value = { text: `${prefix}（${parts.join(' ')}）`, at: Date.now() }
-  }
   /** 挑战奖励发放（DailyCard 领取按钮回调） */
   function claimChallenge(templateId: string): { dark: number; streakBonus: number } | null {
     const result = daily.claim(templateId)
@@ -247,7 +226,6 @@ export const useGameStore = defineStore('game', () => {
           resources.gain(res as ResourceType, v as number)
         }
       }
-      setDailyToast(checkIn)
     }
   }
 
@@ -292,6 +270,9 @@ export const useGameStore = defineStore('game', () => {
   function start() {
     if (isRunning.value) return
     isRunning.value = true
+    // 首帧保证：新档/重置后立即生成当周挑战（已存在则幂等），
+    // 避免「本周挑战」区在首个 tick 前约 1 秒的空窗
+    daily.ensureWeek()
     lastTickTime.value = Date.now()
     tickTimer = setInterval(tick, TICK_INTERVAL)
     saveTimer = setInterval(save, 15000) // 每 15 秒自动存档（缩短间隔降低丢失量）

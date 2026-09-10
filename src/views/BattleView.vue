@@ -395,7 +395,7 @@ function cancelGarrison() {
 
     <!-- 结果弹窗 -->
     <ModalOverlay
-      v-model="showResult"
+      :model-value="showResult"
       :modal-class="{ victory: battleResult?.victory === true, defeat: !battleResult?.victory }"
       :aria-label="battleResult?.victory ? '战斗胜利' : '战斗失败'"
       @overlay-click="battleResult?.victory ? stayHere() : confirmResult()"
@@ -458,7 +458,7 @@ function cancelGarrison() {
 
     <!-- 驻扎确认弹窗 -->
     <ModalOverlay
-      v-model="showGarrisonConfirm"
+      :model-value="showGarrisonConfirm"
       modal-class="garrison-confirm-modal"
       aria-label="挂机驻扎确认"
       @overlay-click="cancelGarrison"
@@ -620,7 +620,7 @@ function cancelGarrison() {
   height: 44px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-line);
-  background: var(--color-surface-raised, var(--color-surface));
+  background: var(--color-surface);
   font-size: var(--text-lg);
   color: var(--color-t-primary);
   flex-shrink: 0;

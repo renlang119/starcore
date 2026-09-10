@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
@@ -51,6 +51,8 @@ const saveMsg = useToast()
 const showExportCode = ref(false)
 const exportCodeDisplay = ref('')
 const showResetConfirm = ref(false)
+/** 导入成功后的刷新定时器句柄（卸载时清理，v0.84） */
+let reloadTimer: ReturnType<typeof setTimeout> | null = null
 
 /** 剪贴板复制（带回退，兼容非安全上下文 http） */
 async function copyToClipboard(text: string): Promise<boolean> {
@@ -108,7 +110,10 @@ async function doImport() {
     result.success ? '导入成功，页面将刷新' : result.message || '导入失败：存档无效',
     3000
   )
-  if (result.success) setTimeout(() => location.reload(), 1500)
+  if (result.success) {
+    if (reloadTimer) clearTimeout(reloadTimer)
+    reloadTimer = setTimeout(() => location.reload(), 1500)
+  }
 }
 async function manualSave() {
   try {
@@ -129,6 +134,10 @@ async function confirmHardReset() {
 function cancelHardReset() {
   showResetConfirm.value = false
 }
+
+onUnmounted(() => {
+  if (reloadTimer) clearTimeout(reloadTimer)
+})
 </script>
 
 <template>
@@ -262,7 +271,11 @@ function cancelHardReset() {
     </div>
 
     <!-- 转生确认弹窗 -->
-    <ModalOverlay v-model="showConfirm" aria-label="确认奇点重启" @overlay-click="cancelTranscend">
+    <ModalOverlay
+      :model-value="showConfirm"
+      aria-label="确认奇点重启"
+      @overlay-click="cancelTranscend"
+    >
       <h2 class="confirm-title font-display">确认奇点重启？</h2>
       <div class="warning-box">
         <p>⚠️ 将重置以下内容：</p>
@@ -295,7 +308,7 @@ function cancelHardReset() {
 
     <!-- 清除存档确认弹窗 -->
     <ModalOverlay
-      v-model="showResetConfirm"
+      :model-value="showResetConfirm"
       aria-label="确认清除存档"
       @overlay-click="cancelHardReset"
     >

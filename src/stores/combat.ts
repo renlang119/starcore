@@ -57,6 +57,9 @@ interface CombatUnit {
 /** 正式据点 id 集合（远征合成据点 'endless' 不在其中） */
 const STRONGHOLD_ID_SET = new Set(STRONGHOLDS.map((s) => s.id))
 
+/** 防御减伤系数：实际伤害 = 攻击 - 防御 × 系数（战斗公式核心常数） */
+const DEFENSE_MITIGATION = 0.4
+
 /**
  * 驻扎前置守卫注入（v0.82 驻扎校验）：
  * game store setup 阶段注入闭包（探索解锁/编队存在/编队未被占用等跨 store 校验），
@@ -74,15 +77,12 @@ export const useCombatStore = defineStore('combat', () => {
   const expeditionBest = ref(0)
 
   /**
-   * 使战斗结果可复现（mulberry32，见 lib/random）
+   * 从编队和据点信息派生战斗种子（RNG 为 mulberry32，见 lib/random）
    *
    * 同一编队打同一据点，相同种子下结果完全一致，
    * 避免 SL 刷随机目标的投机行为。
    * 种子 = 编队内容哈希 + 据点 id + 当前时间分钟数
    */
-  const _makeRng = mulberry32
-
-  /** 从编队和据点信息派生战斗种子 */
   function _battleSeed(formation: Formation, strongholdId: string): number {
     const str = formation.id + ':' + strongholdId + ':' + Math.floor(Date.now() / 60000)
     return fnv1a(str)
@@ -149,7 +149,7 @@ export const useCombatStore = defineStore('combat', () => {
 
     log.push({ round: 0, msg: `遭遇 ${stronghold.name} 守军`, side: 'system' })
 
-    const rng = _makeRng(_battleSeed(formation, stronghold.id))
+    const rng = mulberry32(_battleSeed(formation, stronghold.id))
     let round = 0
     // 软墙设计（v0.52 确定）：保底伤害 1 + 50 回合上限配合使用。
     // 战斗为瞬时结算，该组合表示「越级挑战本该败」——低攻编队对高防据点
@@ -173,7 +173,10 @@ export const useCombatStore = defineStore('combat', () => {
           dmg *= defRef.counterMult
         }
         const totalHp = tgt.hp * tgt.count
-        const dmgDealt = Math.min(totalHp, Math.max(1, dmg - tgt.defense * tgt.count * 0.4))
+        const dmgDealt = Math.min(
+          totalHp,
+          Math.max(1, dmg - tgt.defense * tgt.count * DEFENSE_MITIGATION)
+        )
         // 扣除血量
         const remaining = totalHp - dmgDealt
         if (remaining <= 0) {
@@ -198,7 +201,10 @@ export const useCombatStore = defineStore('combat', () => {
         const tgt = target[Math.floor(rng() * target.length)]
         const dmg = e.attack * e.count
         const totalHp = tgt.hp * tgt.count
-        const dmgDealt = Math.min(totalHp, Math.max(1, dmg - tgt.defense * tgt.count * 0.4))
+        const dmgDealt = Math.min(
+          totalHp,
+          Math.max(1, dmg - tgt.defense * tgt.count * DEFENSE_MITIGATION)
+        )
         const remaining = totalHp - dmgDealt
         if (remaining <= 0) {
           losses[tgt.unitId] = (losses[tgt.unitId] || 0) + tgt.count

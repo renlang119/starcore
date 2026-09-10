@@ -227,9 +227,6 @@ function tryResearch(id: string) {
   opacity: 0.6;
   border-color: var(--color-quantum);
 }
-.tech-card.locked {
-  /* P2-7: 不降低 opacity，通过 --color-locked 区分 */
-}
 
 .t-head {
   display: flex;
