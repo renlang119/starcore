@@ -74,5 +74,5 @@
   --elevation-3: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* —— 状态色（P2-7）—— */
-  --color-locked: #4a6b8a; /* 灰蓝，锁定态专用 */
+  --color-locked: #6387ab; /* 灰蓝提亮版，锁定态专用；vs surface 4.88:1 / vs void 5.36:1（WCAG AA ≥4.5，v0.83） */
 }
