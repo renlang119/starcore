@@ -187,7 +187,7 @@ onUnmounted(() => {
         >
           <div class="node-head">
             <span class="node-name">{{ node.name }}</span>
-            <span class="node-cost font-mono">{{ node.cost }} 负熵</span>
+            <span class="node-cost font-mono">{{ fmt(node.cost) }} 负熵</span>
           </div>
           <p class="node-desc">{{ node.desc }}</p>
           <div class="node-effects">
@@ -237,7 +237,7 @@ onUnmounted(() => {
               {{ node.name }}
               <span class="node-level font-mono">Lv.{{ node.level }}</span>
             </span>
-            <span class="node-cost font-mono">{{ nextCost(node) }} 负熵</span>
+            <span class="node-cost font-mono">{{ fmt(nextCost(node)) }} 负熵</span>
           </div>
           <p class="node-desc">{{ node.desc }}</p>
           <div class="node-effects">
