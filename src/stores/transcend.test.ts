@@ -325,3 +325,42 @@ describe('transcend — reset', () => {
     expect(node('t_energy_1').level).toBe(1)
   })
 })
+
+describe('transcend — 批量购买（v0.86）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    store = useTranscendStore()
+  })
+
+  it('purchaseNodeSteps 买满语义：余额够就买满 steps 级', () => {
+    store.negativeEntropy = D(1000)
+    // 成本 ceil(5×1.5^L)：5/8/12/17/26/38/57/86/129/193，10 级合计 571
+    const done = store.purchaseNodeSteps('t_inf_prod', 10)
+    expect(done).toBe(10)
+    expect(node('t_inf_prod').level).toBe(10)
+    expect(store.negativeEntropy.toNumber()).toBe(1000 - 571)
+  })
+
+  it('余额中途不足：买到买不起为止，返回实际级数', () => {
+    store.negativeEntropy = D(20)
+    // 5 + 8 + 12 = 25 > 20 → 只买 2 级（花 13），剩 7
+    const done = store.purchaseNodeSteps('t_inf_prod', 10)
+    expect(done).toBe(2)
+    expect(node('t_inf_prod').level).toBe(2)
+    expect(store.negativeEntropy.toNumber()).toBe(7)
+  })
+
+  it('一级都买不起：返回 0 且零副作用', () => {
+    store.negativeEntropy = D(3)
+    const done = store.purchaseNodeSteps('t_inf_prod', 10)
+    expect(done).toBe(0)
+    expect(node('t_inf_prod').level).toBe(0)
+    expect(store.negativeEntropy.toNumber()).toBe(3)
+  })
+
+  it('steps=1 与单次购买等价；未知节点返回 0', () => {
+    store.negativeEntropy = D(50)
+    expect(store.purchaseNodeSteps('t_inf_prod', 1)).toBe(1)
+    expect(store.purchaseNodeSteps('ghost_node', 10)).toBe(0)
+  })
+})

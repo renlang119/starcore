@@ -232,6 +232,20 @@ export const useRelicsStore = defineStore('relics', () => {
     return true
   }
 
+  /**
+   * 批量强化遗物（v0.86）：至多 steps 级、买满语义。
+   * 逐级复用 enhance（每级成本按新等级重算），能量不足或达 20 级
+   * 上限自然停止；返回实际完成级数（0 = 一级都买不起）。
+   */
+  function enhanceSteps(instanceId: string, steps: number): number {
+    let done = 0
+    for (let i = 0; i < steps; i++) {
+      if (!enhance(instanceId)) break
+      done++
+    }
+    return done
+  }
+
   function reset() {
     owned.value = []
     equipped.value = new Array(maxSlots.value).fill(null)
@@ -292,6 +306,7 @@ export const useRelicsStore = defineStore('relics', () => {
     synthesize,
     nextEnhanceCost,
     enhance,
+    enhanceSteps,
     getMult,
     reset,
     serialize,

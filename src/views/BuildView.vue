@@ -31,11 +31,15 @@ const allMaxed = computed(
 const { activeStep, dismiss, skipAll } = useOnboarding('build', ['build-upgrade'])
 
 // 3.12：使用原子操作替代 canAfford + spendCost + upgrade 三步
+// v0.86 批量升级：段位切换 ×1/×10/×100，买满语义（能买几级买几级）
+const bulkSteps = ref(1)
+
 function tryUpgrade(id: string) {
-  if (!game.tryUpgradeBuilding(id)) return
-  // 资源消耗操作受理反馈（v0.77 反馈口径）
+  const done = game.tryUpgradeBuildingSteps(id, bulkSteps.value)
+  if (!done) return
+  // 资源消耗操作受理反馈（v0.77 反馈口径；批量时带实际完成级数）
   const name = BUILDINGS.find((b) => b.id === id)?.name ?? id
-  showToast(`开始建造：${name}`)
+  showToast(done > 1 ? `开始建造：${name} ×${done}` : `开始建造：${name}`)
 }
 
 function isMaxed(id: string): boolean {
@@ -48,6 +52,18 @@ function isMaxed(id: string): boolean {
 <template>
   <div class="build-view">
     <h2 class="page-title font-display">建造</h2>
+    <!-- v0.86 批量升级段位切换（页头级，全部建筑卡共用） -->
+    <div class="bulk-toggle" role="group" aria-label="单次升级级数">
+      <button
+        v-for="s in [1, 10, 100]"
+        :key="s"
+        class="seg-btn"
+        :class="{ active: bulkSteps === s }"
+        @click="bulkSteps = s"
+      >
+        ×{{ s }}
+      </button>
+    </div>
     <p v-if="game.autoBuild" class="auto-badge" title="建造协议已激活：自动升级买得起的已解锁建筑">
       ⚙ 建造协议进行中
     </p>
@@ -135,7 +151,7 @@ function isMaxed(id: string): boolean {
             :disabled="!game.resources.canAfford(game.buildings.getCost(b.id))"
             @click="tryUpgrade(b.id)"
           >
-            升级
+            {{ bulkSteps > 1 ? `升级 ×${bulkSteps}` : '升级' }}
           </button>
         </template>
       </li>
@@ -153,6 +169,36 @@ function isMaxed(id: string): boolean {
   margin-top: calc(-1 * var(--space-2));
   margin-bottom: var(--space-2);
   letter-spacing: 0.05em;
+}
+
+/* v0.86 批量升级段位切换器（页头级） */
+.bulk-toggle {
+  display: inline-flex;
+  gap: 0;
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  width: fit-content;
+}
+.seg-btn {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono, monospace);
+  color: var(--color-t-secondary);
+  background: transparent;
+  transition: all 0.15s var(--ease-out);
+}
+.seg-btn + .seg-btn {
+  border-left: 1px solid var(--color-border-line);
+}
+.seg-btn:hover {
+  color: var(--color-t-primary);
+  background: var(--color-hover);
+}
+.seg-btn.active {
+  color: var(--color-core);
+  background: rgba(0, 229, 255, 0.1);
 }
 
 .build-view {

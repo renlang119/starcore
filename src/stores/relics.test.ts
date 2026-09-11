@@ -349,3 +349,55 @@ describe('relics — 强化（v0.70）', () => {
     expect(overStore.owned[0].level).toBe(MAX_RELIC_LEVEL)
   })
 })
+
+describe('relics — 批量强化（v0.86）', () => {
+  let store: ReturnType<typeof useRelicsStore>
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    store = useRelicsStore()
+    setRelicEnhanceSpendProvider(() => true)
+  })
+
+  it('enhanceSteps 全额预算：steps 级全部完成，扣费与连点一致', () => {
+    const spent: number[] = []
+    setRelicEnhanceSpendProvider((c) => {
+      spent.push(c)
+      return true
+    })
+    const inst = inject(store, 'r_energy_1')[0]
+    const done = store.enhanceSteps(inst, 3)
+    expect(done).toBe(3)
+    expect(store.owned[0].level).toBe(3)
+    // 普通遗物基础 1e6、每级 ×1.5：1e6 / 1.5e6 / 2.25e6
+    expect(spent).toEqual([1e6, 1.5e6, 2.25e6])
+  })
+
+  it('enhanceSteps 预算中途耗尽：买到买不起为止，返回实际级数', () => {
+    const costs: number[] = []
+    setRelicEnhanceSpendProvider((c) => {
+      costs.push(c)
+      // 仅前两次放行，第三次起拒付（模拟能量耗尽）
+      return costs.length <= 2
+    })
+    const inst = inject(store, 'r_energy_1')[0]
+    const done = store.enhanceSteps(inst, 100)
+    expect(done).toBe(2)
+    expect(store.owned[0].level).toBe(2)
+  })
+
+  it('enhanceSteps 达 20 级上限自然截断（×100 一键拉满）', () => {
+    const inst = inject(store, 'r_energy_1')[0]
+    const done = store.enhanceSteps(inst, 100)
+    expect(done).toBe(MAX_RELIC_LEVEL)
+    expect(store.owned[0].level).toBe(MAX_RELIC_LEVEL)
+  })
+
+  it('enhanceSteps 一级都买不起：返回 0；steps=1 与单次等价', () => {
+    setRelicEnhanceSpendProvider(() => false)
+    const inst = inject(store, 'r_energy_1')[0]
+    expect(store.enhanceSteps(inst, 10)).toBe(0)
+    expect(store.owned[0].level).toBe(0)
+    setRelicEnhanceSpendProvider(() => true)
+    expect(store.enhanceSteps(inst, 1)).toBe(1)
+  })
+})
