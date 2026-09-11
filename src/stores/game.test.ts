@@ -231,6 +231,55 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     expect(game.buildings.getLevel('ghost_building')).toBe(0)
   })
 
+  it('v0.86 批量升级：预算充足买满 steps 级', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    const buildings = useBuildingsStore()
+    resources.setAmount('energy', 1e9)
+    const done = game.tryUpgradeBuildingSteps(SOLAR, 10)
+    expect(done).toBe(10)
+    expect(buildings.getLevel(SOLAR)).toBe(10)
+  })
+
+  it('v0.86 批量升级：预算不足买到买不起为止，返回实际级数', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    const buildings = useBuildingsStore()
+    // 首级成本 10（costGrowth 1.1），10 + 11 + 12 = 33 > 30 → 2 级
+    resources.setAmount('energy', 30)
+    const done = game.tryUpgradeBuildingSteps(SOLAR, 10)
+    expect(done).toBe(2)
+    expect(buildings.getLevel(SOLAR)).toBe(2)
+  })
+
+  it('v0.86 批量升级与连点记账等价：成就与周挑战计数一致', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 1e6)
+    const upBefore = game.achievements.metricValue('upgrades')
+    const dailyBefore = game.daily.weeklyCounters.upgrades
+    // A：一次批量 3 级
+    game.tryUpgradeBuildingSteps(SOLAR, 3)
+    const upAfterBatch = game.achievements.metricValue('upgrades')
+    const dailyAfterBatch = game.daily.weeklyCounters.upgrades
+    // B：连点 3 次（增量应与批量完全一致）
+    for (let i = 0; i < 3; i++) game.tryUpgradeBuilding(SOLAR)
+    expect(game.achievements.metricValue('upgrades') - upAfterBatch).toBe(upAfterBatch - upBefore)
+    expect(game.daily.weeklyCounters.upgrades - dailyAfterBatch).toBe(dailyAfterBatch - dailyBefore)
+  })
+
+  it('v0.86 批量升级：一级都买不起返回 0 且零副作用', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    const buildings = useBuildingsStore()
+    resources.setAmount('energy', 5) // 低于首级成本 10
+    const upgradesBefore = game.achievements.metricValue('upgrades')
+    const done = game.tryUpgradeBuildingSteps(SOLAR, 10)
+    expect(done).toBe(0)
+    expect(buildings.getLevel(SOLAR)).toBe(0)
+    expect(game.achievements.metricValue('upgrades')).toBe(upgradesBefore)
+  })
+
   it('购买研究协议：tick 自动完成可用科技（成就联动）', () => {
     const game = buyNodes(['t_auto_research'])
     const resources = useResourcesStore()

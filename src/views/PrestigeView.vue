@@ -28,9 +28,12 @@ function totalBonusLabel(node: (typeof tree.value)[number]): string {
   return node.level > 0 ? `当前 +${pct}%` : '尚未激活'
 }
 
-function tryPurchase(nodeId: string) {
-  game.transcend.purchaseNode(nodeId)
+function tryPurchase(nodeId: string, steps = 1) {
+  game.transcend.purchaseNodeSteps(nodeId, steps)
 }
+
+// v0.86 无限天赋批量购买段位（默认 ×1 与既有行为一致；买断节点不显示切换器）
+const infBulk = ref(1)
 
 function tryTranscend() {
   if (!canTranscend.value) return
@@ -206,6 +209,17 @@ onUnmounted(() => {
       <h3 class="section-title infinite-title">
         无限天赋
         <span class="infinite-badge" aria-hidden="true">∞</span>
+        <span class="bulk-toggle" role="group" aria-label="单次购买级数">
+          <button
+            v-for="s in [1, 10, 100]"
+            :key="s"
+            class="seg-btn"
+            :class="{ active: infBulk === s }"
+            @click="infBulk = s"
+          >
+            ×{{ s }}
+          </button>
+        </span>
       </h3>
       <p class="infinite-sub">可重复购买，成本逐级递增，效果永久叠加</p>
       <div class="tree-grid">
@@ -234,9 +248,9 @@ onUnmounted(() => {
             class="btn-accent sm block"
             style="--accent: var(--color-amber)"
             :disabled="negEntropy.lt(nextCost(node))"
-            @click="tryPurchase(node.id)"
+            @click="tryPurchase(node.id, infBulk)"
           >
-            {{ node.level === 0 ? '购买' : '升级' }}
+            {{ node.level === 0 ? '购买' : '升级' }}{{ infBulk > 1 ? ` ×${infBulk}` : '' }}
           </button>
         </div>
       </div>
@@ -478,6 +492,33 @@ onUnmounted(() => {
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-4);
+}
+/* v0.86 无限天赋批量购买段位切换器（区标题行内） */
+.bulk-toggle {
+  display: inline-flex;
+  margin-left: auto;
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.seg-btn {
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono, monospace);
+  color: var(--color-t-secondary);
+  background: transparent;
+  transition: all 0.15s var(--ease-out);
+}
+.seg-btn + .seg-btn {
+  border-left: 1px solid var(--color-border-line);
+}
+.seg-btn:hover {
+  color: var(--color-t-primary);
+  background: var(--color-hover);
+}
+.seg-btn.active {
+  color: var(--color-amber);
+  background: rgba(255, 184, 0, 0.1);
 }
 .infinite-badge {
   display: inline-flex;
