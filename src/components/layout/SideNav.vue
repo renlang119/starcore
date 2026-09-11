@@ -79,12 +79,25 @@ function toggleCollapsed() {
       @click="toggleCollapsed"
     >
       <svg
-        style="width: var(--icon-sm); height: var(--icon-sm)"
+        viewBox="0 0 24 24"
+        style="width: var(--icon-md); height: var(--icon-md)"
         aria-hidden="true"
         :style="{ transform: collapsed ? 'rotate(180deg)' : 'none' }"
       >
+        <!-- 面板收合图标：面板轮廓 + 分隔线 + 指向面板的收合箭头（折叠态 180° 翻转后箭头朝外=展开） -->
+        <rect
+          x="3"
+          y="4"
+          width="18"
+          height="16"
+          rx="2"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        />
+        <path d="M9 4v16" fill="none" stroke="currentColor" stroke-width="2" />
         <path
-          d="M15 18l-6-6 6-6"
+          d="M17.5 12 H 12.5 M 14.5 10 L 12.5 12 L 14.5 14"
           fill="none"
           stroke="currentColor"
           stroke-width="2"
@@ -207,21 +220,26 @@ function toggleCollapsed() {
   color: var(--color-t-primary);
 }
 
-/* P2-8 折叠按钮 */
+/* P2-8 折叠按钮（v0.85 重设计：面板收合图标 + 常驻边框控件态） */
 .collapse-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2);
+  height: 30px;
+  padding: 0;
   margin-top: var(--space-2);
+  border: 1px solid var(--color-border-line);
   border-radius: var(--radius-md);
-  color: var(--color-t-tertiary);
+  background: var(--color-hover);
+  color: var(--color-t-secondary);
   transition: all 0.15s var(--ease-out);
   flex-shrink: 0;
+  overflow: hidden;
 }
 .collapse-toggle:hover {
-  background: var(--color-hover);
-  color: var(--color-t-primary);
+  border-color: var(--color-core);
+  color: var(--color-core);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
 }
 .collapse-toggle svg {
   transition: transform 0.2s var(--ease-out);
