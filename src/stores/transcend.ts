@@ -311,6 +311,20 @@ export const useTranscendStore = defineStore('transcend', () => {
     return true
   }
 
+  /**
+   * 批量购买转生树节点（v0.86）：至多 steps 级、买满语义。
+   * 无限节点逐级复用 purchaseNode（每级成本重算，负熵耗尽或达
+   * maxLevel 自然停止）；买断节点 maxLevel=1，批量与单次等价。
+   */
+  function purchaseNodeSteps(id: string, steps: number): number {
+    let done = 0
+    for (let i = 0; i < steps; i++) {
+      if (!purchaseNode(id)) break
+      done++
+    }
+    return done
+  }
+
   function reset(fullReset = false) {
     if (fullReset) {
       negativeEntropy.value = D(0)
@@ -359,6 +373,7 @@ export const useTranscendStore = defineStore('transcend', () => {
     previewNegEntropy,
     transcend,
     purchaseNode,
+    purchaseNodeSteps,
     reset,
     serialize,
     hydrate,

@@ -551,6 +551,20 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /**
+   * 批量升级建筑（v0.86）：至多 steps 级、买满语义。
+   * 内部逐级复用 tryUpgradeBuilding 原子操作，等级/成就/周挑战记账
+   * 粒度与连点完全一致；买不起下一级或已满级自然停止。
+   */
+  function tryUpgradeBuildingSteps(id: string, steps: number): number {
+    let done = 0
+    for (let i = 0; i < steps; i++) {
+      if (!tryUpgradeBuilding(id)) break
+      done++
+    }
+    return done
+  }
+
+  /**
    * 尝试研究科技：原子检查资源 + 扣费 + 完成
    */
   function tryResearch(id: string): boolean {
@@ -616,6 +630,7 @@ export const useGameStore = defineStore('game', () => {
     exportCorruptRaw,
     // atomic actions (3.12)
     tryUpgradeBuilding,
+    tryUpgradeBuildingSteps,
     tryResearch,
     // transcend
     canTranscend,
