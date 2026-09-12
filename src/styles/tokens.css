@@ -25,7 +25,7 @@
   /* —— 文本 —— */
   --color-t-primary: #e8edf5;
   --color-t-secondary: #8b96a8;
-  --color-t-tertiary: #6b7589; /* 对比度 vs --color-void #05070D 4.35:1（v0.84 实算校正） */
+  --color-t-tertiary: #7a8699; /* 对比度 vs void 5.46 / surface 4.98 / elevated 4.30（v0.88.1 提亮达 AA） */
   --color-on-core: #05070d;
 
   /* —— 字体 —— */
