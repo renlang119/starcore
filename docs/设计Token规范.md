@@ -56,7 +56,7 @@
 | `--color-plasma` | `#a78bfa` | P0-4 | 科技/研究（7 文件）：TechView、RelicView、BattleView |
 | `--color-t-primary` | `#e8edf5` | 基线（v0.43 前已落地） | 主文本（21 文件）：base.css、各视图标题 |
 | `--color-t-secondary` | `#8b96a8` | 基线（v0.43 前已落地） | 次文本（26 文件，全站最高频文本色） |
-| `--color-t-tertiary` | `#6b7589` | 基线（v0.43 前已落地；v0.84 实算对比度注释 4.35:1） | 弱文本（19 文件）：描述、空态 |
+| `--color-t-tertiary` | `#7a8699` | 基线（v0.88.1 提亮：vs void 5.46 / surface 4.98 / elevated 4.30，AA 达标） | 弱文本（19 文件）：描述、空态 |
 | `--color-on-core` | `#05070d` | 基线（v0.43 前已落地） | 主色底上的文字（4 文件）：buttons.css、ArmyView/BattleView/RelicView |
 | `--color-locked` | `#6387ab` | P2-7（v0.83 调亮 #4A6B8A→#6387AB，对 surface 4.88:1 达 AA） | 五视图锁定态：BuildView、TechView、MapView、ArmyView、RelicView |
 | `--font-display` | `'Orbitron', 'PingFang SC', 'HarmonyOS Sans SC', system-ui, sans-serif` | 基线（v0.43 前已落地） | utilities.css（展示标题） |
