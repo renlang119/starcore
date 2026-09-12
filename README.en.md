@@ -79,7 +79,7 @@ starcore/
 │  ├─ tests/        test harness (vitest setup and shared helpers)
 │  ├─ views/        9 views (home, build, tech, map, army, battle, relics, rebirth, achievements)
 │  └─ App.vue / main.ts / version.ts / style.css
-├─ docs/            8 specification documents (in Chinese), see Documentation
+├─ docs/            9 specification documents (in Chinese), see Documentation
 ├─ public/          favicon and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation check)
 ├─ changelog.md     version history (from v0.51)
@@ -109,6 +109,7 @@ starcore/
 - [交互状态规范](docs/交互状态规范.md) · Interaction States Specification
 - [氛围视觉规范](docs/氛围视觉规范.md) · Atmosphere & Visuals Specification
 - [体验增强设计规范](docs/体验增强设计规范.md) · Experience Enhancements Specification
+- [动效规范](docs/动效规范.md) · Motion Design Specification
 - [图标设计规范](docs/图标设计规范.md) · Icon Design Specification
 
 ## Version History
