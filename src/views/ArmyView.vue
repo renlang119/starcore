@@ -32,6 +32,15 @@ const showBulkModal = computed(() => !!pendingBulkAction.value)
 // P3-3 onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding('army', ['army-train'])
 
+// v0.86.2：满槽时训练按钮显示「训练中…」与最早完成队列的剩余时间，
+// 替代此前无反馈的死「训练」文案（新手误以为按钮坏了）
+const trainingEta = computed(() => {
+  const queue = game.military.trainingQueue
+  if (queue.length === 0) return ''
+  const soonest = Math.min(...queue.map((t) => t.remaining))
+  return fmtTime(soonest)
+})
+
 function confirmBulkAction() {
   const a = pendingBulkAction.value
   if (!a) return
@@ -304,7 +313,7 @@ function removeAll(fid: string, uid: UnitId) {
               "
               @click="tryTrain(u.id)"
             >
-              训练
+              {{ slotsFull ? `训练中…剩 ${trainingEta}` : '训练' }}
             </button>
           </template>
         </div>
