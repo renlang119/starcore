@@ -514,8 +514,8 @@ function removeAll(fid: string, uid: UnitId) {
   border-radius: var(--radius-lg);
   padding: var(--space-3);
 }
-.unit-card.locked {
-  opacity: 0.5;
+.unit-card.locked .u-name {
+  color: var(--color-locked); /* P2-7：卡名迁移；锁定不降 opacity */
 }
 .u-head {
   display: flex;

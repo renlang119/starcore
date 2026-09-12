@@ -187,7 +187,7 @@ const { displayActions, hasActions } = useActionQueue()
     /* P2-6 */ 0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
 }
 .action-item.actionable:active {
-  transform: translateY(0) scale(0.95); /* P2-4 */
+  transform: translateY(0) scale(0.98); /* P2-4：卡片回弹与卡片统一 */
 }
 .action-item.actionable .action-icon-block {
   width: 40px;
