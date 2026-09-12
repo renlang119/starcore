@@ -92,15 +92,16 @@ async function copyToClipboard(text: string): Promise<boolean> {
 
 async function doExport() {
   const code = await game.doExport()
+  // 存档码始终展示在只读文本域（v0.86.2）：http 等非安全上下文下剪贴板
+  // API 可能静默失败，玩家永远有手动复制兜底，不依赖复制是否成功
+  exportCodeDisplay.value = code
   const copied = await copyToClipboard(code)
   if (copied) {
-    importMsg.show('已导出并复制到剪贴板', 5000)
-    showExportCode.value = false
-  } else {
-    // 回退：把存档码填入只读文本域供手动复制
-    exportCodeDisplay.value = code
+    importMsg.show('已导出并复制到剪贴板，存档码同时显示在下方', 5000)
     showExportCode.value = true
-    importMsg.show('复制失败，请长按下方文本框手动复制', 5000)
+  } else {
+    showExportCode.value = true
+    importMsg.show('自动复制不可用，请长按下方文本框手动复制', 5000)
   }
 }
 async function doImport() {
