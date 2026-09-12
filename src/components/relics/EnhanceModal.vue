@@ -23,6 +23,10 @@ const game = useGameStore()
 const nextCost = computed<number | null>(() =>
   props.relic ? game.relics.nextEnhanceCost(props.relic.instanceId) : null
 )
+/** 一级都买不起时禁用（与建造/转生批量口径一致；批量中预算耗尽仍走 fail toast） */
+const canAffordOne = computed(() =>
+  nextCost.value !== null ? game.resources.canAfford({ energy: nextCost.value }) : false
+)
 const isMax = computed(() => (props.relic?.level ?? 0) >= MAX_RELIC_LEVEL)
 /** 强化后效果（当前级） */
 const currentEffects = computed<RelicEffect[]>(() =>
@@ -111,9 +115,10 @@ function rarityColor(rarity: string): string {
             class="btn-primary"
             style="flex: 1"
             data-testid="enhance-confirm"
+            :disabled="!canAffordOne"
             @click="doEnhance"
           >
-            强化 ×{{ bulkSteps }}
+            {{ bulkSteps > 1 ? `强化 ×${bulkSteps}` : '强化' }}
           </button>
         </div>
         <button
