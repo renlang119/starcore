@@ -32,6 +32,8 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_DIR"
 
 VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
+# 显示版本串：与 src/version.ts 同口径去末尾 .0（0.87.0 显示 v0.87）
+DISPLAY_VERSION="${VERSION%.0}"
 
 echo "==== 星核纪元 · 部署 ===="
 
@@ -57,7 +59,11 @@ else
   [[ -f dist/index.html ]] || { echo "[FAIL] dist/ 不存在，先构建" >&2; exit 1; }
   echo "[2/5] 跳过构建（--skip-build），预检本地产物版本 ..."
   LOCAL_BUNDLE=$(grep -oE 'index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1 || true)
-  if [[ -z "$LOCAL_BUNDLE" ]] || ! grep -qE "\"${VERSION//./\\.}\"" "dist/assets/$LOCAL_BUNDLE"; then
+  # 显示串为运行时 replace 生成、bundle 无静态 v 串，验证双要素：
+  # 完整版本串原样存在（版本源正确）+ 去零逻辑存在（显示口径在）
+  if [[ -z "$LOCAL_BUNDLE" ]] \
+    || ! grep -qE "\"${VERSION//./\\.}\"" "dist/assets/$LOCAL_BUNDLE" \
+    || ! grep -qF 'replace(/\.0$/' "dist/assets/$LOCAL_BUNDLE"; then
     echo "[FAIL] 本地产物版本与 package.json（v$VERSION）不符，先重新构建" >&2
     exit 1
   fi
@@ -80,18 +86,19 @@ sudo chmod -R a+rX "$DEST"
 
 # 5. 验证：线上入口 + 版本号
 echo "[5/5] 验证 ..."
-VERSION_RE="${VERSION//./\\.}"
+VERSION_RE="${DISPLAY_VERSION//./\\.}"
 LOCAL_CODE=$(curl -s --max-time 15 -o /dev/null -w '%{http_code}' "$SITE_URL/?t=$(date +%s)" || true)
 BUNDLE=$(curl -s --max-time 15 "$SITE_URL/?t=$(date +%s)" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1 || true)
 REMOTE_VERSION=""
 if [[ -n "$BUNDLE" ]]; then
-  REMOTE_VERSION=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" | grep -oE "\"$VERSION_RE\"" | head -1 || true)
+  REMOTE_VERSION=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" | grep -oE "\"${VERSION//./\\.}\"" | head -1 || true)
+  REMOTE_STRIP=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" | grep -qF 'replace(/\.0$/' && echo strip-ok || true)
 fi
 
 echo "  HTTP 状态: $LOCAL_CODE"
 echo "  线上 bundle: $BUNDLE"
-if [[ "$LOCAL_CODE" == "200" && -n "$REMOTE_VERSION" ]]; then
-  echo "  [OK] 部署验证通过：线上版本 v$VERSION"
+if [[ "$LOCAL_CODE" == "200" && -n "$REMOTE_VERSION" && -n "$REMOTE_STRIP" ]]; then
+  echo "  [OK] 部署验证通过：线上版本 v$DISPLAY_VERSION"
 else
   echo "  [WARN] 验证未完全通过，请人工检查（状态码 $LOCAL_CODE，版本串命中: ${REMOTE_VERSION:-无}）" >&2
   exit 2

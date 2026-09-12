@@ -313,7 +313,7 @@ function removeAll(fid: string, uid: UnitId) {
               "
               @click="tryTrain(u.id)"
             >
-              {{ slotsFull ? `训练中…剩 ${trainingEta}` : '训练' }}
+              <span aria-live="polite">{{ slotsFull ? `训练中…剩 ${trainingEta}` : '训练' }}</span>
             </button>
           </template>
         </div>
