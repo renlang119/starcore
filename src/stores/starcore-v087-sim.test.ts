@@ -1,12 +1,9 @@
 /**
- * starcore-v087-sim.test.ts — 时间加速全玩法仿真（临时 QA 批，不入常规测试基线）
+ * starcore-v087-sim.test.ts — 时间加速全玩法仿真
  *
- * 模拟玩家推进：建造→科技→军事训练→探索→转生→负熵购买→批量升级→自动化协议，
- * 每阶段 vitest fake timer 大步推进 tick（模拟数小时游戏时间），断言：
- * 1. 数值守恒（资源收支 = 建筑产出×时长 + 签到 + 探索奖励，无蒸发无凭空）
- * 2. 阶段推进无死锁（每阶段完成后有可达的下一动作）
- * 3. 转生闭环（重置范围正确）
- * 4. 长时间加速下无 NaN/Infinity/负值泄漏
+ * 性质：v0.86.2 起收编常规测试基线，随全量测试运行；fake timer 大步
+ * 推进模拟数小时游戏时间，校验数值守恒、阶段推进无死锁、转生循环
+ * 与长时加速无 NaN/Infinity/负值泄漏。
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
@@ -128,7 +125,7 @@ describe('时间加速全玩法仿真', () => {
     expectFiniteNonNegative(resources)
   })
 
-  it('阶段四：转生闭环——重置范围与保留范围精确', () => {
+  it('转生循环——重置范围与保留范围精确', () => {
     const game = useGameStore()
     const resources = useResourcesStore()
     const buildings = useBuildingsStore()

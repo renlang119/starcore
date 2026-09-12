@@ -54,6 +54,7 @@ const saveMsg = useToast()
 const showExportCode = ref(false)
 const exportCodeDisplay = ref('')
 const showResetConfirm = ref(false)
+const showImportConfirm = ref(false)
 /** 导入成功后的刷新定时器句柄（卸载时清理，v0.84） */
 let reloadTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -104,11 +105,15 @@ async function doExport() {
     importMsg.show('自动复制不可用，请长按下方文本框手动复制', 5000)
   }
 }
-async function doImport() {
+function tryImport() {
   if (!importCode.value) {
     importMsg.show('请先粘贴存档代码', 3000)
     return
   }
+  showImportConfirm.value = true
+}
+async function confirmImport() {
+  showImportConfirm.value = false
   const result = await game.doImport(importCode.value)
   importMsg.show(
     result.success ? '导入成功，页面将刷新' : result.message || '导入失败：存档无效',
@@ -118,6 +123,9 @@ async function doImport() {
     if (reloadTimer) clearTimeout(reloadTimer)
     reloadTimer = setTimeout(() => location.reload(), 1500)
   }
+}
+function cancelImport() {
+  showImportConfirm.value = false
 }
 async function manualSave() {
   try {
@@ -274,16 +282,35 @@ onUnmounted(() => {
           :value="exportCodeDisplay"
           readonly
           rows="4"
+          aria-label="导出存档码"
           placeholder="导出存档码"
           @focus="($event.target as HTMLTextAreaElement).select()"
         ></textarea>
       </div>
       <div class="import-box">
         <textarea v-model="importCode" placeholder="粘贴存档代码…" rows="3"></textarea>
-        <button class="btn-secondary sm" @click="doImport">导入存档</button>
+        <button class="btn-secondary sm" @click="tryImport">导入存档</button>
       </div>
       <p v-if="importMsg.msg.value" class="import-msg">{{ importMsg.msg.value }}</p>
     </div>
+
+    <!-- 导入确认弹窗：导入为全量替换，破坏性操作二次确认 -->
+    <ModalOverlay
+      :model-value="showImportConfirm"
+      aria-label="确认导入存档"
+      @overlay-click="cancelImport"
+    >
+      <h2 class="confirm-title font-display" style="color: var(--color-alert)">确认导入存档？</h2>
+      <div class="warning-box">
+        <p>⚠️ 导入将<strong>完全替换</strong>当前存档，当前进度不可恢复。</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn-secondary" @click="cancelImport">取消</button>
+        <button class="btn-accent" style="--accent: var(--color-alert)" @click="confirmImport">
+          确认导入
+        </button>
+      </div>
+    </ModalOverlay>
 
     <!-- 转生确认弹窗 -->
     <ModalOverlay
