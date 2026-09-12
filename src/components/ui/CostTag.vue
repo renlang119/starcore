@@ -53,6 +53,6 @@ const items = computed(() =>
   color: var(--color-t-primary);
 }
 .cost-tag.not-enough {
-  color: var(--color-alert);
+  color: var(--color-amber); /* P2-7：资源不足可逆，警告级而非危险 */
 }
 </style>

@@ -345,7 +345,7 @@ describe('RelicView — 强化（v0.70）', () => {
     expect(game.resources.getAmount('energy').toNumber()).toBe(1e8 - 2.5e7)
   })
 
-  it('能量不足：toast 提示且等级不变', async () => {
+  it('能量不足：按钮禁用且等级不变（一级都买不起时禁用）', async () => {
     const wrapper = mountView()
     const game = useGameStore()
     game.relics.obtain(getRelicById('r_energy_3')!) // 新档能量 50，远低于 25M
@@ -353,10 +353,11 @@ describe('RelicView — 强化（v0.70）', () => {
 
     await wrapper.find('[data-testid="enhance-button"]').trigger('click')
     await wrapper.vm.$nextTick()
-    await wrapper.find('[data-testid="enhance-confirm"]').trigger('click')
-    await wrapper.vm.$nextTick()
 
-    expect(wrapper.text()).toContain('能量不足')
+    // 规范口径：一级都买不起时禁用（disabled，点击不再 toast）
+    expect(
+      (wrapper.find('[data-testid="enhance-confirm"]').element as HTMLButtonElement).disabled
+    ).toBe(true)
     expect(game.relics.owned[0].level).toBe(0)
     expect(wrapper.find('[data-testid="relic-level-badge"]').exists()).toBe(false)
   })
