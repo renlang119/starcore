@@ -133,6 +133,10 @@ const overviewItems = computed<OverviewItem[]>(() => {
   transform: translateY(-2px); /* P2-4 */
   box-shadow: var(--elevation-2); /* P2-6 */
 }
+.ov-item:active {
+  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transition: transform 0.1s var(--ease-out);
+}
 .ov-top {
   display: flex;
   flex-direction: column;

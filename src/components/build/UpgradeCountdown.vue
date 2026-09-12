@@ -417,7 +417,7 @@ function toggleExpand() {
 }
 .countdown-row:focus-visible {
   outline: 2px solid var(--color-core);
-  outline-offset: 1px;
+  outline-offset: 2px; /* 全局焦点偏移统一 */
 }
 
 /* 色点 */

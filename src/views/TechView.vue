@@ -223,6 +223,10 @@ function tryResearch(id: string) {
   border-color: var(--color-border-glow);
   box-shadow: var(--elevation-2); /* P2-6 */
 }
+.tech-card:not(.locked):not(.completed):active {
+  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transition: transform 0.1s var(--ease-out);
+}
 .tech-card.completed {
   opacity: 0.6;
   border-color: var(--color-quantum);

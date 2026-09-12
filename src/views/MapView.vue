@@ -380,6 +380,10 @@ const endlessSection = {
   border-color: var(--color-border-glow);
   box-shadow: var(--elevation-2); /* P2-6 */
 }
+.node-card:not(.locked):not(.completed):active {
+  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transition: transform 0.1s var(--ease-out);
+}
 .node-card.completed {
   border-color: var(--color-quantum);
   opacity: 0.8;
@@ -400,6 +404,10 @@ const endlessSection = {
   flex: 1;
   font-size: var(--text-sm);
   font-weight: 600;
+}
+.node-card.locked .n-name,
+.node-card.locked .n-desc {
+  color: var(--color-locked); /* P2-7：锁定卡名称与描述迁移 */
 }
 .n-done {
   color: var(--color-quantum);
