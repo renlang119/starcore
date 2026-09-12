@@ -106,6 +106,7 @@ function rarityColor(rarity: string): string {
               :key="s"
               class="seg-btn"
               :class="{ active: bulkSteps === s }"
+              :aria-pressed="bulkSteps === s"
               @click="bulkSteps = s"
             >
               ×{{ s }}
@@ -230,7 +231,7 @@ function rarityColor(rarity: string): string {
   overflow: hidden;
 }
 .seg-btn {
-  padding: 0 var(--space-2);
+  padding: var(--space-1) var(--space-3); /* 分段切换器统一定标 */
   font-size: var(--text-xs);
   font-family: var(--font-mono, monospace);
   color: var(--color-t-secondary);

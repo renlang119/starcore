@@ -224,6 +224,7 @@ onUnmounted(() => {
             :key="s"
             class="seg-btn"
             :class="{ active: infBulk === s }"
+            :aria-pressed="infBulk === s"
             @click="infBulk = s"
           >
             ×{{ s }}
@@ -530,7 +531,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 .seg-btn {
-  padding: 2px var(--space-2);
+  padding: var(--space-1) var(--space-3); /* 分段切换器统一定标 */
   font-size: var(--text-xs);
   font-family: var(--font-mono, monospace);
   color: var(--color-t-secondary);

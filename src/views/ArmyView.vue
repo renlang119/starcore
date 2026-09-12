@@ -90,8 +90,9 @@ function tryTrain(unitId: UnitId) {
     (c) => game.resources.canAfford(c),
     (c) => game.resources.spendCost(c)
   )
-  // 长周期操作「开始」反馈（v0.77 反馈口径）
+  // 长周期操作「开始」反馈（v0.77 反馈口径）；失败路径明示原因（连点竞态等边缘场景）
   if (ok) showToast(`开始训练：${getUnit(unitId)?.name ?? unitId} ×${count}`)
+  else showToast(slotsFull.value ? '训练槽已满' : '资源不足')
 }
 
 /** 编队卡键盘可达（v0.77，照 HeroCore 正面例）：Enter/空格选中编队 */

@@ -59,6 +59,7 @@ function isMaxed(id: string): boolean {
         :key="s"
         class="seg-btn"
         :class="{ active: bulkSteps === s }"
+        :aria-pressed="bulkSteps === s"
         @click="bulkSteps = s"
       >
         ×{{ s }}
@@ -272,6 +273,10 @@ function isMaxed(id: string): boolean {
   border-color: var(--color-border-glow);
   box-shadow: var(--elevation-2); /* P2-6 */
 }
+.build-card:not(.locked):active {
+  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transition: transform 0.1s var(--ease-out);
+}
 .b-head {
   display: flex;
   justify-content: space-between;
@@ -298,6 +303,9 @@ function isMaxed(id: string): boolean {
   font-size: var(--text-base);
   font-weight: 600;
   margin-bottom: var(--space-1);
+}
+.build-card.locked .b-name {
+  color: var(--color-locked); /* P2-7：锁定卡名称迁移 */
 }
 .b-desc {
   font-size: var(--text-xs);
