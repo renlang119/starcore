@@ -1,5 +1,7 @@
 # 星核纪元 · P0-5 / P0-6 Token 映射表
 
+> **同步状态**：基线 v0.55｜最后核对 v0.86.2（2026-09-12）
+
 > **产出方**：设计
 > **日期**：2026-07-16
 > **方案依据**：主界面 UI 总体推进方案 P0-5 / P0-6 章节（计划文档已退役，git 历史可查）
@@ -23,7 +25,7 @@
 --space-4: 16px;  /* 页面级 gap、标准间距（基准节奏） */
 --space-5: 20px;  /* section 间距、宽松间距 */
 --space-6: 24px;  /* modal padding、大间距 */
---space-7: 32px;  /* 区块间距、超宽间距 */
+--space-7: 32px;  /* ⚠️ 未落地：代码未定义、文档零引用（v0.84 自 tokens.css 删除），见 §1.2 总表 */
 --space-8: 40px;  /* 展示型间距（预留） */
 ```
 
@@ -32,7 +34,65 @@
 2. **8 级够用**：覆盖当前项目 2px–24px 全部散落值，并预留 32/40px 供未来大间距场景
 3. **线性阶梯**：小间距段（4→8→12）步进 4px，中间距段（12→16→20→24）步进 4px，大间距段（24→32→40）步进 8px，符合视觉感知的对数曲线
 
-### 1.2 现状值 → Token 映射表
+### 1.2 Token 总表（权威登记处）
+
+> 通读 `src/styles/tokens.css` 全文登记（基线 v0.55，最后核对 v0.86.2）。
+> 全部全局 Token 共 48 项（含 1 项未落地）；值为 `tokens.css` `:root` 实读值。
+
+| 名称 | 值 | 来源版本 | 主要引用方 |
+|------|-----|---------|-----------|
+| `--color-void` | `#05070d` | P0-3 | App.vue、base.css、PrestigeView/RelicView/ArmyView 底色 |
+| `--color-surface` | `#0e1424` | P0-3 | 全局卡片/面板底（22 文件）：ModalOverlay、各导航、各视图卡面 |
+| `--color-elevated` | `#182238` | P0-3 | 抬升面（17 文件）：buttons.css、utilities.css、各视图卡 |
+| `--color-hover` | `#1a2236` | P0-3 | hover 底（9 文件）：buttons.css、SideNav/BottomNav、BuildView |
+| `--color-border-line` | `#243350` | P0-3 | 常规边框（20 文件）：buttons.css、toast.css、各视图 |
+| `--color-border-glow` | `#2a3a55` | P0-3 | 高亮边框（13 文件）：ModalOverlay、base.css、buttons.css |
+| `--color-core` | `#00e5ff` | 基线（v0.43 前已落地） | 品牌主色（22 文件）：HeroCore、TopBar、buttons.css、animations.css |
+| `--color-core-dim` | `#00b8cc` | 基线（v0.43 前已落地） | buttons.css |
+| `--color-core-deep` | `#006b7a` | v0.52 补登 | App.vue、SideNav.vue（背景渐变深青端点） |
+| `--color-amber` | `#ffb627` | P0-4 | 稀有/强调（12 文件）：HeroCore、AchievementToast、PrestigeView |
+| `--color-quantum` | `#2ee6a0` | P0-4 | 成功/探索（14 文件）：TopBar、BattleView、MapView |
+| `--color-alert` | `#f43f5e` | P0-4 | 危险/负值（11 文件）：BattleView、CostTag、OfflineReport |
+| `--color-plasma` | `#a78bfa` | P0-4 | 科技/研究（7 文件）：TechView、RelicView、BattleView |
+| `--color-t-primary` | `#e8edf5` | 基线（v0.43 前已落地） | 主文本（21 文件）：base.css、各视图标题 |
+| `--color-t-secondary` | `#8b96a8` | 基线（v0.43 前已落地） | 次文本（26 文件，全站最高频文本色） |
+| `--color-t-tertiary` | `#6b7589` | 基线（v0.43 前已落地；v0.84 实算对比度注释 4.35:1） | 弱文本（19 文件）：描述、空态 |
+| `--color-on-core` | `#05070d` | 基线（v0.43 前已落地） | 主色底上的文字（4 文件）：buttons.css、ArmyView/BattleView/RelicView |
+| `--color-locked` | `#6387ab` | P2-7（v0.83 调亮 #4A6B8A→#6387AB，对 surface 4.88:1 达 AA） | 五视图锁定态：BuildView、TechView、MapView、ArmyView、RelicView |
+| `--font-display` | `'Orbitron', 'PingFang SC', 'HarmonyOS Sans SC', system-ui, sans-serif` | 基线（v0.43 前已落地） | utilities.css（展示标题） |
+| `--font-body` | `'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif` | 基线（v0.43 前已落地） | base.css（body） |
+| `--font-mono` | `'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace` | 基线（v0.43 前已落地） | 数值/产出率（8 文件）：CostTag、BattleView、MapView、PrestigeView |
+| `--radius-sm` | `6px` | 基线（v0.43 前已落地） | 小圆角（7 文件）：base.css、ArmyView/TechView 等 |
+| `--radius-md` | `10px` | 基线（v0.43 前已落地） | 按钮与卡片默认（19 文件） |
+| `--radius-lg` | `14px` | 基线（v0.43 前已落地） | 大圆角（15 文件）：ModalOverlay、OnboardingBubble、视图容器 |
+| `--radius-pill` | `999px` | 基线（v0.43 前已落地） | 胶囊（10 文件）：TopBar、toast.css、各徽章 |
+| `--icon-xs` | `12px` | P0-8 | CostTag |
+| `--icon-sm` | `14px` | P0-8 | TopBar、ActionQueuePanel、OverviewPanel、AchievementsView 等（7 文件） |
+| `--icon-md` | `18px` | P0-8 | 导航/列表默认（9 文件）：SideNav、BottomNav、MapView、RelicView |
+| `--icon-lg` | `24px` | P0-8 | 大图标（10 文件）：BottomNav、EnhanceModal、FusionPanel、BattleView |
+| `--space-1` | `4px` | P0-5 | 原子间距（23 文件）：CostTag、TopBar、各处 icon-text |
+| `--space-2` | `8px` | P0-5 | 紧凑间距（26 文件，最高频列表 gap） |
+| `--space-3` | `12px` | P0-5 | 卡片 padding（22 文件） |
+| `--space-4` | `16px` | P0-5 | 页面级 gap（17 文件）：AppShell、utilities.css、各视图 |
+| `--space-5` | `20px` | P0-5 | section 间距（5 文件）：HomeView、MapView、RelicView、SideNav、OfflineReport |
+| `--space-6` | `24px` | P0-5 | 大间距/弹窗内容 padding（8 文件）：ModalOverlay、AppShell、HeroCore |
+| `--space-7` | — | 未落地 | 代码未定义（v0.84 自 `tokens.css` 删除）、文档零引用；XL 档仅 `home-top-row` 列比生效 |
+| `--space-8` | `40px` | P0-5 | HeroCore（桌面 hero 上下留白） |
+| `--text-xs` | `12px` | P0-6 | 辅助文本（26 文件）：徽章、产出率、描述小字 |
+| `--text-sm` | `14px` | P0-6 | body 基准（24 文件）：base.css、buttons.css |
+| `--text-base` | `16px` | P0-6 | 按钮/品牌文字（6 文件） |
+| `--text-lg` | `20px` | P0-6 | 强调标题（5 文件）：page-title、BattleView、PrestigeView |
+| `--text-xl` | `25px` | P0-6 | BattleView（少用） |
+| `--text-2xl` | `31px` | P0-6 | 核心数值：HeroCore、PrestigeView、AchievementsView |
+| `--text-display` | `39px` | P0-6 | HeroCore 桌面核心数值 |
+| `--ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` | 基线（v0.43 前已落地） | 全站缓动（26 文件） |
+| `--elevation-1` | `0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 8px rgba(0, 0, 0, 0.3)` | P2-6 | OverviewPanel、BuildView、TechView、MapView |
+| `--elevation-2` | `0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 24px rgba(0, 0, 0, 0.4)` | P2-6 | ActionQueuePanel、OnboardingBubble、OverviewPanel、BuildView、TechView、MapView |
+| `--elevation-3` | `0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5)` | P2-6 | ModalOverlay |
+
+**约定**：新增 token 只进本表，不再使用补充登记（原 §五 已改为指针注记）。
+
+### 1.3 现状值 → Token 映射表
 
 > 以下基于全项目 `gap / padding / margin` 硬编码值扫描（18 个文件，约 168 处）。
 
@@ -51,9 +111,9 @@
 | `24px` | ModalOverlay padding、App.vue footer gap、AppShell `.content` desktop padding、OfflineReport modal padding | `--space-6` | 24px | 0 | 直接映射 |
 | `80px` | AppShell `.content` padding-bottom（底部导航高度+安全距离） | 保留硬编码 | 80px | — | 此值为导航栏高度+安全区，非间距 Token 范畴，保留原值 |
 
-### 1.3 迁移建议
+### 1.4 迁移建议
 
-#### 1.3.1 全局统一规则（方案 P0-5 要求）
+#### 1.4.1 全局统一规则（方案 P0-5 要求）
 
 | 场景 | 当前值 | 统一 Token | 新值 | 影响范围 |
 |---|:---:|:---:|:---:|---|
@@ -61,9 +121,9 @@
 | **卡片 padding** | 12px / 14px 混用 | `--space-3` | 12px | style.css `.card`、各 View 的 building/tech/unit/relic/stronghold card |
 | **列表项 gap** | 6px / 8px / 10px 混用 | `--space-2` | 8px | 各 View 的 list gap 统一为 8px |
 | **section 内标题 margin-bottom** | 6px / 8px / 10px 混用 | `--space-2` | 8px | `.section-title`、`.b-head`、`.t-head` 等 |
-| **modal / 大容器 padding** | 16px / 24px 混用 | `--space-4`（移动）/ `--space-6`（桌面） | 16px / 24px | ModalOverlay 移动端 16px、桌面端 24px（已有响应式区分） |
+| **modal / 大容器 padding** | 16px / 24px 混用 | 遮罩恒定 `--space-4`（16px）、弹窗内容恒定 `--space-6`（24px） | 遮罩 16px / 内容 24px | ModalOverlay 遮罩与弹窗内容 padding 均恒定，无媒体查询区分（v0.86.2 核对修正） |
 
-#### 1.3.2 逐文件迁移清单
+#### 1.4.2 逐文件迁移清单
 
 | 文件 | 硬编码处数 | 主要涉及 Token | 优先级 |
 |---|:---:|---|:---:|
@@ -86,7 +146,7 @@
 | `src/components/ui/CostTag.vue` | ~1 处 | `--space-1` | 🟢 低 |
 | `src/App.vue` | ~1 处 | `--space-6` | 🟢 低 |
 
-#### 1.3.3 特殊保留项
+#### 1.4.3 特殊保留项
 
 以下值**不纳入 Token 替换**，保留硬编码并加注释说明原因：
 
@@ -98,7 +158,7 @@
 | `180px / 160px` | ~~UpgradeCountdown modal-log max-height~~ | 已废止：v0.5x 折叠动画改为 `max-height: 500px`（组件迁入 `src/components/build/`） |
 | `32px / 36px / 100px` | log-round width、q-name width 等 | 固定宽度，非间距 |
 
-#### 1.3.4 迁移后验证
+#### 1.4.4 迁移后验证
 
 ```bash
 # 迁移完成后执行，确认零残留（排除注释行）
@@ -264,7 +324,7 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-  --space-7: 32px;
+  --space-7: 32px;  /* 未落地，勿登记：代码未定义（v0.84 删除），见 §1.2 总表 */
   --space-8: 40px;
 
   /* —— 字号（1:1.250 模数，Major Third，base 16px）—— */
@@ -283,7 +343,7 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 
 | 验收项 | P0-5 间距 | P0-6 字号 |
 |---|---|---|
-| Token 已定义 | `:root` 中 `--space-1~8` | `:root` 中 `--text-xs~display` |
+| Token 已定义 | `:root` 中 `--space-1~6`、`--space-8`（`--space-7` 未落地） | `:root` 中 `--text-xs~display` |
 | 硬编码消除 | `rg "(\bgap\|padding\|margin[a-z-]*)\s*:\s*\d+px"` 仅剩特殊保留项 | `rg "font-size\s*:\s*\d+px"` 零结果 |
 | 10px 消除 | — | 全项目无 `font-size: 10px` 硬编码 |
 | 统一规则 | 页面 gap = `--space-4`、卡片 padding = `--space-3` | body = `--text-sm`、核心数值 = `--text-2xl` |
@@ -294,9 +354,8 @@ rg "font-size\s*:\s*10px" src/ --glob="*.{vue,css}" -n
 
 ## 五、补充登记（v0.52）
 
-**颜色 Token 遗漏补登**：`--color-core-deep: #006b7a`（`src/styles/tokens.css` :root 定义，
-用于 App/SideNav 背景渐变的深青色端点）。该 Token 为全局颜色体系成员，
-此前未在本文档登记，现补记。
+> 本节登记职能已由 §1.2 Token 总表（权威登记处）接管：`--color-core-deep` 记为
+> 「v0.52 补登」并入总表「来源版本」列。新增 token 只进总表，不再使用补充登记。
 
 **组件级注入变量口径**：`--accent`（按钮分类强调色）、`--ov-color`（文明概况指标色）
 等属**组件级 CSS 变量**——由使用方在元素上内联注入（如 `style="--accent: var(--color-alert)"`），
