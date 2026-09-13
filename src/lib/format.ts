@@ -36,6 +36,7 @@ export function fmt(v: Decimal.Value, fixed = 2): string {
   // 快速路径：number 类型直接处理，避免创建 Decimal 实例
   if (typeof v === 'number') {
     if (isNaN(v)) return '0'
+    if (!isFinite(v)) return '0' // 非有限兜底（Infinity 等，v0.89）
     if (v === 0) return '0'
     if (v > 0 && v < 1000) {
       if (v < 10) return v.toFixed(fixed).replace(/\.?0+$/, '') || '0'
@@ -51,6 +52,7 @@ export function fmt(v: Decimal.Value, fixed = 2): string {
   // Decimal 路径：跳过重复创建
   const d = v instanceof Decimal ? v : new Decimal(v ?? 0)
   if (d.isNaN()) return '0'
+  if (!d.isFinite()) return '0' // 非有限兜底（Infinity 等，v0.89）
   const abs = d.abs()
   if (abs.lt(1000)) {
     if (abs.eq(0)) return '0'
