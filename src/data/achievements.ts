@@ -216,11 +216,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'ach_tech_3',
     name: '智慧之巅',
-    desc: '累计完成 47 项研究',
+    desc: '累计完成 51 项研究',
     category: 'tech',
     icon: 'i-nav-tech',
     metric: 'researches',
-    threshold: 47,
+    threshold: 51,
     effects: prod(3),
   },
   // —— 探索 ——
@@ -262,6 +262,16 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     icon: 'i-nav-explore',
     metric: 'explores',
     threshold: 60,
+    effects: [{ type: 'explore_mult', value: 1.05, label: '探索效率 +5%' }],
+  },
+  {
+    id: 'ach_explore_5',
+    name: '臂航远征',
+    desc: '累计完成 80 次探索',
+    category: 'explore',
+    icon: 'i-nav-explore',
+    metric: 'explores',
+    threshold: 80,
     effects: [{ type: 'explore_mult', value: 1.05, label: '探索效率 +5%' }],
   },
   // —— 战斗 ——

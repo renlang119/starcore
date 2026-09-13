@@ -561,6 +561,65 @@
         <path d="M3 20c2.5-3 5.5-4 9-4s6.5 1 9 4" />
         <circle cx="12" cy="19" r="1.5" />
       </symbol>
+      <!-- 星臂层配套科技图标（v0.90） -->
+      <symbol
+        id="i-tech-explore-3"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="5" cy="6" r="1" />
+        <circle cx="19" cy="5" r="1" />
+        <circle cx="18" cy="18" r="1" />
+        <path d="M5 6l7 6 7-7" />
+        <path d="M12 12l6 6" />
+        <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-armada"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 8l3-3 3 3" />
+        <path d="M9 13l3-3 3 3" />
+        <path d="M15 18l3-3 3 3" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-harvester"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M7 3l3 6M17 3l-3 6M12 3v6" />
+        <path d="M12 9l-3.5 4 3.5 7 3.5-7-3.5-4z" />
+        <circle cx="12" cy="13.5" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-data-3"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="5" r="1" fill="currentColor" />
+        <circle cx="6" cy="10" r="1" />
+        <circle cx="18" cy="10" r="1" />
+        <path d="M6 10l6-5 6 5" />
+        <path d="M6 10l6 4 6-4" />
+        <path d="M4 19h16" />
+      </symbol>
     </defs>
   </svg>
 </template>
