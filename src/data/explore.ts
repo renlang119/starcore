@@ -1,10 +1,10 @@
 /**
  * explore.ts — 探索星图节点定义
- * 星图按距离分 6 层：轨道带、内层系、外层系、深空、恒星系层、星团层
+ * 星图按距离分 7 层：轨道带、内层系、外层系、深空、恒星系层、星团层、星臂层
  * 探索节点提供一次性奖励 + 解锁据点
  */
 
-export type StarLayer = 'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster'
+export type StarLayer = 'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster' | 'arm'
 
 export interface ExploreNode {
   id: string
@@ -41,6 +41,7 @@ export const LAYER_INFO: Record<
   deep: { id: 'deep', name: '深空', color: '#A78BFA', distance: '>5000 AU' },
   stellar: { id: 'stellar', name: '恒星系层', color: '#E879F9', distance: '4.2 ly+' },
   cluster: { id: 'cluster', name: '星团层', color: '#60A5FA', distance: '>10 kly' },
+  arm: { id: 'arm', name: '星臂层', color: '#FB7185', distance: '30-80 kly' },
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
@@ -248,6 +249,84 @@ export const EXPLORE_NODES: ExploreNode[] = [
     unlocksStronghold: ['silencer_4'],
     story:
       '沉默者的母港。他们不是沉默，是在守门。门已在开启前的一瞬被冻结，文明在完成使命前的最后时刻停工，等待来自星团的「召回信号」。我们触发了它。',
+  },
+  // —— 星臂层（v0.90，敌人编成经战斗模拟脚本三档验证）——
+  {
+    id: 'node_arm_gate',
+    name: '臂缘哨站',
+    layer: 'arm',
+    desc: '越过冻结之门后的第一座前沿哨站，整片星臂的轮廓在远方展开',
+    time: 86400,
+    cost: { energy: 3000000000, data: 6000000, dark: 200 },
+    rewards: { energy: 15000000000, data: 12000000, dark: 400 },
+    requires: ['node_cluster_silence'],
+    unlocksStronghold: ['raider_8'],
+    story:
+      '门的彼端没有毁灭，只有一条被遗弃的航道。召回信号的应答源在相邻星臂深处规律闪烁，像一颗为归乡者留的灯。掠夺者早已在门这边扎下了王庭。',
+  },
+  {
+    id: 'node_arm_cradle',
+    name: '摇篮星区',
+    layer: 'arm',
+    desc: '恒星尚在孕育中的原生星区，尘埃云里漂浮着巨兽的巢',
+    time: 108000,
+    cost: { energy: 8000000000, data: 15000000, crystal: 300000, dark: 250 },
+    rewards: { energy: 40000000000, crystal: 1500000, data: 3000000, dark: 500 },
+    requires: ['node_arm_gate'],
+    unlocksStronghold: ['beast_6'],
+    story:
+      '信号在摇篮星区变得格外清晰，仿佛「接收者」就藏在每一颗原恒星的胎动里。织网兽以静止的殖民舰为巢，晶丝横贯整片云带，把摇篮缠成了一枚茧。',
+  },
+  {
+    id: 'node_arm_grave',
+    name: '纹章墓场',
+    layer: 'arm',
+    desc: '整支先驱者远征舰队的长眠之地，舰脊上刻着同一枚纹章',
+    time: 108000,
+    cost: { energy: 8000000000, data: 15000000, alloy: 500000, dark: 250 },
+    rewards: { energy: 40000000000, data: 3000000, alloy: 1500000, dark: 500 },
+    requires: ['node_arm_gate'],
+    unlocksStronghold: ['ruin_6'],
+    story:
+      '数千艘先驱者战舰在同一时刻停止了引擎，没有战损，没有逃生舱。它们环绕成一道长堤，舰脊的纹章与环状结构上的完全一致——这支舰队是守门者的先行者。',
+  },
+  {
+    id: 'node_arm_spine',
+    name: '臂脊航道',
+    layer: 'arm',
+    desc: '沿星臂脊线铺开的古代航道，先驱者用它输送整支舰队',
+    time: 129600,
+    cost: { energy: 20000000000, data: 30000000, dark: 300 },
+    rewards: { energy: 100000000000, data: 16000000, crystal: 2000000, dark: 600 },
+    requires: ['node_arm_cradle', 'node_arm_grave'],
+    unlocksStronghold: ['raider_9'],
+    story:
+      '两条分支在臂脊汇合。航道的每一座驿站都完好无损，仿佛舰队只是暂时离港。劫掠者的王庭舰队盘踞在航道枢纽，把整条古代航道当成了它们的私产。',
+  },
+  {
+    id: 'node_arm_abyss',
+    name: '无声深渊',
+    layer: 'arm',
+    desc: '臂脊航道内侧的空腔，连召回信号在这里也会沉默',
+    time: 144000,
+    cost: { energy: 40000000000, data: 60000000, dark: 350 },
+    rewards: { energy: 200000000000, data: 30000000, dark: 800 },
+    requires: ['node_arm_spine'],
+    story:
+      '航道内侧是一片连信号都无法逃逸的空腔。守门者留下的最后记录写道：「深渊不是终点，是过滤器。能被听见的，才配得上穿过门扉。」',
+  },
+  {
+    id: 'node_arm_threshold',
+    name: '门扉回廊',
+    layer: 'arm',
+    desc: '星臂尽头并列的古代门扉，应答源的回响从门后传来',
+    time: 172800,
+    cost: { energy: 80000000000, data: 120000000, dark: 450 },
+    rewards: { energy: 480000000000, data: 80000000, dark: 1000 },
+    requires: ['node_arm_abyss'],
+    unlocksStronghold: ['silencer_5'],
+    story:
+      '回廊尽头并列着七扇与冻结之门同款的巨门，只有一扇门的应答源仍在工作。信号穿门而出，指向的不是星臂深处，而是整条银河的尺度——门后的存在，在星系层面等我们。',
   },
 ]
 
