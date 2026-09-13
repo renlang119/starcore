@@ -55,6 +55,13 @@ describe('fmt — number formatting', () => {
     const result = fmt(0.1, 4)
     expect(result).toBe('0.1')
   })
+
+  it('非有限兜底（v0.89：±Infinity 显示 0）', () => {
+    expect(fmt(Infinity)).toBe('0')
+    expect(fmt(-Infinity)).toBe('0')
+    expect(fmt('Infinity')).toBe('0')
+    expect(fmt(D('Infinity'))).toBe('0')
+  })
 })
 
 describe('fmtInt', () => {
