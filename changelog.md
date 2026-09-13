@@ -3,7 +3,41 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v0.88.1
+> 当前版本：v0.88.2
+
+---
+
+## v0.88.2 — 修复: 卡片与按钮按压反馈对齐规范
+
+**变更性质：修复（交互微交互对齐文档定标，无数值/存档变更）**
+**开发时间：2026-09-13**
+
+### 概述
+
+两类按压反馈对齐《动效规范》定标：六视图卡片交互全集齐，
+按钮 active 两段式落地。此前 ArmyView 单位卡与 RelicView 遗物卡
+无 hover 上浮与按压回弹，全站卡片行为不一致；四类按钮按下与
+释放同为 0.15s，无文档定标的按下 0.1s 快速段。
+
+### 变更明细
+
+- ArmyView `.unit-card` 补基础过渡 + hover 上浮 2px + 按压回弹
+  0.1s（锁定卡排除，照 BuildView 同款）
+- RelicView `.relic-card` 补基础过渡 + hover 上浮 2px + 发光 +
+  按压回弹 0.1s（不可选材料态排除；hover 不改边框色，保留
+  左侧稀有度色条）
+- `buttons.css` 四类按钮（primary/secondary/accent/ghost）`:active`
+  补 `transition: transform 0.1s` 覆盖：按下 0.1s 快速段，释放
+  回基础 0.15s 回弹，构成两段式
+- 组件规范边界声明同步：六视图卡片交互全集齐（v0.88.2 补齐
+  Army/Relic 两视图）
+
+### 验证
+
+- 检查全绿（build + test 31 文件 443 用例 + conservation +
+  lint/format 零输出）
+- Playwright 套件 preview 全绿 + 线上复跑专项全绿
+- 单组件零逻辑变化：仅样式块新增，模板/接口/存档零改动
 
 ---
 

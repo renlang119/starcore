@@ -514,6 +514,19 @@ function removeAll(fid: string, uid: UnitId) {
   border: 1px solid var(--color-border-line);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
+  transition:
+    transform 0.2s var(--ease-out),
+    border-color 0.2s,
+    box-shadow 0.2s var(--ease-out);
+}
+.unit-card:not(.locked):hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-glow);
+  box-shadow: var(--elevation-2);
+}
+.unit-card:not(.locked):active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s var(--ease-out);
 }
 .unit-card.locked .u-name {
   color: var(--color-locked); /* P2-7：卡名迁移；锁定不降 opacity */
