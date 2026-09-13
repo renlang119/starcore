@@ -90,9 +90,17 @@ VERSION_RE="${DISPLAY_VERSION//./\\.}"
 LOCAL_CODE=$(curl -s --max-time 15 -o /dev/null -w '%{http_code}' "$SITE_URL/?t=$(date +%s)" || true)
 BUNDLE=$(curl -s --max-time 15 "$SITE_URL/?t=$(date +%s)" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1 || true)
 REMOTE_VERSION=""
+REMOTE_STRIP=""
 if [[ -n "$BUNDLE" ]]; then
-  REMOTE_VERSION=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" | grep -oE "\"${VERSION//./\\.}\"" | head -1 || true)
-  REMOTE_STRIP=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" | grep -qF 'replace(/\.0$/' && echo strip-ok || true)
+  # 单次抓取 bundle 后做串内匹配：避免 curl|grep 管道在 pipefail 下
+  # 因对端提前关闭被误判（v0.90 实测验证段两次假 WARN 的加固）
+  BUNDLE_JS=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" || true)
+  if [[ -n "$BUNDLE_JS" ]]; then
+    REMOTE_VERSION=$(grep -oE "\"${VERSION//./\\.}\"" <<< "$BUNDLE_JS" | head -1 || true)
+    if grep -qF 'replace(/\.0$/' <<< "$BUNDLE_JS"; then
+      REMOTE_STRIP=strip-ok
+    fi
+  fi
 fi
 
 echo "  HTTP 状态: $LOCAL_CODE"
