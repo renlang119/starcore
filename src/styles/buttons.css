@@ -26,7 +26,8 @@
 }
 .btn-primary:active {
   transform: scale(0.95);
-} /* P2-4: 0.95 + 回弹 */
+  transition: transform 0.1s var(--ease-out);
+} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
 .btn-primary:disabled {
   background: var(--color-elevated);
   color: var(--color-t-tertiary);
@@ -56,7 +57,8 @@
 }
 .btn-secondary:active {
   transform: scale(0.95);
-} /* P2-4 */
+  transition: transform 0.1s var(--ease-out);
+} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
 .btn-secondary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -83,7 +85,8 @@
 }
 .btn-accent:active {
   transform: scale(0.95);
-} /* P2-4 */
+  transition: transform 0.1s var(--ease-out);
+} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
 .btn-accent:disabled {
   background: var(--color-elevated);
   color: var(--color-t-tertiary);
@@ -112,7 +115,8 @@
 }
 .btn-ghost:active {
   transform: scale(0.95);
-} /* P2-4 */
+  transition: transform 0.1s var(--ease-out);
+} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
 .btn-ghost:disabled {
   opacity: 0.4;
   cursor: not-allowed;
