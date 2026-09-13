@@ -365,6 +365,17 @@ onUnmounted(() => {
   border-left: 3px solid var(--c);
   border-radius: var(--radius-md);
   padding: var(--space-3);
+  transition:
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
+}
+.relic-card:not(.material-disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-2);
+}
+.relic-card:not(.material-disabled):active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s var(--ease-out);
 }
 .relic-card.material-selected {
   outline: 2px solid var(--color-plasma);
