@@ -188,6 +188,7 @@ const { displayActions, hasActions } = useActionQueue()
 }
 .action-item.actionable:active {
   transform: translateY(0) scale(0.98); /* P2-4：卡片回弹与卡片统一 */
+  transition: transform 0.1s var(--ease-out); /* P2-4：active 回弹 0.1s 与 ov-item 对齐 */
 }
 .action-item.actionable .action-icon-block {
   width: 40px;
