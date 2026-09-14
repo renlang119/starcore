@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { fnv1a } from '@/lib/random'
-import { exportSave, importSave, type SaveData } from '@/lib/storage'
+import { exportSave, importSave, clearAllSaves, type SaveData } from '@/lib/storage'
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
@@ -352,10 +352,12 @@ describe('game store — 初始化错误态（v0.75）', () => {
     }
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
     setActivePinia(createPinia())
     setRelicSlotProvider(() => 0)
-    localStorage.removeItem(BACKUP_KEY)
+    // 双通道全清（v0.93）：IndexedDB 主档跨用例残留会让「双档取新」写入的主档
+    // 盖掉后续用例的备份档断言（isolate:false 下 IndexedDB 不随 pinia 重建）
+    await clearAllSaves()
   })
 
   it('版本过新：initError=too_new，不启动游戏循环', async () => {
