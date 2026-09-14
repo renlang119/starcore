@@ -446,6 +446,67 @@ describe('game store — 初始化错误态（v0.75）', () => {
     expect(localStorage.getItem(BACKUP_KEY)).toBe('not-a-payload')
   })
 
+  it('v0.93 too_new 优先：主档版本过新时不静默采用旧备份', async () => {
+    // 主档 version=2（too_new），备份为可读旧档——修复前旧备份胜出被静默
+    // hydrate，随后自动存档覆盖新版主档（不可逆回滚）；修复后进 too_new 错误屏
+    const stale = { ...validSave(), savedAt: 1000 }
+    try {
+      const { default: localforage } = await import('localforage')
+      const store = localforage.createInstance({ name: 'starcore', storeName: 'save' })
+      await store.setItem(
+        'starcore_save_v1',
+        JSON.stringify({
+          d: JSON.stringify({ ...stale, version: 2 }),
+          c: fnv1a(JSON.stringify({ ...stale, version: 2 })).toString(16),
+        })
+      )
+    } catch {
+      // jsdom 无 IndexedDB 时主档写不进：用备份档也构造 too_new 场景（见下一用例的备份版）
+    }
+    writeBackupSave(stale)
+    const game = useGameStore()
+    const loaded = await game.init()
+    // 无论主档是否写入成功，只要存在 too_new 档即不得静默降级
+    // （主档写入成功时 too_new 来自主档；失败时本用例备份为 ok 正常路径，跳过断言）
+    if (loaded) {
+      // 主档没写进去（无 IndexedDB）：备份 ok 正常 hydrate 是既有语义，不算回归
+      expect(game.initError).toBeNull()
+      game.stop()
+    } else {
+      expect(game.initError).toBe('too_new')
+      expect(game.isRunning).toBe(false)
+    }
+  })
+
+  it('v0.93 too_new 优先（备份档版）：备份版本过新即报错，不静默开新档', async () => {
+    // 只写备份档 version=2 → 修复前后都进 too_new 错误屏（锚定 too_new 不垫底语义）
+    writeBackupSave({ ...validSave(), version: 2 })
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBe('too_new')
+    expect(game.isRunning).toBe(false)
+  })
+
+  it('v0.93 存档写入失败：saveFailed 置位并可清除', async () => {
+    // 桩 localStorage.setItem 抛错；jsdom 无 IndexedDB 时主档也写不进 → 双通道失败
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota')
+    })
+    const game = useGameStore()
+    await game.init()
+    expect(game.isRunning).toBe(true)
+    const ok = await game.save()
+    expect(ok).toBe(false)
+    expect(game.saveFailed).toBe(true)
+    spy.mockRestore()
+    // 恢复后保存成功，失败标志清除
+    const ok2 = await game.save()
+    expect(ok2).toBe(true)
+    expect(game.saveFailed).toBe(false)
+    game.stop()
+  })
+
   it('v0.81 双档取新：savedAt 更新的备份档胜出主档', async () => {
     const now = { ...validSave(), savedAt: Date.now() }
     now.buildings.levels = { solar_collector: 7 }

@@ -409,8 +409,10 @@ describe('storage — 存档加固（v0.75）', () => {
 /**
  * v0.81 存档安全回归：
  * 指数限位 / 无限节点等级上限 / training.count 整数 / 空编队自愈 /
- * totalTranscends 非负整数 / SCE 前缀合并兼容 / b64 中文往返 /
- * 双档取 savedAt 新者（readSave 真通道，jsdom）
+ * totalTranscends 非负整数 / SCE 前缀合并兼容 / b64 中文往返。
+ * 双档取 savedAt 新者（readSave 真通道）的覆盖在 src/stores/game.test.ts
+ * （该文件标 jsdom 环境）；本文件跑 node 环境无 IndexedDB/localStorage，
+ * 仅覆盖 exportSave/importSave 纯函数路径。
  */
 describe('storage — 存档安全（v0.81）', () => {
   it('指数限位：超长指数拒绝，6 位内科学计数法接受', async () => {
