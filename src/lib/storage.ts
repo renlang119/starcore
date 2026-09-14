@@ -217,7 +217,8 @@ export async function readSave(): Promise<SaveReadOutcome> {
   let sawAnyValue = false // 双通道是否真的存在过存储值（区分「无档」与「有值但损坏」）
   let rawBackup: string | null = null
   let tooNew: SaveReadOutcome | null = null // 任一通道出现版本过新即记录（见下方优先级说明）
-  // savedAt 相同（含双档都不可用的 -1 垫底值）时保序：先到者（IndexedDB 主档）优先
+  // savedAt 相同（含双档都不可用的 -1 垫底值）时后到者（localStorage 备份）落座；
+  // 用 >= 而非 >，保证 -1 垫底值也能落座
   const consider = (candidate: SaveReadOutcome, savedAt: number): void => {
     if (savedAt >= bestSavedAt) {
       best = candidate
