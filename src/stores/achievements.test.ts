@@ -2,7 +2,7 @@
  * achievements.test.ts — 成就/里程碑 store 测试（v0.57）
  *
  * 覆盖：
- * 1. 定义表完整性（36 成就、id 唯一、类别合法、阈值正数）
+ * 1. 定义表完整性（37 成就、id 唯一、类别合法、阈值正数）
  * 2. 终身计数累计与阈值解锁（含 toast 入队）
  * 3. 外部现值指标（relicsOwned/transcends/playtime 走 provider）
  * 4. 效果聚合（getMult 连乘，EffectSource 语义）
@@ -34,9 +34,9 @@ beforeEach(() => {
 })
 
 describe('achievements — 定义表完整性', () => {
-  it('共 36 个成就，id 唯一', () => {
-    expect(ACHIEVEMENTS).toHaveLength(36)
-    expect(ACHIEVEMENT_IDS.size).toBe(36)
+  it('共 37 个成就，id 唯一', () => {
+    expect(ACHIEVEMENTS).toHaveLength(37)
+    expect(ACHIEVEMENT_IDS.size).toBe(37)
   })
 
   it('类别/指标/阈值/效果字段合法', () => {

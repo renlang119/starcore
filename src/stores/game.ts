@@ -213,7 +213,7 @@ export const useGameStore = defineStore('game', () => {
       daily.bump('explores')
     }
 
-    // 5. 成就：终身计数采集 + 解锁判定（34 条全表扫描，每秒一次开销可忽略）
+    // 5. 成就：终身计数采集 + 解锁判定（37 条全表扫描，每秒一次开销可忽略）
     // playtime 指标直接读 totalPlayTime 现值（转生不清、hardReset 才清），无需单独累计
     collectLifetimeTotals()
     achievements.checkAndUnlock()
@@ -234,7 +234,7 @@ export const useGameStore = defineStore('game', () => {
    * - 建造协议：按 BUILDINGS 数据序扫描已解锁建筑，买得起即升 1 级（每建筑每 tick 至多 1 级）
    * - 研究协议：按 TECHS 数据序扫描可用科技，买得起即完成（含 techCostMult，与手动一致）
    * - 探索协议：availableNodes 已挡完成/进行中/前置，逐个尝试开始（与 MapView 手动同路径）
-   * 购买策略 = 买得起即买，不留储备。单遍扫描 20 建筑/55 科技/28 节点，开销可忽略。
+   * 购买策略 = 买得起即买，不留储备。单遍扫描 20 建筑/59 科技/34 节点，开销可忽略。
    */
   function runAutomation(): void {
     if (autoBuild.value) {
