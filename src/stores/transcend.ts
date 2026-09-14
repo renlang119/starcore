@@ -56,10 +56,10 @@ export function isInfiniteNode(node: TranscendNode): boolean {
   return (node.maxLevel ?? 1) > 1
 }
 
-/** 节点下一级购买成本（买断节点 = 基础成本；无限节点 = 指数递增取整） */
-export function nextCost(node: TranscendNode): number {
+/** 节点在给定等级处的下一级购买成本（缺省当前等级；买断节点 = 基础成本；无限节点 = 指数递增取整） */
+export function nextCost(node: TranscendNode, level = node.level): number {
   if (!isInfiniteNode(node)) return node.cost
-  return Math.ceil(node.cost * Math.pow(node.costGrowth ?? 1.5, node.level))
+  return Math.ceil(node.cost * Math.pow(node.costGrowth ?? 1.5, level))
 }
 
 const DEFAULT_NODES: TranscendNode[] = [
@@ -325,6 +325,32 @@ export const useTranscendStore = defineStore('transcend', () => {
     return done
   }
 
+  /**
+   * 批量购买预览（v0.94）：返回当前负熵下点击一次批量购买的实际
+   * 可买级数与逐级累计总花费。逐级取价与扣费模拟同 purchaseNodeSteps
+   * 的实扣顺序一致（负熵不足或达节点上限自然停止，最多 steps 级），
+   * 供 ×N>1 档位在成本行展示「可买级数 + 预计总花费」。
+   */
+  function previewPurchaseSteps(id: string, steps: number): { count: number; cost: number } {
+    const node = tree.value.find((n) => n.id === id)
+    if (!node || steps < 1) return { count: 0, cost: 0 }
+    const cap = node.maxLevel ?? 1
+    let remain = negativeEntropy.value
+    let level = node.level
+    let count = 0
+    let cost = 0
+    for (let i = 0; i < steps; i++) {
+      if (level >= cap) break
+      const c = nextCost(node, level)
+      if (remain.lt(c)) break
+      remain = remain.minus(c)
+      level++
+      count++
+      cost += c
+    }
+    return { count, cost }
+  }
+
   function reset(fullReset = false) {
     if (fullReset) {
       negativeEntropy.value = D(0)
@@ -374,6 +400,7 @@ export const useTranscendStore = defineStore('transcend', () => {
     transcend,
     purchaseNode,
     purchaseNodeSteps,
+    previewPurchaseSteps,
     reset,
     serialize,
     hydrate,
