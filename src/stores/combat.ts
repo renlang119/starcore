@@ -151,6 +151,18 @@ export const useCombatStore = defineStore('combat', () => {
       }
     }
 
+    // 防御分支（v0.94）：敌方空编成属配置错误，不得走「空数组 every 恒真」判胜；
+    // 正常路径由 endless 模板校验与据点数据保证非空，此处兜底快速失败
+    if (enemyUnits.length === 0) {
+      return {
+        victory: false,
+        log: [{ round: 0, msg: '敌方编成缺失，战斗无法进行', side: 'system' }],
+        rewards: {},
+        losses: {},
+        rounds: 0,
+      }
+    }
+
     log.push({ round: 0, msg: `遭遇 ${stronghold.name} 守军`, side: 'system' })
 
     const rng = mulberry32(_battleSeed(formation, stronghold.id))
