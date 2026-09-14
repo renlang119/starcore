@@ -100,6 +100,11 @@ const rateDisplay = computed(() => {
   return formatted
 })
 const isNegativeRate = computed(() => game.resources.getRate('energy').lt(0))
+
+// 终局贺词：全宇宙探索完毕（34/34）时显示一次性的终章贺词（D11）
+const allExplored = computed(
+  () => EXPLORE_NODES.length > 0 && EXPLORE_NODES.every((n) => game.exploration.isCompleted(n.id))
+)
 </script>
 
 <template>
@@ -139,6 +144,9 @@ const isNegativeRate = computed(() => game.resources.getRate('energy').lt(0))
     <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">
       {{ rateDisplay }}
     </div>
+    <p v-if="allExplored" class="final-salute">
+      先驱者的航路已走到尽头，星核文明接过守门者的位置。全宇宙已探索完毕。
+    </p>
     <!-- P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 -->
     <div class="hero-flow" aria-hidden="true"></div>
   </section>
@@ -323,6 +331,14 @@ const isNegativeRate = computed(() => game.resources.getRate('energy').lt(0))
   border-radius: 50%;
   pointer-events: none;
   animation: flowPulse 2.5s ease-in-out infinite;
+}
+
+.final-salute {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  text-align: center;
+  max-width: 34em;
 }
 
 /* P1-1 桌面端差异 */

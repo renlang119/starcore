@@ -674,6 +674,61 @@
         <path d="M5 12c0 1.5 3.1 3 7 3s7-1.5 7-3" />
         <circle cx="12" cy="15" r="1" fill="currentColor" />
       </symbol>
+      <symbol
+        id="i-tech-explore-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="2" fill="currentColor" />
+        <path d="M12 6.5a5.5 5.5 0 0 1 5.5 5.5" />
+        <path d="M12 18a6 6 0 0 1-6-6" stroke-dasharray="2.5 2.5" stroke-width="1.5" />
+        <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2" />
+      </symbol>
+      <symbol
+        id="i-tech-void-command"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 2.5l1.8 3.7 3.7 1.8-3.7 1.8L12 11.5l-1.8-3.7-3.7-1.8 3.7-1.8z" />
+        <path d="M4 16h16" />
+        <path d="M6 20h12" />
+        <circle cx="12" cy="20" r="1" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-veil"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 14c2.5-2 5-2 7.5 0s5 2 7.5 0 3-2 3-2" />
+        <path d="M3 9c2.5-2 5-2 7.5 0s5 2 7.5 0 3-2 3-2" />
+        <circle cx="12" cy="19" r="1.5" fill="currentColor" />
+      </symbol>
+      <symbol
+        id="i-tech-data-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M5 5c0-1.5 3.1-3 7-3s7 1.5 7 3-3.1 3-7 3-7-1.5-7-3z" />
+        <path d="M5 5v13c0 1.5 3.1 3 7 3s7-1.5 7-3V5" />
+        <path d="M5 10.5c0 1.5 3.1 3 7 3s7-1.5 7-3" />
+        <path d="M9 15.5h4" />
+      </symbol>
     </defs>
   </svg>
 </template>
