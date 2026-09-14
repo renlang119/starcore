@@ -172,7 +172,10 @@ export const useCombatStore = defineStore('combat', () => {
         if (defRef && tgt.counteredBy?.includes(p.defRef!)) {
           dmg *= defRef.counterMult
         }
-        const totalHp = tgt.hp * tgt.count
+        // 单位组总血不变量：(存活数-1)×单兵上限血 + 残兵血。
+        // 受击后 hp 只记残兵血量，直接 hp×count 会把血池腰斩，
+        // 多单位堆叠会被低攻编队在回合上限内磨死（超时软墙失效）
+        const totalHp = (tgt.count - 1) * tgt.maxHp + tgt.hp
         const dmgDealt = Math.min(
           totalHp,
           Math.max(1, dmg - tgt.defense * tgt.count * DEFENSE_MITIGATION)
@@ -200,7 +203,8 @@ export const useCombatStore = defineStore('combat', () => {
         if (target.length === 0) break
         const tgt = target[Math.floor(rng() * target.length)]
         const dmg = e.attack * e.count
-        const totalHp = tgt.hp * tgt.count
+        // 同玩家侧：总血 = (存活数-1)×单兵上限血 + 残兵血
+        const totalHp = (tgt.count - 1) * tgt.maxHp + tgt.hp
         const dmgDealt = Math.min(
           totalHp,
           Math.max(1, dmg - tgt.defense * tgt.count * DEFENSE_MITIGATION)
