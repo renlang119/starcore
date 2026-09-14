@@ -325,11 +325,17 @@ function _tooNewVersion(data: unknown): number | null {
 }
 
 /**
- * 修复历史存档已知缺陷后再校验（自愈项不改语义，只把可推导的缺失补齐）：
+ * 修复历史存档已知缺陷后再校验（自愈项不改语义，只剥离/补齐可推导的部分）：
  * 1. completed 混入非正式据点 id（v0.60 远征胜利会把 'endless' 写入通关集，
  *    主备档双双过不了白名单校验）→ 剥离该条目继续，不整档拒绝。
  * 2. formations 空数组（v0.81）：空数组能通过 every 校验但 hydrate 后编队为 0 支，
- *    战斗页直接读 formations[idx].units 崩溃 → 按默认 f1/f2/f3 补齐空编队。
+ *    战斗页直接读 formations[idx].units 崩溃 → 按默认 f1/f2/f3 补齐空编队
+ * 3. 条目级剥离未知 id（v0.93）：版本迭代删除/重命名建筑、科技或遗物 id 时，
+ *    老档不应整档判废——与字段自身的结构/范围校验（仍整档拒绝）区分开，
+ *    未知 id 只损失对应进度，其余进度保留。字段口径与 combat.completed 一致。
+ * 4. equipped 槽位引用修复（v0.93）：指向 owned 中不存在实例的槽位置空、
+ *    重复出现的实例只保留首个槽位——同一实例重复占槽会双计装备效果
+ *    与套装件数，属可推导修复；与 hydrate 侧防御同步生效。
  */
 function _validateAndRepair(data: unknown): data is SaveData {
   if (_isObject(data)) {
@@ -340,6 +346,42 @@ function _validateAndRepair(data: unknown): data is SaveData {
     const mil = data.military
     if (_isObject(mil) && Array.isArray(mil.formations) && mil.formations.length === 0) {
       mil.formations = DEFAULT_FORMATIONS.map((f) => ({ ...f, units: { ...f.units } }))
+    }
+    // buildings.levels：剥离未知建筑 id（键值结构仍由 validateSaveData 把关）
+    const bld = data.buildings
+    if (_isObject(bld) && _isObject(bld.levels)) {
+      for (const key of Object.keys(bld.levels)) {
+        if (!BUILDING_IDS.has(key)) delete bld.levels[key]
+      }
+    }
+    // research.completed：剥离未知科技 id
+    const rsh = data.research
+    if (_isObject(rsh) && Array.isArray(rsh.completed)) {
+      rsh.completed = rsh.completed.filter(
+        (id: unknown) => typeof id === 'string' && TECH_IDS.has(id)
+      )
+    }
+    // relics.owned：剥离未知遗物 id 条目；equipped 引用修复（见函数头注 4）
+    const rlc = data.relics
+    if (_isObject(rlc)) {
+      if (Array.isArray(rlc.owned)) {
+        rlc.owned = rlc.owned.filter(
+          (r: unknown) => _isObject(r) && typeof r.id === 'string' && RELIC_IDS.has(r.id)
+        )
+      }
+      if (Array.isArray(rlc.equipped)) {
+        const ownedIds = new Set(
+          (rlc.owned as { instanceId?: unknown }[]).map((r) =>
+            _isObject(r) ? r.instanceId : undefined
+          )
+        )
+        const seen = new Set<string>()
+        rlc.equipped = (rlc.equipped as unknown[]).map((e) => {
+          if (typeof e !== 'string' || !ownedIds.has(e) || seen.has(e)) return null
+          seen.add(e)
+          return e
+        })
+      }
     }
   }
   return validateSaveData(data)
@@ -400,11 +442,13 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!_isNonNegNumberStrRecord(res.totals)) return false
 
   // buildings: levels key 必须是有效建筑 ID，value 必须是非负整数
+  // （未知 id 在 _validateAndRepair 剥离后到达此处，见该函数头注 3）
   if (!_isObject(d.buildings)) return false
   if (!_isValidIdNumberRecord((d.buildings as Record<string, unknown>).levels, BUILDING_IDS, true))
     return false
 
   // research: completed 数组元素必须是有效科技 ID
+  // （未知 id 在 _validateAndRepair 剥离后到达此处）
   if (!_isObject(d.research)) return false
   const research = d.research as Record<string, unknown>
   if (!Array.isArray(research.completed)) return false
@@ -487,7 +531,8 @@ function validateSaveData(data: unknown): data is SaveData {
       return false
   }
 
-  // relics: owned 条目的 id 必须是有效遗物 ID；level（v0.70 可选字段）非负整数 ≤ MAX_RELIC_LEVEL
+  // relics: owned 条目的 id 必须是有效遗物 ID（未知 id 条目在 _validateAndRepair
+  // 剥离后到达此处）；level（v0.70 可选字段）非负整数 ≤ MAX_RELIC_LEVEL
   if (!_isObject(d.relics)) return false
   const rl = d.relics as Record<string, unknown>
   if (!Array.isArray(rl.owned)) return false

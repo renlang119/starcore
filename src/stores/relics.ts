@@ -281,6 +281,19 @@ export const useRelicsStore = defineStore('relics', () => {
     }
     if (data.equipped) {
       const saved = [...data.equipped] as (string | null)[]
+      // 引用修复：槽位必须指向 owned 中的实例且不重复（导入或手改存档可产生
+      // 重复/悬空引用，同一实例重复占槽会双计装备效果与套装件数）；
+      // 校验层 _validateAndRepair 已修一轮，这里对 hydrate 直呼路径同样防御
+      const known = new Set(owned.value.map((r) => r.instanceId))
+      const seen = new Set<string>()
+      for (let i = 0; i < saved.length; i++) {
+        const id = saved[i]
+        if (id === null || !known.has(id) || seen.has(id)) {
+          saved[i] = null
+          continue
+        }
+        seen.add(id)
+      }
       // 对齐当前 maxSlots：缺失补 null，超出截断
       const target = maxSlots.value
       while (saved.length < target) saved.push(null)

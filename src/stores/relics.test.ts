@@ -348,6 +348,32 @@ describe('relics — 强化（v0.70）', () => {
     overStore.hydrate(over as typeof data)
     expect(overStore.owned[0].level).toBe(MAX_RELIC_LEVEL)
   })
+
+  it('hydrate 引用修复：重复实例只留首个槽位，悬空引用置空', () => {
+    // 手改存档/导入可产生重复与悬空引用；重复占槽会双计装备效果与套装件数
+    const a = inject(store, 'r_energy_1')[0]
+    const b = inject(store, 'r_dark_1')[0]
+    const data = {
+      owned: store.owned.map((r) => ({
+        id: r.id,
+        instanceId: r.instanceId,
+        obtainedAt: r.obtainedAt,
+        level: r.level,
+      })),
+      equipped: [a, a, 'relic_missing', b],
+    }
+    setActivePinia(createPinia())
+    const other = useRelicsStore()
+    other.hydrate(data as never)
+    expect(other.equippedRelics).toHaveLength(2)
+    expect(other.equipped[0]).toBe(a)
+    expect(other.equipped[1]).toBeNull()
+    expect(other.equipped[2]).toBeNull()
+    expect(other.equipped[3]).toBe(b)
+    // 套装件数不因重复占槽虚增
+    const counted = other.equippedRelics.map((r) => r.instanceId)
+    expect(new Set(counted).size).toBe(2)
+  })
 })
 
 describe('relics — 批量强化（v0.86）', () => {
