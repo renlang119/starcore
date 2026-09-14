@@ -34,6 +34,10 @@ describe('时间加速全玩法仿真', () => {
     setActivePinia(createPinia())
     setRelicSlotProvider(() => 0)
     vi.useFakeTimers()
+    // 固定起始时钟为当日正午：加速窗口若在真实接近午夜时启动，会跨越
+    // 零点触发次日签到（+5000），打破产出线性等守恒断言；固定后与
+    // 真实运行时刻无关
+    vi.setSystemTime(new Date('2026-09-14T12:00:00'))
   })
   afterEach(() => {
     vi.useRealTimers()
