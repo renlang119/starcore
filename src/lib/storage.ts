@@ -149,30 +149,39 @@ export interface SaveData {
   daily?: DailySaveData
 }
 
-/** 写入存档（IndexedDB + localStorage 备份，均带 checksum） */
-export async function writeSave(data: SaveData): Promise<void> {
+/** 写入存档（IndexedDB + localStorage 备份，均带 checksum）。
+ * 返回是否至少有一个通道写入成功；双通道全失败（配额/隐私模式/受限环境）
+ * 返回 false，由调用方给玩家可见反馈，避免整段进度只在内存。 */
+export async function writeSave(data: SaveData): Promise<boolean> {
   const json = JSON.stringify(data)
   const payload = { d: json, c: _checksum(json) }
+  let ok = false
   try {
     await STORE.setItem(SAVE_KEY, payload)
+    ok = true
   } catch {
     // 存储满或受限时回退到 localStorage
   }
   try {
     localStorage.setItem(SAVE_KEY + '_backup', JSON.stringify(payload))
+    ok = true
   } catch {
     /* 忽略配额溢出 */
   }
+  return ok
 }
 
-/** 同步写入存档到 localStorage（用于 beforeunload 等来不及等 IndexedDB 的场景） */
-export function writeSaveSync(data: SaveData): void {
+/** 同步写入存档到 localStorage（用于 beforeunload 等来不及等 IndexedDB 的场景）。
+ * 返回备份通道是否写入成功。 */
+export function writeSaveSync(data: SaveData): boolean {
   try {
     const json = JSON.stringify(data)
     const payload = JSON.stringify({ d: json, c: _checksum(json) })
     localStorage.setItem(SAVE_KEY + '_backup', payload)
+    return true
   } catch {
     /* 忽略配额溢出 */
+    return false
   }
 }
 
@@ -207,6 +216,7 @@ export async function readSave(): Promise<SaveReadOutcome> {
   let bestSavedAt = -1
   let sawAnyValue = false // 双通道是否真的存在过存储值（区分「无档」与「有值但损坏」）
   let rawBackup: string | null = null
+  let tooNew: SaveReadOutcome | null = null // 任一通道出现版本过新即记录（见下方优先级说明）
   // savedAt 相同（含双档都不可用的 -1 垫底值）时保序：先到者（IndexedDB 主档）优先
   const consider = (candidate: SaveReadOutcome, savedAt: number): void => {
     if (savedAt >= bestSavedAt) {
@@ -219,7 +229,10 @@ export async function readSave(): Promise<SaveReadOutcome> {
     if (stored) {
       sawAnyValue = true
       const parsed = _parseStored(stored)
-      if (parsed) consider(parsed, _savedAtOf(parsed))
+      if (parsed) {
+        if (parsed.status === 'too_new') tooNew = parsed
+        else consider(parsed, _savedAtOf(parsed))
+      }
     }
   } catch {
     /* noop */
@@ -230,11 +243,18 @@ export async function readSave(): Promise<SaveReadOutcome> {
       sawAnyValue = true
       rawBackup = bak
       const parsed = _parseBackup(bak)
-      if (parsed) consider(parsed, _savedAtOf(parsed))
+      if (parsed) {
+        if (parsed.status === 'too_new') tooNew = parsed
+        else consider(parsed, _savedAtOf(parsed))
+      }
     }
   } catch {
     /* noop */
   }
+  // 版本过新优先报错（v0.93）：too_new 表示该档由更新版本写入，静默采用旧备份
+  // 会让随后的自动存档把新版主档覆盖掉（静默回滚不可逆）。宁可进错误屏
+  // （可导出原始档），也不降级；同样优先于 corrupt 的诊断并列。
+  if (tooNew) return tooNew
   if (best) return best
   // 有存储值但都不可用：报告 corrupt（附原始备份载荷供导出），
   // 与「无档」严格区分——后续流程不得静默清档或用空状态覆盖
