@@ -24,6 +24,14 @@ const garrisonList = computed(() => {
     return { id: k, name: meta?.name ?? k, color: meta?.color ?? '#fff', amount: fmt(v) }
   })
 })
+const eventList = computed(() => {
+  if (!report.value?.eventGains) return []
+  const metaMap = game.resources.allMeta
+  return Object.entries(report.value.eventGains).map(([k, v]) => {
+    const meta = metaMap[k]
+    return { id: k, name: meta?.name ?? k, color: meta?.color ?? '#fff', amount: fmt(v) }
+  })
+})
 const trainedList = computed(() => {
   if (!report.value?.trainedUnits) return []
   return Object.entries(report.value.trainedUnits).map(([k, v]) => {
@@ -56,6 +64,15 @@ function dismiss() {
         </div>
       </div>
     </div>
+    <div v-if="eventList.length > 0" class="event-section">
+      <h3 class="event-title">深空事件</h3>
+      <div class="gains">
+        <div v-for="g in eventList" :key="g.id" class="gain-item">
+          <span class="g-name" :style="{ color: g.color }">{{ g.name }}</span>
+          <span class="g-amount font-mono">+{{ g.amount }}</span>
+        </div>
+      </div>
+    </div>
     <div v-if="trainedList.length > 0" class="trained-section">
       <h3 class="trained-title">部队训练完成</h3>
       <div class="gains">
@@ -66,7 +83,12 @@ function dismiss() {
       </div>
     </div>
     <p
-      v-if="gainsList.length === 0 && garrisonList.length === 0 && trainedList.length === 0"
+      v-if="
+        gainsList.length === 0 &&
+        garrisonList.length === 0 &&
+        eventList.length === 0 &&
+        trainedList.length === 0
+      "
       class="empty"
     >
       离线期间没有产出（建造更多建筑以获得离线收益）
@@ -123,6 +145,15 @@ function dismiss() {
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-plasma, #a78bfa);
+  margin-bottom: var(--space-2);
+}
+.event-section {
+  margin-bottom: var(--space-5);
+}
+.event-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-core, #00e5ff);
   margin-bottom: var(--space-2);
 }
 .trained-section {
