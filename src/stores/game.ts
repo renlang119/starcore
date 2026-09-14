@@ -163,7 +163,9 @@ export const useGameStore = defineStore('game', () => {
     const now = Date.now()
     let dt = (now - lastTickTime.value) / 1000
     lastTickTime.value = now
-    if (dt <= 0) dt = 1 // 异常保护
+    // 非有限守卫（NaN/Infinity）与负值统一按 1 秒处理：NaN <= 0 为
+    // false 会穿透，随后 dt > 60 同样为 false，NaN 会流进产出与训练推进
+    if (!Number.isFinite(dt) || dt <= 0) dt = 1 // 异常保护
     if (dt > 60) {
       // 标签页后台过久：补算离线收益，本次 tick 只算 1 秒
       const report = doComputeOfflineGains(dt)
@@ -401,7 +403,9 @@ export const useGameStore = defineStore('game', () => {
   function doComputeOfflineGains(elapsedOverride?: number): OfflineReport | null {
     const now = Date.now()
     const elapsed = elapsedOverride ?? (now - lastSaveTime.value) / 1000
-    if (elapsed < 60) return null
+    // 非有限守卫：NaN/Infinity 不做离线补算（lib 层同样自守，此处提前
+    // 拦截避免 lastSaveTime 被推进后返回 null 报告的语义混淆）
+    if (!Number.isFinite(elapsed) || elapsed < 60) return null
     // 防止重复计算：将 lastSaveTime 推进到当前时刻（无论是否有 elapsedOverride）
     lastSaveTime.value = now
     return calcOfflineGains(elapsed, {
