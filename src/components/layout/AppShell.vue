@@ -2,16 +2,30 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBreakpoint } from '@/composables/useBreakpoint'
+import { useToast } from '@/composables/useToast'
+import { useGameStore } from '@/stores/game'
 import TopBar from './TopBar.vue'
 import BottomNav from './BottomNav.vue'
 import SideNav from './SideNav.vue'
 import OfflineReport from './OfflineReport.vue'
 import AchievementToast from './AchievementToast.vue'
+import Toast from '@/components/ui/Toast.vue'
 import Icons from '@/components/ui/Icons.vue'
 
 const route = useRoute()
 const router = useRouter()
 const { isDesktop } = useBreakpoint()
+const game = useGameStore()
+
+/** 全局轻提示实例（存档失败提醒等跨路由提示） */
+const toast = useToast()
+// 存档双通道写失败（配额/隐私模式）：跨路由常驻提示，直到下次成功保存清除
+watch(
+  () => game.saveFailed,
+  (failed) => {
+    if (failed) toast.show('存储空间不足，进度尚未保存', 3000)
+  }
+)
 
 /** 宽版内容区：路由 meta.wide 控制（首页双列需要更宽的 max-width） */
 const isWideContent = computed(() => route.meta.wide === true)
@@ -140,6 +154,9 @@ watch(
 
     <!-- 成就解锁全局提示（v0.57） -->
     <AchievementToast />
+
+    <!-- 全局轻提示（存档失败提醒等） -->
+    <Toast :toast="toast" />
 
     <!-- 战斗页返回按钮——仅移动端 -->
     <div v-if="showBattleBack && !isDesktop" class="extra-nav">

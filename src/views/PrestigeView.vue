@@ -128,11 +128,11 @@ function cancelImport() {
   showImportConfirm.value = false
 }
 async function manualSave() {
-  try {
-    await game.save()
+  const ok = await game.save()
+  if (ok) {
     saveMsg.show('已保存', 3000)
-  } catch {
-    saveMsg.show('保存失败', 3000)
+  } else {
+    saveMsg.show('保存失败：存储空间不足', 3000)
   }
 }
 function tryHardReset() {
