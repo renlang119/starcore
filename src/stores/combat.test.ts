@@ -97,6 +97,19 @@ describe('combat store', () => {
     expect(result.rounds).toBe(2)
   })
 
+  // —— v0.94：敌方空编成防御 ——
+
+  it('敌方空编成防御判负：不走空数组恒真判胜', () => {
+    const combat = useCombatStore()
+    const formation = makeFormation('f1', { assault: 10 })
+    const empty = { ...makeDummyStronghold(100, 1), enemies: [] }
+    const result = combat.resolveBattle(formation, empty, D(1), D(1))
+    expect(result.victory).toBe(false)
+    expect(result.rounds).toBe(0)
+    expect(result.log.some((e) => e.msg.includes('敌方编成缺失'))).toBe(true)
+    expect(Object.keys(result.rewards).length).toBe(0)
+  })
+
   it('rewards only on victory', () => {
     const combat = useCombatStore()
     const formation = makeFormation('f1', {})
