@@ -1,10 +1,11 @@
 /**
  * explore.ts — 探索星图节点定义
- * 星图按距离分 7 层：轨道带、内层系、外层系、深空、恒星系层、星团层、星臂层
+ * 星图按距离分 8 层：轨道带、内层系、外层系、深空、恒星系层、星团层、星臂层、星系层
  * 探索节点提供一次性奖励 + 解锁据点
  */
 
-export type StarLayer = 'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster' | 'arm'
+export type StarLayer =
+  'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster' | 'arm' | 'galaxy'
 
 export interface ExploreNode {
   id: string
@@ -42,6 +43,7 @@ export const LAYER_INFO: Record<
   stellar: { id: 'stellar', name: '恒星系层', color: '#E879F9', distance: '4.2 ly+' },
   cluster: { id: 'cluster', name: '星团层', color: '#60A5FA', distance: '>10 kly' },
   arm: { id: 'arm', name: '星臂层', color: '#FB7185', distance: '30-80 kly' },
+  galaxy: { id: 'galaxy', name: '星系层', color: '#FACC15', distance: '>100 kly' },
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
@@ -327,6 +329,83 @@ export const EXPLORE_NODES: ExploreNode[] = [
     unlocksStronghold: ['silencer_5'],
     story:
       '回廊尽头并列着七扇与冻结之门同款的巨门，只有一扇门的应答源仍在工作。信号穿门而出，指向的不是星臂深处，而是整条银河的尺度——门后的存在，在星系层面等我们。',
+  },
+  // —— 星系层（v0.91，敌人编成经战斗模拟脚本三档验证）——
+  {
+    id: 'node_galaxy_gate',
+    name: '越门浅滩',
+    layer: 'galaxy',
+    desc: '穿过唯一应答的门扉后抵达的星系尺度浅滩，整条银河在下方展开',
+    time: 172800,
+    cost: { energy: 80000000000, data: 120000000, dark: 450 },
+    rewards: { energy: 400000000000, data: 240000000, dark: 900 },
+    requires: ['node_arm_threshold'],
+    unlocksStronghold: ['raider_10'],
+    story:
+      '穿过唯一应答的门扉，门后不是房间，是整条银河。七扇门的应答源在此汇成一条仍在发讯的中继链，笔直指向银心。',
+  },
+  {
+    id: 'node_galaxy_range',
+    name: '星尘牧场',
+    layer: 'galaxy',
+    desc: '银河盘面上的星尘草原，噬星鲲群在此放牧',
+    time: 216000,
+    cost: { energy: 200000000000, data: 300000000, crystal: 6000000, dark: 550 },
+    rewards: { energy: 1000000000000, data: 60000000, crystal: 30000000, dark: 1100 },
+    requires: ['node_galaxy_gate'],
+    unlocksStronghold: ['beast_7'],
+    story:
+      '银河盘面上，噬星鲲群像牧群一样啃食星尘。它们的迁徙路线整齐地绕开某些空域，像在听从某种驱赶。',
+  },
+  {
+    id: 'node_galaxy_archive',
+    name: '先驱者总库',
+    layer: 'galaxy',
+    desc: '先驱者文明规模最大的数据库，纪年终止于同一日',
+    time: 216000,
+    cost: { energy: 200000000000, data: 300000000, alloy: 10000000, dark: 550 },
+    rewards: { energy: 1000000000000, data: 60000000, alloy: 30000000, dark: 1100 },
+    requires: ['node_galaxy_gate'],
+    unlocksStronghold: ['ruin_7'],
+    story:
+      '先驱者总库的纪年终止于同一日：「门已交给守门者。我们出发去银河之外，寻找最初的发讯者。」',
+  },
+  {
+    id: 'node_galaxy_hub',
+    name: '银盘枢纽',
+    layer: 'galaxy',
+    desc: '两条分支汇合处的银盘航道枢纽，掠夺者帝庭的进贡终点',
+    time: 259200,
+    cost: { energy: 500000000000, data: 750000000, dark: 650 },
+    rewards: { energy: 2500000000000, data: 400000000, crystal: 40000000, dark: 1400 },
+    requires: ['node_galaxy_range', 'node_galaxy_archive'],
+    unlocksStronghold: ['raider_11'],
+    story:
+      '掠夺者所有王庭的进贡终点。他们相信银心藏着永不熄灭的炉，把整条银河的航道当成了献给炉火的柴。',
+  },
+  {
+    id: 'node_galaxy_halo',
+    name: '静默银晕',
+    layer: 'galaxy',
+    desc: '银河晕中的静默空腔，连中继链也绕开这里',
+    time: 288000,
+    cost: { energy: 1000000000000, data: 1500000000, dark: 800 },
+    rewards: { energy: 5000000000000, data: 750000000, dark: 1800 },
+    requires: ['node_galaxy_hub'],
+    story: '银河晕中的静默空腔，连中继链也绕开这里。守门者的石刻写着：「最亮的地方，影子最深。」',
+  },
+  {
+    id: 'node_galaxy_heart',
+    name: '银河之心',
+    layer: 'galaxy',
+    desc: '银心旁的沉默者主脑所在，应答源的实体',
+    time: 345600,
+    cost: { energy: 2000000000000, data: 3000000000, dark: 1000 },
+    rewards: { energy: 12000000000000, data: 2000000000, dark: 2200 },
+    requires: ['node_galaxy_halo'],
+    unlocksStronghold: ['silencer_6'],
+    story:
+      '银心旁，沉默者主脑在此沉睡，它是所有守门者的中枢，也是应答源的实体。接触完成的瞬间，它回放了先驱者的出航影像，并给出一组坐标：信号的最初源头，在银河之外。',
   },
 ]
 

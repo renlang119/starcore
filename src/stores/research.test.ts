@@ -183,8 +183,8 @@ describe('research — reset / serialize / hydrate', () => {
 })
 
 describe('research — 数值规范守恒（docs/游戏数值设定规范.md §四）', () => {
-  it('总量守恒：51 科技、8 分支', () => {
-    expect(TECHS).toHaveLength(51)
+  it('总量守恒：55 科技、8 分支', () => {
+    expect(TECHS).toHaveLength(55)
     expect(Object.keys(TECH_BRANCHES)).toHaveLength(8)
   })
 
@@ -225,11 +225,11 @@ describe('research — 数值规范守恒（docs/游戏数值设定规范.md §�
     expect(store.getMult('production_mult', 'energy').toNumber()).toBeCloseTo(1.56, 10)
     expect(store.getMult('production_mult', 'crystal').toNumber()).toBeCloseTo(1.82, 10)
     expect(store.getMult('production_mult', 'alloy').toNumber()).toBeCloseTo(1.75, 10)
-    expect(store.getMult('production_mult', 'data').toNumber()).toBeCloseTo(3.822, 10)
-    expect(store.getMult('production_mult', 'dark').toNumber()).toBeCloseTo(3.549, 10)
-    expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(2.4375, 10)
-    expect(store.getMult('combat_mult', 'defense').toNumber()).toBeCloseTo(2.4375, 10)
-    expect(store.getMult('explore_mult').toNumber()).toBeCloseTo(6.92055, 10)
+    expect(store.getMult('production_mult', 'data').toNumber()).toBeCloseTo(5.3508, 10)
+    expect(store.getMult('production_mult', 'dark').toNumber()).toBeCloseTo(4.6137, 10)
+    expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(3.046875, 10)
+    expect(store.getMult('combat_mult', 'defense').toNumber()).toBeCloseTo(3.046875, 10)
+    expect(store.getMult('explore_mult').toNumber()).toBeCloseTo(8.996715, 10)
     expect(store.getMult('prestige_mult').toNumber()).toBeCloseTo(1.5, 10)
     expect(store.getMult('offline_bonus').toNumber()).toBeCloseTo(1.2, 10)
     expect(store.getMult('cost_mult', 'tech').toNumber()).toBeCloseTo(0.85, 10)

@@ -45,8 +45,8 @@ afterEach(() => {
 })
 
 describe('exploration — 初始状态', () => {
-  it('22 节点全部未开始未完成', () => {
-    expect(EXPLORE_NODES).toHaveLength(22)
+  it('28 节点全部未开始未完成', () => {
+    expect(EXPLORE_NODES).toHaveLength(28)
     for (const n of EXPLORE_NODES) {
       expect(store.isCompleted(n.id)).toBe(false)
       expect(store.isExploring(n.id)).toBe(false)
