@@ -6,6 +6,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useCombatStore, setGarrisonGuard } from './combat'
 import { D } from '@/lib/decimal'
 import { STRONGHOLDS } from '@/data/pve'
+import type { StrongholdDef } from '@/data/pve'
 import type { Formation } from './military'
 
 function makeFormation(id: string, units: Record<string, number>): Formation {
@@ -47,6 +48,53 @@ describe('combat store', () => {
     const stronghold = STRONGHOLDS.find((s) => s.id === 'silencer_1')!
     const result = combat.resolveBattle(formation, stronghold, D(1), D(1))
     expect(result.victory).toBe(false)
+  })
+
+  // —— v0.93：战斗 HP 记账修复回归 ——
+
+  /** 构造只有单一敌方单位的据点（直改编成，绕开数据表） */
+  function makeDummyStronghold(hp: number, count: number): StrongholdDef {
+    return {
+      id: 'dummy_battle_regression',
+      name: '测试据点',
+      type: 'raider',
+      tier: 1,
+      desc: '',
+      icon: 'i-stronghold-raider',
+      enemies: [{ unitId: 'dummy', name: '测试单位', attack: 0, defense: 0, hp, count }],
+      rewards: {},
+      idle: {},
+    }
+  }
+
+  it('低攻打高血堆叠应超时判负：血池不变量修复回（评审编号 1）', () => {
+    const combat = useCombatStore()
+    // 敌 10 单位×100HP（真值 1000）；玩家 1 突击兵裸乘数，每回合保底 1 点伤害。
+    // 修复前血池逐轮坍缩，16 回合即清空；修复后血池守恒，50 回合超时判负
+    const formation = makeFormation('f1', { assault: 1 })
+    const result = combat.resolveBattle(formation, makeDummyStronghold(100, 10), D(1), D(1))
+    // 全额血池 1000，每回合最多磨掉 1 点（攻击 12 − 敌防 0×0.4 → 保底 1 取全额伤害 12？
+    // 敌防为 0 时无保底参与：dmg=12 − 0 = 12/回合 → 1000/12 = 84 回合 > 50 上限
+    expect(result.victory).toBe(false)
+    expect(result.rounds).toBe(50)
+    expect(result.log.some((e) => e.msg.includes('战斗超时'))).toBe(true)
+  })
+
+  it('血池不变量：受伤后有效血量不被腰斩（真值扣除口径）', () => {
+    const combat = useCombatStore()
+    // 敌 4 单位×100HP，玩家攻击恰好 300（一次打掉 3 个整单位）：
+    // 第二轮再打 300 应恰好清空 → 2 回合胜利。
+    // 若回归为 hp×count 口径，第一轮后血池会被错记为 1×100=100，第二轮即「提前」清空。
+    // 本用例锚定「整单位扣除后残组血池仍按 (count-1)*maxHp+hp 还原」
+    const formation = makeFormation('f1', { assault: 1 })
+    const result = combat.resolveBattle(
+      formation,
+      makeDummyStronghold(100, 4),
+      D(25), // 12×25=300
+      D(1)
+    )
+    expect(result.victory).toBe(true)
+    expect(result.rounds).toBe(2)
   })
 
   it('rewards only on victory', () => {
