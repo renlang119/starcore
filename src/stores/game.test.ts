@@ -13,6 +13,7 @@ import { exportSave, importSave, clearAllSaves, type SaveData } from '@/lib/stor
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
+import { BUILDINGS } from '@/data/buildings'
 import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
 import { useResearchStore } from './research'
@@ -278,6 +279,52 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     expect(done).toBe(0)
     expect(buildings.getLevel(SOLAR)).toBe(0)
     expect(game.achievements.metricValue('upgrades')).toBe(upgradesBefore)
+  })
+
+  it('批量升级预览与实扣一致：预算充足买满 steps 级', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 1e6)
+    const preview = game.previewUpgradeBuildingSteps(SOLAR, 10)
+    expect(preview.count).toBe(10)
+    const before = resources.getAmount('energy')
+    const done = game.tryUpgradeBuildingSteps(SOLAR, 10)
+    expect(done).toBe(10)
+    // 预计总花费 = 实扣额
+    expect(preview.cost).toEqual({ energy: before.minus(resources.getAmount('energy')).toNumber() })
+  })
+
+  it('批量升级预览与实扣一致：预算中途耗尽买几级算几级', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 30) // 成本 10 / 12 / 14：10 + 12 = 22 ≤ 30 < 36 → 买 2 级停
+    const preview = game.previewUpgradeBuildingSteps(SOLAR, 10)
+    expect(preview.count).toBe(2)
+    expect(preview.cost.energy).toBe(22)
+    const before = resources.getAmount('energy')
+    game.tryUpgradeBuildingSteps(SOLAR, 10)
+    expect(before.minus(resources.getAmount('energy')).toNumber()).toBe(preview.cost.energy)
+  })
+
+  it('等级上限：批量、单次与预览在封顶处一致停止', () => {
+    // maxLevel 当前数据未启用：临时注入封顶值验证各路径共用同一门槛，测试后还原
+    const def = BUILDINGS.find((b) => b.id === SOLAR)!
+    def.maxLevel = 2
+    try {
+      const game = useGameStore()
+      const resources = useResourcesStore()
+      resources.setAmount('energy', 1e6)
+      expect(game.previewUpgradeBuildingSteps(SOLAR, 10).count).toBe(2)
+      expect(game.tryUpgradeBuildingSteps(SOLAR, 10)).toBe(2)
+      expect(game.buildings.getLevel(SOLAR)).toBe(2)
+      expect(game.buildings.isMaxed(SOLAR)).toBe(true)
+      const before = resources.getAmount('energy')
+      expect(game.tryUpgradeBuilding(SOLAR)).toBe(false) // 封顶拒绝且不扣费
+      expect(resources.getAmount('energy').eq(before)).toBe(true)
+      expect(game.previewUpgradeBuildingSteps(SOLAR, 10).count).toBe(0)
+    } finally {
+      delete def.maxLevel
+    }
   })
 
   it('购买研究协议：tick 自动完成可用科技（成就联动）', () => {

@@ -144,6 +144,21 @@ describe('BuildView — 升级流程', () => {
     // 初始成本 = baseCost（Lv0），扣减生效
     expect(game.resources.getAmount('energy').toNumber()).toBeLessThan(1e6)
   })
+
+  it('切至 ×10 档位显示可买级数与预计总花费', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    game.resources.setAmount('energy', 30) // 成本 10 / 12 / 14：10 + 12 = 22 ≤ 30 < 36 → 可买 2 级
+    await wrapper.vm.$nextTick()
+
+    const bulkBtn = wrapper.findAll('.bulk-toggle .seg-btn').find((b) => b.text() === '×10')
+    expect(bulkBtn).toBeTruthy()
+    await bulkBtn!.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const costText = wrapper.find('.b-cost').text().replace(/\s+/g, '')
+    expect(costText).toBe('可买2级·共22')
+  })
 })
 
 describe('BuildView — 新手引导', () => {

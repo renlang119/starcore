@@ -14,6 +14,8 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import PrestigeView from './PrestigeView.vue'
 import { useResourcesStore } from '@/stores/resources'
+import { useTranscendStore } from '@/stores/transcend'
+import { D } from '@/lib/decimal'
 
 // Mock useFocusTrap
 vi.mock('@/composables/useFocusTrap', () => ({
@@ -67,7 +69,7 @@ describe('PrestigeView — 转生确认流程', () => {
     resources.gain('energy', 1e9) // 增加 total energy
   })
 
-  it('tryTranscend 显示确认弹窗', async () => {
+  it('点击执行奇点重启打开确认弹窗：重置与保留清单与转生行为一致', async () => {
     const wrapper = mount(PrestigeView, {
       global: {
         plugins: [pinia],
@@ -77,19 +79,20 @@ describe('PrestigeView — 转生确认流程', () => {
       },
     })
 
-    const vm = wrapper.vm as any
+    const btn = wrapper.find('.btn-transcend')
+    expect(btn.exists()).toBe(true)
+    expect(btn.attributes('disabled')).toBeUndefined()
+    await btn.trigger('click')
+    await wrapper.vm.$nextTick()
 
-    if (typeof vm.tryTranscend === 'function') {
-      vm.tryTranscend()
-      await wrapper.vm.$nextTick()
-
-      // 应显示确认弹窗
-      const overlay = wrapper.find('.modal-overlay')
-      expect(overlay.exists()).toBe(true)
-    }
+    // 应显示确认弹窗，且清单覆盖转生实际会清掉与保留的内容
+    const overlay = wrapper.find('.modal-overlay')
+    expect(overlay.exists()).toBe(true)
+    expect(overlay.text()).toContain('所有据点攻克记录与驻扎状态')
+    expect(overlay.text()).toContain('成就与终身计数')
   })
 
-  it('cancelTranscend 关闭弹窗', async () => {
+  it('取消关闭弹窗且不触发转生', async () => {
     const wrapper = mount(PrestigeView, {
       global: {
         plugins: [pinia],
@@ -99,17 +102,19 @@ describe('PrestigeView — 转生确认流程', () => {
       },
     })
 
-    const vm = wrapper.vm as any
+    const btn = wrapper.find('.btn-transcend')
+    expect(btn.exists()).toBe(true)
+    await btn.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.modal-overlay').exists()).toBe(true)
 
-    if (typeof vm.tryTranscend === 'function' && typeof vm.cancelTranscend === 'function') {
-      vm.tryTranscend()
-      await wrapper.vm.$nextTick()
-      expect(wrapper.find('.modal-overlay').exists()).toBe(true)
-
-      vm.cancelTranscend()
-      await wrapper.vm.$nextTick()
-      expect(wrapper.find('.modal-overlay').exists()).toBe(false)
-    }
+    const cancelBtn = wrapper.findAll('.modal-overlay button').find((b) => b.text() === '取消')
+    expect(cancelBtn).toBeTruthy()
+    await cancelBtn!.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.modal-overlay').exists()).toBe(false)
+    // 取消不触发转生：转生次数不变
+    expect(useTranscendStore().totalTranscends).toBe(0)
   })
 })
 
@@ -129,16 +134,49 @@ describe('PrestigeView — 清除存档确认', () => {
       },
     })
 
-    // 找到清除存档按钮（v0.83 校正：按钮实际类为 btn-ghost sm + alert 色，
-    // 原断言找 .btn-danger 恒不存在 → if 恒假整个用例空转；改按文本找）
+    // 清除存档按钮（v0.83 校正后按文本找，现显式断言不再条件包裹）
     const resetBtn = wrapper.findAll('button').find((b) => b.text().includes('清除存档'))
-    if (resetBtn) {
-      await resetBtn.trigger('click')
-      await wrapper.vm.$nextTick()
+    expect(resetBtn).toBeTruthy()
+    await resetBtn!.trigger('click')
+    await wrapper.vm.$nextTick()
 
-      // 应显示确认弹窗
-      const overlay = wrapper.find('.modal-overlay')
-      expect(overlay.exists()).toBe(true)
-    }
+    // 应显示确认弹窗（含永久清除警示）
+    const overlay = wrapper.find('.modal-overlay')
+    expect(overlay.exists()).toBe(true)
+    expect(overlay.text()).toContain('永久清除')
+  })
+})
+
+describe('PrestigeView — 无限天赋批量预览', () => {
+  beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+  })
+
+  it('切至 ×10 档位显示可买级数与预计总花费', async () => {
+    const transcend = useTranscendStore()
+    // 成本 5 / 8 / 12：5 + 8 + 12 = 25 ≤ 30，加第四级 42 > 30 → 可买 3 级
+    transcend.negativeEntropy = D(30)
+
+    const wrapper = mount(PrestigeView, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          Icons: defineComponent({ template: '<svg />' }),
+        },
+      },
+    })
+
+    const bulkBtn = wrapper
+      .findAll('.infinite-title .bulk-toggle .seg-btn')
+      .find((b) => b.text() === '×10')
+    expect(bulkBtn).toBeTruthy()
+    await bulkBtn!.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const card = wrapper.findAll('.infinite-node').find((c) => c.text().includes('奇点共振'))
+    expect(card).toBeDefined()
+    const costText = card!.find('.node-cost').text().replace(/\s+/g, '')
+    expect(costText).toBe('可买3级·共25负熵')
   })
 })

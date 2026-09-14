@@ -24,7 +24,9 @@ const completedTechs = computed(() => game.research.completed)
 
 // 空状态：当前扇区全部建筑已满级（无可操作项）
 const allMaxed = computed(
-  () => buildingsInSector.value.length > 0 && buildingsInSector.value.every((b) => isMaxed(b.id))
+  () =>
+    buildingsInSector.value.length > 0 &&
+    buildingsInSector.value.every((b) => game.buildings.isMaxed(b.id))
 )
 
 // P3-3 onboarding
@@ -34,18 +36,23 @@ const { activeStep, dismiss, skipAll } = useOnboarding('build', ['build-upgrade'
 // v0.86 批量升级：段位切换 ×1/×10/×100，买满语义（能买几级买几级）
 const bulkSteps = ref(1)
 
+// v0.94 批量预览：×N>1 时每张卡展示实际可买级数与预计总花费（与实扣一致）
+const bulkPreviews = computed(() => {
+  const map: Record<string, { count: number; cost: Record<string, number> }> = {}
+  if (bulkSteps.value > 1) {
+    for (const b of buildingsInSector.value) {
+      map[b.id] = game.previewUpgradeBuildingSteps(b.id, bulkSteps.value)
+    }
+  }
+  return map
+})
+
 function tryUpgrade(id: string) {
   const done = game.tryUpgradeBuildingSteps(id, bulkSteps.value)
   if (!done) return
   // 资源消耗操作受理反馈（v0.77 反馈口径；批量时带实际完成级数）
   const name = BUILDINGS.find((b) => b.id === id)?.name ?? id
   showToast(done > 1 ? `开始建造：${name} ×${done}` : `开始建造：${name}`)
-}
-
-function isMaxed(id: string): boolean {
-  const def = BUILDINGS.find((b) => b.id === id)
-  if (!def?.maxLevel) return false
-  return game.buildings.getLevel(id) >= def.maxLevel
 }
 </script>
 
@@ -139,12 +146,19 @@ function isMaxed(id: string): boolean {
             >需要科技：{{ getTech(b.requires ?? '')?.name ?? b.requires }}</span
           >
         </div>
-        <div v-else-if="isMaxed(b.id)" class="b-maxed">
+        <div v-else-if="game.buildings.isMaxed(b.id)" class="b-maxed">
           <span>已满级</span>
         </div>
         <template v-else>
           <div class="b-cost">
-            <CostTag :cost="game.buildings.getCost(b.id)" />
+            <template v-if="bulkSteps > 1">
+              <span class="bulk-preview">可买 {{ bulkPreviews[b.id].count }} 级</span>
+              <template v-if="bulkPreviews[b.id].count > 0">
+                <span class="bulk-preview">· 共</span>
+                <CostTag :cost="bulkPreviews[b.id].cost" />
+              </template>
+            </template>
+            <CostTag v-else :cost="game.buildings.getCost(b.id)" />
           </div>
           <UpgradeCountdown :building-id="b.id" />
           <button
@@ -332,8 +346,15 @@ function isMaxed(id: string): boolean {
 .b-cost {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-3);
+}
+/* v0.94 批量预览（×N>1 时的可买级数与总花费前缀） */
+.bulk-preview {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--color-t-secondary);
 }
 
 .b-locked,

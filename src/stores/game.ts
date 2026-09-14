@@ -28,7 +28,7 @@ import {
   type SaveData,
 } from '@/lib/storage'
 import { TECHS, adjustedTechCost } from '@/data/tech'
-import { BUILDINGS } from '@/data/buildings'
+import { BUILDINGS, buildingCost } from '@/data/buildings'
 import { getStronghold } from '@/data/pve'
 import type { ResourceType } from '@/data/buildings'
 
@@ -562,12 +562,53 @@ export const useGameStore = defineStore('game', () => {
   function tryUpgradeBuilding(id: string): boolean {
     const def = BUILDINGS.find((b) => b.id === id)
     if (!def) return false // 未知建筑 id：失败路径不记账不扣费
+    if (buildings.isMaxed(id)) return false // 已达等级上限：与视图/队列/预览共用同一门槛
     const cost = buildings.getCost(id)
     if (!resources.spendCost(cost)) return false // spendCost 内部已含 canAfford 检查
     buildings.upgrade(id)
     achievements.recordUpgrade(buildings.getLevel(id))
     daily.bump('upgrades')
     return true
+  }
+
+  /**
+   * 批量升级预览（v0.94）：返回当前资源下点击一次批量升级的实际
+   * 可买级数与逐级累计总花费。逐级取价与扣费模拟同 tryUpgradeBuilding
+   * 的实扣顺序一致（资源不足或达等级上限自然停止，最多 steps 级），
+   * 供 ×N>1 档位在成本行展示「可买级数 + 预计总花费」。
+   */
+  function previewUpgradeBuildingSteps(
+    id: string,
+    steps: number
+  ): { count: number; cost: Record<string, number> } {
+    const def = BUILDINGS.find((b) => b.id === id)
+    if (!def || steps < 1) return { count: 0, cost: {} }
+    const remain: Record<string, Decimal> = { ...resources.amounts }
+    let level = buildings.getLevel(id)
+    let count = 0
+    const totals: Record<string, Decimal> = {}
+    for (let i = 0; i < steps; i++) {
+      if (buildings.isMaxed(id, level)) break
+      const cost = buildingCost(def, level)
+      let affordable = true
+      for (const [k, v] of Object.entries(cost)) {
+        const have = remain[k]
+        if (have && !have.gte(v)) {
+          affordable = false
+          break
+        }
+      }
+      if (!affordable) break
+      for (const [k, v] of Object.entries(cost)) {
+        if (k in remain) remain[k] = remain[k].minus(v)
+        totals[k] = (totals[k] ?? D(0)).plus(v)
+      }
+      level++
+      count++
+    }
+    const result: Record<string, number> = {}
+    for (const [k, v] of Object.entries(totals)) result[k] = v.toNumber()
+    return { count, cost: result }
   }
 
   /**
@@ -652,6 +693,7 @@ export const useGameStore = defineStore('game', () => {
     // atomic actions (3.12)
     tryUpgradeBuilding,
     tryUpgradeBuildingSteps,
+    previewUpgradeBuildingSteps,
     tryResearch,
     // transcend
     canTranscend,
