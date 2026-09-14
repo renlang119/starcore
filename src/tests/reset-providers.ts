@@ -1,7 +1,7 @@
 /**
  * src/tests/reset-providers.ts — isolate:false 下模块级单例 provider 的集中重置
  *
- * 背景（v0.93 评审编号 24）：vitest isolate:false 跨文件共享 worker，
+ * 背景（v0.93）：vitest isolate:false 跨文件共享 worker，
  * 5 个模块级 provider（military.trainingSlotProvider / relics.slotProvider /
  * relics.enhanceSpend / combat.garrisonGuard / achievements.externalProviders）
  * 持有「创建它的那次 pinia」里的 store 闭包；任何测试文件注入后，后续文件
