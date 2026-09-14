@@ -1,7 +1,7 @@
 /**
  * useActionQueue.test.ts — 首页行动队列规则（v0.49 口径，v0.54 迁移至 composable 层）
  *
- * 口径：进行中全保留（天然上限 31 = 28 节点 + 3 训练槽），可执行补足至总数 ≤6；
+ * 口径：进行中全保留（天然上限 37 = 34 节点 + 3 训练槽），可执行补足至总数 ≤6；
  * 训练中不再显示「N 支部队训练中」汇总卡（进度由进行中条目承担），
  * 无训练任务时显示「训练部队」引导。
  *
@@ -85,6 +85,12 @@ describe('useActionQueue 行动队列', () => {
       'node_galaxy_hub',
       'node_galaxy_halo',
       'node_galaxy_heart',
+      'node_void_gate',
+      'node_void_beacon',
+      'node_void_watch',
+      'node_void_hub',
+      'node_void_veil',
+      'node_void_origin',
     ]) {
       game.exploration.progress[n] = {
         nodeId: n,

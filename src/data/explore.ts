@@ -1,11 +1,11 @@
 /**
  * explore.ts — 探索星图节点定义
- * 星图按距离分 8 层：轨道带、内层系、外层系、深空、恒星系层、星团层、星臂层、星系层
+ * 星图按距离分 9 层：轨道带、内层系、外层系、深空、恒星系层、星团层、星臂层、星系层、深空层
  * 探索节点提供一次性奖励 + 解锁据点
  */
 
 export type StarLayer =
-  'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster' | 'arm' | 'galaxy'
+  'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster' | 'arm' | 'galaxy' | 'void'
 
 export interface ExploreNode {
   id: string
@@ -44,6 +44,7 @@ export const LAYER_INFO: Record<
   cluster: { id: 'cluster', name: '星团层', color: '#60A5FA', distance: '>10 kly' },
   arm: { id: 'arm', name: '星臂层', color: '#FB7185', distance: '30-80 kly' },
   galaxy: { id: 'galaxy', name: '星系层', color: '#FACC15', distance: '>100 kly' },
+  void: { id: 'void', name: '深空层', color: '#38BDF8', distance: '银河之外' },
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
@@ -406,6 +407,84 @@ export const EXPLORE_NODES: ExploreNode[] = [
     unlocksStronghold: ['silencer_6'],
     story:
       '银心旁，沉默者主脑在此沉睡，它是所有守门者的中枢，也是应答源的实体。接触完成的瞬间，它回放了先驱者的出航影像，并给出一组坐标：信号的最初源头，在银河之外。',
+  },
+  // —— 深空层（v0.92，敌人编成经战斗模拟脚本三档验证）——
+  {
+    id: 'node_void_gate',
+    name: '银河彼岸',
+    layer: 'void',
+    desc: '穿出银河后的第一片虚空，中继链的尽头指向更深的黑暗',
+    time: 345600,
+    cost: { energy: 2000000000000, data: 60000000000, dark: 2900 },
+    rewards: { energy: 10000000000000, data: 120000000000, dark: 6400 },
+    requires: ['node_galaxy_heart'],
+    unlocksStronghold: ['raider_12'],
+    story:
+      '出航影像的终点就是这里。银河在身后收拢成一枚光点，中继链在虚空边缘断开，断口处的坐标仍在闪烁——先驱者从这里离开了自己的星系。',
+  },
+  {
+    id: 'node_void_beacon',
+    name: '虚空航标',
+    layer: 'void',
+    desc: '虚空中仍规律闪烁的先驱者航标，灯语内容只有一句话',
+    time: 432000,
+    cost: { energy: 5300000000000, data: 160000000000, crystal: 160000000, dark: 3750 },
+    rewards: { energy: 26500000000000, data: 320000000000, crystal: 800000000, dark: 8300 },
+    requires: ['node_void_gate'],
+    unlocksStronghold: ['beast_8'],
+    story:
+      '航标仍在工作，灯语只有一句：「航向未变。」白鲸群聚集在航标周围，像在等待一盏为它们亮了亿万年的灯。',
+  },
+  {
+    id: 'node_void_watch',
+    name: '虚空望台',
+    layer: 'void',
+    desc: '先驱者建立的最后一座天文台，镜筒永远指向同一个坐标',
+    time: 432000,
+    cost: { energy: 5300000000000, data: 160000000000, alloy: 260000000, dark: 3750 },
+    rewards: { energy: 26500000000000, data: 320000000000, alloy: 1300000000, dark: 8300 },
+    requires: ['node_void_gate'],
+    unlocksStronghold: ['ruin_8'],
+    story:
+      '望台的观测记录停在同一日：镜筒里的光点没有移动过，记录的最后写着「源头静止，非天体，非讯号，是一扇门」。',
+  },
+  {
+    id: 'node_void_hub',
+    name: '星幕枢纽',
+    layer: 'void',
+    desc: '虚空航道的汇合点，掠夺者舰群在此竖起了他们的界碑',
+    time: 518400,
+    cost: { energy: 13200000000000, data: 400000000000, dark: 4500 },
+    rewards: { energy: 66000000000000, data: 800000000000, crystal: 1300000000, dark: 10000 },
+    requires: ['node_void_beacon', 'node_void_watch'],
+    unlocksStronghold: ['raider_13'],
+    story:
+      '两条虚空航道在此汇成一条。掠夺者把界碑竖在航道正中，碑文却抄自先驱者：「越过此界者，不再归航。」他们没有读懂这句话。',
+  },
+  {
+    id: 'node_void_veil',
+    name: '静默星幕',
+    layer: 'void',
+    desc: '连回响都会被吞掉的星幕空腔，仿佛整个宇宙在此屏息',
+    time: 576000,
+    cost: { energy: 26500000000000, data: 800000000000, dark: 5350 },
+    rewards: { energy: 132000000000000, data: 1600000000000, dark: 12300 },
+    requires: ['node_void_hub'],
+    story:
+      '星幕之内，所有信号都失去了回声。主脑的回放影像在这里最后一次定格：先驱者的旗舰驶入光点，影像结束了，光点还在。',
+  },
+  {
+    id: 'node_void_origin',
+    name: '信号源头',
+    layer: 'void',
+    desc: '一切信号的最初源头，先驱者出航影像的终点',
+    time: 691200,
+    cost: { energy: 53000000000000, data: 1600000000000, dark: 6100 },
+    rewards: { energy: 265000000000000, data: 3200000000000, dark: 14000 },
+    requires: ['node_void_veil'],
+    unlocksStronghold: ['silencer_7'],
+    story:
+      '信号的源头不是信标，是一座门。先驱者没有离开——他们穿门而入，沉默者世代守着这扇门。接触完成的瞬间，门后的回响第一次开口：「接收者已抵达。欢迎回家。」',
   },
 ]
 

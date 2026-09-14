@@ -206,8 +206,8 @@ describe('MapView — 空状态', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('.empty-state').exists()).toBe(true)
-    expect(wrapper.text()).toContain('已知星域已全部探索完毕')
-    // 星图区块隐藏，据点区块保留（31 据点全部解锁）
+    expect(wrapper.text()).toContain('全宇宙已探索完毕')
+    // 星图区块隐藏，据点区块保留（36 据点全部解锁）
     expect(wrapper.findAll('.layer-section').length).toBe(0)
     expect(wrapper.find('.stronghold-section').exists()).toBe(true)
     expect(wrapper.findAll('.stronghold-card').length).toBe(STRONGHOLDS.length)

@@ -14,20 +14,20 @@ growing on through "Singularity Restart" rebirth cycles.
 
 - **Build**: 20 building types across 5 resources (Energy, Crystal, Alloy,
   Data, Dark Matter); costs escalate
-- **Tech Tree**: 8 branches, 55 technologies driving production, combat,
+- **Tech Tree**: 8 branches, 59 technologies driving production, combat,
   exploration and rebirth
-- **Exploration**: 28 nodes across the StarCore, Stellar, Star Cluster,
+- **Exploration**: 34 nodes across the StarCore, Stellar, Star Cluster,
   Star Arm and Galaxy layers; timed runs grant rewards
 - **Units**: 4 unit types in a double counter-triangle; parallel training
   slots 1→3 via tech
-- **PVE Strongholds**: 31 strongholds in 4 categories; garrison conquered
+- **PVE Strongholds**: 36 strongholds in 4 categories; garrison conquered
   ones for idle output, plus an endless expedition with rising depth
 - **Relics**: 20 kinds drawn from rarity pools; 3 of the same rarity fuse
   into 1 of the next tier; 4 set bonuses; each relic can be enhanced up to
   level 20 with energy
 - **Rebirth**: Singularity Restart; negative entropy unlocks a talent tree,
   infinite talents stack, and automation protocols play for you
-- **Achievements**: 36 milestones tracked across rebirths, granting permanent
+- **Achievements**: 37 milestones tracked across rebirths, granting permanent
   bonuses
 - **Daily Check-in**: streak-cycle rewards plus 3 weekly challenges
 

@@ -70,6 +70,7 @@ const layers: StarLayer[] = [
   'cluster',
   'arm',
   'galaxy',
+  'void',
 ]
 
 // 空状态：全部探索节点均已完成
@@ -86,6 +87,7 @@ const nodesByLayer = computed(() => {
     cluster: [],
     arm: [],
     galaxy: [],
+    void: [],
   }
   for (const n of EXPLORE_NODES) map[n.layer].push(n)
   return map
@@ -152,12 +154,12 @@ const endlessSection = {
       @skip="skipAll"
     />
 
-    <!-- 空状态：已知星域全部探索完毕 -->
+    <!-- 空状态：全部节点完成（终层上线后 = 全宇宙探索完毕） -->
     <EmptyState
       v-if="allNodesCompleted"
       icon="i-nav-explore"
-      text="已知星域已全部探索完毕"
-      hint="提升科技等级可解锁更远星域"
+      text="全宇宙已探索完毕"
+      hint="先驱者的航路与信号就此走完，星核文明接过了守门者的位置"
       action="前往科技"
       to="/tech"
     />
