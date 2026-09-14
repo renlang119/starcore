@@ -61,7 +61,16 @@ const toast = useToast()
 const showToast = toast.show
 
 // 按层级分组
-const layers: StarLayer[] = ['orbit', 'inner', 'outer', 'deep', 'stellar', 'cluster', 'arm']
+const layers: StarLayer[] = [
+  'orbit',
+  'inner',
+  'outer',
+  'deep',
+  'stellar',
+  'cluster',
+  'arm',
+  'galaxy',
+]
 
 // 空状态：全部探索节点均已完成
 const allNodesCompleted = computed(
@@ -76,6 +85,7 @@ const nodesByLayer = computed(() => {
     stellar: [],
     cluster: [],
     arm: [],
+    galaxy: [],
   }
   for (const n of EXPLORE_NODES) map[n.layer].push(n)
   return map
