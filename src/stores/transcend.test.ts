@@ -363,4 +363,35 @@ describe('transcend — 批量购买（v0.86）', () => {
     expect(store.purchaseNodeSteps('t_inf_prod', 1)).toBe(1)
     expect(store.purchaseNodeSteps('ghost_node', 10)).toBe(0)
   })
+
+  it('批量购买预览与实扣一致：负熵充足买满 steps 级', () => {
+    store.negativeEntropy = D(1000)
+    const preview = store.previewPurchaseSteps('t_inf_prod', 10)
+    expect(preview.count).toBe(10)
+    const done = store.purchaseNodeSteps('t_inf_prod', 10)
+    expect(done).toBe(10)
+    // 预计总花费 = 实扣额（1000 − 剩余 429）
+    expect(preview.cost).toBe(571)
+    expect(store.negativeEntropy.toNumber()).toBe(1000 - preview.cost)
+  })
+
+  it('批量购买预览与实扣一致：负熵中途不足买几级算几级', () => {
+    store.negativeEntropy = D(20) // 5 + 8 = 13 ≤ 20，加第三级 25 > 20 → 买 2 级停
+    const preview = store.previewPurchaseSteps('t_inf_prod', 10)
+    expect(preview.count).toBe(2)
+    expect(preview.cost).toBe(13)
+  })
+
+  it('批量购买预览：一级都买不起与未知节点返回 0', () => {
+    store.negativeEntropy = D(3)
+    expect(store.previewPurchaseSteps('t_inf_prod', 10)).toEqual({ count: 0, cost: 0 })
+    expect(store.previewPurchaseSteps('ghost_node', 10)).toEqual({ count: 0, cost: 0 })
+  })
+
+  it('批量购买预览：买断节点按上限计 1 级，购买后归 0', () => {
+    store.negativeEntropy = D(10)
+    expect(store.previewPurchaseSteps('t_energy_1', 10)).toEqual({ count: 1, cost: 1 })
+    store.purchaseNodeSteps('t_energy_1', 10)
+    expect(store.previewPurchaseSteps('t_energy_1', 10)).toEqual({ count: 0, cost: 0 })
+  })
 })

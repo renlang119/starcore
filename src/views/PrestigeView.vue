@@ -35,6 +35,17 @@ function tryPurchase(nodeId: string, steps = 1) {
 // v0.86 无限天赋批量购买段位（默认 ×1 与既有行为一致；买断节点不显示切换器）
 const infBulk = ref(1)
 
+// v0.94 批量预览：×N>1 时展示实际可买级数与预计总花费（与实扣一致）
+const infPreviews = computed(() => {
+  const map: Record<string, { count: number; cost: number }> = {}
+  if (infBulk.value > 1) {
+    for (const node of infiniteNodes.value) {
+      map[node.id] = game.transcend.previewPurchaseSteps(node.id, infBulk.value)
+    }
+  }
+  return map
+})
+
 function tryTranscend() {
   if (!canTranscend.value) return
   showConfirm.value = true
@@ -247,7 +258,13 @@ onUnmounted(() => {
               {{ node.name }}
               <span class="node-level font-mono">Lv.{{ node.level }}</span>
             </span>
-            <span class="node-cost font-mono">{{ fmt(nextCost(node)) }} 负熵</span>
+            <span class="node-cost font-mono"
+              ><template v-if="infBulk > 1 && infPreviews[node.id].count > 0"
+                >可买 {{ infPreviews[node.id].count }} 级 · 共
+                {{ fmt(infPreviews[node.id].cost) }} 负熵</template
+              ><template v-else-if="infBulk > 1">可买 0 级</template
+              ><template v-else>{{ fmt(nextCost(node)) }} 负熵</template></span
+            >
           </div>
           <p class="node-desc">{{ node.desc }}</p>
           <div class="node-effects">
@@ -327,6 +344,7 @@ onUnmounted(() => {
           <li>所有建筑等级</li>
           <li>所有科技进度</li>
           <li>所有部队和编组</li>
+          <li>所有据点攻克记录与驻扎状态</li>
           <li>所有探索进度</li>
         </ul>
         <p>✅ 保留以下内容：</p>
@@ -334,6 +352,7 @@ onUnmounted(() => {
           <li>遗物与装备</li>
           <li>负熵与转生树</li>
           <li>转生次数</li>
+          <li>成就与终身计数</li>
         </ul>
       </div>
       <p class="gain-preview">获得 +{{ fmt(previewGain) }} 负熵</p>

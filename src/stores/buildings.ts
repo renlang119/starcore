@@ -32,6 +32,17 @@ export const useBuildingsStore = defineStore('buildings', () => {
   const bySector = (s: SectorId) => BUILDINGS.filter((b) => b.sector === s)
 
   /**
+   * 等级上限判定（单一门槛）：视图展示、行动队列过滤、批量预览与升级
+   * 操作共用本函数。maxLevel 未设置或为 0 表示无上限；可选 level 参数
+   * 供模拟预览计算虚拟等级处的封顶状态。
+   */
+  const isMaxed = (id: string, level?: number) => {
+    const def = getBuilding(id)
+    if (!def?.maxLevel) return false
+    return (level ?? levels.value[id] ?? 0) >= def.maxLevel
+  }
+
+  /**
    * 计算某建筑的当前总产出（所有等级）
    * @param mults 全局乘数 {resourceType: Decimal}
    */
@@ -96,6 +107,7 @@ export const useBuildingsStore = defineStore('buildings', () => {
     getLevel,
     isUnlocked,
     getCost,
+    isMaxed,
     bySector,
     getProduction,
     getTotalProduction,
