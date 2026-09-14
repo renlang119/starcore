@@ -5,7 +5,8 @@ import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
 import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
-import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
+import { ENDLESS_STRONGHOLD_ID, MAX_ENDLESS_DEPTH } from '@/data/endless'
+import { RARITY_INFO } from '@/data/relics'
 import type { BattleLogEntry } from '@/stores/combat'
 import { getUnit } from '@/data/units'
 import type { UnitId } from '@/data/units'
@@ -26,8 +27,8 @@ const isEndless = computed(() => strongholdId.value === ENDLESS_STRONGHOLD_ID)
 // —— 无尽远征（v0.60）：深度选择 + 按深度合成据点 ——
 const endlessDepth = ref(1)
 const endlessBest = computed(() => game.combat.expeditionBest)
-/** 可选深度：1 ~ 前沿（历史最深+1），前沿胜利即推进 */
-const endlessMaxDepth = computed(() => endlessBest.value + 1)
+/** 可选深度：1 ~ 前沿（历史最深+1），并封顶于 MAX_ENDLESS_DEPTH；前沿胜利即推进 */
+const endlessMaxDepth = computed(() => Math.min(endlessBest.value + 1, MAX_ENDLESS_DEPTH))
 /** 玩家手动调过深度后不再自动跟随前沿（只做越界钳制） */
 const endlessTouched = ref(false)
 const endlessStrongholdDef = computed<StrongholdDef>(() =>
@@ -61,7 +62,6 @@ type BattleResult = ReturnType<typeof game.combat.resolveBattle>
 const battleResult = ref<BattleResult | null>(null)
 const showResult = ref(false)
 const showGarrisonConfirm = ref(false)
-const rewardsGranted = ref(false) // 防止奖励重复发放
 
 // 编队兜底（v0.81）：注入档/异常档可能编队数不足，选中的下标越界时回退首支，
 // 仍无编队（正常档经 storage 自愈后不会发生）时模板层显示空态，不再读 undefined 崩页
@@ -149,7 +149,6 @@ const hasNoLoss = computed(
 
 function startBattle() {
   if (!stronghold.value || !formation.value) return
-  rewardsGranted.value = false // 新战斗重置发放标志
   const result = game.combat.resolveBattle(
     formation.value,
     stronghold.value,
@@ -160,14 +159,16 @@ function startBattle() {
   battleResult.value = result
   showResult.value = true
   applyBattleLosses(result)
-  // 无尽远征：攻克当前前沿 → 推进历史最深深度（待奖励发放时执行，见 grantRewards）
+  // 无尽远征：攻克当前前沿 → 推进历史最深深度（随奖励即时发放，见 grantRewards）
   // 成就终身计数：据点攻克（胜利）次数（远征战果同样计入战斗里程碑）
   if (result.victory) {
     game.achievements.recordBattle()
     game.achievements.checkAndUnlock()
     game.daily.bump('battles')
+    // 奖励即时发放（v0.94）：战斗结算即落袋，结果弹窗只做展示；
+    // 修复弹窗打开期间离开页面导致资源、遗物与远征推进丢失的问题
+    grantRewards(result)
   }
-  // 奖励发放推迟到 confirmResult/stayHere 时
 }
 
 /**
@@ -197,16 +198,12 @@ function applyBattleLosses(result: ReturnType<typeof game.combat.resolveBattle>)
   }
 }
 
-/** 发放战斗奖励（仅在玩家确认弹窗结果时调用，通过 rewardsGranted 防重入） */
-function grantRewards() {
-  if (rewardsGranted.value) return
-  const r = battleResult.value
-  if (!r?.victory) return
-  rewardsGranted.value = true
-  for (const [k, v] of Object.entries(r.rewards)) {
+/** 胜利奖励即时发放（v0.94）：战斗结算时调用一次，不依赖弹窗交互 */
+function grantRewards(result: BattleResult) {
+  for (const [k, v] of Object.entries(result.rewards)) {
     if (v) game.resources.gain(k as ResourceType, v as number)
   }
-  if (r.relic) game.relics.obtain(r.relic)
+  if (result.relic) game.relics.obtain(result.relic)
   // 远征：奖励落袋的同时记录战果（攻克当前前沿才推进，重打不推进）
   if (isEndless.value) {
     game.combat.recordExpedition(endlessDepth.value, true)
@@ -214,7 +211,6 @@ function grantRewards() {
 }
 
 function confirmResult() {
-  grantRewards()
   showResult.value = false
   if (battleResult.value?.victory) {
     router.push('/map')
@@ -222,7 +218,6 @@ function confirmResult() {
 }
 
 function stayHere() {
-  grantRewards()
   showResult.value = false
   battleLog.value = null
 }
@@ -416,7 +411,9 @@ function cancelGarrison() {
               color: `var(--color-${battleResult.relic.rarity === 'legendary' ? 'amber' : battleResult.relic.rarity === 'epic' ? 'plasma' : battleResult.relic.rarity === 'rare' ? 'core' : 't-secondary'})`,
             }"
           >
-            🎁 获得遗物：{{ battleResult.relic.name }}（{{ battleResult.relic.rarity }}）
+            🎁 获得遗物：{{ battleResult.relic.name }}（{{
+              RARITY_INFO[battleResult.relic.rarity].name
+            }}）
           </span>
         </div>
       </div>

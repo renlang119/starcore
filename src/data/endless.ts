@@ -72,12 +72,14 @@ const TEMPLATE_IDS = ['silencer_3', 'raider_5', 'beast_4', 'ruin_4'] as const
  * 模板强度归一化系数：各模板基础强度差异大（旗舰 >> 巨兽），
  * 按「(攻+防+血)×数量」总强度归一到旗舰基准，保证跨深度难度单调平滑；
  * 模板内部构成差异（单体巨兽 vs 步兵海）保留，只拉平总量。
- * 模块加载时算一次，非逐次计算。
+ * 模块加载时算一次，非逐次计算；任一模板缺失即抛错快速暴露配置错误
+ * （静默兜底会让该模板归一化系数退化为基准值，敌人数值被放大数个量级）。
  */
 const TEMPLATE_NORMALIZE = new Map<string, number>(
   TEMPLATE_IDS.map((id) => {
     const t = STRONGHOLDS.find((s) => s.id === id)
-    const power = t?.enemies.reduce((a, e) => a + (e.attack + e.defense + e.hp) * e.count, 0) ?? 1
+    if (!t) throw new Error(`endless: template stronghold missing: ${id}`)
+    const power = t.enemies.reduce((a, e) => a + (e.attack + e.defense + e.hp) * e.count, 0)
     const basePower = STRONGHOLDS.find((s) => s.id === ENDLESS_UNLOCK_STRONGHOLD)!.enemies.reduce(
       (a, e) => a + (e.attack + e.defense + e.hp) * e.count,
       0
@@ -86,13 +88,20 @@ const TEMPLATE_NORMALIZE = new Map<string, number>(
   })
 )
 
-/** 深度 d 的敌方编成（含「深渊」前缀与深度号命名，模板强度归一化） */
+/**
+ * 深度 d 的敌方编成（含「深渊」前缀与深度号命名，模板强度归一化）。
+ * 模板缺失时抛错而不返回空编成：空编成会被战斗结算的空数组遍历
+ * 误判为胜利（配置错误快速失败，resolveBattle 另有防御分支兜底）。
+ */
 export function endlessEnemies(depth: number): EnemyUnit[] {
   const d = Math.max(1, Math.floor(depth))
   const templateId = TEMPLATE_IDS[(d - 1) % TEMPLATE_IDS.length]
   const template = STRONGHOLDS.find((s) => s.id === templateId)
-  if (!template) return []
-  const scale = endlessScale(d) * (TEMPLATE_NORMALIZE.get(templateId) ?? 1)
+  const normalize = TEMPLATE_NORMALIZE.get(templateId)
+  if (!template || normalize === undefined) {
+    throw new Error(`endless: template stronghold missing: ${templateId}`)
+  }
+  const scale = endlessScale(d) * normalize
   const prefix = `深渊·第${d}层`
   return scaleEnemies(template.enemies, scale, prefix)
 }

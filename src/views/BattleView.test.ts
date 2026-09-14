@@ -4,7 +4,8 @@
  * 重点测试：
  * 1. 组件挂载
  * 2. 战斗结果弹窗显示
- * 3. 奖励发放防重入（回归验证）
+ * 3. 奖励发放时机与防重复（回归验证）
+ * 4. 远征深度上限封顶
  *
  * @vitest-environment jsdom
  */
@@ -15,6 +16,7 @@ import { defineComponent, ref } from 'vue'
 import BattleView from './BattleView.vue'
 import { useResourcesStore } from '@/stores/resources'
 import { useMilitaryStore } from '@/stores/military'
+import { useCombatStore } from '@/stores/combat'
 
 // Mock vue-router
 const mockPush = vi.fn()
@@ -93,7 +95,7 @@ describe('BattleView — 挂载与渲染', () => {
   })
 })
 
-describe('BattleView — 战斗流程与奖励防重入', () => {
+describe('BattleView — 战斗流程与奖励发放', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setupBattleReady()
@@ -118,7 +120,7 @@ describe('BattleView — 战斗流程与奖励防重入', () => {
     expect(overlay.exists()).toBe(true)
   })
 
-  it('confirmResult 多次调用只发放一次奖励（回归验证）', async () => {
+  it('胜利奖励在战斗结算时即时到账，弹窗动作与重复调用不再发放', async () => {
     const wrapper = mount(BattleView, {
       global: {
         plugins: [pinia],
@@ -130,26 +132,32 @@ describe('BattleView — 战斗流程与奖励防重入', () => {
 
     const resources = useResourcesStore()
     const vm = wrapper.vm as any
+    const before = resources.getAmount('energy').toNumber()
 
-    // 开始战斗
+    // 开始战斗（raider_1 奖励能量 500，结算即到账）
     vm.startBattle()
     await wrapper.vm.$nextTick()
+    const afterBattle = resources.getAmount('energy').toNumber()
+    expect(afterBattle).toBe(before + 500)
 
-    // 第一次确认结果
+    // 弹窗动作与重复调用不再发放（防重复）
+    vm.confirmResult()
+    vm.stayHere()
     vm.confirmResult()
     await wrapper.vm.$nextTick()
-    const afterFirst = resources.getAmount('energy').toNumber()
-
-    // 第二次确认（弹窗已关闭，但函数仍可调用）
-    vm.confirmResult()
-    await wrapper.vm.$nextTick()
-    const afterSecond = resources.getAmount('energy').toNumber()
-
-    // 第二次不应改变资源（rewardsGranted 标志位防重入）
-    expect(afterSecond).toBe(afterFirst)
+    expect(resources.getAmount('energy').toNumber()).toBe(afterBattle)
   })
+})
 
-  it('stayHere 后奖励只发放一次', async () => {
+describe('BattleView — 远征深度上限', () => {
+  it('前沿达到最大深度时选择封顶，不出现超过上限的层数', async () => {
+    mockRouteParams.value = { id: 'endless' }
+    pinia = createPinia()
+    setActivePinia(pinia)
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('silencer_3')
+    combat.expeditionBest = 999
+
     const wrapper = mount(BattleView, {
       global: {
         plugins: [pinia],
@@ -158,21 +166,13 @@ describe('BattleView — 战斗流程与奖励防重入', () => {
         },
       },
     })
-
-    const resources = useResourcesStore()
-    const vm = wrapper.vm as any
-
-    vm.startBattle()
     await wrapper.vm.$nextTick()
 
-    vm.stayHere()
-    await wrapper.vm.$nextTick()
-    const afterFirst = resources.getAmount('energy').toNumber()
+    const depthText = wrapper.find('[data-testid="endless-depth-value"]').text()
+    expect(depthText).toContain('第 999 层')
+    expect(depthText).not.toContain('1000')
+    expect(wrapper.find('.depth-frontier').exists()).toBe(true)
 
-    vm.stayHere()
-    await wrapper.vm.$nextTick()
-    const afterSecond = resources.getAmount('energy').toNumber()
-
-    expect(afterSecond).toBe(afterFirst)
+    mockRouteParams.value = { id: 'raider_1' }
   })
 })

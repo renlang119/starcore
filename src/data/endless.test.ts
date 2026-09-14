@@ -81,6 +81,14 @@ describe('endless 敌方编成', () => {
     )
   })
 
+  it('四模板轮换位均产出非空编成（空编成属配置错误，函数直接抛错）', () => {
+    for (let d = 1; d <= 8; d++) {
+      const enemies = endlessEnemies(d)
+      expect(enemies.length).toBeGreaterThan(0)
+      expect(enemies.every((e) => e.count > 0)).toBe(true)
+    }
+  })
+
   it('非法深度（0/负数/小数）钳制为正整数', () => {
     expect(endlessEnemies(0).length).toBe(endlessEnemies(1).length)
     expect(endlessStronghold(2.7).name).toContain('第2层')
