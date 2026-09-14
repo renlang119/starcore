@@ -315,17 +315,33 @@ export const useGameStore = defineStore('game', () => {
   }
 
   // —— 存档（错误态守卫：initError 置位时拒绝一切写入，防空状态覆盖原始存档）——
-  async function save(): Promise<void> {
-    if (initError.value) return
-    lastSaveTime.value = Date.now()
-    await writeSave(buildSaveData())
+  /**
+   * 存档写入失败标志：双通道全失败（配额/隐私模式）时置位，由全局提示层
+   * 给玩家可见反馈；下次成功保存自动清除。避免整段进度只在内存而玩家不知情。
+   */
+  const saveFailed = ref(false)
+  async function save(): Promise<boolean> {
+    if (initError.value) return false
+    const ok = await writeSave(buildSaveData())
+    if (ok) {
+      lastSaveTime.value = Date.now()
+      saveFailed.value = false
+    } else {
+      saveFailed.value = true
+    }
+    return ok
   }
 
   /** 同步存档（仅 localStorage），用于 beforeunload 场景 */
   function saveSync(): void {
     if (initError.value) return
-    lastSaveTime.value = Date.now()
-    writeSaveSync(buildSaveData())
+    const ok = writeSaveSync(buildSaveData())
+    if (ok) {
+      lastSaveTime.value = Date.now()
+      saveFailed.value = false
+    } else {
+      saveFailed.value = true
+    }
   }
 
   async function load(): Promise<boolean> {
@@ -618,6 +634,7 @@ export const useGameStore = defineStore('game', () => {
     init,
     save,
     saveSync,
+    saveFailed,
     load,
     hardReset,
     // offline
