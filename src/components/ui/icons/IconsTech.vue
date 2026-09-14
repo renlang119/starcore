@@ -620,6 +620,60 @@
         <path d="M6 10l6 4 6-4" />
         <path d="M4 19h16" />
       </symbol>
+      <symbol
+        id="i-tech-explore-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+        <path d="M12 9a3 3 0 0 1 3 3" />
+        <path d="M12 5a7 7 0 0 1 7 7" />
+        <path d="M12 15a3 3 0 0 1-3-3" />
+        <path d="M12 19a7 7 0 0 1-7-7" />
+      </symbol>
+      <symbol
+        id="i-tech-galaxy-command"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 3l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" />
+        <ellipse cx="12" cy="19" rx="8" ry="3" />
+      </symbol>
+      <symbol
+        id="i-tech-dark-web"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="3" />
+        <circle cx="12" cy="12" r="7" stroke-dasharray="2 2" stroke-width="1.5" />
+        <path d="M12 5V3M12 19v2M5 12H3M19 12h2M7 7L5 5M17 7l2-2M7 17l-2 2M17 17l2 2" />
+      </symbol>
+      <symbol
+        id="i-tech-data-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M5 6c0-1.5 3.1-3 7-3s7 1.5 7 3-3.1 3-7 3-7-1.5-7-3z" />
+        <path d="M5 6v11c0 1.5 3.1 3 7 3s7-1.5 7-3V6" />
+        <path d="M5 12c0 1.5 3.1 3 7 3s7-1.5 7-3" />
+        <circle cx="12" cy="15" r="1" fill="currentColor" />
+      </symbol>
     </defs>
   </svg>
 </template>
