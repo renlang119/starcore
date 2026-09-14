@@ -10,9 +10,11 @@ export default mergeConfig(
       environment: 'node',
       include: ['src/**/*.test.ts'],
       globals: true,
-      // 单线程池内复用 worker（v0.73）：测试均用 fresh pinia/localStorage，
-      // 无跨文件状态依赖；若未来新增共享全局态的测试须回头复查此处
+      // 单线程池内复用 worker（v0.73）。注意：模块级 provider 单例跨文件共享，
+      // 由 setupFiles 的 src/tests/reset-providers.ts 每文件前置重置兜底
+      // （v0.93 起集中式，此前靠各测试文件散落的手工重置，存在盲点）。
       isolate: false,
+      setupFiles: ['src/tests/reset-providers.ts'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html'],

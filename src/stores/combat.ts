@@ -69,6 +69,10 @@ let garrisonGuard: ((strongholdId: string, formationId: string) => boolean) | nu
 export function setGarrisonGuard(fn: (strongholdId: string, formationId: string) => boolean) {
   garrisonGuard = fn
 }
+/** 清空驻扎守卫注入，恢复未注入默认（仅测试重置用，见 src/tests/reset-providers.ts） */
+export function resetGarrisonGuard() {
+  garrisonGuard = null
+}
 
 export const useCombatStore = defineStore('combat', () => {
   const garrisoned = ref<Record<string, GarrisonState>>({}) // strongholdId → state
