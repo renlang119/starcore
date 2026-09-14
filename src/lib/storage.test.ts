@@ -378,6 +378,50 @@ describe('storage — 存档加固（v0.75）', () => {
     expect((await importSave(await exportSave(data))).ok).toBe(true)
   })
 
+  it('未知 id 条目级自愈：buildings/research/relics 剥离后导入成功（不整档拒绝）', async () => {
+    // 模拟未来版本删除/改名 id 后的老档：未知 id 只损失对应进度
+    const data = makeValidSaveData()
+    ;(data.buildings.levels as Record<string, number>).ghost_plant = 7
+    data.research.completed.push('ghost_tech')
+    data.relics.owned.push({
+      id: 'r_ghost_1',
+      instanceId: 'relic_ghost',
+      obtainedAt: 1,
+    })
+    const result = await importSave(await exportSave(data))
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.buildings.levels.ghost_plant).toBeUndefined()
+      expect(result.data.buildings.levels.solar_collector).toBe(5) // 已知进度保留
+      expect(result.data.research.completed).not.toContain('ghost_tech')
+      expect(result.data.research.completed).toContain('fusion_tech')
+      expect(result.data.relics.owned).toHaveLength(1) // 未知遗物条目被剥离
+      expect(result.data.relics.owned[0].instanceId).toBe('relic_test1')
+    }
+  })
+
+  it('条目级自愈与结构校验并存：字段结构非法仍整档拒绝', async () => {
+    // 剥离只针对「未知 id」，条目结构/范围错误仍整档判废
+    const badLevel = makeValidSaveData()
+    badLevel.relics.owned.push({
+      id: 'r_energy_1',
+      instanceId: 'relic_x',
+      obtainedAt: 1,
+      level: 99, // 上限，结构范围错误
+    })
+    expect((await importSave(await exportSave(badLevel))).ok).toBe(false)
+  })
+
+  it('equipped 引用修复：悬空与重复引用置空，首个槽位保留（不整档拒绝）', async () => {
+    const data = makeValidSaveData()
+    data.relics.equipped = ['relic_test1', 'relic_test1', 'relic_missing', null]
+    const result = await importSave(await exportSave(data))
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.relics.equipped).toEqual(['relic_test1', null, null, null])
+    }
+  })
+
   it('daily 结构校验：weekChallenges 非数组 / 计数器缺字段拒绝', async () => {
     const base: DailySaveData = {
       lastCheckIn: '2026-09-07',
