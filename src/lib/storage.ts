@@ -176,6 +176,24 @@ export function writeSaveSync(data: SaveData): void {
   }
 }
 
+/**
+ * 清空主档与备份档（IndexedDB 主存 + localStorage 备份）。
+ * 供测试隔离使用（isolate:false 下 IndexedDB/localStorage 跨用例残留，
+ * 如「双档取新」用例写入的主档会盖掉后续用例的备份档断言）。
+ */
+export async function clearAllSaves(): Promise<void> {
+  try {
+    await STORE.removeItem(SAVE_KEY)
+  } catch {
+    /* noop */
+  }
+  try {
+    localStorage.removeItem(SAVE_KEY + '_backup')
+  } catch {
+    /* noop */
+  }
+}
+
 /** 读档结果：成功 / 版本过新（不静默 hydrate）/ 存储有值但损坏（不静默清档）/ 无档 */
 export type SaveReadOutcome =
   | { status: 'ok'; data: SaveData }
