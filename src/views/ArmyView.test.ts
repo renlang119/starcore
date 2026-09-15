@@ -259,6 +259,25 @@ describe('ArmyView — 编组操作', () => {
     expect(cards[1].classes()).toContain('selected')
     expect(cards[0].classes()).not.toContain('selected')
   })
+
+  it('编入编队后「已拥有」保持全量口径（v0.95）', async () => {
+    const { wrapper, military } = await setupWithTroops()
+    const game = useGameStore()
+    game.research.complete('military_basic')
+    // 编组页全入 50 突击兵：库存清零、编队 50
+    const firstRow = wrapper.find('.f-unit-row')
+    await firstRow.find('.fu-btn-wide').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(military.owned.assault).toBe(0)
+    expect(military.formations[0].units.assault).toBe(50)
+    // 切回兵营：卡片「已拥有」仍为全量 50
+    await wrapper.findAll('.tab')[0].trigger('click')
+    await wrapper.vm.$nextTick()
+    const assaultCard = wrapper
+      .findAll('.unit-card')
+      .find((c) => c.find('.u-name').text().includes('突击兵'))!
+    expect(assaultCard.find('.u-count').text()).toContain('已拥有：50')
+  })
 })
 
 describe('ArmyView — 新手引导', () => {
