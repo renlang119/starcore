@@ -95,6 +95,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
         >
           <use :href="'#' + r.icon" />
         </svg>
+        <span class="sr-only">{{ r.name }}</span>
         <span class="r-amount font-mono">{{ r.amount }}</span>
         <span class="r-rate font-mono" :style="{ color: r.color }">{{ r.rate }}</span>
         <!-- P3-6 资源产出粒子 -->
