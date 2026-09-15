@@ -1,6 +1,6 @@
 /**
  * explore.ts — 探索星图节点定义
- * 星图按距离分 9 层：轨道带、内层系、外层系、深空、恒星系层、星团层、星臂层、星系层、深空层
+ * 星图按距离分 9 层：轨道带、内层星系、外层星系、深空带、恒星系层、星团层、星臂层、星系层、深空层
  * 探索节点提供一次性奖励 + 解锁据点
  */
 
@@ -39,7 +39,7 @@ export const LAYER_INFO: Record<
   orbit: { id: 'orbit', name: '轨道带', color: '#00E5FF', distance: '0.1-1 AU' },
   inner: { id: 'inner', name: '内层星系', color: '#2EE6A0', distance: '1-50 AU' },
   outer: { id: 'outer', name: '外层星系', color: '#FFB627', distance: '50-5000 AU' },
-  deep: { id: 'deep', name: '深空', color: '#A78BFA', distance: '>5000 AU' },
+  deep: { id: 'deep', name: '深空带', color: '#A78BFA', distance: '>5000 AU' },
   stellar: { id: 'stellar', name: '恒星系层', color: '#E879F9', distance: '4.2 ly+' },
   cluster: { id: 'cluster', name: '星团层', color: '#60A5FA', distance: '>10 kly' },
   arm: { id: 'arm', name: '星臂层', color: '#FB7185', distance: '30-80 kly' },

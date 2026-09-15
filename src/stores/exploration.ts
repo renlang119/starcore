@@ -77,15 +77,11 @@ export const useExplorationStore = defineStore('exploration', () => {
   function applyTick(): {
     nodeId: string
     rewards: Partial<Record<string, number>>
-    story?: string
-    unlocks: string[]
   }[] {
     const now = Date.now()
     const results: {
       nodeId: string
       rewards: Partial<Record<string, number>>
-      story?: string
-      unlocks: string[]
     }[] = []
     for (const p of Object.values(progress.value)) {
       if (p.completed || p.startTime === 0) continue
@@ -96,8 +92,6 @@ export const useExplorationStore = defineStore('exploration', () => {
         results.push({
           nodeId: p.nodeId,
           rewards: { ...node.rewards },
-          story: node.story,
-          unlocks: node.unlocksStronghold ?? [],
         })
       }
     }

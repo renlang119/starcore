@@ -28,29 +28,25 @@ export interface RelicDef {
   rarity: RelicRarity
   icon: string
   effects: RelicEffect[]
-  /** 来源 hint */
-  source: string
 }
 
 export const RARITY_INFO: Record<
   RelicRarity,
-  { id: RelicRarity; name: string; color: string; weight: number; glow: string }
+  { id: RelicRarity; name: string; color: string; weight: number }
 > = {
   common: {
     id: 'common',
     name: '普通',
     color: '#8B96A8',
     weight: 100,
-    glow: 'rgba(139,150,168,.3)',
   },
-  rare: { id: 'rare', name: '稀有', color: '#00E5FF', weight: 35, glow: 'rgba(0,229,255,.4)' },
-  epic: { id: 'epic', name: '史诗', color: '#A78BFA', weight: 10, glow: 'rgba(167,139,250,.5)' },
+  rare: { id: 'rare', name: '稀有', color: '#00E5FF', weight: 35 },
+  epic: { id: 'epic', name: '史诗', color: '#A78BFA', weight: 10 },
   legendary: {
     id: 'legendary',
     name: '传说',
     color: '#FFB627',
     weight: 2,
-    glow: 'rgba(255,182,39,.6)',
   },
 }
 
@@ -67,7 +63,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '微弱的能量结晶，提升能量产出',
     rarity: 'common',
     icon: 'i-relic-energy-1',
-    source: '掠夺者营地',
     effects: [{ type: 'production_mult', target: 'energy', value: 1.05, label: '能量产出 +5%' }],
   },
   {
@@ -76,7 +71,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '精炼残渣中提取的合金片段',
     rarity: 'common',
     icon: 'i-relic-alloy-1',
-    source: '掠夺者营地',
     effects: [{ type: 'production_mult', target: 'alloy', value: 1.05, label: '合金产出 +5%' }],
   },
   {
@@ -85,7 +79,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '先驱文明的数据残片',
     rarity: 'common',
     icon: 'i-relic-data-1',
-    source: '古代遗迹',
     effects: [{ type: 'production_mult', target: 'data', value: 1.05, label: '数据产出 +5%' }],
   },
   {
@@ -94,7 +87,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '硅基晶体的天然碎块，轻微提升晶体产出',
     rarity: 'common',
     icon: 'i-relic-crystal-1',
-    source: '古代遗迹',
     effects: [{ type: 'production_mult', target: 'crystal', value: 1.05, label: '晶体产出 +5%' }],
   },
   {
@@ -103,7 +95,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '捕获的暗物质微粒残迹，轻微提升暗物质产出',
     rarity: 'common',
     icon: 'i-relic-dark-1',
-    source: '沉默者前哨',
     effects: [{ type: 'production_mult', target: 'dark', value: 1.05, label: '暗物质产出 +5%' }],
   },
   {
@@ -112,7 +103,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '基础战术指导，轻微提升战力',
     rarity: 'common',
     icon: 'i-relic-combat-1',
-    source: '掠夺者营地',
     effects: [{ type: 'combat_mult', target: 'attack', value: 1.05, label: '攻击力 +5%' }],
   },
 
@@ -123,7 +113,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '浓缩的星核能量结晶',
     rarity: 'rare',
     icon: 'i-relic-energy-2',
-    source: '异星巨兽',
     effects: [{ type: 'production_mult', target: 'energy', value: 1.15, label: '能量产出 +15%' }],
   },
   {
@@ -132,7 +121,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '可自我修复的智能合金',
     rarity: 'rare',
     icon: 'i-relic-alloy-2',
-    source: '古代遗迹',
     effects: [{ type: 'production_mult', target: 'alloy', value: 1.15, label: '合金产出 +15%' }],
   },
   {
@@ -141,7 +129,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '高纯度硅基晶体棱镜，显著提升晶体产出',
     rarity: 'rare',
     icon: 'i-relic-crystal-2',
-    source: '异星巨兽',
     effects: [{ type: 'production_mult', target: 'crystal', value: 1.15, label: '晶体产出 +15%' }],
   },
   {
@@ -150,7 +137,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '稳定凝聚的暗物质团块，显著提升暗物质产出',
     rarity: 'rare',
     icon: 'i-relic-dark-2',
-    source: '沉默者前哨',
     effects: [{ type: 'production_mult', target: 'dark', value: 1.15, label: '暗物质产出 +15%' }],
   },
   {
@@ -159,7 +145,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '显著增强部队防御',
     rarity: 'rare',
     icon: 'i-relic-armor',
-    source: '掠夺者据点',
     effects: [{ type: 'combat_mult', target: 'defense', value: 1.15, label: '防御力 +15%' }],
   },
   {
@@ -168,7 +153,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '先驱者绘制的星图片段',
     rarity: 'rare',
     icon: 'i-relic-explore',
-    source: '古代遗迹',
     effects: [{ type: 'explore_mult', value: 1.2, label: '探索效率 +20%' }],
   },
   {
@@ -177,7 +161,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '稳定时空波动，提升离线收益',
     rarity: 'rare',
     icon: 'i-relic-capsule',
-    source: '古代遗迹',
     effects: [{ type: 'offline_bonus', value: 1.1, label: '离线收益 +10%' }],
   },
 
@@ -188,7 +171,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '来自古老戴森球的构件',
     rarity: 'epic',
     icon: 'i-relic-energy-3',
-    source: '虚空巨兽',
     effects: [{ type: 'production_mult', target: 'energy', value: 1.4, label: '能量产出 +40%' }],
   },
   {
@@ -197,7 +179,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '完整的量子计算核心',
     rarity: 'epic',
     icon: 'i-relic-data-3',
-    source: '奇点圣殿',
     effects: [
       { type: 'production_mult', target: 'data', value: 1.4, label: '数据产出 +40%' },
       { type: 'cost_mult', target: 'tech', value: 0.9, label: '科技成本 -10%' },
@@ -209,7 +190,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '微型暗物质奇点残片，大幅提升暗物质产出',
     rarity: 'epic',
     icon: 'i-relic-dark-3',
-    source: '沉默者前哨',
     effects: [{ type: 'production_mult', target: 'dark', value: 1.4, label: '暗物质产出 +40%' }],
   },
   {
@@ -218,7 +198,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '大幅增强灵能单位战力',
     rarity: 'epic',
     icon: 'i-relic-combat-2',
-    source: '沉默者前哨',
     effects: [
       { type: 'combat_mult', target: 'attack', value: 1.3, label: '攻击力 +30%' },
       { type: 'combat_mult', target: 'defense', value: 1.2, label: '防御力 +20%' },
@@ -230,7 +209,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '蕴含宇宙奇点的印记',
     rarity: 'epic',
     icon: 'i-relic-singularity',
-    source: '奇点圣殿',
     effects: [{ type: 'prestige_mult', value: 1.5, label: '转生负熵 +50%' }],
   },
 
@@ -241,7 +219,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '先驱文明留下的终极指令，全面提升一切产能',
     rarity: 'legendary',
     icon: 'i-relic-omega',
-    source: '沉默者前哨',
     effects: [
       { type: 'production_mult', target: 'energy', value: 1.5, label: '能量产出 +50%' },
       { type: 'production_mult', target: 'alloy', value: 1.5, label: '合金产出 +50%' },
@@ -255,7 +232,6 @@ export const RELIC_POOL: RelicDef[] = [
     desc: '来自沉默者的神秘造物，赋予超越常理的力量',
     rarity: 'legendary',
     icon: 'i-relic-silence',
-    source: '沉默者前哨',
     effects: [
       { type: 'production_mult', target: 'all', value: 1.3, label: '全资源产出 +30%' },
       { type: 'prestige_mult', value: 2.0, label: '转生负熵 ×2' },
@@ -318,9 +294,9 @@ export function getRelicById(id: string): RelicDef | undefined {
  * 加成走派生 RelicEffect 注入 equippedEffects 通道（EffectSystem 零改动）；
  * 量级刻意压小额——套装是收集方向标，不是第二权力轴。
  */
-export type RelicSetId = 'raiders' | 'beast' | 'ruin' | 'silencer'
+type RelicSetId = 'raiders' | 'beast' | 'ruin' | 'silencer'
 
-export interface RelicSetDef {
+interface RelicSetDef {
   id: RelicSetId
   name: string
   /** 一句话主题（UI 套装区块展示） */
@@ -459,13 +435,13 @@ export const ENHANCE_GAIN: Record<RelicEffect['type'], number> = {
 }
 
 /** 强化成本：cost(Lv) = base × growth^(Lv-1)，base 按稀有度递增 */
-export const ENHANCE_COST_BASE: Record<RelicRarity, number> = {
+const ENHANCE_COST_BASE: Record<RelicRarity, number> = {
   common: 1e6,
   rare: 5e6,
   epic: 2.5e7,
   legendary: 1.25e8,
 }
-export const ENHANCE_COST_GROWTH = 1.5
+const ENHANCE_COST_GROWTH = 1.5
 
 /** 升到 nextLevel（1..MAX_RELIC_LEVEL）所需能量 */
 export function enhanceCost(rarity: RelicRarity, nextLevel: number): number {

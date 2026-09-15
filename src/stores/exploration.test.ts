@@ -132,14 +132,12 @@ describe('exploration — 完成时间锁定', () => {
     expect(results[0].nodeId).toBe('node_orbit')
   })
 
-  it('完成时返回奖励/剧情/解锁据点', () => {
+  it('完成时返回奖励', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
     const [r] = store.applyTick()
     expect(r.rewards).toEqual({ energy: 300, crystal: 10, alloy: 20 })
-    expect(r.unlocks).toEqual(['raider_1'])
-    expect(r.story).toBeTruthy()
     expect(store.isCompleted('node_orbit')).toBe(true)
   })
 
