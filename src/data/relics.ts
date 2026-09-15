@@ -17,6 +17,8 @@ export interface RelicEffect {
   target?: string
   value: number
   label: string
+  /** 纯展示短文案（套装加成在图鉴行的紧凑形态，v0.97；替代按全角冒号拆 label 的脆弱拼装） */
+  short?: string
 }
 
 export interface RelicDef {
@@ -50,6 +52,11 @@ export const RARITY_INFO: Record<
     weight: 2,
     glow: 'rgba(255,182,39,.6)',
   },
+}
+
+/** 稀有度展示色（v0.97：图鉴/强化/合成三处共用，替代各自本地的拷贝） */
+export function relicRarityColor(rarity: string): string {
+  return RARITY_INFO[rarity as RelicRarity]?.color ?? '#fff'
 }
 
 export const RELIC_POOL: RelicDef[] = [
@@ -339,12 +346,14 @@ export const RELIC_SETS: RelicSetDef[] = [
       target: 'attack',
       value: 1.05,
       label: '套装：攻击 +5%（掠夺者战团 2 件）',
+      short: '攻击 +5%',
     },
     full: {
       type: 'combat_mult',
       target: 'attack',
       value: 1.1,
       label: '满套：攻击 +10%（掠夺者战团）',
+      short: '攻击 +10%',
     },
   },
   {
@@ -358,12 +367,14 @@ export const RELIC_SETS: RelicSetDef[] = [
       target: 'energy',
       value: 1.06,
       label: '套装：能量产出 +6%（巨兽血裔 2 件）',
+      short: '能量产出 +6%',
     },
     full: {
       type: 'production_mult',
       target: 'energy',
       value: 1.12,
       label: '满套：能量产出 +12%（巨兽血裔）',
+      short: '能量产出 +12%',
     },
   },
   {
@@ -385,12 +396,14 @@ export const RELIC_SETS: RelicSetDef[] = [
       target: 'data',
       value: 1.06,
       label: '套装：数据产出 +6%（先驱遗产 2 件）',
+      short: '数据产出 +6%',
     },
     full: {
       type: 'production_mult',
       target: 'data',
       value: 1.12,
       label: '满套：数据产出 +12%（先驱遗产）',
+      short: '数据产出 +12%',
     },
   },
   {
@@ -404,12 +417,14 @@ export const RELIC_SETS: RelicSetDef[] = [
       target: 'dark',
       value: 1.06,
       label: '套装：暗物质产出 +6%（沉默者回响 2 件）',
+      short: '暗物质产出 +6%',
     },
     full: {
       type: 'production_mult',
       target: 'dark',
       value: 1.12,
       label: '满套：暗物质产出 +12%（沉默者回响）',
+      short: '暗物质产出 +12%',
     },
   },
 ]

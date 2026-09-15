@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RARITY_INFO } from '@/data/relics'
+import { RARITY_INFO, relicRarityColor } from '@/data/relics'
 import type { RelicFusionApi } from '@/composables/useRelicFusion'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 
@@ -8,7 +8,8 @@ import ModalOverlay from '@/components/ui/ModalOverlay.vue'
  *
  * 选材状态由 useRelicFusion 持有、视图层传入；本组件只负责工坊 UI 与合成动作。
  * data-testid 与 DOM 结构与拆分前一致，供单测与 Playwright 脚本断言。
- * 图鉴卡上的 .r-head/.rarity-badge 等卡面样式仍在 RelicView，此处不复用。
+ * 图鉴卡上的 .r-head 等卡面样式仍在 RelicView；.rarity-badge 与 .r-name
+ * 已收敛为全局工具类（v0.97），此处不再各存一份。
  */
 defineProps<{ fusion: RelicFusionApi }>()
 
@@ -18,9 +19,7 @@ const NEXT_RARITY_NAME: Record<string, string> = {
   epic: '传说',
 }
 
-function rarityColor(rarity: string): string {
-  return RARITY_INFO[rarity as keyof typeof RARITY_INFO]?.color ?? '#fff'
-}
+const rarityColor = relicRarityColor
 
 function closeResult(fusion: RelicFusionApi) {
   fusion.synthResult.value = null
@@ -199,18 +198,6 @@ function closeResult(fusion: RelicFusionApi) {
   align-items: center;
   margin-bottom: var(--space-1);
   color: var(--c);
-}
-.rarity-badge {
-  font-size: var(--text-xs);
-  padding: 1px var(--space-2);
-  border-radius: 3px;
-  color: var(--color-void);
-  font-weight: 700;
-}
-.r-name {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  margin-bottom: var(--space-1);
 }
 .r-effects {
   display: flex;

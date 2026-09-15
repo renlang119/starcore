@@ -37,6 +37,7 @@ const items = computed(() =>
     <svg v-if="item.icon" style="width: var(--icon-xs); height: var(--icon-xs)" aria-hidden="true">
       <use :href="'#' + item.icon" />
     </svg>
+    <span class="sr-only">{{ item.name }}</span>
     {{ fmt(item.value) }}
   </span>
 </template>
