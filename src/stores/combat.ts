@@ -85,7 +85,8 @@ export const useCombatStore = defineStore('combat', () => {
    *
    * 同一编队打同一据点，相同种子下结果完全一致，
    * 避免 SL 刷随机目标的投机行为。
-   * 种子 = 编队内容哈希 + 据点 id + 当前时间分钟数
+   * 种子 = 编队 id + 据点 id + 当前时间分钟数（编队内容改动不换种子，
+   * 仅编队标识参与；分钟粒度使同一编队每分钟刷新一轮目标）
    */
   function _battleSeed(formation: Formation, strongholdId: string): number {
     const str = formation.id + ':' + strongholdId + ':' + Math.floor(Date.now() / 60000)
