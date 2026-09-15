@@ -25,25 +25,16 @@ const showToast = toast.show
 // —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
 const fusion = useRelicFusion({ notify: showToast })
 
-/** 图鉴卡点击：选材模式下点卡=选材料，否则=装备 */
-function onCardClick(r: OwnedRelic) {
-  if (fusion.selectMode.value) {
-    fusion.toggleMaterial(r)
-    return
-  }
+/** 图鉴卡主操作按钮：装备到首个空槽（选材模式下主操作由选材按钮承担） */
+function equipFromCard(r: OwnedRelic) {
   equip(
     r,
     equipped.value.findIndex((s) => s === null)
   )
 }
 
-/** 图鉴卡键盘可达（v0.77，照 HeroCore 正面例）：Enter/空格触发卡片主操作 */
-function onCardKey(r: OwnedRelic, e: KeyboardEvent) {
-  if (e.target !== e.currentTarget) return // 内层按钮按键不冒泡触发
-  if (e.key !== 'Enter' && e.key !== ' ') return
-  e.preventDefault()
-  onCardClick(r)
-}
+/** 选材模式开关态（模板用，fusion 返回的普通对象内 ref 不自动解套） */
+const selectModeOn = computed(() => fusion.selectMode.value)
 
 /** 装备槽激活：卸下该槽位遗物（空槽无操作） */
 function onSlotActivate(idx: number) {
@@ -219,11 +210,6 @@ onUnmounted(() => {
             'material-disabled': !fusion.selectable(r),
           }"
           :style="{ '--c': getRarityColor(r.rarity) }"
-          role="button"
-          tabindex="0"
-          :aria-label="`${r.name}（${RARITY_INFO[r.rarity].name}）`"
-          @click="onCardClick(r)"
-          @keydown="onCardKey(r, $event)"
         >
           <div class="r-head">
             <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
@@ -259,6 +245,24 @@ onUnmounted(() => {
             已选为材料
           </div>
           <div class="card-actions">
+            <button
+              v-if="selectModeOn"
+              class="btn-ghost sm select-btn"
+              data-testid="select-material-button"
+              :disabled="!fusion.selectable(r) && !fusion.isMaterialSelected(r)"
+              @click.stop="fusion.toggleMaterial(r)"
+            >
+              {{ fusion.isMaterialSelected(r) ? '取消选材' : '选为材料' }}
+            </button>
+            <button
+              v-else
+              class="btn-ghost sm equip-btn"
+              data-testid="equip-button"
+              :disabled="game.relics.isEquipped(r.instanceId)"
+              @click.stop="equipFromCard(r)"
+            >
+              {{ game.relics.isEquipped(r.instanceId) ? '已装备' : '装备' }}
+            </button>
             <button
               class="btn-ghost sm enhance-btn"
               data-testid="enhance-button"
@@ -520,12 +524,22 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-/* —— 强化入口（v0.70）—— */
+/* —— 卡面操作按钮（v0.70 强化入口，v0.96 主操作平铺为显式按钮）—— */
 .card-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-2);
+}
+.card-actions .equip-btn,
+.card-actions .select-btn {
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-border-line);
+}
+.card-actions .equip-btn:hover:not(:disabled),
+.card-actions .select-btn:hover:not(:disabled) {
+  border-color: var(--color-core);
+  color: var(--color-core);
 }
 .card-actions .enhance-btn {
   margin-top: var(--space-2);
