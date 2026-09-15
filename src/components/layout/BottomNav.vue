@@ -13,9 +13,10 @@ const secondaryTabs = NAV_ITEMS.filter((n) => n.tier === 'secondary')
 
 const moreOpen = ref(false)
 
+/** 非导航路由（如战斗页）返回 undefined：不高亮、不打 aria-current（v0.95） */
 const activeId = computed(() => {
   const all = [...primaryTabs, ...secondaryTabs]
-  return all.find((t) => t.path === route.path)?.id ?? 'home'
+  return all.find((t) => t.path === route.path)?.id
 })
 
 /** 「更多」按钮是否高亮（当前处于次级页面时） */
@@ -47,13 +48,27 @@ watch(
  * 若点击源不在底部导航容器内则收起。
  */
 const rootEl = ref<HTMLElement | null>(null)
+const moreBtnEl = ref<HTMLElement | null>(null)
 function handleDocClick(e: MouseEvent) {
   if (moreOpen.value && rootEl.value && !rootEl.value.contains(e.target as Node)) {
     moreOpen.value = false
   }
 }
-onMounted(() => document.addEventListener('click', handleDocClick))
-onUnmounted(() => document.removeEventListener('click', handleDocClick))
+/** Escape 关闭「更多」面板，并把焦点还给触发按钮（v0.95） */
+function handleDocKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && moreOpen.value) {
+    moreOpen.value = false
+    moreBtnEl.value?.focus()
+  }
+}
+onMounted(() => {
+  document.addEventListener('click', handleDocClick)
+  document.addEventListener('keydown', handleDocKeydown)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', handleDocClick)
+  document.removeEventListener('keydown', handleDocKeydown)
+})
 </script>
 
 <template>
@@ -75,10 +90,12 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
 
     <!-- 更多按钮 -->
     <button
+      ref="moreBtnEl"
       class="tab"
       :class="{ active: moreActive }"
       :aria-expanded="moreOpen"
       aria-haspopup="true"
+      aria-controls="bottom-nav-more"
       @click="toggleMore"
     >
       <svg
@@ -94,7 +111,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocClick))
 
     <!-- 更多面板（向上展开） -->
     <transition name="more-pop">
-      <div v-if="moreOpen" class="more-panel">
+      <div v-if="moreOpen" id="bottom-nav-more" class="more-panel">
         <button
           v-for="t in secondaryTabs"
           :key="t.id"

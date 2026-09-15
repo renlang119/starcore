@@ -10,7 +10,8 @@ const router = useRouter()
 const game = useGameStore()
 
 const navItems = NAV_ITEMS
-const activeId = computed(() => navItems.find((n) => n.path === route.path)?.id ?? 'home')
+/** 匹配不到（如战斗页 /battle/:id）返回 undefined：不高亮、不打 aria-current（v0.95） */
+const activeId = computed(() => navItems.find((n) => n.path === route.path)?.id)
 function nav(path: string) {
   router.push(path)
 }
@@ -59,6 +60,7 @@ function toggleCollapsed() {
       :class="{ active: activeId === n.id }"
       :aria-current="activeId === n.id ? 'page' : undefined"
       :title="collapsed ? n.label : undefined"
+      :aria-label="collapsed ? n.label : undefined"
       @click="nav(n.path)"
     >
       <svg class="icon" style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
@@ -190,10 +192,16 @@ function toggleCollapsed() {
   transition: opacity 0.15s var(--ease-out);
 }
 .side-nav.collapsed .nav-label {
-  opacity: 0;
+  /* v0.95：真正移出布局（原 opacity:0 仍占位、图标被压缩至 0 宽不可见） */
+  display: none;
 }
 .side-nav.collapsed .nav-item {
   justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+.side-nav.collapsed .nav-item .icon {
+  flex-shrink: 0;
 }
 
 .side-footer {
