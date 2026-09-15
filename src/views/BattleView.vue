@@ -264,7 +264,8 @@ function cancelGarrison() {
       <div class="s-meta">
         <h2 class="s-name font-display">{{ stronghold.name }}</h2>
         <p class="s-type">
-          {{ STRONGHOLD_TYPES[stronghold.type].name }} · Tier {{ stronghold.tier }}
+          {{ STRONGHOLD_TYPES[stronghold.type].name
+          }}<template v-if="!isEndless"> · Tier {{ stronghold.tier }}</template>
         </p>
         <p class="s-desc">{{ stronghold.desc }}</p>
       </div>

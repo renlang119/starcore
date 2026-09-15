@@ -3,7 +3,7 @@
  * SideNav 和 BottomNav 共用此数据源，通过 tier 字段筛选
  */
 
-export interface NavItem {
+interface NavItem {
   id: string
   label: string
   icon: string
