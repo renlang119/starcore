@@ -32,7 +32,7 @@ export type AchievementMetric =
   | 'transcends' // 转生次数（跨转生保留，读现值）
   | 'playtime' // 终身在线秒数
 
-export type AchievementCategory =
+type AchievementCategory =
   'energy' | 'dark' | 'build' | 'tech' | 'explore' | 'battle' | 'relic' | 'transcend' | 'time'
 
 export interface AchievementDef {
