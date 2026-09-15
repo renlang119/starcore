@@ -204,7 +204,7 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     expect(buildings.getLevel(SOLAR)).toBeGreaterThanOrEqual(1)
   })
 
-  it('v0.82 正例：研究完成后 requires 建筑进入自动升级（传 completed 而非 unlockedSet）', () => {
+  it('v0.82 正例：研究完成后 requires 建筑进入自动升级（传 completed 集合）', () => {
     const game = buyNodes(['t_auto_build'])
     const resources = useResourcesStore()
     const buildings = useBuildingsStore()
@@ -218,7 +218,7 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     resources.setAmount('energy', 1e12)
     game.lastTickTime = Date.now() - 1000
     game.tick()
-    // 修复前：runAutomation 传 unlockedSet（建筑 id 集合），isUnlocked 查科技 id 永不相交
+    // 修复前：runAutomation 传按 unlock 效果目标派生的集合（建筑 id 集合），isUnlocked 查科技 id 永不相交
     expect(buildings.getLevel('fusion_reactor')).toBe(1)
   })
 

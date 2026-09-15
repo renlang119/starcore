@@ -16,19 +16,6 @@ export const useResearchStore = defineStore('research', () => {
   const isCompleted = (id: string) => completed.value.has(id)
   const count = computed(() => completed.value.size)
 
-  /** 当前已解锁的 id 集合（用于建筑/兵种判断） */
-  const unlockedSet = computed(() => {
-    const s = new Set<string>()
-    for (const id of completed.value) {
-      const tech = getTech(id)
-      if (!tech) continue
-      for (const eff of tech.effects) {
-        if (eff.type === 'unlock' && eff.target) s.add(eff.target)
-      }
-    }
-    return s
-  })
-
   /** 科技是否可研究 */
   const available = (def: TechDef) => techAvailable(def, completed.value)
 
@@ -86,7 +73,6 @@ export const useResearchStore = defineStore('research', () => {
     completed,
     isCompleted,
     count,
-    unlockedSet,
     available,
     allEffects,
     getMult,
