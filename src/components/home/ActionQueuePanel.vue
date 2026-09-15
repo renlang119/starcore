@@ -25,7 +25,7 @@ const { displayActions, hasActions } = useActionQueue()
     <!-- P3-3 onboarding: 行动队列引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-actions'"
-      class="onboard-actions"
+      class="ob-actions"
       title="行动队列"
       text="这里显示当前正在进行和可执行的操作，点击即可跳转。"
       @dismiss="emit('dismiss')"
@@ -244,10 +244,11 @@ const { displayActions, hasActions } = useActionQueue()
   }
 }
 
-/* —— P3-3 onboarding 气泡定位 —— */
-.onboard-actions {
+/* —— P3-3 onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+.ob-actions {
   position: relative;
   width: 100%;
   margin-bottom: var(--space-3);
+  z-index: 60;
 }
 </style>

@@ -35,7 +35,7 @@ const quickActions = [
     <!-- P3-3 onboarding: 快速操作引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-quick'"
-      class="onboard-quick"
+      class="ob-quick"
       title="快速操作"
       text="点击下方按钮可快速进入建造、科技、探索、部队页面。"
       @dismiss="emit('dismiss')"
@@ -91,14 +91,14 @@ const quickActions = [
   transform: scale(0.95);
 }
 
-/* —— P3-3 onboarding 气泡定位 —— */
-.onboard-quick {
+/* —— P3-3 onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+.ob-quick {
   position: absolute;
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   width: min(260px, 80vw);
   margin-bottom: var(--space-2);
-  z-index: 10;
+  z-index: 60;
 }
 </style>

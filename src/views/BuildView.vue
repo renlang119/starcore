@@ -79,7 +79,7 @@ function tryUpgrade(id: string) {
     <!-- P3-3 onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'build-upgrade'"
-      class="onboard-build"
+      class="ob-build"
       title="建造"
       text="选择扇区后点击建筑卡片即可升级，提升资源产能。"
       @dismiss="dismiss"
@@ -371,9 +371,11 @@ function tryUpgrade(id: string) {
   color: var(--color-amber);
 }
 
-/* P3-3 onboarding */
-.onboard-build {
+/* P3-3 onboarding（变体类承载定位与层级，v0.97） */
+.ob-build {
+  position: relative;
   width: 100%;
   margin-bottom: var(--space-2);
+  z-index: 60;
 }
 </style>

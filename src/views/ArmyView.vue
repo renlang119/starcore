@@ -166,7 +166,7 @@ function removeAll(fid: string, uid: UnitId) {
     <!-- P3-3 onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'army-train'"
-      class="onboard-army"
+      class="ob-army"
       title="部队"
       text="在兵营训练兵种，在编队页配置阵容后出征据点。"
       @dismiss="dismiss"
@@ -737,9 +737,11 @@ function removeAll(fid: string, uid: UnitId) {
   gap: var(--space-2);
 }
 
-/* P3-3 onboarding */
-.onboard-army {
+/* P3-3 onboarding（变体类承载定位与层级，v0.97） */
+.ob-army {
+  position: relative;
   width: 100%;
   margin-bottom: var(--space-2);
+  z-index: 60;
 }
 </style>
