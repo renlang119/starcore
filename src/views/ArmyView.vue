@@ -18,7 +18,6 @@ const toast = useToast()
 const showToast = toast.show
 const activeTab = ref<'barracks' | 'formation'>('barracks')
 const trainCount = ref<Record<UnitId, number>>({ assault: 0, guard: 0, heavy: 0, psionic: 0 })
-const selectedFormation = ref(0)
 
 // 全入/全撤确认（大数量操作需确认）
 const pendingBulkAction = ref<{
@@ -94,14 +93,6 @@ function tryTrain(unitId: UnitId) {
   // 长周期操作「开始」反馈（v0.77 反馈口径）；失败路径明示原因（连点竞态等边缘场景）
   if (ok) showToast(`开始训练：${getUnit(unitId)?.name ?? unitId} ×${count}`)
   else showToast(slotsFull.value ? '训练槽已满' : '资源不足')
-}
-
-/** 编队卡键盘可达（v0.77，照 HeroCore 正面例）：Enter/空格选中编队 */
-function onFormationKey(idx: number, e: KeyboardEvent) {
-  if (e.target !== e.currentTarget) return // 内层按钮按键不冒泡触发
-  if (e.key !== 'Enter' && e.key !== ' ') return
-  e.preventDefault()
-  selectedFormation.value = idx
 }
 
 function getUnitCost(unitId: UnitId, count: number) {
@@ -344,17 +335,7 @@ function removeAll(fid: string, uid: UnitId) {
 
     <!-- 编组 -->
     <div v-else class="formation-view">
-      <div
-        v-for="(f, idx) in formations"
-        :key="f.id"
-        class="formation-card"
-        :class="{ selected: selectedFormation === idx }"
-        role="button"
-        tabindex="0"
-        :aria-label="`选择编队 ${f.name}`"
-        @click="selectedFormation = idx"
-        @keydown="onFormationKey(idx, $event)"
-      >
+      <div v-for="f in formations" :key="f.id" class="formation-card">
         <div class="f-head">
           <span class="f-name">{{ f.name }}</span>
           <span class="f-power font-mono"
@@ -662,9 +643,6 @@ function removeAll(fid: string, uid: UnitId) {
   border-radius: var(--radius-lg);
   padding: var(--space-3);
   margin-bottom: var(--space-3);
-}
-.formation-card.selected {
-  border-color: var(--color-alert);
 }
 .f-head {
   display: flex;

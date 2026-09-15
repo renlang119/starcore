@@ -251,13 +251,14 @@ describe('ArmyView — 编组操作', () => {
     expect(military.owned.assault).toBe(41)
   })
 
-  it('编队卡点击选中', async () => {
+  it('编队卡为纯内容容器，无伪选择语义（v0.96）', async () => {
     const { wrapper } = await setupWithTroops()
-    const cards = wrapper.findAll('.formation-card')
-    expect(cards[0].classes()).toContain('selected')
-    await cards[1].trigger('click')
-    expect(cards[1].classes()).toContain('selected')
-    expect(cards[0].classes()).not.toContain('selected')
+    const card = wrapper.find('.formation-card')
+    // 选择状态无任何消费方，卡片不再带交互语义
+    expect(card.attributes('role')).toBeUndefined()
+    expect(card.attributes('tabindex')).toBeUndefined()
+    // 编队操作仍由行内按钮承担
+    expect(card.findAll('.fu-btn').length).toBeGreaterThan(0)
   })
 
   it('编入编队后「已拥有」保持全量口径（v0.95）', async () => {
