@@ -29,6 +29,29 @@ describe('fmt — number formatting', () => {
     expect(fmt(-1000)).toBe('-1K')
   })
 
+  it('单一路径舍入一致（v0.95：number 与 Decimal 同口径截断）', () => {
+    expect(fmt(19.99)).toBe('19.9')
+    expect(fmt(D(19.99))).toBe('19.9')
+    expect(fmt(9.999)).toBe('9.99')
+    expect(fmt(D(9.999))).toBe('9.99')
+    expect(fmt(5.678)).toBe('5.67')
+    expect(fmt(D(5.678))).toBe('5.67')
+  })
+
+  it('负零归一与负数朝零截断（v0.95）', () => {
+    expect(fmt(-0.004)).toBe('0')
+    expect(fmt(-0)).toBe('0')
+    expect(fmt(-99.99)).toBe('-99.9')
+    expect(fmt(-999.5)).toBe('-999')
+    expect(fmt(-1000)).toBe('-1K')
+  })
+
+  it('超档科学计数法去尾零（v0.95）', () => {
+    expect(fmt(D('1e66'))).toBe('1e66')
+    expect(fmt(D('1.5e70'))).toBe('1.5e70')
+    expect(fmt(D('-1e66'))).toBe('-1e66')
+  })
+
   it('Decimal input', () => {
     expect(fmt(D(0))).toBe('0')
     expect(fmt(D(1000))).toBe('1K')

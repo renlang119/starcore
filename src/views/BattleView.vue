@@ -307,9 +307,9 @@ function cancelGarrison() {
         <div v-for="(e, i) in stronghold.enemies" :key="i" class="enemy-card">
           <div class="e-name">{{ e.name }}</div>
           <div class="e-stats">
-            <span class="stat">攻 {{ e.attack }}</span>
-            <span class="stat">防 {{ e.defense }}</span>
-            <span class="stat">HP {{ e.hp }}</span>
+            <span class="stat">攻 {{ fmt(e.attack) }}</span>
+            <span class="stat">防 {{ fmt(e.defense) }}</span>
+            <span class="stat">HP {{ fmt(e.hp) }}</span>
             <span class="stat count">×{{ e.count }}</span>
           </div>
         </div>
@@ -327,7 +327,7 @@ function cancelGarrison() {
           :class="{ active: selectedFormation === idx }"
           @click="selectedFormation = idx"
         >
-          {{ f.name }} · {{ game.military.formationPower(f, game.atkMult, game.defMult).atk }}
+          {{ f.name }} · {{ fmt(game.military.formationPower(f, game.atkMult, game.defMult).atk) }}
         </button>
       </div>
       <div class="formation-detail">
