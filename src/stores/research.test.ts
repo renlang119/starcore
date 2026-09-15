@@ -1,6 +1,6 @@
 /**
  * research.test.ts — 科技 store 测试
- * 覆盖：complete / available 前置判定 / unlockedSet 派生 / allEffects /
+ * 覆盖：complete / available 前置判定 / allEffects /
  * getMult 连乘聚合 / getValue 累加 / cost_mult /
  * reset / serialize-hydrate / 数值规范守恒断言（docs/游戏数值设定规范.md §四）
  */
@@ -85,20 +85,6 @@ describe('research — available 前置判定', () => {
   })
 })
 
-describe('research — unlockedSet 派生', () => {
-  it('初始空集', () => {
-    expect(store.unlockedSet.size).toBe(0)
-  })
-
-  it('unlock 效果的目标进入 unlockedSet，数值效果不进入', () => {
-    complete('fusion_tech') // unlock fusion_reactor
-    expect(store.unlockedSet.has('fusion_reactor')).toBe(true)
-    complete('energy_eff_1') // production_mult，无 unlock
-    expect(store.unlockedSet.has('energy')).toBe(false)
-    expect(store.unlockedSet.size).toBe(1)
-  })
-})
-
 describe('research — 效果聚合', () => {
   it('allEffects 过滤 unlock，仅含数值效果', () => {
     complete('fusion_tech') // 仅 unlock
@@ -159,7 +145,6 @@ describe('research — reset / serialize / hydrate', () => {
     complete('fusion_tech')
     store.reset()
     expect(store.count).toBe(0)
-    expect(store.unlockedSet.size).toBe(0)
   })
 
   it('serialize/hydrate 往返一致', () => {
