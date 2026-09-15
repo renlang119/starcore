@@ -63,10 +63,11 @@ const armyUnlocked = computed(() =>
   UNITS.some((u) => game.military.isUnlocked(u, completedTechs.value))
 )
 
-// 空状态（已解锁分支）：无已拥有部队且无训练中任务
+// 空状态（已解锁分支）：无全量部队（含编入编队）且无训练中任务（v0.95 全量口径）
 const hasAnyUnits = computed(
   () =>
-    UNITS.some((u) => game.military.getOwned(u.id) > 0) || game.military.trainingQueue.length > 0
+    UNITS.some((u) => game.military.totalOwnedOf(u.id) > 0) ||
+    game.military.trainingQueue.length > 0
 )
 
 const totalPower = computed(() => game.military.totalPower(atkMult.value, defMult.value))
@@ -261,7 +262,7 @@ function removeAll(fid: string, uid: UnitId) {
               <div class="u-name">
                 {{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span>
               </div>
-              <div class="u-count font-mono">已拥有：{{ game.military.getOwned(u.id) }}</div>
+              <div class="u-count font-mono">已拥有：{{ game.military.totalOwnedOf(u.id) }}</div>
             </div>
           </div>
           <p class="u-desc">{{ u.desc }}</p>

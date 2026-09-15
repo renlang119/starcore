@@ -125,7 +125,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
   }
 
   /**
-   * 全表扫描解锁判定（34 条，tick 尾部每秒一次，开销可忽略）。
+   * 全表扫描解锁判定（37 条，tick 尾部每秒一次，开销可忽略）。
    * 新解锁成就入 toast 队列并返回定义列表。
    */
   function checkAndUnlock(): typeof ACHIEVEMENTS {

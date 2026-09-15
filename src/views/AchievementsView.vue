@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
  * AchievementsView.vue — 成就/里程碑页（v0.57 玩法扩展方案 2）
- * 按类别分区展示 35 个成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
+ * 按类别分区展示 37 个成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
  */
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtTime } from '@/lib/format'
+import type { Decimal } from '@/lib/decimal'
 import {
   ACHIEVEMENTS,
   ACHIEVEMENT_CATEGORIES,
@@ -40,33 +41,20 @@ function unlockedDate(def: AchievementDef): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-/** 顶部汇总：已解锁成就的效果合并预览（按类型聚合文案） */
+/** 顶部汇总：已解锁成就的效果合并预览（连乘口径，与实际生效一致，v0.95） */
 const bonusSummary = computed(() => {
-  let prodPct = 0
-  let combatPct = 0
-  let explorePct = 0
-  let offlinePct = 0
-  let prestigePct = 0
-  for (const def of ACHIEVEMENTS) {
-    if (!ach.isUnlocked(def.id)) continue
-    for (const e of def.effects) {
-      const pctVal = (e.value - 1) * 100
-      if (e.type === 'production_mult') prodPct += pctVal
-      else if (e.type === 'combat_mult') combatPct += pctVal
-      else if (e.type === 'explore_mult') explorePct += pctVal
-      else if (e.type === 'offline_bonus') offlinePct += pctVal
-      else if (e.type === 'prestige_mult') prestigePct += pctVal
-    }
-  }
-  // combat 攻防成对重复累计，除以 2 归一
-  combatPct = combatPct / 2
+  const toPct = (m: Decimal) => Math.round((m.toNumber() - 1) * 1000) / 10
+  const prod = toPct(ach.getMult('production_mult', 'all'))
+  const combat = toPct(ach.getMult('combat_mult', 'attack'))
+  const explore = toPct(ach.getMult('explore_mult'))
+  const offline = toPct(ach.getMult('offline_bonus'))
+  const prestige = toPct(ach.getMult('prestige_mult'))
   const parts: string[] = []
-  const round = (n: number) => Math.round(n * 10) / 10
-  if (prodPct > 0) parts.push(`全产出 +${round(prodPct)}%`)
-  if (combatPct > 0) parts.push(`攻防 +${round(combatPct)}%`)
-  if (explorePct > 0) parts.push(`探索 +${round(explorePct)}%`)
-  if (offlinePct > 0) parts.push(`离线 +${round(offlinePct)}%`)
-  if (prestigePct > 0) parts.push(`负熵 +${round(prestigePct)}%`)
+  if (prod > 0) parts.push(`全产出 +${prod}%`)
+  if (combat > 0) parts.push(`攻防 +${combat}%`)
+  if (explore > 0) parts.push(`探索 +${explore}%`)
+  if (offline > 0) parts.push(`离线 +${offline}%`)
+  if (prestige > 0) parts.push(`负熵 +${prestige}%`)
   return parts.length > 0 ? parts.join(' · ') : '尚未获得加成'
 })
 </script>
