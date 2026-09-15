@@ -50,7 +50,7 @@ export function useRelicFusion(options: { notify?: (msg: string) => void } = {})
     if (selectedMaterials.value.length < 3) selectedMaterials.value.push(r.instanceId)
   }
 
-  /** 选中组的稀有度（0 或 3 件时有值；3 件必同稀有度，由 toggle 保证） */
+  /** 选中组的稀有度（非空即有值，取首件；同稀有度由 toggle 拦截保证） */
   const materialRarity = computed<RelicRarity | null>(() => {
     if (selectedMaterials.value.length === 0) return null
     const first = game.relics.owned.find((r) => r.instanceId === selectedMaterials.value[0])
