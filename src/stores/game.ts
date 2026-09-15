@@ -242,7 +242,8 @@ export const useGameStore = defineStore('game', () => {
     if (autoBuild.value) {
       for (const b of BUILDINGS) {
         // isUnlocked 查 b.requires（科技 id），须传已完成科技集合；
-        // 传 unlockedSet（unlock 效果目标=建筑 id）两集合永不相交，17/20 建筑永不自动升级
+        // v0.82 前曾误传按 unlock 效果目标派生的集合（建筑 id 集合），
+        // 两集合永不相交，17/20 建筑永不自动升级
         if (!buildings.isUnlocked(b, research.completed)) continue
         tryUpgradeBuilding(b.id)
       }

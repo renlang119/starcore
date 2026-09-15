@@ -56,7 +56,7 @@ export const TECH_BRANCHES: Record<
   materials: { id: 'materials', name: '材料学', color: '#FFB627', icon: 'i-branch-material' },
   computing: { id: 'computing', name: '计算学', color: '#A78BFA', icon: 'i-branch-computing' },
   military: { id: 'military', name: '军事学', color: '#F43F5E', icon: 'i-branch-military' },
-  exploration: { id: 'exploration', name: '探索学', color: '#2EE6A0', icon: 'i-branch-explore' },
+  exploration: { id: 'exploration', name: '探索学', color: '#38BDF8', icon: 'i-branch-explore' },
   dark: { id: 'dark', name: '暗物质学', color: '#94A3B8', icon: 'i-branch-dark' },
   singularity: {
     id: 'singularity',
@@ -387,12 +387,12 @@ export const TECHS: TechDef[] = [
   {
     id: 'explore_basic',
     name: '深空探索',
-    desc: '解锁星图，可派遣探索队',
+    desc: '组建首支探索队，向未知星域进发',
     branch: 'exploration',
     icon: 'i-tech-deep-space',
     tier: 1,
     cost: { data: 100, energy: 800 },
-    effects: [{ type: 'unlock', target: 'starmap', value: 1, label: '解锁星图探索' }],
+    effects: [],
   },
   {
     id: 'explore_range_1',
@@ -480,13 +480,13 @@ export const TECHS: TechDef[] = [
   {
     id: 'singularity_theory',
     name: '奇点理论',
-    desc: '理解宇宙奇点，解锁转生',
+    desc: '理解宇宙奇点，为奇点重启奠定理论基础',
     branch: 'singularity',
     icon: 'i-tech-singularity',
     tier: 1,
     cost: { data: 5000, energy: 50000, dark: 10 },
     requires: ['dyson_theory', 'dark_matter_theory'],
-    effects: [{ type: 'unlock', target: 'prestige', value: 1, label: '解锁奇点重启' }],
+    effects: [],
   },
   {
     id: 'prestige_boost',
@@ -517,7 +517,7 @@ export const TECHS: TechDef[] = [
     desc: '绘制恒星系层完整星图，探索效率 +40%',
     branch: 'exploration',
     icon: 'i-tech-explore-1',
-    tier: 5,
+    tier: 4,
     cost: { data: 8000, energy: 60000, alloy: 1500 },
     requires: ['explore_range_2'],
     effects: [{ type: 'explore_mult', value: 1.4, label: '探索效率 ×1.4' }],
