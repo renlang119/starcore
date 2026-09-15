@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { RARITY_INFO, MAX_RELIC_LEVEL, ENHANCE_GAIN, enhanceLabel } from '@/data/relics'
+import {
+  RARITY_INFO,
+  MAX_RELIC_LEVEL,
+  ENHANCE_GAIN,
+  enhanceLabel,
+  relicRarityColor,
+} from '@/data/relics'
 import type { RelicEffect } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
 import { useGameStore } from '@/stores/game'
@@ -52,9 +58,7 @@ function doEnhance() {
 // v0.86 批量强化段位（默认 ×1 与既有行为一致；封顶 20 级，×100 可一键拉满）
 const bulkSteps = ref(1)
 
-function rarityColor(rarity: string): string {
-  return RARITY_INFO[rarity as keyof typeof RARITY_INFO]?.color ?? '#fff'
-}
+const rarityColor = relicRarityColor
 </script>
 
 <template>
@@ -146,18 +150,6 @@ function rarityColor(rarity: string): string {
   align-items: center;
   margin-bottom: var(--space-1);
   color: var(--c);
-}
-.rarity-badge {
-  font-size: var(--text-xs);
-  padding: 1px var(--space-2);
-  border-radius: 3px;
-  color: var(--color-void);
-  font-weight: 700;
-}
-.r-name {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  margin-bottom: var(--space-1);
 }
 .r-effects {
   display: flex;

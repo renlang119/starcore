@@ -115,7 +115,7 @@ describe('TechView — 状态与成本', () => {
     expect(wrapper.text()).toContain('需要：')
   })
 
-  it('资源不足时研究按钮禁用，充足时可点击', () => {
+  it('资源不足时研究按钮禁用，充足时可点击', async () => {
     const wrapper = mountView()
     const game = useGameStore()
     // fusion_tech 无前置，cost { data: 30, energy: 200 }
@@ -128,15 +128,26 @@ describe('TechView — 状态与成本', () => {
 
     game.resources.setAmount('data', 1e6)
     game.resources.setAmount('energy', 1e6)
+    await wrapper.vm.$nextTick()
     expect(game.resources.canAfford({ data: 30, energy: 200 })).toBe(true)
+    expect(btn.attributes('disabled')).toBeUndefined()
   })
 
-  it('成本乘数生效：complete 后 techCostMult 影响显示成本', () => {
+  it('成本乘数生效：complete 后 techCostMult 影响显示成本', async () => {
+    const wrapper = mountView()
     const game = useGameStore()
-    // 完成一项 cost_mult 科技前，成本为原值
-    const def = TECHS.find((t) => t.id === 'fusion_tech')!
+    const fusionCard = wrapper
+      .findAll('.tech-card')
+      .find((c) => c.find('.t-name').text() === '聚变点火')!
+    const costBefore = fusionCard.find('.t-cost').text()
     expect(game.techCostMult.toNumber()).toBe(1)
-    expect(game.research.available(def)).toBe(true)
+
+    // 完成成本乘数科技（直接置完成态，研究通道已由下方用例覆盖）
+    game.research.complete('research_speed')
+    await wrapper.vm.$nextTick()
+    expect(game.techCostMult.toNumber()).toBeLessThan(1)
+    const costAfter = fusionCard.find('.t-cost').text()
+    expect(costAfter).not.toBe(costBefore)
   })
 })
 
@@ -184,6 +195,21 @@ describe('TechView — 研究流程', () => {
 
     expect(wrapper.find('.empty-state').exists()).toBe(true)
     expect(wrapper.text()).toContain('所有已知科技已研究完成')
+  })
+
+  it('分支筛选下空态写分支口径结论（v0.97）', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    // 完成全部科技后切到单分支：文案写分支结论而非全量结论
+    for (const t of TECHS) game.research.complete(t.id)
+    await wrapper.vm.$nextTick()
+    const branchBtn = wrapper.findAll('.branch-tab').find((b) => b.text() !== '全部')!
+    await branchBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.empty-state').exists()).toBe(true)
+    expect(wrapper.text()).toContain('分支的科技已全部研究完成')
+    expect(wrapper.text()).not.toContain('所有已知科技已研究完成')
   })
 })
 

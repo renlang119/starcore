@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { RARITY_INFO, getSetByRelic } from '@/data/relics'
+import { RARITY_INFO, getSetByRelic, relicRarityColor } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
 import { useRelicFusion } from '@/composables/useRelicFusion'
 import { useToast } from '@/composables/useToast'
@@ -62,9 +62,7 @@ function equip(relic: OwnedRelic, slot: number) {
   }
 }
 
-function getRarityColor(rarity: string): string {
-  return RARITY_INFO[rarity as keyof typeof RARITY_INFO]?.color ?? '#fff'
-}
+const getRarityColor = relicRarityColor
 
 // —— 丢弃功能（两次点击确认） ——
 const pendingDiscardId = ref<string | null>(null)
@@ -169,9 +167,7 @@ onUnmounted(() => {
               row.set.partial.label
             }}</span>
             <span v-else class="set-bonus-off"
-              >2 件：{{ row.set.partial.label.split('：')[1] }} · 3 件：{{
-                row.set.full.label.split('：')[1]
-              }}</span
+              >2 件：{{ row.set.partial.short }} · 3 件：{{ row.set.full.short }}</span
             >
           </div>
         </div>
@@ -474,18 +470,6 @@ onUnmounted(() => {
   align-items: center;
   margin-bottom: var(--space-1);
   color: var(--c);
-}
-.rarity-badge {
-  font-size: var(--text-xs);
-  padding: 1px var(--space-2);
-  border-radius: 3px;
-  color: var(--color-void);
-  font-weight: 700;
-}
-.r-name {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  margin-bottom: var(--space-1);
 }
 .r-desc {
   font-size: var(--text-xs);

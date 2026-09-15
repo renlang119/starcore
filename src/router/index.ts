@@ -26,8 +26,9 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() {
-    return { top: 0 }
+  scrollBehavior(_to, _from, savedPosition) {
+    // 前进/后退恢复滚动位置，其余导航回顶
+    return savedPosition ?? { top: 0 }
   },
 })
 
