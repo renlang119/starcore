@@ -94,7 +94,7 @@ describe('RelicView — 装备与卸下', () => {
     wrappers.length = 0
   })
 
-  it('点卡装备到首个空槽，再点同槽卸下', async () => {
+  it('点装备按钮装到首个空槽，再点同槽卸下', async () => {
     const wrapper = mountView()
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0]) // r_energy_1
@@ -103,14 +103,18 @@ describe('RelicView — 装备与卸下', () => {
     // 图鉴 1 件 1 种
     expect(wrapper.text()).toContain('1 件 / 1 种')
     const card = wrapper.find('.relic-card')
-    await card.trigger('click')
+    await card.find('[data-testid="equip-button"]').trigger('click')
     await wrapper.vm.$nextTick()
 
     expect(relics.isEquipped(relics.owned[0].instanceId)).toBe(true)
     expect(wrapper.find('.slot-filled').exists()).toBe(true)
     expect(wrapper.text()).toContain('已装备')
+    // 已装备后卡面装备按钮转为禁用的「已装备」
+    const equipBtn = card.find('[data-testid="equip-button"]')
+    expect(equipBtn.text()).toBe('已装备')
+    expect(equipBtn.attributes('disabled')).toBeDefined()
 
-    // 点已填充的槽位 → 卸下（点卡是「装到下一空槽」，卸下须点槽）
+    // 点已填充的槽位 → 卸下
     await wrapper.find('.slot-filled').trigger('click')
     await wrapper.vm.$nextTick()
     expect(relics.isEquipped(relics.owned[0].instanceId)).toBe(false)
@@ -121,7 +125,7 @@ describe('RelicView — 装备与卸下', () => {
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0])
     await wrapper.vm.$nextTick()
-    await wrapper.find('.relic-card').trigger('click')
+    await wrapper.find('.relic-card [data-testid="equip-button"]').trigger('click')
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('.active-effects').exists()).toBe(true)
@@ -155,9 +159,9 @@ describe('RelicView — 合成工坊', () => {
     expect(wrapper.text()).toContain('选材中')
     expect(wrapper.find('.fusion-slot.filled').exists()).toBe(false)
 
-    // 依次点 3 张卡
+    // 依次点 3 张卡的选材按钮
     const cards = wrapper.findAll('.relic-card')
-    for (const c of cards) await c.trigger('click')
+    for (const c of cards) await c.find('[data-testid="select-material-button"]').trigger('click')
     await wrapper.vm.$nextTick()
 
     expect(wrapper.findAll('.fusion-slot.filled').length).toBe(3)
@@ -175,8 +179,8 @@ describe('RelicView — 合成工坊', () => {
 
     await wrapper.find('[data-testid="select-mode-button"]').trigger('click')
     const cards = wrapper.findAll('.relic-card')
-    await cards[0].trigger('click') // common
-    await cards[1].trigger('click') // rare → 拒绝
+    await cards[0].find('[data-testid="select-material-button"]').trigger('click') // common
+    await cards[1].find('[data-testid="select-material-button"]').trigger('click') // rare → 拒绝
     await wrapper.vm.$nextTick()
 
     expect(wrapper.text()).toContain('材料稀有度须一致')
@@ -193,7 +197,8 @@ describe('RelicView — 合成工坊', () => {
     await wrapper.vm.$nextTick()
 
     await wrapper.find('[data-testid="select-mode-button"]').trigger('click')
-    for (const c of wrapper.findAll('.relic-card')) await c.trigger('click')
+    for (const c of wrapper.findAll('.relic-card'))
+      await c.find('[data-testid="select-material-button"]').trigger('click')
     await wrapper.vm.$nextTick()
 
     const fusionBtn = wrapper.find('[data-testid="fusion-button"]')
@@ -240,9 +245,9 @@ describe('RelicView — 套装', () => {
     const b = relics.obtain(RELIC_POOL.find((r) => r.id === 'r_alloy_1')!)
     await wrapper.vm.$nextTick()
 
-    await wrapper.find('.relic-card').trigger('click') // 装备 a
+    await wrapper.find('.relic-card [data-testid="equip-button"]').trigger('click') // 装备 a
     const cardB = wrapper.findAll('.relic-card').find((c) => c.text().includes('合金碎屑'))!
-    await cardB.trigger('click') // 装备 b
+    await cardB.find('[data-testid="equip-button"]').trigger('click') // 装备 b
     await wrapper.vm.$nextTick()
 
     const row = wrapper.find('[data-testid="set-row-raiders"]')
