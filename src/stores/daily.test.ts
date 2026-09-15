@@ -164,12 +164,14 @@ describe('daily — 周挑战', () => {
 })
 
 describe('daily — 存档', () => {
-  it('serialize/hydrate 往返', () => {
+  it('serialize/hydrate 往返：同周（真实周）保留计数与挑战', () => {
     setActivePinia(createPinia())
     const store = useDailyStore()
-    store.onTickCheckIn(dateOf(2026, 9, 7))
-    store.onTickCheckIn(dateOf(2026, 9, 8))
-    store.ensureWeek(dateOf(2026, 9, 7))
+    // 用真实当前周构造存档：hydrate 尾部的周判定走「同周保留」真实路径，
+    // 不依赖运行周与假日期是否巧合一致
+    const now = new Date()
+    store.onTickCheckIn(now)
+    store.ensureWeek(now)
     store.bump('battles')
     const data = store.serialize()
 
@@ -178,16 +180,48 @@ describe('daily — 存档', () => {
     other.hydrate(data)
     expect(other.lastCheckIn).toBe(data.lastCheckIn)
     expect(other.streak).toBe(data.streak)
-    // 注：hydrate 尾部 ensureWeek() 用真实当前周——若存档周 ≠ 真实周会重掷并清零计数
-    // （设计行为：跨周回来换新挑战）。本测试用假日期，存档周与真实周大概率不同，
-    // 故只断言不受周刷新影响的部分；计数保留路径由「损坏条目过滤」用例以真实周覆盖
-    if (other.challengeWeek === data.challengeWeek) {
-      expect(other.weeklyCounters.battles).toBe(1)
-      expect(other.weekChallenges).toEqual(data.weekChallenges)
-    } else {
-      expect(other.weeklyCounters.battles).toBe(0)
-      expect(other.weekChallenges).toHaveLength(3) // 重掷后仍有 3 项新挑战
-    }
+    expect(other.weeklyCounters.battles).toBe(1)
+    expect(other.weekChallenges).toEqual(data.weekChallenges)
+  })
+
+  it('跨周 hydrate：旧周存档加载后重掷并清零计数', () => {
+    setActivePinia(createPinia())
+    const store = useDailyStore()
+    store.hydrate({
+      lastCheckIn: '2020-01-01',
+      streak: 9,
+      weeklyCounters: { battles: 99, explores: 99, researches: 99, upgrades: 99, transcends: 99 },
+      challengeWeek: '2020-W01',
+      weekChallenges: [
+        {
+          templateId: 'wk_battles',
+          kind: 'battles',
+          tier: 0,
+          target: 5,
+          rewardDark: 3,
+          claimed: false,
+        },
+        {
+          templateId: 'wk_explores',
+          kind: 'explores',
+          tier: 0,
+          target: 6,
+          rewardDark: 3,
+          claimed: false,
+        },
+        {
+          templateId: 'wk_researches',
+          kind: 'researches',
+          tier: 0,
+          target: 3,
+          rewardDark: 3,
+          claimed: false,
+        },
+      ],
+    })
+    expect(store.challengeWeek).toBe(weekStr())
+    expect(store.weeklyCounters.battles).toBe(0)
+    expect(store.weekChallenges).toHaveLength(3)
   })
 
   it('旧档无 daily 字段：hydrate(undefined) 不抛错，之后 ensureWeek 可用', () => {
@@ -200,7 +234,7 @@ describe('daily — 存档', () => {
     expect(store.weekChallenges).toHaveLength(3)
   })
 
-  it('损坏条目（未知 templateId）被过滤', () => {
+  it('损坏条目（未知 templateId）被过滤：列表不完整时重掷补全 3 项', () => {
     setActivePinia(createPinia())
     const store = useDailyStore()
     store.hydrate({
@@ -227,8 +261,13 @@ describe('daily — 存档', () => {
         },
       ],
     })
-    expect(store.weekChallenges).toHaveLength(1)
-    expect(store.weekChallenges[0].templateId).toBe('wk_battles')
+    // 过滤后仅剩 1 项（不足 3）→ 重掷补全，未知模板不会存活
+    expect(store.weekChallenges).toHaveLength(3)
+    expect(
+      store.weekChallenges.every((c) =>
+        CHALLENGE_TEMPLATES.some((t) => t.templateId === c.templateId)
+      )
+    ).toBe(true)
   })
 
   // —— v0.75：伪造挑战条目按模板重推导（防 target:0 白领奖励）——
@@ -250,10 +289,27 @@ describe('daily — 存档', () => {
           rewardDark: 999999,
           claimed: false,
         },
+        {
+          templateId: 'wk_explores',
+          kind: 'explores',
+          tier: 0,
+          target: 6,
+          rewardDark: 3,
+          claimed: false,
+        },
+        {
+          templateId: 'wk_researches',
+          kind: 'researches',
+          tier: 0,
+          target: 3,
+          rewardDark: 3,
+          claimed: false,
+        },
       ],
     })
-    expect(store.weekChallenges).toHaveLength(1)
-    const c = store.weekChallenges[0]
+    // 3 项齐全（含伪造项）→ 列表完整不重掷，伪造值逐项按模板重推导
+    expect(store.weekChallenges).toHaveLength(3)
+    const c = store.weekChallenges.find((x) => x.templateId === 'wk_battles')!
     expect(c.kind).toBe('battles') // 模板 kind，非存档伪造值
     expect(c.target).toBe(5) // 模板 targets[0]
     expect(c.rewardDark).toBe(3) // 模板 rewardDark[0]
@@ -262,13 +318,13 @@ describe('daily — 存档', () => {
     expect(store.claim(c.templateId)).toBeNull()
   })
 
-  it('tier 越界/非整数条目丢弃', () => {
+  it('tier 越界/非整数条目丢弃：过滤后列表不完整即重掷补全（同周保留计数）', () => {
     setActivePinia(createPinia())
     const store = useDailyStore()
     store.hydrate({
       lastCheckIn: '2026-09-07',
       streak: 1,
-      weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      weeklyCounters: { battles: 2, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
       challengeWeek: weekStr(),
       weekChallenges: [
         {
@@ -289,7 +345,28 @@ describe('daily — 存档', () => {
         },
       ],
     })
-    expect(store.weekChallenges).toHaveLength(0)
+    // 两项均非法被丢弃 → 列表不完整 → 重掷为 3 项；同周修复保留计数
+    expect(store.weekChallenges).toHaveLength(3)
+    expect(store.weeklyCounters.battles).toBe(2)
+    for (const c of store.weekChallenges) {
+      const tpl = CHALLENGE_TEMPLATES.find((t) => t.templateId === c.templateId)!
+      expect(c.tier).toBeGreaterThanOrEqual(0)
+      expect(c.tier).toBeLessThan(tpl.targets.length)
+    }
+  })
+
+  it('空表 + 当前周（退化/外部存档）：加载即补掷 3 项，不留整周空窗', () => {
+    setActivePinia(createPinia())
+    const store = useDailyStore()
+    store.hydrate({
+      lastCheckIn: '2026-09-07',
+      streak: 1,
+      weeklyCounters: { battles: 3, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      challengeWeek: weekStr(),
+      weekChallenges: [],
+    })
+    expect(store.weekChallenges).toHaveLength(3)
+    expect(store.weeklyCounters.battles).toBe(3) // 同一周内补掷不清计数
   })
 
   it('hardReset 语义：reset() 全清', () => {
