@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { fallbackActive, resetFallback } from '@/lib/error-fallback'
 import AppShell from '@/components/layout/AppShell.vue'
 
 const game = useGameStore()
 const loaded = ref(false)
 
-/** 错误屏提示文案：版本过新 / 存档损坏 / 读取失败三种口径 */
+/** 兜底屏标题：存档读取失败或运行期异常 */
+const errorTitle = computed(() => (fallbackActive.value ? '星核运行异常' : '星核读取失败'))
+/** 兜底屏提示文案：版本过新 / 存档损坏 / 读取失败 / 运行期异常四种口径 */
 const errorHint = computed(() => {
+  if (fallbackActive.value)
+    return '游戏运行遇到异常。建议先刷新页面重试；若问题反复出现，可清除存档重开。'
   if (game.initError === 'too_new') return '存档来自更新版本的游戏，当前版本无法读取。'
   if (game.initError === 'corrupt')
     return '存档数据已损坏，无法读取。可先导出原始存档，再清除重开。'
@@ -15,8 +20,10 @@ const errorHint = computed(() => {
 })
 /** 是否提供「导出原始存档」入口（仅损坏档：原始载荷还在时才有意义） */
 const canExportRaw = computed(() => game.initError === 'corrupt' && !!game.corruptRaw)
-/** 导出下载状态提示 */
-const exportMsg = ref('')
+/** 出口动作的结果提示（导出与清除共用一处展示） */
+const exitMsg = ref('')
+/** 清除请求进行中标志（防连点重入） */
+const clearing = ref(false)
 
 onMounted(async () => {
   await game.init()
@@ -33,43 +40,92 @@ function handleUnload() {
   // 同步写入 localStorage 备份，确保 beforeunload 来得及完成
   game.saveSync()
 }
-/** 错误屏出口：导出损坏档的原始载荷（下载为 .json 文件，交玩家自行留存） */
+/**
+ * 触发一次文本下载（兜底屏出口共用）
+ *
+ * 链接挂入文档后点击、对象地址延迟回收：部分浏览器要求链接在文档内
+ * 才执行下载，点击后立即回收会让下载在真正开始前失效。
+ */
+function downloadText(filename: string, text: string, mime: string) {
+  const blob = new Blob([text], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+/** 兜底屏出口：导出损坏档的原始载荷（下载为 .json 文件，交玩家自行留存） */
 function exportRawSave() {
   const raw = game.exportCorruptRaw()
-  if (!raw) return
+  if (!raw) {
+    exitMsg.value = '未找到可导出的原始存档数据。'
+    return
+  }
   try {
-    const blob = new Blob([raw], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `starcore-corrupt-save-${Date.now()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-    exportMsg.value = '已开始下载原始存档文件。'
+    downloadText(`starcore-corrupt-save-${Date.now()}.json`, raw, 'application/json')
+    exitMsg.value = '已开始下载原始存档文件。'
   } catch {
-    exportMsg.value = '导出失败，请尝试复制页面数据或联系支持。'
+    exitMsg.value = '导出失败，请刷新页面后重试。'
   }
 }
-/** 错误屏出口：清除存档重开（手动确认，不自动清档） */
+/** 兜底屏出口（运行期异常）：导出当前存档码，供玩家刷新或清档前自行留存 */
+async function exportSaveFile() {
+  try {
+    const code = await game.doExport()
+    downloadText(`starcore-save-${Date.now()}.txt`, code, 'text/plain')
+    exitMsg.value = '已开始下载存档文件。'
+  } catch {
+    exitMsg.value = '导出失败，请刷新页面后重试。'
+  }
+}
+/** 兜底屏出口（运行期异常）：整页刷新重试 */
+function reloadPage() {
+  location.reload()
+}
+/** 兜底屏出口：清除存档重开（手动点击执行，不自动清档） */
 async function clearAndRestart() {
-  await game.hardReset()
-  loaded.value = true
-  window.addEventListener('beforeunload', handleUnload)
+  if (clearing.value) return
+  clearing.value = true
+  exitMsg.value = ''
+  try {
+    await game.hardReset()
+    resetFallback()
+    loaded.value = true
+    window.addEventListener('beforeunload', handleUnload)
+  } catch {
+    exitMsg.value = '清除存档失败，请刷新页面后重试。'
+  } finally {
+    clearing.value = false
+  }
 }
 </script>
 
 <template>
-  <AppShell v-if="loaded" />
-  <div v-else-if="game.initError" class="loading-screen">
+  <div v-if="fallbackActive || game.initError" class="loading-screen">
     <div class="error-mark">!</div>
-    <p class="error-title">星核读取失败</p>
+    <p class="error-title">{{ errorTitle }}</p>
     <p class="error-hint">{{ errorHint }}</p>
     <button v-if="canExportRaw" class="btn btn-secondary" @click="exportRawSave">
       导出原始存档
     </button>
-    <p v-if="exportMsg" class="export-msg">{{ exportMsg }}</p>
-    <button class="btn btn-accent" @click="clearAndRestart">清除存档重开</button>
+    <button v-if="fallbackActive" class="btn btn-accent" @click="reloadPage">刷新页面</button>
+    <button v-if="fallbackActive" class="btn btn-secondary" @click="exportSaveFile">
+      导出存档
+    </button>
+    <button
+      class="btn"
+      :class="fallbackActive ? 'btn-secondary' : 'btn-accent'"
+      :disabled="clearing"
+      @click="clearAndRestart"
+    >
+      清除存档重开
+    </button>
+    <p v-if="exitMsg" class="error-msg">{{ exitMsg }}</p>
   </div>
+  <AppShell v-else-if="loaded" />
   <div v-else class="loading-screen">
     <div class="loading-core"></div>
     <p>正在初始化星核…</p>
@@ -122,7 +178,7 @@ async function clearAndRestart() {
   max-width: 320px;
   text-align: center;
 }
-.export-msg {
+.error-msg {
   max-width: 320px;
   text-align: center;
   color: var(--color-t-tertiary);
