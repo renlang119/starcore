@@ -524,8 +524,8 @@ function toggleExpand() {
   border-bottom: 1px solid var(--color-border-line);
   font-size: var(--text-xs);
 }
-.detail-row:last-of-type {
-  border-bottom: none;
+.detail-row:nth-last-child(2) {
+  border-bottom: none; /* 容器末位恒为 disclaimer，倒数第二才是末行明细 */
 }
 .detail-row.bottleneck {
   background: rgba(255, 182, 39, 0.06);

@@ -73,6 +73,7 @@ a {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important; /* infinite 动画限单次，防 0.01ms 周期闪烁 */
     transition-duration: 0.01ms !important;
   }
 }

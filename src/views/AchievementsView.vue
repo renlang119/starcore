@@ -78,7 +78,7 @@ const bonusSummary = computed(() => {
 
     <!-- 分类成就列表 -->
     <section v-for="[cat, defs] in groups" :key="cat" class="ach-section">
-      <h3 class="section-title">
+      <h3 class="section-title with-icon">
         <svg class="cat-icon" aria-hidden="true">
           <use :href="'#' + ACHIEVEMENT_CATEGORIES[cat].icon" />
         </svg>
@@ -182,11 +182,6 @@ const bonusSummary = computed(() => {
 .ach-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-}
-.section-title {
-  display: flex;
-  align-items: center;
   gap: var(--space-2);
 }
 .cat-icon {

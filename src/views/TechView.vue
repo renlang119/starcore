@@ -161,9 +161,6 @@ function tryResearch(id: string) {
   gap: var(--space-4);
   animation: screenIn 0.4s var(--ease-out);
 }
-.page-sub {
-  margin-top: calc(-1 * var(--space-2));
-}
 
 .branch-tabs {
   display: flex;
