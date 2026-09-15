@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Decimal } from '@/lib/decimal'
-import { getUnit, type UnitId, type UnitDef } from '@/data/units'
+import { UNITS, getUnit, type UnitId, type UnitDef } from '@/data/units'
 import type { MilitarySaveData } from '@/lib/storage'
 
 export interface Formation {
@@ -80,15 +80,24 @@ export const useMilitaryStore = defineStore('military', () => {
     return { atk: Math.round(atk), def: Math.round(def), hp }
   }
 
-  /** 全军战力（所有已造兵种） */
+  /** 全量持有（库存 + 已编入编队；v0.95 全军口径统一） */
+  function totalOwnedOf(id: UnitId): number {
+    let total = owned.value[id] ?? 0
+    for (const f of formations.value) total += f.units[id] ?? 0
+    return total
+  }
+
+  /**
+   * 全军战力（库存 + 已编入编队全量；v0.95 修正：原只统计库存，
+   * 全员编组后面板归零，与「全军」文案不符）
+   */
   function totalPower(atkMult: Decimal, defMult: Decimal) {
     let atk = 0,
       def = 0,
       hp = 0
-    for (const [uid, count] of Object.entries(owned.value)) {
+    for (const u of UNITS) {
+      const count = totalOwnedOf(u.id)
       if (count <= 0) continue
-      const u = getUnit(uid as UnitId)
-      if (!u) continue
       atk += u.attack * atkMult.toNumber() * count
       def += u.defense * defMult.toNumber() * count
       hp += u.hp * count
@@ -222,6 +231,7 @@ export const useMilitaryStore = defineStore('military', () => {
     formations,
     getOwned,
     totalUnits,
+    totalOwnedOf,
     maxTrainingSlots,
     isUnlocked,
     formationPower,

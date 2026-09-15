@@ -11,6 +11,8 @@ import {
   MAX_TRAINING_SLOTS,
 } from './military'
 import { TECHS } from '@/data/tech'
+import { UNITS } from '@/data/units'
+import { D } from '@/lib/decimal'
 
 const afford = () => true
 
@@ -129,5 +131,25 @@ describe('military — hydrate 加固（v0.75）', () => {
     expect(m.assignToFormation('f1', 'guard', 2)).toBe(true)
     expect(m.formations[0].units.guard).toBe(2) // 缺键补零后正常累加，非 NaN
     expect(Number.isNaN(m.formations[0].units.guard)).toBe(false)
+  })
+})
+
+describe('military store · 全量口径（v0.95）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    setTrainingSlotProvider(() => BASE_TRAINING_SLOTS)
+  })
+
+  it('totalOwnedOf 与 totalPower 含已编入编队', () => {
+    const m = useMilitaryStore()
+    m.owned.assault = 10
+    m.formations[0].units.assault = 40
+    expect(m.totalOwnedOf('assault')).toBe(50)
+    const assault = UNITS.find((u) => u.id === 'assault')!
+    const p = m.totalPower(D(1), D(1))
+    expect(p.atk).toBe(Math.round(assault.attack * 50))
+    expect(p.hp).toBe(assault.hp * 50)
+    // 仅库存口径为 10 支，全量口径应显著更大
+    expect(p.hp).toBeGreaterThan(assault.hp * 10)
   })
 })

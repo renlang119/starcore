@@ -129,6 +129,20 @@ describe('AchievementsView — 解锁与进度', () => {
     expect(bonus).toContain('全产出 +1%')
   })
 
+  it('全解锁时的加成汇总为连乘实测值（v0.95）', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    for (const def of ACHIEVEMENTS) game.achievements.unlocked[def.id] = Date.now()
+    await wrapper.vm.$nextTick()
+    const bonus = wrapper.find('.bonus-value').text()
+    // 与 EffectSystem 实际生效的连乘口径一致（求和口径会系统性低报）
+    expect(bonus).toContain('全产出 +51.4%')
+    expect(bonus).toContain('攻防 +46.9%')
+    expect(bonus).toContain('探索 +69.1%')
+    expect(bonus).toContain('离线 +46.4%')
+    expect(bonus).toContain('负熵 +10%')
+  })
+
   it('进度条宽度随终身计数增长', async () => {
     const wrapper = mountView()
     const game = useGameStore()
