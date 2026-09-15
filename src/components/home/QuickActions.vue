@@ -16,10 +16,16 @@ const router = useRouter()
 
 // P3-2 快速操作入口
 const quickActions = [
-  { id: 'build', label: '建造', icon: 'i-nav-build', path: '/build', color: '#00E5FF' },
-  { id: 'tech', label: '科技', icon: 'i-nav-tech', path: '/tech', color: '#A78BFA' },
-  { id: 'explore', label: '探索', icon: 'i-nav-explore', path: '/map', color: '#2EE6A0' },
-  { id: 'army', label: '部队', icon: 'i-nav-army', path: '/army', color: '#F43F5E' },
+  { id: 'build', label: '建造', icon: 'i-nav-build', path: '/build', color: 'var(--color-core)' },
+  { id: 'tech', label: '科技', icon: 'i-nav-tech', path: '/tech', color: 'var(--color-plasma)' },
+  {
+    id: 'explore',
+    label: '探索',
+    icon: 'i-nav-explore',
+    path: '/map',
+    color: 'var(--color-quantum)',
+  },
+  { id: 'army', label: '部队', icon: 'i-nav-army', path: '/army', color: 'var(--color-alert)' },
 ]
 </script>
 

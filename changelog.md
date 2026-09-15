@@ -36,8 +36,9 @@ Tab 处理开头补弹窗外焦点拉回，环绕序列过滤禁用与不可见�
 !important 规则又压住了那份显式降级）；背景空壳规则、弹窗遮罩
 浅色死样式、明细行永不命中的末行选择器一并删除；三处视图对全局
 工具类的 scoped 重复与分叉收敛为全局修饰变体；补登按钮基础骨架
-类（兜底屏出口此前使用未定义类）；样式表内的主题色硬编码统一改
-color-mix 走 token；移动端提示条抬高，避开战斗页浮动返回条。
+类（兜底屏出口此前使用未定义类）；主题色硬编码统一改 color-mix
+走 token，样式表与组件层全量清理；移动端提示条抬高，避开战斗页
+浮动返回条。
 
 ### 变更明细
 
@@ -76,6 +77,14 @@ color-mix 走 token；移动端提示条抬高，避开战斗页浮动返回条�
   色板走 token；删除被全局规则压掉的降级声明
 - `src/styles/toast.css`：移动端 bottom 由 80 抬至 128，避开战斗页
   extra-nav 浮动返回条
+- 组件层主题色硬编码全量 token 化（58 处）：HeroCore、
+  UpgradeCountdown、PrestigeView、TopBar、SideNav、BottomNav、
+  AchievementToast、BattleView、BuildView、AchievementsView、
+  RelicView、TechView、ActionQueuePanel、QuickActions、
+  EnhanceModal、OfflineReport 的 rgba 主题色与 var 回退色值改
+  color-mix 或直连 token；color-mix 与同值 rgba 渲染等价，视觉
+  零变化；src/data 数据层的兵种、科技、资源、遗物稀有度色值为
+  玩法实体定义，不在本次范围
 - `docs/动效规范.md`：第六章全局规则与降级表同步；`docs/组件与
   按钮设计规范.md`：P1-5 补登 `.btn` 骨架
 - Playwright：v084 新增 F 段实测移动端提示条与 extra-nav 不重叠

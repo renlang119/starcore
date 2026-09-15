@@ -88,7 +88,7 @@ const { displayActions, hasActions } = useActionQueue()
 <style scoped>
 /* —— P1-2 行动队列 —— */
 .action-queue {
-  background: rgba(0, 229, 255, 0.02);
+  background: color-mix(in srgb, var(--color-core) 2%, transparent);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
 }

@@ -158,7 +158,7 @@ const bonusSummary = computed(() => {
   font-size: var(--text-2xl);
   font-weight: 900;
   color: var(--color-quantum);
-  text-shadow: 0 0 16px rgba(46, 230, 160, 0.3);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--color-quantum) 30%, transparent);
 }
 .count-total {
   font-size: var(--text-sm);
@@ -218,7 +218,7 @@ const bonusSummary = computed(() => {
 }
 .ach-card.unlocked .ach-icon {
   color: var(--color-quantum);
-  filter: drop-shadow(0 0 6px rgba(46, 230, 160, 0.4));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-quantum) 40%, transparent));
 }
 .ach-check {
   position: absolute;

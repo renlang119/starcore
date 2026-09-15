@@ -195,8 +195,8 @@ const allExplored = computed(
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(0, 229, 255, 0.15) 0%,
-    rgba(0, 229, 255, 0.06) 40%,
+    color-mix(in srgb, var(--color-core) 15%, transparent) 0%,
+    color-mix(in srgb, var(--color-core) 6%, transparent) 40%,
     transparent 70%
   );
   filter: blur(8px);
@@ -236,7 +236,7 @@ const allExplored = computed(
 }
 .r1.phase-active {
   border-color: var(--color-quantum);
-  box-shadow: 0 0 12px rgba(46, 230, 160, 0.3);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-quantum) 30%, transparent);
   animation-duration: 12s;
 }
 .r1.phase-progress {
@@ -252,7 +252,7 @@ const allExplored = computed(
 }
 .r2.phase-active {
   border-color: var(--color-plasma);
-  box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-plasma) 30%, transparent);
   animation-duration: 8s;
 }
 .r2.phase-progress {
@@ -267,7 +267,7 @@ const allExplored = computed(
 }
 .r3.phase-active {
   border-color: var(--color-amber);
-  box-shadow: 0 0 8px rgba(255, 182, 39, 0.3);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-amber) 30%, transparent);
   animation-duration: 6s;
 }
 .r3.phase-progress {
@@ -279,8 +279,8 @@ const allExplored = computed(
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(0, 229, 255, 0.6) 0%,
-    rgba(0, 107, 122, 0.3) 60%,
+    color-mix(in srgb, var(--color-core) 60%, transparent) 0%,
+    color-mix(in srgb, var(--color-core-deep) 30%, transparent) 60%,
     transparent 100%
   );
   filter: blur(16px);
@@ -296,7 +296,7 @@ const allExplored = computed(
   font-size: var(--text-2xl);
   font-weight: 900;
   color: var(--color-t-primary);
-  text-shadow: 0 0 16px rgba(0, 229, 255, 0.5);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--color-core) 50%, transparent);
 }
 .core-label {
   font-size: var(--text-xs);
@@ -323,8 +323,8 @@ const allExplored = computed(
   height: 60px;
   background: linear-gradient(
     to bottom,
-    rgba(0, 229, 255, 0.15) 0%,
-    rgba(0, 229, 255, 0.05) 50%,
+    color-mix(in srgb, var(--color-core) 15%, transparent) 0%,
+    color-mix(in srgb, var(--color-core) 5%, transparent) 50%,
     transparent 100%
   );
   filter: blur(4px);
@@ -353,7 +353,7 @@ const allExplored = computed(
   }
   .core-value {
     font-size: var(--text-display);
-    text-shadow: 0 0 24px rgba(0, 229, 255, 0.5);
+    text-shadow: 0 0 24px color-mix(in srgb, var(--color-core) 50%, transparent);
   }
   .hero {
     padding: var(--space-8) 0 var(--space-6);

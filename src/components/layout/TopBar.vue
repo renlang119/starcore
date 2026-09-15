@@ -116,7 +116,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(5, 7, 13, 0.85);
+  background: color-mix(in srgb, var(--color-void) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border-line);
@@ -201,7 +201,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
 @keyframes resFlash {
   0% {
     color: var(--color-quantum);
-    text-shadow: 0 0 6px rgba(46, 230, 160, 0.6);
+    text-shadow: 0 0 6px color-mix(in srgb, var(--color-quantum) 60%, transparent);
   }
   100% {
     color: var(--color-t-primary);
@@ -220,7 +220,11 @@ const { particles } = useResourceParticles(getPositiveRateResources)
     width: 16px;
     height: 100%;
     min-height: 32px;
-    background: linear-gradient(to right, transparent, rgba(5, 7, 13, 0.9));
+    background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in srgb, var(--color-void) 90%, transparent)
+    );
     pointer-events: none;
     z-index: 2;
   }

@@ -689,11 +689,11 @@ function cancelGarrison() {
    本视图 scoped 规则须经 :deep() 穿透才能命中（v0.77 RelicView 同源坑补齐） */
 :deep(.modal.victory) {
   border-color: var(--color-quantum);
-  box-shadow: 0 0 40px rgba(46, 230, 160, 0.2);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--color-quantum) 20%, transparent);
 }
 :deep(.modal.defeat) {
   border-color: var(--color-alert);
-  box-shadow: 0 0 40px rgba(244, 63, 94, 0.2);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--color-alert) 20%, transparent);
 }
 .result-title {
   font-size: var(--text-xl);
@@ -766,7 +766,7 @@ function cancelGarrison() {
 }
 :deep(.garrison-confirm-modal) {
   border-color: var(--color-quantum);
-  box-shadow: 0 0 40px rgba(46, 230, 160, 0.15);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--color-quantum) 15%, transparent);
 }
 .garrison-rewards {
   margin-bottom: var(--space-4);
