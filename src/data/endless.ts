@@ -2,7 +2,7 @@
  * endless.ts — 无尽远征模式定义（v0.60 玩法扩展方案 5）
  *
  * 据点全通后的可重复挑战层：无限深度缩放。
- * 不新增敌方兵种，敌方编成按深度轮换 4 类现役最强模板，克制关系随模板复用；
+ * 不新增敌方兵种，敌方编成按深度轮换 4 类模板，克制关系随模板复用；
  * 敌方数值 = 模板 × endlessScale(d)，奖励 = 沉默者旗舰基准 × endlessRewardScale(d)。
  *
  * 平衡性设计意图（v0.60 方案稿校准，战斗公式忠实移植 + 蒙特洛模拟）：
@@ -22,6 +22,7 @@ import { STRONGHOLDS } from './pve'
  * 注：silencer_3 已非全表最强据点（v0.71 星团层终章 silencer_4「沉默者母港」强度 592,300 更高），
  * 锚定 silencer_3 为设计意图：远征是通关沉默者旗舰后的长尾入口，与后续更高难度据点解耦，
  * 避免每新增一层据点就被动抬高远征门槛。
+ * （导出供 endless.test.ts 直测，无运行期消费方）
  */
 export const ENDLESS_UNLOCK_STRONGHOLD = 'silencer_3'
 
@@ -31,18 +32,18 @@ export const ENDLESS_STRONGHOLD_ID = 'endless'
 /** 无尽远征可达的最大深度（防御性上限，实际受软墙约束远达不到） */
 export const MAX_ENDLESS_DEPTH = 999
 
-/** 敌方数值每层成长系数 */
+/** 敌方数值每层成长系数（导出供 endless.test.ts 直测，无运行期消费方） */
 export const ENEMY_GROWTH = 1.25
 
-/** 奖励每层成长系数（刻意大于 ENEMY_GROWTH，越深越值得打） */
+/** 奖励每层成长系数，刻意大于 ENEMY_GROWTH（导出供 endless.test.ts 直测，无运行期消费方） */
 export const REWARD_GROWTH = 1.35
 
-/** 深度 d 的敌方数值缩放：D1 = 最强模板 × 0.5 */
+/** 深度 d 的敌方数值缩放：D1 = 最强模板 × 0.5（导出供 endless.test.ts 直测，无运行期消费方） */
 export function endlessScale(depth: number): number {
   return 0.5 * Math.pow(ENEMY_GROWTH, depth - 1)
 }
 
-/** 深度 d 的奖励缩放：D1 = 沉默者旗舰奖励 × 1.35^0 = 基准 */
+/** 深度 d 的奖励缩放：D1 = 基准（导出供 endless.test.ts 直测，无运行期消费方） */
 export function endlessRewardScale(depth: number): number {
   return Math.pow(REWARD_GROWTH, depth - 1)
 }
@@ -65,7 +66,7 @@ function scaleEnemies(enemies: EnemyUnit[], scale: number, prefix: string): Enem
   }))
 }
 
-/** 敌方编成模板：各系现役最强据点编制，按 (深度-1) mod 4 轮换 */
+/** 敌方编成模板：v0.60 定版的四类高难度据点编制，按 (深度-1) mod 4 轮换（后续新层不影响轮换表） */
 const TEMPLATE_IDS = ['silencer_3', 'raider_5', 'beast_4', 'ruin_4'] as const
 
 /**
@@ -92,6 +93,7 @@ const TEMPLATE_NORMALIZE = new Map<string, number>(
  * 深度 d 的敌方编成（含「深渊」前缀与深度号命名，模板强度归一化）。
  * 模板缺失时抛错而不返回空编成：空编成会被战斗结算的空数组遍历
  * 误判为胜利（配置错误快速失败，resolveBattle 另有防御分支兜底）。
+ * （导出供 endless.test.ts 直测，无运行期消费方）
  */
 export function endlessEnemies(depth: number): EnemyUnit[] {
   const d = Math.max(1, Math.floor(depth))
@@ -106,6 +108,9 @@ export function endlessEnemies(depth: number): EnemyUnit[] {
   return scaleEnemies(template.enemies, scale, prefix)
 }
 
+/** 合成据点的 tier 占位（剧情章节标签语义对无尽不适用，UI 侧不展示） */
+const ENDLESS_TIER_PLACEHOLDER = 6
+
 /** 远征奖励基准 = 沉默者旗舰（silencer_3）奖励，按深度指数缩放 */
 export function endlessStronghold(depth: number): StrongholdDef {
   const d = Math.max(1, Math.floor(depth))
@@ -118,7 +123,7 @@ export function endlessStronghold(depth: number): StrongholdDef {
     id: ENDLESS_STRONGHOLD_ID,
     name: `无尽深渊·第${d}层`,
     type: 'silencer',
-    tier: 6,
+    tier: ENDLESS_TIER_PLACEHOLDER,
     desc: '来自星团深处的未知威胁，越深入，敌影越强，收获也越丰',
     icon: 'i-stronghold-silencer',
     enemies: endlessEnemies(d),

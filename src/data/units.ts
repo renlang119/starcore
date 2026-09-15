@@ -33,7 +33,7 @@ export const UNITS: UnitDef[] = [
   {
     id: 'assault',
     name: '突击兵',
-    desc: '高机动远程单位，克制护卫兵',
+    desc: '高机动远程单位，克制护卫兵与灵能者',
     icon: 'i-unit-assault',
     attack: 12,
     defense: 5,

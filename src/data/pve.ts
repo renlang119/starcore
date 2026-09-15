@@ -6,11 +6,12 @@
 
 import type { UnitId } from './units'
 
-export type StrongholdType = 'raider' | 'beast' | 'ruin' | 'silencer'
+type StrongholdType = 'raider' | 'beast' | 'ruin' | 'silencer'
 
 export interface EnemyUnit {
-  unitId: string // 复用 UnitId 概念，但用自定义 id 表示敌方
-  name: string
+  unitId: string // 兵种骨架 id（数值模板）；同一 unitId 可在不同据点换皮复用
+  name: string // 据点特色显示名（v0.97 起注明：换皮名不必与 unitId 字面一致，
+  // 如同一 archon_core 在信标据点称「信标核心」、在长堤据点称「长堤核心」）
   attack: number
   defense: number
   hp: number
@@ -1239,7 +1240,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'archon_core',
-        name: '长堤核心',
+        name: '圣殿核心',
         attack: 900,
         defense: 600,
         hp: 120000,
@@ -1248,7 +1249,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'beacon_sentinel',
-        name: '长堤守卫',
+        name: '圣殿守卫',
         attack: 450,
         defense: 320,
         hp: 30000,
