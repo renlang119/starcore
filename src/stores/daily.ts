@@ -158,12 +158,20 @@ export const useDailyStore = defineStore('daily', () => {
     return { ...reward, streakDay: streak.value, returned: false }
   }
 
-  /** 周标识不一致 → 重掷 3 项挑战 + 清计数（种子 = 周标识哈希，同周确定） */
+  /**
+   * 周标识不一致或挑战列表不完整时重掷 3 项挑战（种子 = 周标识哈希，同周确定）。
+   * 换周重掷同时清计数；同周但列表为空/不足 3 条（退化或外部存档在 hydrate
+   * 过滤后）也重掷补全并保留计数；否则空表会被 serialize 写回，整周无挑战。
+   */
   function ensureWeek(now = new Date()): void {
     const wk = weekStr(now)
-    if (challengeWeek.value === wk) return
+    // 同周且列表完整（3 项）才跳过；列表不完整时重掷补全
+    if (challengeWeek.value === wk && weekChallenges.value.length === 3) return
+    if (challengeWeek.value !== wk) {
+      // 换周才清计数；同周补掷保留本周计数
+      weeklyCounters.value = { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
+    }
     challengeWeek.value = wk
-    weeklyCounters.value = { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
     const rng = mulberry32(hashStr(wk))
     // 洗牌模板池取 3
     const pool = [...CHALLENGE_TEMPLATES]
