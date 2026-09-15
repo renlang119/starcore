@@ -1,11 +1,23 @@
 /* ============================================================
    P1-5 按钮系统 — 四类语义型全局按钮
+   .btn           基础骨架（v0.96 补登）：四类共用，单独使用须搭配语义类
    .btn-primary   主操作（升级/确认）
    .btn-secondary 次操作（取消/返回）
    .btn-accent    分类强调（研究/探索/战斗），通过 --accent 注入色
    .btn-ghost     幽灵按钮（次要操作）
    尺寸变体：.sm（紧凑）、.block（全宽）
    ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  transition: all 0.15s var(--ease-out);
+  cursor: pointer;
+}
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -22,7 +34,7 @@
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--color-core-dim);
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-core) 30%, transparent);
 }
 .btn-primary:active {
   transform: scale(0.95);
