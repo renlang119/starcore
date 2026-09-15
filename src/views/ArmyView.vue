@@ -17,7 +17,9 @@ const game = useGameStore()
 const toast = useToast()
 const showToast = toast.show
 const activeTab = ref<'barracks' | 'formation'>('barracks')
-const trainCount = ref<Record<UnitId, number>>({ assault: 0, guard: 0, heavy: 0, psionic: 0 })
+const trainCount = ref<Record<UnitId, number>>(
+  Object.fromEntries(UNITS.map((u) => [u.id, 0])) as Record<UnitId, number>
+)
 
 // 全入/全撤确认（大数量操作需确认）
 const pendingBulkAction = ref<{

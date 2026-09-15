@@ -60,35 +60,18 @@ onUnmounted(() => {
 const toast = useToast()
 const showToast = toast.show
 
-// 按层级分组
-const layers: StarLayer[] = [
-  'orbit',
-  'inner',
-  'outer',
-  'deep',
-  'stellar',
-  'cluster',
-  'arm',
-  'galaxy',
-  'void',
-]
+// 按层级分组（清单由 LAYER_INFO 派生，v0.97）
+const layers = Object.keys(LAYER_INFO) as StarLayer[]
 
 // 空状态：全部探索节点均已完成
 const allNodesCompleted = computed(
   () => EXPLORE_NODES.length > 0 && EXPLORE_NODES.every((n) => game.exploration.isCompleted(n.id))
 )
 const nodesByLayer = computed(() => {
-  const map: Record<StarLayer, typeof EXPLORE_NODES> = {
-    orbit: [],
-    inner: [],
-    outer: [],
-    deep: [],
-    stellar: [],
-    cluster: [],
-    arm: [],
-    galaxy: [],
-    void: [],
-  }
+  const map = Object.fromEntries(layers.map((l) => [l, [] as typeof EXPLORE_NODES])) as Record<
+    StarLayer,
+    typeof EXPLORE_NODES
+  >
   for (const n of EXPLORE_NODES) map[n.layer].push(n)
   return map
 })

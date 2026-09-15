@@ -157,7 +157,7 @@ describe('BuildView — 升级流程', () => {
     await wrapper.vm.$nextTick()
 
     const costText = wrapper.find('.b-cost').text().replace(/\s+/g, '')
-    expect(costText).toBe('可买2级·共22')
+    expect(costText).toBe('可买2级·共能量22')
   })
 })
 

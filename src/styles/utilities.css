@@ -154,3 +154,30 @@
   text-shadow: 0 0 12px color-mix(in srgb, var(--color-core) 40%, transparent);
   padding-left: 4px; /* 补偿 letter-spacing 导致的左偏移 */
 }
+
+/* 读屏专用文本（视觉隐藏，v0.97）：资源区与成本标签的名称播报 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 遗物稀有度徽标与卡名（v0.97：图鉴/强化/合成三处共用，单一出处） */
+.rarity-badge {
+  font-size: var(--text-xs);
+  padding: 1px var(--space-2);
+  border-radius: 3px;
+  color: var(--color-void);
+  font-weight: 700;
+}
+.r-name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}

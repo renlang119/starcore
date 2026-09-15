@@ -23,6 +23,13 @@ const allCompleted = computed(
     techsToShow.value.length > 0 && techsToShow.value.every((t) => game.research.isCompleted(t.id))
 )
 
+// 空态文案按筛选口径分离（v0.97）：全量视图写全量结论，分支视图写分支结论
+const emptyText = computed(() =>
+  activeBranch.value === 'all'
+    ? '所有已知科技已研究完成'
+    : `「${TECH_BRANCHES[activeBranch.value].name}」分支的科技已全部研究完成`
+)
+
 // P3-3 onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding('tech', ['tech-research'])
 
@@ -82,11 +89,11 @@ function tryResearch(id: string) {
       </button>
     </div>
 
-    <!-- 空状态：全部科技已完成 -->
+    <!-- 空状态：当前筛选口径下科技均已完成 -->
     <EmptyState
       v-if="allCompleted"
       icon="i-nav-tech"
-      text="所有已知科技已研究完成"
+      :text="emptyText"
       hint="探索新星域可能发现未知科技"
       action="前往探索"
       to="/map"
