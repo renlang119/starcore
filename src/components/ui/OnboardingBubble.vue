@@ -4,6 +4,8 @@
  *
  * 视觉：elevated 底 + core 描边 + elevation-2 阴影
  * 动画：floatUp 入场
+ * 契约：根节点不携带 position/z-index，定位与层级由父级
+ *       .ob-* 变体类承载（z-index 60，《弹窗与确认流规范》层级表定标）
  */
 defineProps<{
   /** 气泡标题 */
@@ -33,14 +35,12 @@ const emit = defineEmits<{
 
 <style scoped>
 .onboard-bubble {
-  position: relative;
   background: var(--color-elevated);
   border: 1px solid var(--color-core);
   border-radius: var(--radius-lg);
   box-shadow: var(--elevation-2);
   padding: var(--space-3) var(--space-4);
   max-width: 260px;
-  z-index: 60;
   animation: floatUp 0.3s var(--ease-out);
 }
 .onboard-title {
@@ -87,11 +87,5 @@ const emit = defineEmits<{
   background: var(--color-elevated);
   border-right: 1px solid var(--color-core);
   border-bottom: 1px solid var(--color-core);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .onboard-bubble {
-    animation: fadeIn 0.15s ease;
-  }
 }
 </style>

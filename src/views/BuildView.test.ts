@@ -177,17 +177,17 @@ describe('BuildView — 新手引导', () => {
   it('未读时显示引导气泡，确认后消失', async () => {
     const wrapper = mountView()
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('.onboard-build').exists()).toBe(true)
+    expect(wrapper.find('.ob-build').exists()).toBe(true)
 
     await wrapper.find('.onboard-ok').trigger('click')
     await wrapper.vm.$nextTick()
     // build 流程仅 1 步，确认后气泡关闭
-    expect(wrapper.find('.onboard-build').exists()).toBe(false)
+    expect(wrapper.find('.ob-build').exists()).toBe(false)
   })
 
   it('已读（localStorage 预置）时不显示气泡', () => {
     localStorage.setItem('starcore_onboarding', JSON.stringify({ 'build-upgrade': true }))
     const wrapper = mountView()
-    expect(wrapper.find('.onboard-build').exists()).toBe(false)
+    expect(wrapper.find('.ob-build').exists()).toBe(false)
   })
 })
