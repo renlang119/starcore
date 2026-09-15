@@ -297,13 +297,13 @@ describe('ArmyView — 新手引导', () => {
   it('未读时显示引导气泡，已读时不显示', async () => {
     const wrapper = mountView()
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('.onboard-army').exists()).toBe(true)
+    expect(wrapper.find('.ob-army').exists()).toBe(true)
     wrapper.unmount()
 
     localStorage.setItem('starcore_onboarding', JSON.stringify({ 'army-train': true }))
     const wrapper2 = mountView()
     wrappers.push(wrapper2)
     await wrapper2.vm.$nextTick()
-    expect(wrapper2.find('.onboard-army').exists()).toBe(false)
+    expect(wrapper2.find('.ob-army').exists()).toBe(false)
   })
 })

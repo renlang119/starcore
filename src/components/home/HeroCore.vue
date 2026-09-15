@@ -113,7 +113,7 @@ const allExplored = computed(
     <!-- P3-3 onboarding: 核心引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-core'"
-      class="onboard-core"
+      class="ob-core"
       title="星核核心"
       text="这是你的星核能量值，点击核心可快速进入建造页面。"
       @dismiss="emit('dismiss')"
@@ -372,13 +372,13 @@ const allExplored = computed(
   }
 }
 
-/* —— P3-3 onboarding 气泡定位 —— */
-.onboard-core {
+/* —— P3-3 onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+.ob-core {
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: min(260px, 80vw);
-  z-index: 10;
+  z-index: 60;
 }
 </style>
