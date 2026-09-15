@@ -264,7 +264,7 @@ const endlessSection = {
 
     <!-- 已解锁据点 -->
     <div v-if="availableStrongholds.length > 0" class="stronghold-section">
-      <h3 class="section-title">已解锁据点</h3>
+      <h3 class="section-title alert">已解锁据点</h3>
       <div class="stronghold-list">
         <button
           v-for="s in availableStrongholds"
@@ -295,7 +295,10 @@ const endlessSection = {
 
     <!-- 无尽远征（v0.60）：独立区块，未解锁置灰可见 -->
     <div class="endless-section" data-testid="endless-section">
-      <h3 class="section-title endless-title" :style="{ color: STRONGHOLD_TYPES.silencer.color }">
+      <h3
+        class="section-title alert endless-title"
+        :style="{ color: STRONGHOLD_TYPES.silencer.color }"
+      >
         {{ endlessSection.title }}
       </h3>
       <p class="endless-desc">{{ endlessSection.desc }}</p>
@@ -465,11 +468,6 @@ const endlessSection = {
   gap: var(--space-2);
   align-items: center;
 }
-.time-tag {
-  font-size: var(--text-xs);
-  color: var(--color-t-tertiary);
-}
-
 .n-locked {
   font-size: var(--text-xs);
   color: var(--color-locked);
@@ -489,13 +487,6 @@ const endlessSection = {
   font-family: var(--font-mono);
 }
 
-.section-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  margin-bottom: var(--space-2);
-  padding-left: var(--space-2);
-  border-left: 2px solid var(--color-alert);
-}
 .stronghold-list {
   display: flex;
   flex-direction: column;

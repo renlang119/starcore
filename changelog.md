@@ -7,9 +7,9 @@
 
 ---
 
-## v0.96 — 修复: 焦点陷阱兜底与卡片交互语义
+## v0.96 — 修复: 焦点陷阱、卡片语义与样式卫生
 
-**变更性质：修复（弹窗焦点陷阱、卡片交互语义、键盘与读屏可达性）**
+**变更性质：修复（弹窗焦点陷阱、卡片交互语义、样式卫生）**
 **开发时间：2026-09-15**
 
 ### 概述
@@ -30,6 +30,15 @@ Tab 处理开头补弹窗外焦点拉回，环绕序列过滤禁用与不可见�
 「选为材料 / 取消选材」；编队操作本就全由行内按钮承担，卡片
 不再整体可点。
 
+样式层做一轮卫生清理：reduced-motion 全局规则补动画次数限制，
+无限循环动画不再以 0.01ms 周期空转闪烁；跃迁 overlay 的死规则
+与从未生效的降级声明清出（实现本在 AppShell scoped，全局
+!important 规则又压住了那份显式降级）；背景空壳规则、弹窗遮罩
+浅色死样式、明细行永不命中的末行选择器一并删除；三处视图对全局
+工具类的 scoped 重复与分叉收敛为全局修饰变体；补登按钮基础骨架
+类（兜底屏出口此前使用未定义类）；样式表内的主题色硬编码统一改
+color-mix 走 token；移动端提示条抬高，避开战斗页浮动返回条。
+
 ### 变更明细
 
 - `src/composables/useFocusTrap.ts`：卸载时仍激活补还焦；Tab
@@ -48,6 +57,28 @@ Tab 处理开头补弹窗外焦点拉回，环绕序列过滤禁用与不可见�
   与选材用例改打显式按钮，补「已装备」禁用态断言
 - Playwright：v077 键盘可达段改写（装备按钮 Enter、编队卡无交互
   语义加行内按钮键盘生效）；v061 选材与装备路径改打卡面按钮
+- `src/styles/base.css`：reduced-motion 全局规则补
+  `animation-iteration-count: 1`
+- `src/styles/animations.css`：删除跃迁 overlay 死规则与从未生效
+  的 reduced-motion 降级声明（实现归 AppShell scoped）
+- `src/styles/background.css`：删除 body::before 空壳规则；星云与
+  暗角硬编码色改 color-mix 走 token（青、紫、琥珀、void 四组）
+- `src/styles/utilities.css`：删除 `.modal-overlay.lighter` 死样式；
+  遮罩底色与品牌名辉光走 token；`section-title` 新增 `.alert` 与
+  `.with-icon` 修饰变体，承接 MapView 与成就页的 scoped 分叉
+- `src/views/MapView.vue`、`TechView.vue`、`AchievementsView.vue`：
+  time-tag、page-sub、section-title 三处 scoped 重复删除收敛全局
+- `src/styles/buttons.css`：补登 `.btn` 基础骨架；主操作 hover
+  辉光走 token
+- `src/components/build/UpgradeCountdown.vue`：明细末行选择器改
+  `:nth-last-child(2)`（容器末位恒为免责行）
+- `src/components/layout/AppShell.vue`：跃迁 overlay 青色与星点
+  色板走 token；删除被全局规则压掉的降级声明
+- `src/styles/toast.css`：移动端 bottom 由 80 抬至 128，避开战斗页
+  extra-nav 浮动返回条
+- `docs/动效规范.md`：第六章全局规则与降级表同步；`docs/组件与
+  按钮设计规范.md`：P1-5 补登 `.btn` 骨架
+- Playwright：v084 新增 F 段实测移动端提示条与 extra-nav 不重叠
 - `docs/交互状态规范.md`：键盘可达目标与 aria 命名表两行同步
 - `package.json`：版本 0.96.0
 
@@ -57,7 +88,8 @@ Tab 处理开头补弹窗外焦点拉回，环绕序列过滤禁用与不可见�
   零输出，全量计数守恒通过
 - 焦点陷阱七条新用例覆盖还焦、环绕、兜底与监听移除全路径
 - 关联脚本 preview 实跑全过：v077 键盘可达段、v061 遗物合成
-  全流程
+  全流程；v084 含新增 F 段（移动端 toast 128px 实测、与
+  extra-nav 几何不重叠）
 - 预览全套件 27 脚本实跑 26 项通过，唯一挂项为 v045 线上端版本
   断言，按已知形态部署后复跑转绿
 

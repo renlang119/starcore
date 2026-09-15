@@ -21,13 +21,13 @@
   100% {
     transform: scale(1);
     box-shadow:
-      0 0 40px rgba(0, 229, 255, 0.4),
+      0 0 40px color-mix(in srgb, var(--color-core) 40%, transparent),
       inset 0 0 20px rgba(255, 255, 255, 0.2);
   }
   50% {
     transform: scale(1.08);
     box-shadow:
-      0 0 60px rgba(0, 229, 255, 0.6),
+      0 0 60px color-mix(in srgb, var(--color-core) 60%, transparent),
       inset 0 0 30px rgba(255, 255, 255, 0.3);
   }
 }
@@ -155,23 +155,11 @@
 /* ============================================================
    P3-5 路由切换"空间跃迁"过渡
    旧页: scale(0.96)+fade 0.2s → 白光 overlay 闪过 0.35s → 新页: scale(1.04)+fade 0.3s
-   reduced-motion 降级为纯 opacity fade
+   （overlay 实现在 AppShell scoped；reduced-motion 由 base.css 全局规则统一降级）
    ============================================================ */
 .warp-enter-active {
   animation: warpIn 0.3s var(--ease-out);
 }
 .warp-leave-active {
   animation: warpOut 0.2s var(--ease-out);
-}
-.warp-enter-active .warp-overlay {
-  animation: warpFlash 0.35s var(--ease-out);
-}
-@media (prefers-reduced-motion: reduce) {
-  .warp-enter-active,
-  .warp-leave-active {
-    animation: fadeIn 0.2s ease;
-  }
-  .warp-enter-active .warp-overlay {
-    animation: none;
-  }
 }

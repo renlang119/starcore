@@ -43,7 +43,7 @@ const stars = [
   {
     top: '12%',
     left: '78%',
-    background: 'rgba(0,229,255,.5)',
+    background: 'color-mix(in srgb, var(--color-core) 50%, transparent)',
     size: '2px',
     duration: '2.8s',
     delay: '-0.7s',
@@ -59,7 +59,7 @@ const stars = [
   {
     top: '78%',
     left: '88%',
-    background: 'rgba(167,139,250,.4)',
+    background: 'color-mix(in srgb, var(--color-plasma) 40%, transparent)',
     size: '2px',
     duration: '3.0s',
     delay: '-2.1s',
@@ -75,7 +75,7 @@ const stars = [
   {
     top: '40%',
     left: '60%',
-    background: 'rgba(0,229,255,.3)',
+    background: 'color-mix(in srgb, var(--color-core) 30%, transparent)',
     size: '3px',
     duration: '4.0s',
     delay: '-1.8s',
@@ -242,15 +242,9 @@ watch(
   background: radial-gradient(
     ellipse at center,
     rgba(255, 255, 255, 0.25) 0%,
-    rgba(0, 229, 255, 0.1) 30%,
+    color-mix(in srgb, var(--color-core) 10%, transparent) 30%,
     transparent 70%
   );
   animation: warpFlash 0.35s var(--ease-out);
-}
-@media (prefers-reduced-motion: reduce) {
-  .warp-overlay {
-    animation: fadeIn 0.2s ease;
-    background: rgba(255, 255, 255, 0.08);
-  }
 }
 </style>
