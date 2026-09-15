@@ -247,6 +247,6 @@ function rarityColor(rarity: string): string {
 }
 .seg-btn.active {
   color: var(--color-core);
-  background: rgba(0, 229, 255, 0.1);
+  background: color-mix(in srgb, var(--color-core) 10%, transparent);
 }
 </style>

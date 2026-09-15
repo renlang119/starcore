@@ -144,7 +144,7 @@ function dismiss() {
 .garrison-title {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-plasma, #a78bfa);
+  color: var(--color-plasma);
   margin-bottom: var(--space-2);
 }
 .event-section {
@@ -153,7 +153,7 @@ function dismiss() {
 .event-title {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-core, #00e5ff);
+  color: var(--color-core);
   margin-bottom: var(--space-2);
 }
 .trained-section {

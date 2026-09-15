@@ -190,9 +190,9 @@ function tryResearch(id: string) {
   height: var(--icon-sm);
 }
 .branch-tab.active {
-  background: color-mix(in srgb, var(--c, #00e5ff) 12%, transparent);
-  border-color: var(--c, #00e5ff);
-  color: var(--c, #00e5ff);
+  background: color-mix(in srgb, var(--c, var(--color-core)) 12%, transparent);
+  border-color: var(--c, var(--color-core));
+  color: var(--c, var(--color-core));
 }
 
 .tech-list {
@@ -276,7 +276,7 @@ function tryResearch(id: string) {
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
-  background: rgba(0, 229, 255, 0.08);
+  background: color-mix(in srgb, var(--color-core) 8%, transparent);
   color: var(--color-core);
 }
 
