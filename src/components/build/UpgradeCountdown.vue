@@ -460,14 +460,14 @@ function toggleExpand() {
 
 /* —— rate=0 状态 —— */
 .countdown-row.rate-zero {
-  background: rgba(255, 182, 39, 0.06);
-  border-color: rgba(255, 182, 39, 0.25);
+  background: color-mix(in srgb, var(--color-amber) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-amber) 25%, transparent);
 }
 .countdown-row.rate-zero .res-dot {
   background: var(--color-amber);
   color: var(--color-amber);
-  border: 1px dashed rgba(255, 182, 39, 0.5);
-  box-shadow: 0 0 6px rgba(255, 182, 39, 0.3);
+  border: 1px dashed color-mix(in srgb, var(--color-amber) 50%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-amber) 30%, transparent);
 }
 .countdown-row.rate-zero .countdown-text {
   color: var(--color-amber);
@@ -528,7 +528,7 @@ function toggleExpand() {
   border-bottom: none; /* 容器末位恒为 disclaimer，倒数第二才是末行明细 */
 }
 .detail-row.bottleneck {
-  background: rgba(255, 182, 39, 0.06);
+  background: color-mix(in srgb, var(--color-amber) 6%, transparent);
   margin: 0 calc(-1 * var(--space-2));
   padding: var(--space-2);
   border-radius: var(--radius-sm);
@@ -584,15 +584,15 @@ function toggleExpand() {
   white-space: nowrap;
 }
 .d-status.ok {
-  background: rgba(46, 230, 160, 0.12);
+  background: color-mix(in srgb, var(--color-quantum) 12%, transparent);
   color: var(--color-quantum);
 }
 .d-status.bottleneck {
-  background: rgba(255, 182, 39, 0.12);
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
   color: var(--color-amber);
 }
 .d-status.manual {
-  background: rgba(255, 182, 39, 0.12);
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
   color: var(--color-amber);
 }
 

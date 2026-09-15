@@ -213,7 +213,7 @@ function tryUpgrade(id: string) {
 }
 .seg-btn.active {
   color: var(--color-core);
-  background: rgba(0, 229, 255, 0.1);
+  background: color-mix(in srgb, var(--color-core) 10%, transparent);
 }
 
 .build-view {
@@ -338,7 +338,7 @@ function tryUpgrade(id: string) {
   font-size: var(--text-xs);
   font-family: var(--font-mono);
   color: var(--color-quantum);
-  background: rgba(46, 230, 160, 0.08);
+  background: color-mix(in srgb, var(--color-quantum) 8%, transparent);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
 }

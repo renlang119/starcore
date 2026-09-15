@@ -427,7 +427,7 @@ onUnmounted(() => {
   font-size: var(--text-2xl);
   font-weight: 900;
   color: var(--color-amber);
-  text-shadow: 0 0 16px rgba(255, 182, 39, 0.3);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--color-amber) 30%, transparent);
 }
 .preview-label {
   font-size: var(--text-xs);
@@ -458,7 +458,7 @@ onUnmounted(() => {
   transition: all 0.15s var(--ease-out);
 }
 .btn-transcend:hover:not(:disabled) {
-  box-shadow: 0 0 20px rgba(255, 182, 39, 0.3);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-amber) 30%, transparent);
 }
 .btn-transcend:active:not(:disabled) {
   transform: scale(0.97);
@@ -566,7 +566,7 @@ onUnmounted(() => {
 }
 .seg-btn.active {
   color: var(--color-amber);
-  background: rgba(255, 184, 0, 0.1);
+  background: color-mix(in srgb, var(--color-amber) 10%, transparent);
 }
 .infinite-badge {
   display: inline-flex;
@@ -576,7 +576,7 @@ onUnmounted(() => {
   height: 1.4em;
   padding: 0 0.3em;
   border-radius: 999px;
-  background: rgba(255, 182, 39, 0.14);
+  background: color-mix(in srgb, var(--color-amber) 14.000000000000002%, transparent);
   border: 1px solid var(--color-amber);
   color: var(--color-amber);
   font-size: var(--text-xs);
@@ -602,7 +602,7 @@ onUnmounted(() => {
   font-size: var(--text-xs);
 }
 .node-eff-total {
-  background: rgba(46, 230, 160, 0.12);
+  background: color-mix(in srgb, var(--color-quantum) 12%, transparent);
   color: var(--color-quantum);
 }
 
@@ -648,8 +648,8 @@ onUnmounted(() => {
   margin-bottom: var(--space-3);
 }
 .warning-box {
-  background: rgba(244, 63, 94, 0.06);
-  border: 1px solid rgba(244, 63, 94, 0.2);
+  background: color-mix(in srgb, var(--color-alert) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-alert) 20%, transparent);
   border-radius: var(--radius-md);
   padding: var(--space-3);
   font-size: var(--text-xs);

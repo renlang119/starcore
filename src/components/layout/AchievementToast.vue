@@ -71,7 +71,7 @@ onUnmounted(() => {
   padding: var(--space-3) var(--space-4);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 16px rgba(46, 230, 160, 0.15);
+    0 0 16px color-mix(in srgb, var(--color-quantum) 15%, transparent);
   pointer-events: none;
   max-width: min(320px, calc(100vw - 2 * var(--space-4)));
 }
@@ -90,7 +90,7 @@ onUnmounted(() => {
   height: var(--icon-lg);
   color: var(--color-quantum);
   flex-shrink: 0;
-  filter: drop-shadow(0 0 8px rgba(46, 230, 160, 0.5));
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-quantum) 50%, transparent));
 }
 .toast-body {
   min-width: 0;

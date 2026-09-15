@@ -143,7 +143,7 @@ onUnmounted(() => {
   z-index: 50;
   /* display: flex 由全局 @media (max-width:767px) 控制 */
   display: flex;
-  background: rgba(12, 17, 30, 0.95);
+  background: color-mix(in srgb, var(--color-void) 95%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--color-border-line);
@@ -169,7 +169,7 @@ onUnmounted(() => {
   color: var(--color-core);
 }
 .tab.active .icon {
-  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.5));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-core) 50%, transparent));
 }
 
 /* 更多按钮反馈——面板打开时图标微弹 */
@@ -213,7 +213,11 @@ onUnmounted(() => {
   color: var(--color-t-primary);
 }
 .more-item.active {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.12), transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-core) 12%, transparent),
+    transparent
+  );
   color: var(--color-core);
 }
 

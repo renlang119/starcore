@@ -151,7 +151,7 @@ function toggleCollapsed() {
     var(--color-core-deep) 70%,
     transparent 100%
   );
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-core) 40%, transparent);
   animation: corePulse 3s ease-in-out infinite;
 }
 .brand-name {
@@ -182,7 +182,11 @@ function toggleCollapsed() {
   color: var(--color-t-primary);
 }
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.12), transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-core) 12%, transparent),
+    transparent
+  );
   color: var(--color-core);
   border-left: 2px solid var(--color-core);
 }
@@ -247,7 +251,7 @@ function toggleCollapsed() {
 .collapse-toggle:hover {
   border-color: var(--color-core);
   color: var(--color-core);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-core) 25%, transparent);
 }
 .collapse-toggle svg {
   transition: transform 0.2s var(--ease-out);

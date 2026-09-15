@@ -452,7 +452,7 @@ onUnmounted(() => {
 .eff-tag {
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
-  background: rgba(255, 182, 39, 0.1);
+  background: color-mix(in srgb, var(--color-amber) 10%, transparent);
   color: var(--color-amber);
   border-radius: var(--radius-sm);
 }
@@ -520,7 +520,7 @@ onUnmounted(() => {
 .discard-btn.pending {
   border-color: var(--color-alert);
   color: var(--color-alert);
-  background: rgba(244, 63, 94, 0.1);
+  background: color-mix(in srgb, var(--color-alert) 10%, transparent);
   font-weight: 600;
 }
 
