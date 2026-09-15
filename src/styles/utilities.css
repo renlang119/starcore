@@ -48,6 +48,17 @@
   background: var(--color-core);
   border-radius: 1px;
 }
+/* 修饰变体：.alert 琥珀边短题（MapView 据点区）、.with-icon 图标行内布局（成就页） */
+.section-title.alert {
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+  border-left-color: var(--color-alert);
+}
+.section-title.with-icon {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
 .stat {
   font-size: var(--text-xs);
   font-family: var(--font-mono);
@@ -103,22 +114,17 @@
 /* ============================================================
    Modal Overlay (全局通用)
    弹窗遮罩基础样式；各组件只需 class="modal-overlay"
-   .lighter 修饰类用于较浅透明度场景（如离线报告）
    ============================================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(5, 7, 13, 0.85);
+  background: color-mix(in srgb, var(--color-void) 85%, transparent);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-}
-.modal-overlay.lighter {
-  background: rgba(5, 7, 13, 0.7);
-  backdrop-filter: blur(4px);
 }
 
 /* ============================================================
@@ -145,6 +151,6 @@
   font-family: 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei UI', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 4px;
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-core) 40%, transparent);
   padding-left: 4px; /* 补偿 letter-spacing 导致的左偏移 */
 }

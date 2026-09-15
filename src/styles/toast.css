@@ -18,6 +18,12 @@
   z-index: 300;
   pointer-events: none;
 }
+/* 移动端抬高：避开战斗页 extra-nav（bottom 72px + 自身约 42px 高） */
+@media (max-width: 767px) {
+  .toast {
+    bottom: 128px;
+  }
+}
 .toast-enter-active,
 .toast-leave-active {
   transition:
