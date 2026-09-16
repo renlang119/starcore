@@ -70,9 +70,7 @@ starcore/
 ├─ docs/            十一册规范文档，见「文档索引」（含 archive 历史归档）
 ├─ public/          favicon 与本地字体（Orbitron、JetBrains Mono）
 ├─ scripts/         质量脚本（计数守恒检查）
-├─ changelog.md     版本历史（v0.63 起，35 个版本一档）
-├─ changelog-v0.30-v0.62.md  历史条目存档（v0.36 - v0.62）
-├─ changelog-v0.01-v0.29.md  历史条目存档（v0.01 - v0.35）
+├─ changelog/       版本历史三档（活跃档 changelog.md 与两份历史存档）
 ├─ deploy.sh        部署脚本
 └─ 工程配置（vite.config.ts、vitest.config.ts、tsconfig*.json、eslint.config.js）
 ```
@@ -100,9 +98,9 @@ starcore/
 
 ## 版本历史
 
-- [changelog.md](changelog.md)：v0.63 起，新条目置顶
-- [changelog-v0.30-v0.62.md](changelog-v0.30-v0.62.md)：v0.30 至 v0.62 存档
-- [changelog-v0.01-v0.29.md](changelog-v0.01-v0.29.md)：v0.01 至 v0.29 存档
+- [changelog.md](changelog/changelog.md)：v0.63 起，新条目置顶
+- [changelog-v0.30-v0.62.md](changelog/changelog-v0.30-v0.62.md)：v0.30 至 v0.62 存档
+- [changelog-v0.01-v0.29.md](changelog/changelog-v0.01-v0.29.md)：v0.01 至 v0.29 存档
 
 ## 部署
 
