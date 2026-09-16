@@ -121,15 +121,23 @@ describe('exploration — startExplore 校验', () => {
 })
 
 describe('exploration — 完成时间锁定', () => {
-  it('开始后 exploreMult 变化不影响本次完成时间', () => {
+  it('完成时间在发起时锁定（mult 只作用于发起时刻，不回溯进行中条目）', () => {
     const f = makeFunds()
-    store.startExplore('node_orbit', D(1), f.canAfford, f.spend) // 30s
+    store.startExplore('node_orbit', D(1), f.canAfford, f.spend) // 30s @1x
+    expect(store.progress['node_orbit'].endTime - store.progress['node_orbit'].startTime).toBe(
+      30_000
+    )
     advance(20_000)
-    expect(store.applyTick()).toHaveLength(0) // mult 变大也不提前
+    expect(store.applyTick()).toHaveLength(0) // 恰 30s 才完成，不提前
     advance(10_000)
-    const results = store.applyTick()
-    expect(results).toHaveLength(1)
-    expect(results[0].nodeId).toBe('node_orbit')
+    expect(store.applyTick().map((r) => r.nodeId)).toEqual(['node_orbit'])
+    // 2x mult 发起 inner：60s 完成而非 120s，证明 mult 只在发起时生效
+    store.startExplore('node_inner', D(2), f.canAfford, f.spend)
+    expect(store.progress['node_inner'].endTime - store.progress['node_inner'].startTime).toBe(
+      60_000
+    )
+    advance(60_000)
+    expect(store.applyTick().map((r) => r.nodeId)).toEqual(['node_inner'])
   })
 
   it('完成时返回奖励', () => {
@@ -151,18 +159,18 @@ describe('exploration — 完成时间锁定', () => {
     expect(store.applyTick()).toHaveLength(0)
   })
 
-  it('多节点并行：同 tick 一起完成', () => {
+  it('支线串行解锁：前序完成后方可探索下一节点', () => {
     const f = makeFunds()
     store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
     advance(30_000)
     store.applyTick() // orbit 完成，解锁 inner
-    // inner(120s) 与 outer 需先完成 inner，用两条独立支线验证并行：
+    // outer 需先完成 inner，按依赖链逐节点推进：
     store.startExplore('node_inner', D(1), f.canAfford, f.spend)
     advance(120_000)
     store.applyTick() // inner 完成，解锁 outer
     store.startExplore('node_outer', D(1), f.canAfford, f.spend)
     advance(300_000)
-    store.applyTick() // outer 完成 600s？不足，再推进
+    store.applyTick() // outer 600s，推进不足未完成
     expect(store.isCompleted('node_outer')).toBe(false)
     advance(300_000)
     const results = store.applyTick()

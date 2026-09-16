@@ -5,10 +5,27 @@ import { describe, it, expect } from 'vitest'
 import { D, ser, deser, add, sub, mul, div, gte, gt, lte, lt, eq, min, max } from './decimal'
 
 describe('decimal serialization', () => {
-  it('ser/deser round-trip preserves value', () => {
+  it('ser 输出精确形态（存档落盘依赖此形态）', () => {
+    // 精确形态组：输入即输出
+    const exact: Array<[string, string]> = [
+      ['0', '0'],
+      ['1', '1'],
+      ['1.5', '1.5'],
+      ['100', '100'],
+      ['1e10', '10000000000'],
+      ['0.000001', '0.000001'],
+    ]
+    for (const [input, expected] of exact) {
+      expect(ser(D(input))).toBe(expected)
+    }
+    // 归一化组：科学计数法输入归一为普通数字形态（存档落盘口径）
+    expect(ser(D('1e30'))).toBe('1000000000000000000000000000000')
+    expect(ser(D('999999999999999999999'))).toBe('999999999999999999999')
+  })
+
+  it('deser/ser round-trip preserves value', () => {
     const cases = ['0', '1', '1.5', '100', '1e10', '1e30', '999999999999999999999', '0.000001']
     for (const s of cases) {
-      expect(ser(D(s))).toBe(s === '0.000001' ? '0.000001' : ser(D(s)))
       expect(deser(ser(D(s))).eq(D(s))).toBe(true)
     }
   })
