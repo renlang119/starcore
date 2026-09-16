@@ -11,10 +11,17 @@
  *                   指定；两者皆无时跳过该段检查）
  * 退出码：0 = 全部守恒；1 = 存在漂移（差异表打到 stdout）
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { join, dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { execSync } from 'node:child_process'
+import {
+  readFileSync,
+  readdirSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  writeFileSync,
+  rmSync,
+} from 'node:fs'
+import { join, dirname, resolve, basename } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
@@ -22,172 +29,75 @@ const pwDirIdx = args.indexOf('--pw-dir')
 const PW_DIR = pwDirIdx >= 0 ? args[pwDirIdx + 1] : process.env.STARCORE_PW_DIR || null
 
 // ---------------------------------------------------------------
-// 1. 数据源真值：直接 import TS 数据文件（tsx 不引入，用正则数条目）
-//    条目形态稳定：对象以 "  {" 或 "},\n  {" 分隔、id 为首个字段，
-//    顶部注释与 Record 常量不匹配 "^\s{2}\{\s*$" 起始的条目块。
+// 1. 数据源真值：真实 import 数据模块求值（v0.97 根修）
+//    把所需 TS 源镜像到项目根临时目录（import specifier 重写为可解析形态、
+//    递归镜像依赖），Node 原生类型剥离后直接 import，真值 = 模块真实数组
+//    长度/键数，不再依赖文本形态匹配（注释/引号/写法变化不再影响计数）。
+//    bare specifier（decimal.js / pinia / vue）向上解析到项目 node_modules；
+//    镜像目录不能放 node_modules 下（Node 禁其内文件类型剥离）。
 // ---------------------------------------------------------------
+const TRUTH_TMP = mkdtempSync(join(ROOT, '.conservation-truth-'))
+const mirrored = new Map() // 源绝对路径 → 镜像文件绝对路径
 
-/** 数 src/data/<file>.ts 中 `export const NAME: X[] = [ ... ]` 的顶层条目数 */
-function countArrayEntries(file, exportName) {
-  const src = readFileSync(join(ROOT, 'src', 'data', file), 'utf8')
-  const anchor = `export const ${exportName}`
-  const start = src.indexOf(anchor)
-  if (start < 0) throw new Error(`${file} 找不到 export const ${exportName}`)
-  // 定位「= [」的数组字面量（跳过 TechDef[] 类型注解里的 [）
-  const eq = src.indexOf('=', start)
-  const bracket = src.indexOf('[', eq)
-  // 匹配到闭合的 ]（顶层，嵌套深度计 Bracket）
-  let depth = 0
-  let end = -1
-  for (let i = bracket; i < src.length; i++) {
-    const ch = src[i]
-    if (ch === '[') depth++
-    else if (ch === ']') {
-      depth--
-      if (depth === 0) {
-        end = i
-        break
-      }
-    }
-  }
-  const body = src.slice(bracket + 1, end)
-  // 去掉块注释与行注释，避免注释里的 { 干扰
-  const clean = body.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
-  // 顶层条目 = 深度 1 处的 "id:" 出现数（每个条目必有 id 首字段；
-  // 兼容单引号/双引号与 id 非首字段的历史形态）
-  let d = 0
-  let count = 0
-  for (let i = 0; i < clean.length; i++) {
-    const ch = clean[i]
-    if (ch === '{' || ch === '[') d++
-    else if (ch === '}' || ch === ']') d--
-    else if (d === 1 && clean.startsWith('id:', i)) {
-      count++
-      i += 3
-    }
-  }
-  return count
+function truthName(abs) {
+  return (
+    abs
+      .slice(ROOT.length + 1)
+      .replace(/[\\/]/g, '_')
+      .replace(/\.ts$/, '') + '.ts'
+  )
 }
 
-/** 数 Record 常量的键数（ACHIEVEMENT_CATEGORIES / TECH_BRANCHES 等） */
-function countRecordKeys(file, exportName) {
-  const src = readFileSync(join(ROOT, 'src', 'data', file), 'utf8')
-  const anchor = `export const ${exportName}`
-  const start = src.indexOf(anchor)
-  if (start < 0) throw new Error(`${file} 找不到 export const ${exportName}`)
-  // 定位「=」之后的第一个 {（对象字面量）——泛型 Record<A, {…}> 的 { 在 = 前，
-  // 但「= {」可能换行（如 ACHIEVEMENT_CATEGORIES），所以取 = 后最近的 {
-  const eq = src.indexOf('=', start)
-  const brace = src.indexOf('{', eq)
-  let depth = 0
-  let end = -1
-  for (let i = brace; i < src.length; i++) {
-    const ch = src[i]
-    if (ch === '{') depth++
-    else if (ch === '}') {
-      depth--
-      if (depth === 0) {
-        end = i
-        break
-      }
-    }
-  }
-  const body = src
-    .slice(brace + 1, end)
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '')
-  // 顶层键 = 深度 1 处的 "key: {"（缩进不定，TECH_BRANCHES 2 空格 / ACHIEVEMENT_CATEGORIES 4 空格）
-  let d = 0
-  let count = 0
-  for (const line of body.split('\n')) {
-    const trimmed = line.trim()
-    const opens = (line.match(/[{[]/g) ?? []).length
-    const closes = (line.match(/[}\]]/g) ?? []).length
-    // d===0 时遇 key: { → 顶层键（自闭合单行 opens==closes，或跨行 opens==closes+1）
-    if (
-      d === 0 &&
-      opens >= 1 &&
-      opens - closes >= 0 &&
-      /^[A-Za-z_][A-Za-z0-9_]*:\s*\{/.test(trimmed)
-    )
-      count++
-    d += opens - closes
-  }
-  return count
+function mirrorTs(abs) {
+  if (mirrored.has(abs)) return mirrored.get(abs)
+  const out = join(TRUTH_TMP, truthName(abs))
+  mirrored.set(abs, out) // 先登记防环
+  const src = readFileSync(abs, 'utf8').replace(/from\s+['"]([^'"]+)['"]/g, (whole, spec) => {
+    let target = null
+    if (spec.startsWith('@/')) target = join(ROOT, 'src', spec.slice(2))
+    else if (spec.startsWith('./') || spec.startsWith('../')) target = resolve(dirname(abs), spec)
+    if (!target) return whole
+    if (!target.endsWith('.ts')) target += '.ts'
+    return `from './${basename(mirrorTs(target))}'`
+  })
+  writeFileSync(out, src)
+  return out
 }
 
-/** 提取 achievements.ts 中指定 id 条目的 threshold / desc 文本 */
-function achievementField(id, field) {
-  const src = readFileSync(join(ROOT, 'src', 'data', 'achievements.ts'), 'utf8')
-  const anchor = `id: '${id}'`
-  const start = src.indexOf(anchor)
-  if (start < 0) throw new Error(`achievements.ts 找不到 ${anchor}`)
-  const seg = src.slice(start, start + 600)
-  if (field === 'threshold') {
-    // 支持科学计数法形态（如 1e5），避免被截断成 1
-    const m = seg.match(/threshold:\s*(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/)
-    return m ? Number(m[1]) : null
-  }
-  if (field === 'desc') {
-    const m = seg.match(/desc:\s*'([^']+)'/)
-    return m ? m[1] : null
-  }
-  return null
+async function truthImport(abs) {
+  return import(pathToFileURL(mirrorTs(abs)).href)
 }
 
-/** 转生树：买断节点数 / 无限节点数（stores/transcend.ts 的 TREE 数组） */
-function transcendTreeStats() {
-  const src = readFileSync(join(ROOT, 'src', 'stores', 'transcend.ts'), 'utf8')
-  const anchor = 'const DEFAULT_NODES'
-  const start = src.indexOf(anchor)
-  if (start < 0) throw new Error('transcend.ts 找不到 const DEFAULT_NODES')
-  const bracket = src.indexOf('[', src.indexOf('=', start))
-  let depth = 0
-  let end = -1
-  for (let i = bracket; i < src.length; i++) {
-    const ch = src[i]
-    if (ch === '[') depth++
-    else if (ch === ']') {
-      depth--
-      if (depth === 0) {
-        end = i
-        break
-      }
-    }
-  }
-  const body = src.slice(bracket + 1, end)
-  const entries = body.split(/\n\s*\},/).map((x) => x)
-  let infinite = 0
-  // 条目 id 行缩进不固定（2–4 空格均有），用 \s+ 泛化匹配
-  const total = (body.match(/^\s+id: '/gm) ?? []).length
-  for (const e of entries) {
-    if (/maxLevel:\s*Infinity/.test(e)) infinite++
-  }
-  return { buyout: total - infinite, infinite }
-}
+const techMod = await truthImport(join(ROOT, 'src', 'data', 'tech.ts'))
+const exploreMod = await truthImport(join(ROOT, 'src', 'data', 'explore.ts'))
+const pveMod = await truthImport(join(ROOT, 'src', 'data', 'pve.ts'))
+const relicMod = await truthImport(join(ROOT, 'src', 'data', 'relics.ts'))
+const achMod = await truthImport(join(ROOT, 'src', 'data', 'achievements.ts'))
+const buildMod = await truthImport(join(ROOT, 'src', 'data', 'buildings.ts'))
+const transMod = await truthImport(join(ROOT, 'src', 'stores', 'transcend.ts'))
+
+const achTech3 = achMod.ACHIEVEMENTS.find((a) => a.id === 'ach_tech_3')
+const achRelic4 = achMod.ACHIEVEMENTS.find((a) => a.id === 'ach_relic_4')
 
 // ---------------------------------------------------------------
 // 2. 期望值登记表：每个守恒量的「数据真值取法」
 // ---------------------------------------------------------------
-const truths = {
-  techs: () => countArrayEntries('tech.ts', 'TECHS'),
-  techBranches: () => countRecordKeys('tech.ts', 'TECH_BRANCHES'),
-  exploreNodes: () => countArrayEntries('explore.ts', 'EXPLORE_NODES'),
-  strongholds: () => countArrayEntries('pve.ts', 'STRONGHOLDS'),
-  relicPool: () => countArrayEntries('relics.ts', 'RELIC_POOL'),
-  achievements: () => countArrayEntries('achievements.ts', 'ACHIEVEMENTS'),
-  buildings: () => countArrayEntries('buildings.ts', 'BUILDINGS'),
-  achCategories: () => countRecordKeys('achievements.ts', 'ACHIEVEMENT_CATEGORIES'),
-  achTech3Threshold: () => achievementField('ach_tech_3', 'threshold'),
-  achTech3Desc: () => achievementField('ach_tech_3', 'desc'),
-  achRelic4Threshold: () => achievementField('ach_relic_4', 'threshold'),
-  achRelic4Desc: () => achievementField('ach_relic_4', 'desc'),
-  treeBuyout: () => transcendTreeStats().buyout,
-  treeInfinite: () => transcendTreeStats().infinite,
+const T = {
+  techs: techMod.TECHS.length,
+  techBranches: Object.keys(techMod.TECH_BRANCHES).length,
+  exploreNodes: exploreMod.EXPLORE_NODES.length,
+  strongholds: pveMod.STRONGHOLDS.length,
+  relicPool: relicMod.RELIC_POOL.length,
+  achievements: achMod.ACHIEVEMENTS.length,
+  buildings: buildMod.BUILDINGS.length,
+  achCategories: Object.keys(achMod.ACHIEVEMENT_CATEGORIES).length,
+  achTech3Threshold: achTech3?.threshold ?? null,
+  achTech3Desc: achTech3?.desc ?? null,
+  achRelic4Threshold: achRelic4?.threshold ?? null,
+  achRelic4Desc: achRelic4?.desc ?? null,
+  treeBuyout: transMod.DEFAULT_NODES.filter((n) => !transMod.isInfiniteNode(n)).length,
+  treeInfinite: transMod.DEFAULT_NODES.filter(transMod.isInfiniteNode).length,
 }
-
-const T = {}
-for (const [k, fn] of Object.entries(truths)) T[k] = fn()
 
 // ---------------------------------------------------------------
 // 3. 断言采集：单测（vitest 文件）与 Playwright 脚本的正则扫描
@@ -292,7 +202,7 @@ scanUnit(/Object\.keys\(TECH_BRANCHES\)\)\.toHaveLength\((\d+)\)/g, '科技分�
 if (T.achTech3Threshold !== T.techs) {
   bad('ach_tech_3 阈值联动', `threshold ${T.achTech3Threshold} ≠ 科技总数 ${T.techs}`)
 } else ok('ach_tech_3 阈值联动', `threshold = 科技总数 = ${T.techs}`)
-if (!new RegExp(`累计完成 ${T.techs} 项`).test(achievementField('ach_tech_3', 'desc') ?? '')) {
+if (!new RegExp(`累计完成 ${T.techs} 项`).test(T.achTech3Desc ?? '')) {
   bad('ach_tech_3 文案联动', `desc「${T.achTech3Desc}」未含「${T.techs} 项」`)
 } else ok('ach_tech_3 文案联动', `desc 含「${T.techs} 项」`)
 if (T.achRelic4Threshold !== T.relicPool) {
@@ -305,11 +215,12 @@ if (!new RegExp(`全部 ${T.relicPool} 种`).test(T.achRelic4Desc ?? '')) {
 // —— 3b. Playwright 硬断言 ——
 if (PW_DIR === null) {
   console.log('\n== Playwright 硬断言 ==')
-  console.log(
-    '  （未提供 --pw-dir / STARCORE_PW_DIR，跳过该段；将脚本目录以绝对路径传入即启用）'
-  )
+  console.log('  （未提供 --pw-dir / STARCORE_PW_DIR，跳过该段；将脚本目录以绝对路径传入即启用）')
 } else if (PW_DIR === undefined || PW_DIR === true || String(PW_DIR).startsWith('-')) {
-  bad('Playwright 目录', '--pw-dir 缺少目录参数（请补绝对路径，如 --pw-dir <脚本目录>），本次跳过该段')
+  bad(
+    'Playwright 目录',
+    '--pw-dir 缺少目录参数（请补绝对路径，如 --pw-dir <脚本目录>），本次跳过该段'
+  )
 } else {
   console.log('\n== Playwright 硬断言（' + PW_DIR + '/starcore-*.mjs）==')
   const pwPatterns = [
@@ -328,7 +239,7 @@ if (PW_DIR === null) {
     : []
   if (pwFiles.length === 0) bad('Playwright 目录', `${PW_DIR} 未找到 starcore-*.mjs`)
   for (const p of pwPatterns) {
-    // 只扫套件脚本 starcore-*.mjs，非套件脚本（诊断/overlay 等）不参与守恒断言
+    // 实扫全部 starcore-*.mjs（含非套件的诊断/overlay 脚本）
     const found = scanDir(PW_DIR, '.mjs', [p], (f) => f.startsWith('starcore-'))
     if (found.length === 0) {
       console.log(`  - ${p.label}: 无断言（跳过）`)
@@ -411,21 +322,26 @@ T.testCases = baseline.cases
 
 const docFiles = [
   { p: join(ROOT, 'README.md'), name: 'README.md' },
+  { p: join(ROOT, 'README.en.md'), name: 'README.en.md' },
   { p: join(ROOT, 'docs', '游戏数值设定规范.md'), name: '游戏数值设定规范.md' },
   { p: join(ROOT, 'docs', '游戏设定与架构.md'), name: '游戏设定与架构.md' },
   { p: join(ROOT, 'docs', '图标设计规范.md'), name: '图标设计规范.md' },
 ]
 // 宽匹配规则（v0.83）：「数字 + 关键词邻域」——数字两侧出现关键词即命中，
 // 不要求完整短语，覆盖「47 项，8 大分支」「20 种，分属 5 资源扇区」「14 买断 +
-// 4 无限」「34 个，9 类里程碑」等分隔形态。规则顺序即优先级：先长形态后短形态，
-// 命中即消费（同一段文本不被两条规则重复计数）。
+// 4 无限」「34 个，9 类里程碑」等分隔形态。规则顺序即优先级：先长形态后短形态；
+// 各规则彼此独立扫描，同一文本可被多条规则命中，局部/历史口径由豁免清单区隔。
 const docRules = [
   { re: /(\d+)\s*(?:大\s*)?分支/, label: '科技分支（N 分支）', expect: T.techBranches },
+  { re: /(\d+)\s*branches/, label: '科技分支（N branches）', expect: T.techBranches },
   { re: /(\d+)\s*项科技/, label: '科技（N 项科技）', expect: T.techs },
   { re: /科技\s*(\d+)/, label: '科技（科技 N）', expect: T.techs },
+  { re: /(\d+)\s*technologies/, label: '科技（N technologies）', expect: T.techs },
   { re: /(\d+)\s*(?:个|座)?\s*据点/, label: '据点（N 据点）', expect: T.strongholds },
+  { re: /(\d+)\s*strongholds/, label: '据点（N strongholds）', expect: T.strongholds },
   { re: /(\d+)\s*种建筑/, label: '建筑（N 种建筑）', expect: T.buildings },
   { re: /(\d+)\s*(?:个|项)?\s*里程碑/, label: '成就（N 里程碑）', expect: T.achievements },
+  { re: /(\d+)\s*milestones/, label: '成就（N milestones）', expect: T.achievements },
   { re: /成就\s*(\d+)\s*类/, label: '成就类别（成就 N 类）', expect: T.achCategories },
   { re: /成就\s*(\d+)(?!\s*类)/, label: '成就（成就 N）', expect: T.achievements },
   { re: /(\d+)\s*种稀有度池/, label: '遗物（N 种稀有度池）', expect: T.relicPool },
@@ -436,14 +352,20 @@ const docRules = [
   },
   { re: /(\d+)\s*个节点/, label: '探索节点（N 个节点）', expect: T.exploreNodes },
   { re: /(\d+)\s*节点（星核层/, label: '探索节点（N 节点（星核层）', expect: T.exploreNodes },
+  { re: /(\d+)\s*nodes across/, label: '探索节点（N nodes across）', expect: T.exploreNodes },
   { re: /(\d+)\s*买断/, label: '转生买断（N 买断）', expect: T.treeBuyout },
   { re: /(\d+)\s*无限/, label: '转生无限（N 无限）', expect: T.treeInfinite },
-  { re: /symbol 总数\s*(\d+)/, label: '图标 symbol 总数', expect: T.symbols },
   { re: /(\d+)\s*个 symbol/, label: '图标 symbol（N 个 symbol）', expect: T.symbols },
   { re: /全部 (\d+) 个图标/, label: '图标（全部 N 个图标）', expect: T.symbols },
   {
     re: /(\d+)\s*个测试文件\s*(\d+)\s*个?用例/,
     label: '测试基线（N 文件 M 用例）',
+    expect: T.testFiles,
+    secondExpect: () => T.testCases,
+  },
+  {
+    re: /(\d+)\s*test files[\s\S]{0,24}?(\d+)\s*cases/,
+    label: '测试基线（N test files M cases）',
     expect: T.testFiles,
     secondExpect: () => T.testCases,
   },
@@ -494,12 +416,14 @@ for (const d of docFiles) {
 console.log('  命中清单（规则: 命中处数，覆盖可见）:')
 for (const [label, n] of ruleHits) console.log(`    · ${label}: ${n} 处`)
 for (const r of docRules) {
-  if (!ruleHits.has(r.label)) console.log(`    · ${r.label}: 0 处（无覆盖）`)
+  // 零命中 = 规则失配或该计数已漂移出文档却无人察觉，固化失败而非仅打印
+  if (!ruleHits.has(r.label)) bad('文档词表覆盖', `${r.label}: 0 处命中（规则失配或计数漏网）`)
 }
 console.log('  （漂移会逐条列出；无漂移仅打命中清单）')
 
 // —— 3d. 汇总 ——
 console.log('\n== 汇总 ==')
+rmSync(TRUTH_TMP, { recursive: true, force: true })
 if (issues.length === 0) {
   console.log(
     `全部守恒 ✓（数据真值：科技 ${T.techs} / 分支 ${T.techBranches} / 节点 ${T.exploreNodes} / 据点 ${T.strongholds} / 遗物 ${T.relicPool} / 建筑 ${T.buildings} / 成就 ${T.achievements}（${T.achCategories} 类）/ 转生买断 ${T.treeBuyout}+无限 ${T.treeInfinite}）`
