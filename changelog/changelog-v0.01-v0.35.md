@@ -1,8 +1,8 @@
-# 星核纪元 · 版本更新日志（历史存档 v0.01 - v0.29）
+# 星核纪元 · 版本更新日志（历史存档 v0.01 - v0.35）
 
-> 本文件为历史存档（29 个版本），不再更新；v0.30 起的条目见
-> [changelog-v0.30-v0.62.md](changelog-v0.30-v0.62.md) 与
-> [changelog.md](changelog.md)（v0.63 起）。
+> 本文件为历史存档（35 个版本），不再更新；v0.36 起的条目见
+> [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md) 与
+> [changelog.md](changelog.md)（v0.71 起）。
 > 条目已按 v0.75 条目风格统一整理，新 → 旧倒序。
 >
 > **完整性注记（v0.83 校勘）**：
@@ -14,6 +14,399 @@
 >    无验证段（早期条目体例未含）。
 > 3. **缺开发时间**：v0.11 / v0.10 / v0.09 / v0.07 / v0.04 / v0.03 / v0.01 共 7 条
 >    无「开发时间」标签，均为无记录，不作编造。
+
+---
+
+
+---
+
+## v0.35 — 重构: 图标独立化 Phase 2（科技/分支/建筑图标去重）
+
+**变更性质：重构（图标独立化 Phase 2）**
+**开发时间：2026-07-13**
+
+### 概述
+
+新增 22 个 SVG 图标（10 科技 `i-tech-*` + 6 分支 `i-branch-*` + 6 建筑
+`i-bld-*`），依据已冻结规范 `icon-design-spec.md v1.1` 设计，经架构 6 维度
+审核通过。Icons.vue symbol 数从 61 增至 83。Phase 2 完成全部剩余图标去重工
+作。`icon` 为运行时渲染字段，旧存档完全兼容，无需迁移。
+
+### 变更明细
+
+- 奇点科技去重：`prestige_boost`/`offline_enhance` 脱离 `i-restart`
+- 探索科技去重：`explore_range_1`/`explore_range_2` 脱离 `i-map`
+- 剩余科技去重：`energy_eff_2`/`alloy_eff_2`/`crystal_eff_2`/
+  `research_speed`/`data_eff_2`/`dark_eff_1` 脱离资源图标
+- 6 个科技分支独立化：military/exploration/crystallography/materials/
+  computing/singularity 脱离资源图标
+- 6 个建筑跨类别独立化：`core_extractor`/`dyson_swarm`/`refinery`/
+  `nano_forge`/`ion_casting_plant`/`stellar_forge` 脱离解锁科技图标
+- 新增图标（22 个：10 科技 + 6 分支 + 6 建筑）：
+  - `i-tech-prestige-boost`：prestige_boost（奇点增益）
+  - `i-tech-offline-enhance`：offline_enhance（离线增强）
+  - `i-tech-explore-range-1`：explore_range_1（探索范围 I）
+  - `i-tech-explore-range-2`：explore_range_2（探索范围 II）
+  - `i-tech-energy-eff-2`：energy_eff_2（能量效率 II）
+  - `i-tech-alloy-eff-2`：alloy_eff_2（合金效率 II）
+  - `i-tech-crystal-eff-2`：crystal_eff_2（晶体效率 II）
+  - `i-tech-research-speed`：research_speed（研究加速）
+  - `i-tech-data-eff-2`：data_eff_2（数据效率 II）
+  - `i-tech-dark-eff-1`：dark_eff_1（暗物质效率 I）
+  - `i-branch-military`：military（军事学）
+  - `i-branch-exploration`：exploration（探索学）
+  - `i-branch-crystallography`：crystallography（晶脉学）
+  - `i-branch-materials`：materials（材料学）
+  - `i-branch-computing`：computing（计算学）
+  - `i-branch-singularity`：singularity（奇点学）
+  - `i-bld-core-extractor`：core_extractor（核心抽取器）
+  - `i-bld-dyson-swarm`：dyson_swarm（戴森云）
+  - `i-bld-refinery`：refinery（精炼厂）
+  - `i-bld-nano-forge`：nano_forge（纳米锻造厂）
+  - `i-bld-ion-casting`：ion_casting_plant（离子铸造站）
+  - `i-bld-stellar-forge`：stellar_forge（星际熔炉）
+- 改动文件清单：
+  - `src/components/ui/Icons.vue`：+22 个 `<symbol>` 定义（10 科技 + 6 分
+    支 + 6 建筑），symbol 数 61→83
+  - `src/data/tech.ts`：10 个科技的 `icon` 字段更新为独立 `i-tech-*`；6 个
+    分支的 `icon` 字段更新为独立 `i-branch-*`
+  - `src/data/buildings.ts`：6 个建筑的 `icon` 字段更新为独立 `i-bld-*`
+  - `package.json`：版本号 `0.34` → `0.35`
+
+### 验证
+
+- vue-tsc -b：零错误
+- npm run build：构建通过
+- npx vitest run：8 文件 67 用例全部通过
+
+---
+
+## v0.34 — 重构: 图标独立化 Phase 1（遗物/建筑图标去重）
+
+**变更性质：重构（图标独立化 Phase 1）**
+**开发时间：2026-07-13**
+
+### 概述
+
+新增 22 个 SVG 图标（17 遗物 `i-relic-*` + 5 科技 `i-tech-*`），依据已冻结
+规范 `icon-design-spec.md v1.1` 设计，经架构 6 维度审核通过。遗物背包 20
+个遗物不再全复用通用图标（仅 `r_omega` 保留 `i-mystery`）；军事分支
+`military_basic`/`weapon_upg`/`armor_upg` 去除同 `i-army` 重复
+（`adv_units` 保留 `i-army`）；晶体分支 `crystal_growth`/
+`deep_crystal_mining` 去除同 `i-mine` 重复（`crystal_eff_1` 保留
+`i-mine`，`crystal_eff_2` 的 `i-alloy` 交叉问题留待 Phase 2）。`icon` 为运
+行时渲染字段，旧存档完全兼容，无需迁移。
+
+### 变更明细
+
+- 新增图标（22 个：17 遗物 + 5 建筑）：
+  - `i-relic-energy-1`：r_energy_1（能量碎片）
+  - `i-relic-energy-2`：r_energy_2（星核晶簇）
+  - `i-relic-energy-3`：r_energy_3（戴森碎片）
+  - `i-relic-crystal-1`：r_crystal_1（晶体碎屑）
+  - `i-relic-crystal-2`：r_crystal_2（纯晶棱镜）
+  - `i-relic-alloy-1`：r_alloy_1（合金碎屑）
+  - `i-relic-alloy-2`：r_alloy_2（纳米合金）
+  - `i-relic-data-1`：r_data_1（数据碎片）
+  - `i-relic-data-3`：r_data_3（量子核心）
+  - `i-relic-dark-1`：r_dark_1（暗物质微粒）
+  - `i-relic-dark-2`：r_dark_2（暗物质凝聚体）
+  - `i-relic-dark-3`：r_dark_3（暗物质奇点）
+  - `i-relic-combat-1`：r_combat_1（战术手册）、r_combat_2（强化装甲板）
+  - `i-relic-combat-2`：r_combat_3（灵能增幅器）
+  - `i-relic-explore`：r_explore_1（星图残页）
+  - `i-relic-singularity`：r_offline_1（时间胶囊）、r_prestige_1（奇点印
+    记）
+  - `i-relic-silence`：r_silence（沉默者之眼）
+  - `i-tech-mil-basic`：military_basic（军事基础）
+  - `i-tech-weapon`：weapon_upg（武器升级）
+  - `i-tech-armor`：armor_upg（护甲升级）
+  - `i-tech-crystal-grow`：crystal_growth（晶格培育）
+  - `i-tech-deep-mine`：deep_crystal_mining（深晶开采）
+- 改动文件清单：
+  - `src/components/ui/Icons.vue`：+22 个 `<symbol>` 定义（17 遗物 + 5 科
+    技）
+  - `src/data/relics.ts`：19 个遗物的 `icon` 字段更新为独立 `i-relic-*`
+    （仅 `r_omega` 保留 `i-mystery`）
+  - `src/data/tech.ts`：5 个科技的 `icon` 字段更新：`military_basic`/
+    `weapon_upg`/`armor_upg` 从 `i-army` 改为独立图标；`crystal_growth`/
+    `deep_crystal_mining` 从 `i-mine` 改为独立图标
+  - `package.json`：版本号 `0.33` → `0.34`
+
+### 验证
+
+- vue-tsc -b：零错误
+- npm run build：构建通过
+- npx vitest run：8 文件 67 用例全部通过
+
+---
+
+## v0.33 — 数值: 数值问题修复（6 项）
+
+**变更性质：数值（平衡性修复 6 项）**
+**开发时间：2026-07-13**
+
+### 概述
+
+数值平衡专项 6 项修复：3 项科技前置跨分支依赖修正、跨扇区 T4 产出量级拉
+齐、首次转生保底负熵、天赋树总消耗下调。
+
+### 变更明细
+
+- alloy_eff_2 前置改为 ion_casting：`alloy_eff_2.requires` 从
+  `['dark_matter_theory']` 改为 `['ion_casting']`。alloy_eff_2（材料学
+  T4）强制依赖 dark_matter_theory（暗物质学 T2），形成材料学↔暗物质学跨分
+  支回路依赖。改为依赖同分支的 ion_casting（材料学 T3），消除跨分支硬瓶颈
+  - 涉及文件：`src/data/tech.ts`
+- data_eff_2 前置改为 neural_arch + holographic_computing 清理冗余前置：
+  `data_eff_2.requires` 从 `['research_speed']` 改为 `['neural_arch']`。
+  data_eff_2（计算学 T4）原依赖 research_speed（计算学 T3 侧支），无法形成
+  自然递进。改为依赖 neural_arch（计算学 T3 主线），形成 quantum_tech→
+  data_eff_1→neural_arch→data_eff_2 自然递进链。改后 holographic_computing
+  原前置 `neural_arch` 变为冗余（已通过 data_eff_2 间接依赖），清理掉
+  - 涉及文件：`src/data/tech.ts`
+  - `holographic_computing.requires` 从 `['data_eff_2', 'neural_arch']` 改
+    为 `['data_eff_2']`
+- crystal_eff_1 前置改为 crystal_growth + deep_crystal_mining 清理冗余前
+  置：`crystal_eff_1.requires` 从 `['refine_tech']` 改为
+  `['crystal_growth']`。crystal_eff_1（晶脉学 T2）原依赖 refine_tech（材料
+  学 T1），跨分支依赖。改为依赖同分支的 crystal_growth（晶脉学 T1），让晶
+  脉学形成独立分支（仍经 crystal_growth 间接依赖 refine_tech，但不再直接跨
+  分支）。改后 deep_crystal_mining 原前置 `crystal_growth` 变为冗余（已通
+  过 crystal_eff_1 间接依赖），清理掉
+  - 涉及文件：`src/data/tech.ts`
+  - `deep_crystal_mining.requires` 从
+    `['crystal_growth', 'crystal_eff_1']` 改为 `['crystal_eff_1']`
+- 跨扇区 T4 产出量级差异修复：能量 T4 dyson_swarm 产出 300（T4/T1=600x），
+  其余扇区 T4/T1 仅 8-23x，能量扇区与其他扇区后期差距悬殊。提升非能量扇区
+  T4 建筑产出，缩小各扇区 T4/T1 倍率差距。修复后各扇区 T4/T1 倍率从 600x
+  vs 8-23x 缩小到 600x vs 33-50x
+  - 涉及文件：`src/data/buildings.ts`
+  - silicon_ring（晶体 T4）：7.0 → 15.0，T4/T1 23x → 50x
+  - stellar_forge（合金 T4）：1.2 → 5.0，T4/T1 8x → 33x
+  - holographic_core（数据 T4）：4.0 → 10.0，T4/T1 20x → 50x
+  - dark_singularity_well（暗物质 T4）：0.10 → 0.25，T4/T1 20x → 50x
+- 首次转生保底 +1 负熵：首次转生仅获 1 负熵，体验断崖，无法购买任何 cost-2
+  天赋节点（t_data_1/t_crystal_1/t_starting），只能购买单个 cost-1 节点，
+  首次转生体验差。在 `previewNegEntropy` 函数中，当
+  `totalTranscends === 0` 时额外 +1 负熵（首转保底 2 负熵），可同时购买
+  t_energy_1 + t_alloy_1（两个 cost-1 节点）或单个 cost-2 节点。
+  `previewNegEntropy` 中计算 base 值后判断 `totalTranscends.value === 0`，
+  是则 `base.plus(1)`。`transcend` 函数接收 previewNegEntropy 的返回值，无
+  需额外修改
+  - 涉及文件：`src/stores/transcend.ts`
+- 天赋树总消耗降低：天赋树总消耗 44 负熵过高，完整点满需多轮转生，进度感
+  差。降低两个高消耗节点成本。总消耗从 44 降至 40（-9%）
+  - 涉及文件：`src/stores/transcend.ts`
+  - t_offline（时间之主）：cost 8 → 6
+  - t_prestige_boost（负熵循环）：cost 10 → 8
+- 改动文件清单：
+  - `src/data/tech.ts`：alloy_eff_2 前置改为 ion_casting；data_eff_2 前置
+    改为 neural_arch + holographic_computing 清理冗余前置；crystal_eff_1
+    前置改为 crystal_growth + deep_crystal_mining 清理冗余前置
+  - `src/data/buildings.ts`：4 个 T4 建筑产出提升（silicon_ring 7→15、
+    stellar_forge 1.2→5、holographic_core 4→10、dark_singularity_well 0.1→
+    0.25）
+  - `src/stores/transcend.ts`：previewNegEntropy 首转保底 +1 负熵；
+    t_offline cost 8→6、t_prestige_boost cost 10→8
+
+### 验证
+
+- vue-tsc -b：零错误
+- npm run build：构建通过（947ms）
+- npx vitest run：8 文件 67 用例全部通过
+
+---
+
+## v0.32 — 数值: costGrowth 趋势反转与奖励修正
+
+**变更性质：数值（平衡性修复）**
+**开发时间：2026-07-12**
+
+### 概述
+
+全扇区 costGrowth 趋势反转（T1→T4 从递增改为递减），并修复突击兵克制缺失、
+深空 data/crystal 奖励偏低、dark_matter_theory 代码区段错位三处问题。
+
+### 变更明细
+
+- 全扇区 costGrowth 趋势反转（T1→T4 从递增改为递减）：原配置中高 Tier 建筑
+  costGrowth 更高（T1 1.12-1.15 → T4 1.22-1.25），导致高 Tier 建筑升级成本
+  增长过快，高等级后性价比急剧下降，Lv 30 交叉后高 Tier 被低 Tier 反超。反
+  转全扇区 costGrowth 趋势，高 Tier 建筑升级成本增长更平缓，确保高 Tier 建
+  筑在后期保持性价比优势。5 个扇区 × 4 个 Tier = 20 个 costGrowth 值统一改
+  为：
+  - 涉及文件：`src/data/buildings.ts`
+  - T1：1.12-1.15 → 1.18
+  - T2：1.15-1.20 → 1.15
+  - T3：1.18-1.22 → 1.13
+  - T4：1.22-1.25 → 1.10
+  - 能量：solar_collector T1 1.12 → 1.18、fusion_reactor T2 1.15 → 1.15
+    （无变化）、core_extractor T3 1.18 → 1.13、dyson_swarm T4 1.22 → 1.10
+  - 晶体：crystal_mine T1 1.14 → 1.18、crystal_nursery T2 1.18 → 1.15、
+    deep_crystal_drill T3 1.22 → 1.13、silicon_ring T4 1.25 → 1.10
+  - 合金：refinery T1 1.15 → 1.18、nano_forge T2 1.18 → 1.15、
+    ion_casting_plant T3 1.22 → 1.13、stellar_forge T4 1.25 → 1.10
+  - 暗物质：dark_detector T1 1.14 → 1.18、dark_matter_lab T2 1.20 → 1.15、
+    dark_capture_station T3 1.22 → 1.13、dark_singularity_well T4 1.25 →
+    1.10
+  - 数据：data_center T1 1.15 → 1.18、quantum_lab T2 1.18 → 1.15、
+    neural_hub T3 1.22 → 1.13、holographic_core T4 1.25 → 1.10
+- 突击兵 counters 补全 psionic：`assault.counters` 从 `['guard']` 改为
+  `['guard', 'psionic']`。灵能者描述写"被突击兵克制"，但 assault.counters
+  不含 psionic，代码与描述不一致。修复后突击兵正确克制灵能者
+  - 涉及文件：`src/data/units.ts`
+- 深空探索 data 奖励 5000→10000：`node_deep.rewards.data` 从 5000 改为
+  10000。深空节点 data 奖励(5000) = data 成本(5000)，净收益为零。修复后恢
+  复 2x 比例（与内层 50→100、外层 500→1000 一致），净收益 +5000
+  - 涉及文件：`src/data/explore.ts`
+- dark_matter_theory 代码注释区段修正：`dark_matter_theory`（branch:
+  'dark'）的定义被放在了材料学（refine_tech）区段内，暗物质学区段仅留一行
+  跨分支注释 `// dark_matter_theory 已在材料学中定义（跨分支）`。将
+  `dark_matter_theory` 条目从材料学区段移至暗物质学区段（`dark_detection`
+  之后），删除跨分支注释。材料学区段减少 1 条、暗物质学区段增加 1 条，
+  TECHS 数组内容不变，仅物理位置调整
+  - 涉及文件：`src/data/tech.ts`
+- 深空探索 crystal 奖励 500→1000：`node_deep.rewards.crystal` 从 500 改为
+  1000。深空/外层晶体增幅仅 ×2.5（500/200），其他资源增幅为 ×5~10（energy
+  ×10、alloy ×5、data ×10、dark ×10）。修复后晶体增幅 ×5（1000/200），与合
+  金增幅一致（最低基准）。energy ×10、crystal ×5（修复前 ×2.5）、alloy
+  ×5、data ×10、dark ×10
+  - 涉及文件：`src/data/explore.ts`
+- 改动文件清单：
+  - `src/data/buildings.ts`：20 个 costGrowth 值趋势反转
+  - `src/data/units.ts`：assault.counters 补全 psionic
+  - `src/data/explore.ts`：深空 data 奖励 5000→10000；深空 crystal 奖励
+    500→1000
+  - `src/data/tech.ts`：dark_matter_theory 从材料学区段移至暗物质学区段
+
+### 验证
+
+- vue-tsc -b：零错误
+- npm run build：构建通过
+- npx vitest run：8 文件 67 用例全部通过
+
+---
+
+## v0.31 — 数值: 转生阈值降低与暗物质产出提升
+
+**变更性质：数值（平衡性调整）**
+**开发时间：2026-07-12**
+
+### 概述
+
+转生阈值从 1e6 降至 3e5、暗物质 T3 建筑产出提升、转生条件提示文本同步改为
+千分位格式，降低首次转生门槛。
+
+### 变更明细
+
+- 暗物质扇区 T3 dark_capture_station 产出 0.04→0.06：
+  `dark_capture_station.produces.dark` 从 0.04 改为 0.06
+  - 涉及文件：`src/data/buildings.ts`
+  - 原因：T3 dark_capture_station 较 T2 dark_matter_detector 产出仅 ×2
+    （0.02→0.04），成本增长巨大，T2→T3 倍率偏低。修复后 T2→T3 倍率 ×3
+    （0.02→0.06），与暗物质扇区高阶建筑增幅更合理
+- 转生阈值 1e6→3e5：
+  - 涉及文件：`src/stores/transcend.ts`
+  - 改动：`previewNegEntropy` 函数中两处 1e6 → 3e5
+  - 阈值判断：`totalEnergy.lt(1e6)` → `totalEnergy.lt(3e5)`
+  - 负熵公式除数：`totalEnergy.div(1e6)` → `totalEnergy.div(3e5)`
+  - 原因：首转生时长由 4-8h 缩短至 1.5-3h，让玩家更快体验转生循环，降低前
+    期流失率。经评估确认 3e5 为合理阈值
+  - 同步更新：`src/stores/game.ts` 注释中的 1e6 → 3e5；
+    `src/views/PrestigeView.test.ts` 注释中的 1e6 → 3e5
+- 转生提示展示优化：1.00e6 → 300,000：转生条件提示文本从 "需达到 1,000,000
+  总能量产出才能转生" 改为 "需达到 300,000 总能量产出才能转生"。阈值改为
+  3e5 后，展示文本同步更新为 300,000（千分位格式），与实际阈值保持一致，更
+  易读
+  - 涉及文件：`src/views/PrestigeView.vue`
+- 改动文件清单：
+  - `src/data/buildings.ts`：dark_capture_station 产出 0.04→0.06
+  - `src/stores/transcend.ts`：转生阈值 1e6→3e5（阈值判断 + 负熵公式除数）
+  - `src/views/PrestigeView.vue`：转生提示文本 1,000,000→300,000
+  - `src/stores/game.ts`：注释 1e6→3e5
+  - `src/views/PrestigeView.test.ts`：注释 1e6→3e5
+  - `package.json`：version 0.30→0.31
+
+### 验证
+
+- vue-tsc -b：零错误
+- npm run build：构建通过
+- npx vitest run：8 文件 67 用例全部通过
+
+---
+
+## v0.30 — 数值: 数值问题修复（6 项）
+
+**变更性质：数值（平衡性修复 6 项）**
+**开发时间：2026-07-12**
+
+### 概述
+
+数值平衡修复 6 项：4 处建筑产出与兵种防御数值修正，并为晶体/暗物质两条资源
+线补齐专属遗物与转生天赋加成路径。
+
+### 变更明细
+
+- neural_hub 数据产出 1.5→3.0：
+  - 涉及文件：`src/data/buildings.ts`
+  - 字段：`neural_hub.produces.data` 从 1.5 改为 3.0
+  - 原因：T3 neural_hub 产出与 T2 quantum_lab 完全相同（均为 1.5
+    data/s），解锁成本巨大但产出零提升，仅为纯前置节点。修复后 T2→T3 倍率
+    ×2，使其成为有意义的升级
+- nano_forge 合金产出 0.18→0.30：
+  - 涉及文件：`src/data/buildings.ts`
+  - 字段：`nano_forge.produces.alloy` 从 0.18 改为 0.30
+  - 原因：T2 nano_forge 较 T1 refinery 产出仅 ×1.2，成本却增长 6.7 倍，性
+    价比严重偏低。修复后 T1→T2 倍率 ×2.0，回本周期合理化
+- 重装兵防御 18→12：
+  - 涉及文件：`src/data/units.ts`
+  - 字段：`heavy.defense` 从 18 改为 12
+  - 原因：重装兵攻击最高（20）、防御最高（18）、血量最高（200），全面碾压
+    其他兵种，克制机制 ×1.5 不足以平衡。护卫兵克制重装兵时 8×1.5=12 vs 防
+    御 18 仍无法造成伤害。修复后护卫兵克制重装兵可有效破防（12 vs 12），克
+    制机制重新生效
+- crystal_nursery 晶体产出 0.6→0.9：
+  - 涉及文件：`src/data/buildings.ts`
+  - 字段：`crystal_nursery.produces.crystal` 从 0.6 改为 0.9
+  - 原因：T2 crystal_nursery 较 T1 crystal_mine 仅 ×2.0 产出，成本增长 8.3
+    倍，性价比偏低。修复后 T1→T2 倍率 ×3.0，与能量扇区（×8）、合金扇区
+    （×2.0）等其他扇区 T2 增幅更接近
+- 新增晶体/暗物质专属遗物 5 件：
+  - 涉及文件：`src/data/relics.ts`
+  - 改动：在 RELIC_POOL 中新增 5 件遗物
+  - 普通 r_crystal_1「晶体碎屑」：晶体产出 +5%（target: 'crystal', value:
+    1.05, icon: i-mine）
+  - 普通 r_dark_1「暗物质微粒」：暗物质产出 +5%（target: 'dark', value:
+    1.05, icon: i-dark-detector）
+  - 稀有 r_crystal_2「纯晶棱镜」：晶体产出 +15%（target: 'crystal', value:
+    1.15, icon: i-mine）
+  - 稀有 r_dark_2「暗物质凝聚体」：暗物质产出 +15%（target: 'dark', value:
+    1.15, icon: i-dark-detector）
+  - 史诗 r_dark_3「暗物质奇点」：暗物质产出 +40%（target: 'dark', value:
+    1.4, icon: i-dark-well）
+  - 原因：晶体和暗物质无专属产出遗物，在遗物系统中完全缺乏加成路径，加剧跨
+    扇区不平衡。新增后两资源拥有与能量/合金/数据对等的遗物加成层级
+- 转生天赋树新增晶体觉醒/暗物质觉醒节点：
+  - 涉及文件：`src/stores/transcend.ts`
+  - 改动：在 DEFAULT_NODES 中新增 2 个节点
+  - t_crystal_1「晶体觉醒」：cost 2，effects: [{type: 'production_mult',
+    target: 'crystal', value: 1.5, label: '晶体产出 ×1.5' }]
+  - t_dark_1「暗物质觉醒」：cost 5，effects: [{type: 'production_mult',
+    target: 'dark', value: 1.5, label: '暗物质产出 ×1.5' }]
+  - 原因：转生天赋树无晶体/暗物质产出节点，两资源在所有加成系统中均被遗
+    漏。新增后晶体和暗物质获得转生加成路径。PrestigeView 天赋树为数据驱动
+    （v-for node in tree），新增节点自动渲染，无需改视图
+- 改动文件清单：
+  - `src/data/buildings.ts`：crystal_nursery 产出 0.6→0.9
+  - `src/data/relics.ts`：新增 5 件晶体/暗物质专属遗物
+  - `src/stores/transcend.ts`：新增 t_crystal_1 / t_dark_1 天赋节点
+
+### 验证
+
+- vue-tsc -b：零错误
+- npm run build：构建通过（117 modules, 842ms）
+- npx vitest run：8 文件 67 用例全部通过
 
 ---
 
