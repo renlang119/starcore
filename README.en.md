@@ -115,9 +115,9 @@ starcore/
 
 ## Version History
 
-- [changelog.md](changelog/changelog.md) · from v0.63, newest first
-- [changelog-v0.30-v0.62.md](changelog/changelog-v0.30-v0.62.md) · v0.30 to v0.62 archive
-- [changelog-v0.01-v0.29.md](changelog/changelog-v0.01-v0.29.md) · v0.01 to v0.29 archive
+- [changelog.md](changelog/changelog.md) · from v0.71, newest first
+- [changelog-v0.36-v0.70.md](changelog/changelog-v0.36-v0.70.md) · v0.36 to v0.70 archive
+- [changelog-v0.01-v0.35.md](changelog/changelog-v0.01-v0.35.md) · v0.01 to v0.35 archive
 
 ## Deployment
 
