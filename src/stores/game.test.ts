@@ -18,6 +18,7 @@ import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
 import { useResearchStore } from './research'
 import { useCombatStore } from './combat'
+import { useExplorationStore } from './exploration'
 import { D } from '@/lib/decimal'
 import { rollRelic } from '@/data/relics'
 import { setRelicSlotProvider } from './relics'
@@ -373,7 +374,9 @@ describe('game store — 自动化 QoL（v0.58）', () => {
 
 // —— v0.75：初始化错误态（兜底：读档/hydrate 异常不静默卡加载屏）——
 // 走真实 readSave 通道：把存档写进 localStorage 备份键（jsdom 环境），
-// 不用模块 mock（vitest isolate:false 下模块注册表跨文件复用，mock 不可靠）
+// 不用模块 mock：最小实验（2026-09-15，双文件一 mock 一不 mock 同 worker 跑）证实
+// vi.mock 按文件隔离、不跨文件泄漏；本文件不 mock 是因集成测试须驱动真实 store 链，
+// 与可靠性无关
 const BACKUP_KEY = 'starcore_save_v1_backup'
 
 function writeBackupSave(data: SaveData): void {
@@ -611,5 +614,60 @@ describe('game store — 初始化错误态（v0.75）', () => {
     expect(game.research.completed.has('military_basic')).toBe(false)
     expect(game.military.getOwned('assault')).toBe(1)
     expect(game.resources.getAmount('energy').toNumber()).toBe(10)
+  })
+})
+
+// —— v0.82 驻扎守卫三条真实规则分支（game store 注入的 garrisonGuard）——
+describe('v0.82 驻扎守卫真实规则分支', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    setRelicSlotProvider(() => 0)
+  })
+
+  function explored(...nodeIds: string[]) {
+    const exploration = useExplorationStore()
+    const progress: Record<
+      string,
+      { nodeId: string; startTime: number; endTime: number; completed: boolean }
+    > = {}
+    for (const id of nodeIds) {
+      progress[id] = { nodeId: id, startTime: 0, endTime: 0, completed: true }
+    }
+    exploration.hydrate({ progress })
+  }
+
+  it('据点 requires 探索未完成 → 拒绝驻扎', () => {
+    useGameStore() // 注册守卫
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    // node_orbit 未探索 → 守卫第一条规则拦截
+    expect(combat.garrison('raider_1', 'f1')).toBe(false)
+  })
+
+  it('编队不存在 → 拒绝驻扎', () => {
+    useGameStore()
+    explored('node_orbit')
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    expect(combat.garrison('raider_1', 'f9')).toBe(false)
+  })
+
+  it('编队已被其他据点占用 → 拒绝驻扎', () => {
+    useGameStore()
+    explored('node_orbit', 'node_inner')
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    combat.completedStrongholds.add('raider_2')
+    expect(combat.garrison('raider_1', 'f1')).toBe(true)
+    expect(combat.garrison('raider_2', 'f1')).toBe(false)
+  })
+
+  it('三规则全过 → 允许驻扎', () => {
+    useGameStore()
+    explored('node_orbit')
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    expect(combat.garrison('raider_1', 'f1')).toBe(true)
+    expect(combat.garrisoned['raider_1'].formationId).toBe('f1')
   })
 })
