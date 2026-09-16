@@ -9,7 +9,7 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
@@ -17,6 +17,8 @@ import BattleView from './BattleView.vue'
 import { useResourcesStore } from '@/stores/resources'
 import { useMilitaryStore } from '@/stores/military'
 import { useCombatStore } from '@/stores/combat'
+import { useExplorationStore } from '@/stores/exploration'
+import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
 
 // Mock vue-router
 const mockPush = vi.fn()
@@ -42,6 +44,29 @@ vi.mock('@/composables/useFocusTrap', () => ({
 }))
 
 let pinia: ReturnType<typeof createPinia>
+
+function mountBattle() {
+  return mount(BattleView, {
+    global: {
+      plugins: [pinia],
+      stubs: {
+        Icons: defineComponent({ template: '<svg />' }),
+      },
+    },
+  })
+}
+
+function explored(...nodeIds: string[]) {
+  const exploration = useExplorationStore()
+  const progress: Record<
+    string,
+    { nodeId: string; startTime: number; endTime: number; completed: boolean }
+  > = {}
+  for (const id of nodeIds) {
+    progress[id] = { nodeId: id, startTime: 0, endTime: 0, completed: true }
+  }
+  exploration.hydrate({ progress })
+}
 
 function setupBattleReady() {
   pinia = createPinia()
@@ -90,8 +115,67 @@ describe('BattleView — 挂载与渲染', () => {
       },
     })
 
-    // 应包含战斗按钮区域（P1-5 迁移后 class 从 .btn-battle → .btn-accent）
-    expect(wrapper.find('.btn-accent').exists() || wrapper.text().includes('出征')).toBe(true)
+    // 战斗按钮区域存在（P1-5 迁移后 class 从 .btn-battle → .btn-accent）
+    expect(wrapper.find('[data-testid="battle-start"]').exists()).toBe(true)
+  })
+})
+
+describe('BattleView — 驻扎守卫与确认', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockRouteParams.value = { id: 'raider_1' }
+    setupBattleReady()
+  })
+
+  it('未攻克据点驻扎按钮禁用', () => {
+    const wrapper = mountBattle()
+    const btn = wrapper.find('[data-testid="battle-garrison"]')
+    expect(btn.exists()).toBe(true)
+    expect((btn.element as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('已攻克可驻扎：点击弹出收益确认，确认后进入驻扎态', async () => {
+    explored('node_orbit')
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    const wrapper = mountBattle()
+    const btn = wrapper.find('[data-testid="battle-garrison"]')
+    expect((btn.element as HTMLButtonElement).disabled).toBe(false)
+    await btn.trigger('click')
+    const modal = wrapper.find('.garrison-confirm-modal')
+    expect(modal.exists()).toBe(true)
+    expect(modal.text()).toContain('挂机驻扎')
+    await modal.find('.btn-accent').trigger('click')
+    expect(combat.garrisoned['raider_1']?.formationId).toBe('f1')
+  })
+})
+
+describe('BattleView — 无尽远征深度步进', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockRouteParams.value = { id: ENDLESS_STRONGHOLD_ID }
+    setupBattleReady()
+  })
+
+  afterEach(() => {
+    mockRouteParams.value = { id: 'raider_1' }
+  })
+
+  it('进页跟随前沿且加号禁用，退至深度 1 后减号禁用', async () => {
+    const combat = useCombatStore()
+    combat.expeditionBest = 2 // 前沿 = best+1 = 3
+    const wrapper = mountBattle()
+    const minus = wrapper.find('[data-testid="endless-depth-minus"]')
+    const plus = wrapper.find('[data-testid="endless-depth-plus"]')
+    expect(minus.exists()).toBe(true)
+    // 初始深度自动跟随前沿 3：前沿徽标在、加号禁用、减号可用
+    expect(wrapper.find('[data-testid="endless-depth-value"]').text()).toContain('前沿')
+    expect((plus.element as HTMLButtonElement).disabled).toBe(true)
+    expect((minus.element as HTMLButtonElement).disabled).toBe(false)
+    await minus.trigger('click')
+    await minus.trigger('click')
+    expect(wrapper.find('[data-testid="endless-depth-value"]').text()).toContain('第 1 层')
+    expect((minus.element as HTMLButtonElement).disabled).toBe(true) // 深度 1 触底禁用
   })
 })
 
