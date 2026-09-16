@@ -6,8 +6,10 @@
 
 set -euo pipefail
 
-DEST="${DEPLOY_DEST:-/var/www/starcore}"
-SITE_URL="${DEPLOY_URL:-}"
+# 显式传入的环境变量优先于 env 文件配置（source 会覆盖外部已设值，
+# 外部 DEPLOY_DEST 曾被 deploy.env 静默改写，历史沙箱实踩）
+EXPLICIT_DEST="${DEPLOY_DEST:-}"
+EXPLICIT_URL="${DEPLOY_URL:-}"
 
 # 可选部署配置：DEPLOY_DEST / DEPLOY_URL 环境变量，或用户侧 env 文件
 ENV_CANDIDATES=(
@@ -19,8 +21,8 @@ for f in "${ENV_CANDIDATES[@]}"; do
     source "$f"
   fi
 done
-DEST="${DEPLOY_DEST:-/var/www/starcore}"
-SITE_URL="${DEPLOY_URL:-$SITE_URL}"
+DEST="${EXPLICIT_DEST:-${DEPLOY_DEST:-/var/www/starcore}}"
+SITE_URL="${EXPLICIT_URL:-${DEPLOY_URL:-}}"
 [[ -n "$SITE_URL" ]] || { echo "[FAIL] 未配置 DEPLOY_URL（环境变量或配置文件）" >&2; exit 1; }
 
 SKIP_BUILD=0
@@ -45,11 +47,18 @@ if [[ ! "$DEST" =~ ^/var/www/[A-Za-z0-9._-]+/?$ ]]; then
   exit 1
 fi
 [[ -d "$DEST" ]] || { echo "[FAIL] 站点目录不存在: $DEST" >&2; exit 1; }
+echo "  目标目录: $DEST"
+echo "  站点地址: $SITE_URL"
 
-# 1. 前置质量关卡：单测 + 计数守恒（任一失败即中断，不部署未过关的产物）
-echo "[1/5] 前置关卡（test + conservation）..."
-corepack pnpm test
-corepack pnpm check:conservation
+# 1. 前置质量关卡：完整 check（构建含类型检查 + 单测 + 计数守恒 + lint/format，
+#    任一失败即中断，不部署未过关的产物）。
+#    计数守恒的 Playwright 段经 STARCORE_PW_DIR 环境变量启用（本机 deploy.env 配置）；
+#    工作树不干净仅告警不阻断（软校验）。
+echo "[1/5] 前置关卡（check：build / test / 守恒 / lint / format）..."
+if [[ -n "$(git status --porcelain 2>/dev/null || true)" ]]; then
+  echo "  [WARN] 工作树存在未提交改动，部署产物可能与远端仓库不一致（软校验不阻断）" >&2
+fi
+corepack pnpm check
 
 # 2. 构建（含 vue-tsc 类型检查）
 if [[ $SKIP_BUILD -eq 0 ]]; then
@@ -78,6 +87,21 @@ sudo rsync -rcv --delete \
   --exclude='.well-known/' \
   --exclude='*.map' \
   dist/ "$DEST/"
+
+# 分享元数据绝对地址注入：仓库与构建产物保持无域名相对形态，
+# 部署时按 SITE_URL 注入线上绝对地址（og:image / og:url / canonical）。
+# canonical 在仓库缺省（Vite 会把 link href 目录当作资产处理导致构建失败），
+# 部署时随 og:url 行一并插入
+echo "  注入分享元数据绝对地址 ..."
+sudo sed -i \
+  -e "s|<meta property=\"og:url\" content=\"/\" />|<meta property=\"og:url\" content=\"${SITE_URL}/\" />\n  <link rel=\"canonical\" href=\"${SITE_URL}/\" />|" \
+  -e "s|content=\"/og.png\"|content=\"${SITE_URL}/og.png\"|g" \
+  "$DEST/index.html"
+INJECTED_OG=$(sudo grep -c "content=\"${SITE_URL}/og.png\"" "$DEST/index.html" || true)
+INJECTED_CANONICAL=$(sudo grep -c "rel=\"canonical\" href=\"${SITE_URL}/\"" "$DEST/index.html" || true)
+if [[ "$INJECTED_OG" != "2" || "$INJECTED_CANONICAL" != "1" ]]; then
+  echo "  [WARN] 分享元数据注入命中异常（og ${INJECTED_OG}/2，canonical ${INJECTED_CANONICAL}/1），请人工检查 $DEST/index.html" >&2
+fi
 
 # 4. 权限
 echo "[4/5] 修正权限 ..."
