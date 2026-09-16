@@ -62,7 +62,8 @@ export function nextCost(node: TranscendNode, level = node.level): number {
   return Math.ceil(node.cost * Math.pow(node.costGrowth ?? 1.5, level))
 }
 
-const DEFAULT_NODES: TranscendNode[] = [
+// 导出供守恒脚本取真值（转生树节点清单），运行期消费方为本文件内部
+export const DEFAULT_NODES: TranscendNode[] = [
   // —— 买断节点（引导期目标，原 11 节点口径不变）——
   {
     id: 't_energy_1',
