@@ -5,6 +5,7 @@ import { fmt, fmtTime } from '@/lib/format'
 import { UNITS, getUnit, type UnitId } from '@/data/units'
 import { getTech } from '@/data/tech'
 import CostTag from '@/components/ui/CostTag.vue'
+import ProgressBar from '@/components/ui/ProgressBar.vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import Toast from '@/components/ui/Toast.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
@@ -323,12 +324,11 @@ function removeAll(fid: string, uid: UnitId) {
             <span class="q-name"
               >{{ getUnit(task.unitId)?.name ?? task.unitId }} ×{{ task.count }}</span
             >
-            <div class="q-bar">
-              <div
-                class="q-fill"
-                :style="{ width: (1 - task.remaining / task.totalTime) * 100 + '%' }"
-              ></div>
-            </div>
+            <ProgressBar
+              class="q-bar"
+              fill-class="q-fill"
+              :pct="(1 - task.remaining / task.totalTime) * 100"
+            />
             <span class="q-time font-mono">{{ fmtTime(task.remaining) }}</span>
           </div>
         </div>
@@ -622,15 +622,10 @@ function removeAll(fid: string, uid: UnitId) {
 }
 .q-bar {
   flex: 1;
-  height: 4px;
-  background: var(--color-elevated);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.q-fill {
-  height: 100%;
-  background: var(--color-alert);
-  transition: width 0.3s;
+  --pb-h: 4px;
+  --pb-radius: 2px;
+  --pb-fill: var(--color-alert);
+  --pb-fill-radius: 0;
 }
 .q-time {
   font-size: var(--text-xs);
@@ -720,25 +715,13 @@ function removeAll(fid: string, uid: UnitId) {
   color: var(--color-alert);
 }
 
-/* 批量操作确认弹窗 */
-.confirm-title {
-  font-size: var(--text-base);
-  font-weight: 700;
-  color: var(--color-alert);
-  text-align: center;
-  margin-bottom: var(--space-2);
-}
+/* 批量操作确认弹窗（.confirm-title/.confirm-actions 为全局类） */
 .confirm-desc {
   font-size: var(--text-sm);
   color: var(--color-t-secondary);
   text-align: center;
   margin-bottom: var(--space-4);
 }
-.confirm-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
 /* P3-3 onboarding（变体类承载定位与层级，v0.97） */
 .ob-army {
   position: relative;

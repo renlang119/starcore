@@ -3,6 +3,7 @@
 // 数据组装逻辑在 useActionQueue，本组件只负责渲染
 import { useRouter } from 'vue-router'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import ProgressBar from '@/components/ui/ProgressBar.vue'
 import { useActionQueue } from '@/composables/useActionQueue'
 
 defineProps<{
@@ -71,12 +72,12 @@ const { displayActions, hasActions } = useActionQueue()
           </svg>
         </button>
         <!-- 进度条（仅 in-progress） -->
-        <div
+        <ProgressBar
           v-if="item.status === 'in-progress' && item.progress !== undefined"
           class="action-progress"
-        >
-          <div class="action-progress-bar" :style="{ width: item.progress * 100 + '%' }"></div>
-        </div>
+          fill-class="action-progress-bar"
+          :pct="item.progress * 100"
+        />
       </li>
     </ul>
     <div v-if="!hasActions" class="action-empty empty-state">
@@ -160,15 +161,12 @@ const { displayActions, hasActions } = useActionQueue()
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--color-elevated);
-}
-.action-progress-bar {
-  height: 100%;
-  background: var(--c);
-  border-radius: 0 2px 2px 0;
-  transition: width 0.5s var(--ease-out);
-  box-shadow: 0 0 4px var(--c);
+  --pb-h: 2px;
+  --pb-radius: 0;
+  --pb-fill: var(--c);
+  --pb-fill-radius: 0 2px 2px 0;
+  --pb-transition: width 0.5s var(--ease-out);
+  --pb-glow: 0 0 4px var(--c);
 }
 
 /* —— 可执行（actionable）—— */

@@ -7,7 +7,13 @@
    .btn-ghost     幽灵按钮（次要操作）
    尺寸变体：.sm（紧凑）、.block（全宽）
    ============================================================ */
-.btn {
+/* 骨架经并集选择器一次承载：模板中变体多为单独使用（不搭配 .btn），
+   与 v0.96 前的逐变体各写一份等价（v1.02 收敛） */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-accent,
+.btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -19,18 +25,9 @@
   cursor: pointer;
 }
 .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
   background: var(--color-core);
   color: var(--color-on-core);
-  font-size: var(--text-sm);
   font-weight: 600;
-  border-radius: var(--radius-md);
-  transition: all 0.15s var(--ease-out);
-  cursor: pointer;
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--color-core-dim);
@@ -49,19 +46,10 @@
 } /* P2-7: 统一 .4 */
 
 .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
   background: var(--color-elevated);
   color: var(--color-t-primary);
-  font-size: var(--text-sm);
   font-weight: 500;
   border: 1px solid var(--color-border-line);
-  border-radius: var(--radius-md);
-  transition: all 0.15s var(--ease-out);
-  cursor: pointer;
 }
 .btn-secondary:hover:not(:disabled) {
   background: var(--color-hover);
@@ -78,18 +66,9 @@
 } /* P2-7 */
 
 .btn-accent {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
   background: var(--accent, var(--color-core));
   color: var(--color-on-core);
-  font-size: var(--text-sm);
   font-weight: 600;
-  border-radius: var(--radius-md);
-  transition: all 0.15s var(--ease-out);
-  cursor: pointer;
 }
 .btn-accent:hover:not(:disabled) {
   filter: brightness(1.1);
@@ -108,18 +87,9 @@
 } /* P2-7 */
 
 .btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
   background: transparent;
   color: var(--color-t-secondary);
-  font-size: var(--text-sm);
   font-weight: 500;
-  border-radius: var(--radius-md);
-  transition: all 0.15s var(--ease-out);
-  cursor: pointer;
 }
 .btn-ghost:hover:not(:disabled) {
   background: var(--color-hover);
@@ -149,4 +119,35 @@
 .btn-accent.block,
 .btn-ghost.block {
   width: 100%;
+}
+
+/* ============================================================
+   分段切换器（组件规范 5.9 第五种形态）
+   .bulk-toggle 容器 + .seg-btn 分段按钮（v0.86 引入，v1.02 收敛全局；
+   激活色经 --accent 注入，缺省 core 青，转生页由视图注入 amber）
+   ============================================================ */
+.bulk-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-border-line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.seg-btn {
+  padding: var(--space-1) var(--space-3); /* 分段切换器统一定标 */
+  font-size: var(--text-xs);
+  font-family: var(--font-mono, monospace);
+  color: var(--color-t-secondary);
+  background: transparent;
+  transition: all 0.15s var(--ease-out);
+}
+.seg-btn + .seg-btn {
+  border-left: 1px solid var(--color-border-line);
+}
+.seg-btn:hover {
+  color: var(--color-t-primary);
+  background: var(--color-hover);
+}
+.seg-btn.active {
+  color: var(--accent, var(--color-core));
+  background: color-mix(in srgb, var(--accent, var(--color-core)) 10%, transparent);
 }

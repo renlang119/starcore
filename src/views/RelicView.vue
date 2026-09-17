@@ -464,29 +464,10 @@ onUnmounted(() => {
   flex-direction: column;
   gap: var(--space-2);
 }
-.r-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-1);
-  color: var(--c);
-}
 .r-desc {
   font-size: var(--text-xs);
   color: var(--color-t-secondary);
   margin-bottom: var(--space-2);
-}
-.r-effects {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-.eff-mini {
-  font-size: var(--text-xs);
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-elevated);
-  border-radius: 3px;
-  color: var(--color-t-primary);
 }
 .equipped-tag {
   font-size: var(--text-xs);
