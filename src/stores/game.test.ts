@@ -20,7 +20,7 @@ import { useResearchStore } from './research'
 import { useCombatStore } from './combat'
 import { useExplorationStore } from './exploration'
 import { D } from '@/lib/decimal'
-import { rollRelic } from '@/data/relics'
+import { rollRelic, getRelicById } from '@/data/relics'
 import { setRelicSlotProvider } from './relics'
 import type { Formation } from './military'
 
@@ -305,6 +305,32 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     const before = resources.getAmount('energy')
     game.tryUpgradeBuildingSteps(SOLAR, 10)
     expect(before.minus(resources.getAmount('energy')).toNumber()).toBe(preview.cost.energy)
+  })
+
+  it('批量强化预览与实扣一致：按能量逐级模拟，段位标称值仅作上限', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    // epic 首级 25M、每级 ×1.5：25 + 37.5 = 62.5M ≤ 100M < +56.25M → 2 级
+    resources.setAmount('energy', 1e8)
+    game.relics.obtain(getRelicById('r_energy_3')!)
+    const inst = game.relics.owned[0].instanceId
+
+    expect(game.previewRelicEnhanceSteps(inst, 100)).toBe(2)
+    const before = resources.getAmount('energy')
+    const done = game.relics.enhanceSteps(inst, 100)
+    expect(done).toBe(2)
+    expect(before.minus(resources.getAmount('energy')).toNumber()).toBe(25e6 + 37.5e6)
+  })
+
+  it('批量强化预览：能量不足一级时返回 0（与实扣的 0 级一致）', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 5) // 低于 epic 首级 25M
+    game.relics.obtain(getRelicById('r_energy_3')!)
+    const inst = game.relics.owned[0].instanceId
+
+    expect(game.previewRelicEnhanceSteps(inst, 100)).toBe(0)
+    expect(game.relics.enhanceSteps(inst, 100)).toBe(0)
   })
 
   it('等级上限：批量、单次与预览在封顶处一致停止', () => {

@@ -178,5 +178,30 @@ describe('PrestigeView — 无限天赋批量预览', () => {
     expect(card).toBeDefined()
     const costText = card!.find('.node-cost').text().replace(/\s+/g, '')
     expect(costText).toBe('可买3级·共25负熵')
+    // v1.00 按钮文案按实际可购买级数显示（非段位标称值）
+    expect(card!.find('button').text()).toBe('购买 ×3')
+  })
+
+  it('段位 ×10 但一级都买不起：按钮退回原文案且禁用', async () => {
+    const transcend = useTranscendStore()
+    transcend.negativeEntropy = D(0)
+
+    const wrapper = mount(PrestigeView, {
+      global: {
+        plugins: [pinia],
+        stubs: { Icons: defineComponent({ template: '<svg />' }) },
+      },
+    })
+
+    await wrapper
+      .findAll('.infinite-title .bulk-toggle .seg-btn')
+      .find((b) => b.text() === '×10')!
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const card = wrapper.findAll('.infinite-node').find((c) => c.text().includes('奇点共振'))
+    const btn = card!.find('button')
+    expect(btn.text()).toBe('购买')
+    expect((btn.element as HTMLButtonElement).disabled).toBe(true)
   })
 })
