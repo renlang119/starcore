@@ -9,61 +9,30 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent } from 'vue'
+import { describe, it, expect, vi } from 'vitest'
+import {
+  mountView,
+  useViewTestHooks,
+  vueRouterMock,
+  focusTrapMock,
+  expectOnboardingBubble,
+} from '@/tests/view-mount'
 import ArmyView from './ArmyView.vue'
 import { useGameStore } from '@/stores/game'
 import { useMilitaryStore } from '@/stores/military'
 import { UNITS } from '@/data/units'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: {} }),
-  useRouter: () => ({ push: vi.fn() }),
-  RouterLink: defineComponent({
-    props: { to: { type: String, required: false, default: '' } },
-    template: '<a><slot /></a>',
-  }),
-  RouterView: defineComponent({ template: '<div />' }),
-}))
+vi.mock('vue-router', () => vueRouterMock())
 
-vi.mock('@/composables/useFocusTrap', () => ({
-  useFocusTrap: () => {},
-}))
-
-let pinia: ReturnType<typeof createPinia>
-const wrappers: VueWrapper[] = []
-
-function mountView() {
-  const wrapper = mount(ArmyView, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        Icons: defineComponent({ template: '<svg />' }),
-        Transition: { template: '<div><slot /></div>' },
-      },
-    },
-  })
-  wrappers.push(wrapper)
-  return wrapper
-}
+vi.mock('@/composables/useFocusTrap', () => focusTrapMock())
 
 describe('ArmyView — 挂载与空状态', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('正常挂载并渲染战力面板与页签', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     expect(wrapper.find('.army-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('部队')
     expect(wrapper.text()).toContain('总攻击')
@@ -74,7 +43,9 @@ describe('ArmyView — 挂载与空状态', () => {
   })
 
   it('已解锁但无部队时显示轻提示，且不遮挡训练入口', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.research.complete('military_basic')
     expect(game.military.isUnlocked(UNITS[0], game.research.completed)).toBe(true)
@@ -85,7 +56,9 @@ describe('ArmyView — 挂载与空状态', () => {
   })
 
   it('解锁军事后仍锁定的单位卡显示所需科技', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.research.complete('military_basic')
     await wrapper.vm.$nextTick()
@@ -96,17 +69,7 @@ describe('ArmyView — 挂载与空状态', () => {
 })
 
 describe('ArmyView — 兵营训练', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   async function setupUnlocked() {
     const game = useGameStore()
@@ -117,7 +80,9 @@ describe('ArmyView — 兵营训练', () => {
   }
 
   it('训练数量调整与训练任务入队', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = await setupUnlocked()
     await wrapper.vm.$nextTick()
 
@@ -142,7 +107,9 @@ describe('ArmyView — 兵营训练', () => {
   })
 
   it('数量为 0 时训练按钮禁用', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     await setupUnlocked()
     await wrapper.vm.$nextTick()
     const assaultCard = wrapper
@@ -152,7 +119,9 @@ describe('ArmyView — 兵营训练', () => {
   })
 
   it('满槽后训练按钮禁用并显示提示', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = await setupUnlocked()
     // 直接塞满 1 个训练槽
     game.military.startTraining(
@@ -172,20 +141,12 @@ describe('ArmyView — 兵营训练', () => {
 })
 
 describe('ArmyView — 编组操作', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   async function setupWithTroops() {
-    const wrapper = mountView()
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     // 预置编队
     const military = useMilitaryStore()
@@ -197,7 +158,7 @@ describe('ArmyView — 编组操作', () => {
 
   it('切换到编组页渲染编队卡与操作按钮', async () => {
     const { wrapper } = await setupWithTroops()
-    expect(wrapper.findAll('.formation-card').length).toBe(3)
+    expect(wrapper.findAll('.formation-card').length).toBe(useMilitaryStore().formations.length)
     expect(wrapper.text()).toContain('先锋编队')
     expect(wrapper.text()).toContain('库存 50')
     expect(wrapper.text()).toContain('编入 0')
@@ -282,28 +243,13 @@ describe('ArmyView — 编组操作', () => {
 })
 
 describe('ArmyView — 新手引导', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('未读时显示引导气泡，已读时不显示', async () => {
-    const wrapper = mountView()
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('.ob-army').exists()).toBe(true)
-    wrapper.unmount()
-
-    localStorage.setItem('starcore_onboarding', JSON.stringify({ 'army-train': true }))
-    const wrapper2 = mountView()
-    wrappers.push(wrapper2)
-    await wrapper2.vm.$nextTick()
-    expect(wrapper2.find('.ob-army').exists()).toBe(false)
+    await expectOnboardingBubble(ArmyView, {
+      selector: '.ob-army',
+      stepId: 'army-train',
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
   })
 })

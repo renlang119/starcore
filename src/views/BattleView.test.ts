@@ -17,8 +17,8 @@ import BattleView from './BattleView.vue'
 import { useResourcesStore } from '@/stores/resources'
 import { useMilitaryStore } from '@/stores/military'
 import { useCombatStore } from '@/stores/combat'
-import { useExplorationStore } from '@/stores/exploration'
 import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
+import { exploredNodes } from '@/tests/fixtures'
 
 // Mock vue-router
 const mockPush = vi.fn()
@@ -56,18 +56,6 @@ function mountBattle() {
   })
 }
 
-function explored(...nodeIds: string[]) {
-  const exploration = useExplorationStore()
-  const progress: Record<
-    string,
-    { nodeId: string; startTime: number; endTime: number; completed: boolean }
-  > = {}
-  for (const id of nodeIds) {
-    progress[id] = { nodeId: id, startTime: 0, endTime: 0, completed: true }
-  }
-  exploration.hydrate({ progress })
-}
-
 function setupBattleReady() {
   pinia = createPinia()
   setActivePinia(pinia)
@@ -92,28 +80,14 @@ describe('BattleView — 挂载与渲染', () => {
   })
 
   it('正常挂载并渲染战斗视图', () => {
-    const wrapper = mount(BattleView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountBattle()
 
     expect(wrapper.exists()).toBe(true)
     expect(wrapper.find('.battle-view').exists()).toBe(true)
   })
 
   it('显示编队信息和驻扎区域', () => {
-    const wrapper = mount(BattleView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountBattle()
 
     // 战斗按钮区域存在（P1-5 迁移后 class 从 .btn-battle → .btn-accent）
     expect(wrapper.find('[data-testid="battle-start"]').exists()).toBe(true)
@@ -135,7 +109,7 @@ describe('BattleView — 驻扎守卫与确认', () => {
   })
 
   it('已攻克可驻扎：点击弹出收益确认，确认后进入驻扎态', async () => {
-    explored('node_orbit')
+    exploredNodes('node_orbit')
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
     const wrapper = mountBattle()
@@ -186,14 +160,7 @@ describe('BattleView — 战斗流程与奖励发放', () => {
   })
 
   it('startBattle 后弹出结果弹窗', async () => {
-    const wrapper = mount(BattleView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountBattle()
 
     const vm = wrapper.vm as any
     vm.startBattle()
@@ -205,14 +172,7 @@ describe('BattleView — 战斗流程与奖励发放', () => {
   })
 
   it('胜利奖励在战斗结算时即时到账，弹窗动作与重复调用不再发放', async () => {
-    const wrapper = mount(BattleView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountBattle()
 
     const resources = useResourcesStore()
     const vm = wrapper.vm as any
@@ -242,14 +202,7 @@ describe('BattleView — 远征深度上限', () => {
     combat.completedStrongholds.add('silencer_3')
     combat.expeditionBest = 999
 
-    const wrapper = mount(BattleView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountBattle()
     await wrapper.vm.$nextTick()
 
     const depthText = wrapper.find('[data-testid="endless-depth-value"]').text()

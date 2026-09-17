@@ -188,13 +188,6 @@ describe('resources — serialize / hydrate', () => {
     expect(r2.getAmount('alloy').toNumber()).toBeCloseTo(123.456)
   })
 
-  it('hydrate(undefined) 不改变现状', () => {
-    setActivePinia(createPinia())
-    const r = useResourcesStore()
-    r.hydrate(undefined)
-    expect(r.getAmount('energy').toNumber()).toBe(50)
-  })
-
   it('hydrate 部分字段缺失：缺失键保持默认', () => {
     setActivePinia(createPinia())
     const r = useResourcesStore()

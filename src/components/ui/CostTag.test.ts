@@ -11,6 +11,10 @@ import { useResourcesStore } from '@/stores/resources'
 
 let pinia: ReturnType<typeof createPinia>
 
+function mountTag(cost: Record<string, number>) {
+  return mount(CostTag, { props: { cost }, global: { plugins: [pinia] } })
+}
+
 describe('CostTag — 资源足够/不足显示', () => {
   beforeEach(() => {
     pinia = createPinia()
@@ -21,10 +25,7 @@ describe('CostTag — 资源足够/不足显示', () => {
   })
 
   it('资源足够时显示 enough 样式', () => {
-    const wrapper = mount(CostTag, {
-      props: { cost: { energy: 100 } },
-      global: { plugins: [pinia] },
-    })
+    const wrapper = mountTag({ energy: 100 })
 
     const tag = wrapper.find('.cost-tag')
     expect(tag.exists()).toBe(true)
@@ -32,10 +33,7 @@ describe('CostTag — 资源足够/不足显示', () => {
   })
 
   it('资源不足时显示 not-enough 样式', () => {
-    const wrapper = mount(CostTag, {
-      props: { cost: { energy: 999999 } },
-      global: { plugins: [pinia] },
-    })
+    const wrapper = mountTag({ energy: 999999 })
 
     const tag = wrapper.find('.cost-tag')
     expect(tag.exists()).toBe(true)
@@ -43,10 +41,7 @@ describe('CostTag — 资源足够/不足显示', () => {
   })
 
   it('多种资源分别显示', () => {
-    const wrapper = mount(CostTag, {
-      props: { cost: { energy: 100, crystal: 5000 } },
-      global: { plugins: [pinia] },
-    })
+    const wrapper = mountTag({ energy: 100, crystal: 5000 })
 
     const tags = wrapper.findAll('.cost-tag')
     expect(tags).toHaveLength(2)

@@ -14,7 +14,8 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import PrestigeView from './PrestigeView.vue'
 import { useResourcesStore } from '@/stores/resources'
-import { useTranscendStore } from '@/stores/transcend'
+import { useTranscendStore, nextCost } from '@/stores/transcend'
+import { selectBulk10 } from '@/tests/view-mount'
 import { D } from '@/lib/decimal'
 
 // Mock useFocusTrap
@@ -24,6 +25,15 @@ vi.mock('@/composables/useFocusTrap', () => ({
 
 let pinia: ReturnType<typeof createPinia>
 
+function mountPrestige() {
+  return mount(PrestigeView, {
+    global: {
+      plugins: [pinia],
+      stubs: { Icons: defineComponent({ template: '<svg />' }) },
+    },
+  })
+}
+
 describe('PrestigeView — 挂载与渲染', () => {
   beforeEach(() => {
     pinia = createPinia()
@@ -31,28 +41,14 @@ describe('PrestigeView — 挂载与渲染', () => {
   })
 
   it('正常挂载并渲染', () => {
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountPrestige()
 
     expect(wrapper.exists()).toBe(true)
     expect(wrapper.find('.prestige-view').exists()).toBe(true)
   })
 
   it('显示转生相关文本', () => {
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountPrestige()
 
     expect(wrapper.text()).toContain('奇点重启')
   })
@@ -70,14 +66,7 @@ describe('PrestigeView — 转生确认流程', () => {
   })
 
   it('点击执行奇点重启打开确认弹窗：重置与保留清单与转生行为一致', async () => {
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountPrestige()
 
     const btn = wrapper.find('.btn-transcend')
     expect(btn.exists()).toBe(true)
@@ -93,14 +82,7 @@ describe('PrestigeView — 转生确认流程', () => {
   })
 
   it('取消关闭弹窗且不触发转生', async () => {
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountPrestige()
 
     const btn = wrapper.find('.btn-transcend')
     expect(btn.exists()).toBe(true)
@@ -125,14 +107,7 @@ describe('PrestigeView — 清除存档确认', () => {
   })
 
   it('点击清除存档按钮显示确认弹窗', async () => {
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
+    const wrapper = mountPrestige()
 
     // 清除存档按钮（v0.83 校正后按文本找，现显式断言不再条件包裹）
     const resetBtn = wrapper.findAll('button').find((b) => b.text().includes('清除存档'))
@@ -155,49 +130,30 @@ describe('PrestigeView — 无限天赋批量预览', () => {
 
   it('切至 ×10 档位显示可买级数与预计总花费', async () => {
     const transcend = useTranscendStore()
-    // 成本 5 / 8 / 12：5 + 8 + 12 = 25 ≤ 30，加第四级 42 > 30 → 可买 3 级
-    transcend.negativeEntropy = D(30)
+    // 成本曲线由 nextCost 实算：预算设为「够 3 级、不够第 4 级」（防曲线漂移）
+    const node = transcend.tree.find((n) => n.id === 't_inf_prod')!
+    transcend.negativeEntropy = D(nextCost(node, 0) + nextCost(node, 1) + nextCost(node, 2) + 1)
+    const preview = transcend.previewPurchaseSteps('t_inf_prod', 10)
+    expect(preview.count).toBe(3) // 预算设计的档位
 
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: {
-          Icons: defineComponent({ template: '<svg />' }),
-        },
-      },
-    })
-
-    const bulkBtn = wrapper
-      .findAll('.infinite-title .bulk-toggle .seg-btn')
-      .find((b) => b.text() === '×10')
-    expect(bulkBtn).toBeTruthy()
-    await bulkBtn!.trigger('click')
-    await wrapper.vm.$nextTick()
+    const wrapper = mountPrestige()
+    await selectBulk10(wrapper, '.infinite-title .bulk-toggle')
 
     const card = wrapper.findAll('.infinite-node').find((c) => c.text().includes('奇点共振'))
     expect(card).toBeDefined()
     const costText = card!.find('.node-cost').text().replace(/\s+/g, '')
-    expect(costText).toBe('可买3级·共25负熵')
+    expect(costText).toBe(`可买${preview.count}级·共${preview.cost}负熵`)
     // v1.00 按钮文案按实际可购买级数显示（非段位标称值）
-    expect(card!.find('button').text()).toBe('购买 ×3')
+    expect(card!.find('button').text()).toBe(`购买 ×${preview.count}`)
   })
 
   it('段位 ×10 但一级都买不起：按钮退回原文案且禁用', async () => {
     const transcend = useTranscendStore()
     transcend.negativeEntropy = D(0)
 
-    const wrapper = mount(PrestigeView, {
-      global: {
-        plugins: [pinia],
-        stubs: { Icons: defineComponent({ template: '<svg />' }) },
-      },
-    })
+    const wrapper = mountPrestige()
 
-    await wrapper
-      .findAll('.infinite-title .bulk-toggle .seg-btn')
-      .find((b) => b.text() === '×10')!
-      .trigger('click')
-    await wrapper.vm.$nextTick()
+    await selectBulk10(wrapper, '.infinite-title .bulk-toggle')
 
     const card = wrapper.findAll('.infinite-node').find((c) => c.text().includes('奇点共振'))
     const btn = card!.find('button')
