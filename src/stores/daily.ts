@@ -17,7 +17,7 @@
  * - 存档容缺：daily 为可选字段，旧档缺失视为未签到过、本周挑战待生成，从当天开始
  */
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { DailySaveData } from '@/lib/storage'
 import { fnv1a, mulberry32 } from '@/lib/random'
 
@@ -39,9 +39,6 @@ export function weekStr(d = new Date()): string {
   const week = 1 + Math.round((t.getTime() - firstThursday.getTime()) / (7 * 24 * 3600 * 1000))
   return `${isoYear}-W${String(week).padStart(2, '0')}`
 }
-
-/** FNV-1a 字符串哈希（种子源，见 lib/random） */
-export const hashStr = fnv1a
 
 /** 挑战模板池：kind 对应 weeklyCounters 键 */
 interface ChallengeTemplate {
@@ -123,10 +120,6 @@ export const useDailyStore = defineStore('daily', () => {
   const challengeWeek = ref('')
   const weekChallenges = ref<WeeklyChallenge[]>([])
 
-  /** 今日已签到 */
-  const checkedInToday = computed(() => lastCheckIn.value === localDateStr())
-  const currentWeek = computed(() => weekStr())
-
   /**
    * 每秒 tick 调用：换天自动签到（含断签补偿判定）+ 换周重掷。
    * 字符串比较，开销忽略。返回本次签到奖励（无则 null），供 UI 浮层提示。
@@ -172,7 +165,7 @@ export const useDailyStore = defineStore('daily', () => {
       weeklyCounters.value = { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
     }
     challengeWeek.value = wk
-    const rng = mulberry32(hashStr(wk))
+    const rng = mulberry32(fnv1a(wk))
     // 洗牌模板池取 3
     const pool = [...CHALLENGE_TEMPLATES]
     for (let i = pool.length - 1; i > 0; i--) {
@@ -283,8 +276,6 @@ export const useDailyStore = defineStore('daily', () => {
     weeklyCounters,
     challengeWeek,
     weekChallenges,
-    checkedInToday,
-    currentWeek,
     onTickCheckIn,
     ensureWeek,
     bump,

@@ -148,7 +148,7 @@ onUnmounted(() => {
     <FusionPanel :fusion="fusion" />
 
     <!-- 套装（v0.61） -->
-    <div class="sets-section" data-testid="sets-section">
+    <div data-testid="sets-section">
       <h3 class="section-title">套装</h3>
       <div class="sets-list">
         <div

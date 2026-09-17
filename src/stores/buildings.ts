@@ -71,7 +71,6 @@ export const useBuildingsStore = defineStore('buildings', () => {
     for (const b of BUILDINGS) {
       const prod = getProduction(b.id, mults)
       for (const [res, v] of Object.entries(prod)) {
-        if (!result[res]) result[res] = D(0)
         result[res] = result[res].plus(v)
       }
     }

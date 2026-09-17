@@ -3,11 +3,53 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v1.00
+> 当前版本：v1.01
 >
-> 本文件为活跃档（v0.71 起，30 个版本），新条目置顶；更早条目见
+> 本文件为活跃档（v0.71 起，31 个版本），新条目置顶；更早条目见
 > [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36-v0.70）与
 > [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
+
+---
+
+## v1.01 — 重构: 死代码清理与构建配置收口
+
+**变更性质：重构（零功能变化的死代码清理与配置收口）**
+**开发时间：2026-09-17**
+
+### 概述
+
+全项目代码评估后的首批清理，只删不增：移除生产代码零消费的导出与
+声明、不可达分支、冗余赋值与零引用动画，收敛无样式的冗余类名，并
+关闭构建的 sourcemap 产出。玩法、数值、存档结构与界面呈现均无变化，
+测试用例数由 496 降至 478。
+
+### 变更明细
+
+- 死导出清理：format 的 `fmtInt`/`pct`/`fmtCountdown`、decimal 的
+  9 个快捷函数、`LifetimeMetric`、`ResourceState`、daily 的
+  `checkedInToday`/`currentWeek`/`hashStr` 别名与 relics 的
+  `pushRelic` 包装函数，均在确认全库零消费后删除。
+- EmptyState 去掉全库无监听的 `action` 事件与 `onAction`，按钮改为
+  `action` 与 `to` 同时传入才渲染并直连路由跳转，从结构上消除死
+  按钮的可能。
+- 不可达与冗余：`buildings.getTotalProduction` 的键初始化守卫、
+  `relics.synthesize` 的升阶空值守卫、`game.init` 的重复时间戳赋值，
+  以及 `game.ts` 中已被更新日志承载的版本号叙事注释。
+- 样式与视图：删除全库零引用的 `@keyframes fadeIn`；清理 13 个模板
+  使用但无样式规则、也无测试与脚本消费的类名；修正一处 `color-mix`
+  百分比的浮点残留。
+- 构建配置：`sourcemap` 由 `hidden` 改为 `false`，本地构建不再产出
+  16 个无用途的映射文件，源码暴露面由不生成直接收口。
+- 文档同步：数值规范的专项格式化表随函数删除更新，组件与体验规范
+  的空状态行为条改写为新口径，README 双语测试基线由 496 更新为
+  478。
+
+### 验证
+
+- `corepack pnpm check` 全绿：32 个测试文件 478 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- 构建产物零映射文件，dist 体积由 3.0 MB 降至 0.9 MB。
+- Playwright 回归套件 27 脚本全过。
 
 ---
 
