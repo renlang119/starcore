@@ -2,7 +2,7 @@
  * format.test.ts — format.ts 格式化函数测试
  */
 import { describe, it, expect } from 'vitest'
-import { fmt, fmtInt, fmtTime, pct, fmtRate, fmtCountdown } from './format'
+import { fmt, fmtTime, fmtRate } from './format'
 import { D } from './decimal'
 
 describe('fmt — number formatting', () => {
@@ -87,13 +87,6 @@ describe('fmt — number formatting', () => {
   })
 })
 
-describe('fmtInt', () => {
-  it('integers', () => {
-    expect(fmtInt(1000)).toBe('1,000')
-    expect(fmtInt(1000000)).toBe('1,000,000')
-  })
-})
-
 describe('fmtTime', () => {
   it('seconds', () => {
     expect(fmtTime(30)).toBe('30s')
@@ -120,24 +113,6 @@ describe('fmtTime', () => {
   })
 })
 
-describe('pct', () => {
-  it('basic percentages', () => {
-    expect(pct(0)).toBe('0.0%')
-    expect(pct(1)).toBe('100.0%')
-    expect(pct(0.5)).toBe('50.0%')
-  })
-
-  it('decimal input', () => {
-    expect(pct(D(0.25))).toBe('25.0%')
-  })
-
-  it('NaN/Infinity 兜底（v0.78）', () => {
-    expect(pct(NaN)).toBe('0.0%')
-    expect(pct(Infinity)).toBe('0.0%')
-    expect(pct(D(NaN))).toBe('0.0%')
-  })
-})
-
 describe('fmtRate', () => {
   it('positive rate', () => {
     expect(fmtRate(1000)).toBe('+1K /s')
@@ -154,45 +129,5 @@ describe('fmtRate', () => {
   it('zero rate', () => {
     expect(fmtRate(0)).toBe('0 /s')
     expect(fmtRate(D(0))).toBe('0 /s')
-  })
-})
-
-describe('fmtCountdown', () => {
-  it('under 1 minute', () => {
-    expect(fmtCountdown(0)).toBe('约<1m后')
-    expect(fmtCountdown(30)).toBe('约<1m后')
-    expect(fmtCountdown(59.9)).toBe('约<1m后')
-  })
-
-  it('minutes', () => {
-    expect(fmtCountdown(60)).toBe('约1m后')
-    expect(fmtCountdown(120)).toBe('约2m后')
-    expect(fmtCountdown(1800)).toBe('约30m后')
-    expect(fmtCountdown(3540)).toBe('约59m后')
-  })
-
-  it('hours', () => {
-    expect(fmtCountdown(3600)).toBe('约1h后')
-    expect(fmtCountdown(5400)).toBe('约1h30m后')
-    expect(fmtCountdown(36000)).toBe('约10h后')
-    expect(fmtCountdown(82800)).toBe('约23h后')
-  })
-
-  it('days', () => {
-    expect(fmtCountdown(86400)).toBe('约1d后')
-    expect(fmtCountdown(90000)).toBe('约1d1h后')
-    expect(fmtCountdown(172800)).toBe('约2d后')
-  })
-
-  it('with bottleneck name', () => {
-    expect(fmtCountdown(60, '晶体')).toBe('约1m后（晶体）')
-    expect(fmtCountdown(3600, '合金')).toBe('约1h后（合金）')
-    expect(fmtCountdown(86400, '能量')).toBe('约1d后（能量）')
-  })
-
-  it('edge cases', () => {
-    expect(fmtCountdown(-1)).toBe('')
-    expect(fmtCountdown(Infinity)).toBe('')
-    expect(fmtCountdown(NaN)).toBe('')
   })
 })

@@ -7,7 +7,6 @@ import {
   useDailyStore,
   localDateStr,
   weekStr,
-  hashStr,
   streakReward,
   RETURN_GIFT,
   STREAK_CYCLE,
@@ -36,11 +35,6 @@ describe('daily — 日期/周工具', () => {
     expect(weekStr(dateOf(2026, 9, 8))).toBe(mon) // 同周（周二）
   })
 
-  it('hashStr 确定性', () => {
-    expect(hashStr('2026-W37')).toBe(hashStr('2026-W37'))
-    expect(hashStr('2026-W37')).not.toBe(hashStr('2026-W38'))
-  })
-
   it('streakReward：1/3/7 天节点，7 天循环', () => {
     expect(streakReward(1)).toEqual({ energy: 2e4, dark: 0 })
     expect(streakReward(3)?.dark).toBe(3)
@@ -58,13 +52,11 @@ describe('daily — 签到', () => {
     store = useDailyStore()
   })
 
-  it('全新档首签：连击 1，普通日无节点奖励保底能量（checkedInToday 读真实钟，这里只验证返回值）', () => {
+  it('全新档首签：连击 1，普通日无节点奖励保底能量', () => {
     const r = store.onTickCheckIn(dateOf(2026, 9, 7))! // 周一
     expect(r.streakDay).toBe(1)
     expect(r.returned).toBe(false)
     expect(r.energy).toBe(2e4)
-    // checkedInToday 基于真实当前日期：若测试机当天恰好是 2026-09-07 则为 true，否则 false——不做绝对断言
-    expect(typeof store.checkedInToday).toBe('boolean')
   })
 
   it('同日重复 tick 不重复签到', () => {

@@ -261,7 +261,7 @@ function cancelGarrison() {
           <use :href="'#' + stronghold.icon" />
         </svg>
       </div>
-      <div class="s-meta">
+      <div>
         <h2 class="s-name font-display">{{ stronghold.name }}</h2>
         <p class="s-type">
           {{ STRONGHOLD_TYPES[stronghold.type].name
@@ -302,7 +302,7 @@ function cancelGarrison() {
     </div>
 
     <!-- 敌方信息 -->
-    <div class="enemy-section">
+    <div>
       <h3 class="section-title">敌方部署</h3>
       <div class="enemy-list">
         <div v-for="(e, i) in stronghold.enemies" :key="i" class="enemy-card">
@@ -318,7 +318,7 @@ function cancelGarrison() {
     </div>
 
     <!-- 编队选择 -->
-    <div class="formation-select">
+    <div>
       <h3 class="section-title">选择编队</h3>
       <div class="formation-tabs">
         <button
@@ -384,7 +384,7 @@ function cancelGarrison() {
           :class="entry.side"
         >
           <span class="log-round">R{{ entry.round }}</span>
-          <span class="log-msg">{{ entry.msg }}</span>
+          <span>{{ entry.msg }}</span>
         </div>
       </div>
     </div>
@@ -439,7 +439,7 @@ function cancelGarrison() {
             :class="entry.side"
           >
             <span class="log-round">R{{ entry.round }}</span>
-            <span class="log-msg">{{ entry.msg }}</span>
+            <span>{{ entry.msg }}</span>
           </div>
         </div>
       </div>

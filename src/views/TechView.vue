@@ -114,7 +114,7 @@ function tryResearch(id: string) {
               {{ TECH_BRANCHES[t.branch].name }} · Tier {{ t.tier }}
             </div>
           </div>
-          <div class="t-status">
+          <div>
             <span v-if="techStatus(t.id) === 'completed'" class="status-done">
               <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
                 <use href="#i-ui-check" />
