@@ -9,59 +9,21 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent } from 'vue'
+import { describe, it, expect, vi } from 'vitest'
+import { mountView, useViewTestHooks, vueRouterMock, focusTrapMock } from '@/tests/view-mount'
 import AchievementsView from './AchievementsView.vue'
 import { useGameStore } from '@/stores/game'
 import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES, groupByCategory } from '@/data/achievements'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: {} }),
-  useRouter: () => ({ push: vi.fn() }),
-  RouterLink: defineComponent({
-    props: { to: { type: String, required: false, default: '' } },
-    template: '<a><slot /></a>',
-  }),
-  RouterView: defineComponent({ template: '<div />' }),
-}))
+vi.mock('vue-router', () => vueRouterMock())
 
-vi.mock('@/composables/useFocusTrap', () => ({
-  useFocusTrap: () => {},
-}))
-
-let pinia: ReturnType<typeof createPinia>
-const wrappers: VueWrapper[] = []
-
-function mountView() {
-  const wrapper = mount(AchievementsView, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        Icons: defineComponent({ template: '<svg />' }),
-      },
-    },
-  })
-  wrappers.push(wrapper)
-  return wrapper
-}
+vi.mock('@/composables/useFocusTrap', () => focusTrapMock())
 
 describe('AchievementsView — 挂载与汇总', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('正常挂载：汇总面板显示 0/总数与未获得加成', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     expect(wrapper.find('.achievements-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('成就殿堂')
     expect(wrapper.find('.count-num').text()).toBe('0')
@@ -70,7 +32,7 @@ describe('AchievementsView — 挂载与汇总', () => {
   })
 
   it('按分类分区渲染全部成就卡片', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     const groups = groupByCategory()
     expect(wrapper.findAll('.ach-section').length).toBe(groups.length)
     expect(wrapper.findAll('.ach-card').length).toBe(ACHIEVEMENTS.length)
@@ -82,20 +44,10 @@ describe('AchievementsView — 挂载与汇总', () => {
 })
 
 describe('AchievementsView — 解锁与进度', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('未解锁成就显示进度条与当前值/阈值', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     // 新档全部未解锁 → 全部有进度条
     expect(wrapper.findAll('.ach-progress').length).toBe(ACHIEVEMENTS.length)
     expect(wrapper.findAll('.bar-fill').length).toBe(ACHIEVEMENTS.length)
@@ -105,7 +57,7 @@ describe('AchievementsView — 解锁与进度', () => {
   })
 
   it('解锁成就显示时间戳与高亮态', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     const game = useGameStore()
     game.achievements.unlocked['ach_energy_1'] = Date.now()
     await wrapper.vm.$nextTick()
@@ -118,7 +70,7 @@ describe('AchievementsView — 解锁与进度', () => {
   })
 
   it('解锁带加成的成就后汇总面板显示加成预览', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     const game = useGameStore()
     // ach_energy_1: prod(1) → production_mult 1.01 → +1%
     game.achievements.unlocked['ach_energy_1'] = Date.now()
@@ -130,7 +82,7 @@ describe('AchievementsView — 解锁与进度', () => {
   })
 
   it('全解锁时的加成汇总为连乘实测值（v0.95）', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     const game = useGameStore()
     for (const def of ACHIEVEMENTS) game.achievements.unlocked[def.id] = Date.now()
     await wrapper.vm.$nextTick()
@@ -144,7 +96,7 @@ describe('AchievementsView — 解锁与进度', () => {
   })
 
   it('进度条宽度随终身计数增长', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(AchievementsView)
     const game = useGameStore()
     // 首个建造成就 metric=upgrades：计数 0 → 1，进度条从 0 宽变为有宽
     const firstBuildCard = () =>

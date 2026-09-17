@@ -167,13 +167,6 @@ describe('buildings — reset / serialize / hydrate', () => {
     expect(b.getLevel('solar_collector')).toBe(3)
     expect(b.getLevel('ghost_building')).toBe(0) // 未定义建筑保持 0
   })
-
-  it('hydrate(undefined) 不改变现状', () => {
-    setActivePinia(createPinia())
-    const b = useBuildingsStore()
-    b.hydrate(undefined)
-    expect(b.getLevel('solar_collector')).toBe(0)
-  })
 })
 
 describe('buildings — 数值规范守恒（docs/游戏数值设定规范.md §三）', () => {

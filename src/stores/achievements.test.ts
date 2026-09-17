@@ -12,11 +12,13 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useAchievementsStore, setAchievementExternalProviders } from './achievements'
+import { useAchievementsStore } from './achievements'
 import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES, ACHIEVEMENT_IDS } from '@/data/achievements'
 import { useGameStore } from './game'
-import { useResourcesStore } from './resources'
 import { setRelicSlotProvider } from './relics'
+import { zeroAchievementProviders } from '@/tests/reset-providers'
+import { BUILDINGS } from '@/data/buildings'
+import { useResourcesStore } from './resources'
 
 let store: ReturnType<typeof useAchievementsStore>
 
@@ -24,13 +26,7 @@ beforeEach(() => {
   setActivePinia(createPinia())
   store = useAchievementsStore()
   // 默认外部指标全 0（各测试可自行覆盖）
-  setAchievementExternalProviders({
-    relicsOwned: () => 0,
-    relicKinds: () => 0,
-    transcends: () => 0,
-    playtime: () => 0,
-    expeditionBest: () => 0,
-  })
+  zeroAchievementProviders()
 })
 
 describe('achievements — 定义表完整性', () => {
@@ -116,12 +112,11 @@ describe('achievements — 终身计数与解锁', () => {
 
 describe('achievements — 外部现值指标', () => {
   it('relicsOwned/relicKinds/transcends/playtime 走 provider', () => {
-    setAchievementExternalProviders({
+    zeroAchievementProviders({
       relicsOwned: () => 25,
       relicKinds: () => 20,
       transcends: () => 10,
       playtime: () => 180000,
-      expeditionBest: () => 0,
     })
     const fresh = store.checkAndUnlock()
     const ids = fresh.map((a) => a.id)
@@ -131,59 +126,30 @@ describe('achievements — 外部现值指标', () => {
   })
 
   it('ach_relic_4 按种类数判定：持有件数多但种类不足不解锁（v0.61 修正）', () => {
-    setAchievementExternalProviders({
-      relicsOwned: () => 25, // 件数够（含重复）
-      relicKinds: () => 18, // 种类不足 20
-      transcends: () => 0,
-      playtime: () => 0,
-      expeditionBest: () => 0,
-    })
+    // 件数够（含重复）但种类不足 20
+    zeroAchievementProviders({ relicsOwned: () => 25, relicKinds: () => 18 })
     const fresh = store.checkAndUnlock()
     expect(fresh.map((a) => a.id)).not.toContain('ach_relic_4')
     expect(store.isUnlocked('ach_relic_4')).toBe(false)
   })
 
   it('provider 未注入时指标为 0（不误解锁）', () => {
-    setAchievementExternalProviders({
-      relicsOwned: () => 0,
-      relicKinds: () => 0,
-      transcends: () => 0,
-      playtime: () => 0,
-      expeditionBest: () => 0,
-    })
+    zeroAchievementProviders()
     const fresh = store.checkAndUnlock()
     expect(fresh).toHaveLength(0)
   })
 
   it('远征深度走 provider：D10/D20 里程碑阈值边界（v0.69）', () => {
     // 9 层：不到首档
-    setAchievementExternalProviders({
-      relicsOwned: () => 0,
-      relicKinds: () => 0,
-      transcends: () => 0,
-      playtime: () => 0,
-      expeditionBest: () => 9,
-    })
+    zeroAchievementProviders({ expeditionBest: () => 9 })
     expect(store.checkAndUnlock().map((a) => a.id)).not.toContain('ach_battle_4')
     // 10 层：解锁首档、不到二档
-    setAchievementExternalProviders({
-      relicsOwned: () => 0,
-      relicKinds: () => 0,
-      transcends: () => 0,
-      playtime: () => 0,
-      expeditionBest: () => 10,
-    })
+    zeroAchievementProviders({ expeditionBest: () => 10 })
     const fresh = store.checkAndUnlock()
     expect(fresh.map((a) => a.id)).toContain('ach_battle_4')
     expect(fresh.map((a) => a.id)).not.toContain('ach_battle_5')
     // 20 层：二档解锁，攻防加成连乘 1.05 × 1.08
-    setAchievementExternalProviders({
-      relicsOwned: () => 0,
-      relicKinds: () => 0,
-      transcends: () => 0,
-      playtime: () => 0,
-      expeditionBest: () => 20,
-    })
+    zeroAchievementProviders({ expeditionBest: () => 20 })
     expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_5')
     expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(1.05 * 1.08, 10)
     expect(store.getMult('combat_mult', 'defense').toNumber()).toBeCloseTo(1.05 * 1.08, 10)
@@ -354,4 +320,4 @@ describe('game store 集成 — 转生保留 / hardReset 清空 / tick 采集', 
   })
 })
 
-const BUILDING_FIRST_ID = 'solar_collector'
+const BUILDING_FIRST_ID = BUILDINGS[0].id // 数据表首个建筑（v1.04 派生）

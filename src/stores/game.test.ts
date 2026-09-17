@@ -9,23 +9,23 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { fnv1a } from '@/lib/random'
+import { minimalSaveData, exploredNodes } from '@/tests/fixtures'
 import { exportSave, importSave, clearAllSaves, type SaveData } from '@/lib/storage'
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
-import { BUILDINGS } from '@/data/buildings'
+import { BUILDINGS, buildingCost } from '@/data/buildings'
 import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
 import { useResearchStore } from './research'
 import { useCombatStore } from './combat'
-import { useExplorationStore } from './exploration'
 import { D } from '@/lib/decimal'
 import { rollRelic, getRelicById } from '@/data/relics'
 import { setRelicSlotProvider } from './relics'
 import type { Formation } from './military'
 
-/** 基础能量采集建筑 ID */
-const SOLAR = 'solar_collector'
+/** 基础能量采集建筑（数据表首个建筑，v1.04 派生） */
+const SOLAR = BUILDINGS[0].id
 
 describe('game store — tick integration', () => {
   beforeEach(() => {
@@ -298,10 +298,14 @@ describe('game store — 自动化 QoL（v0.58）', () => {
   it('批量升级预览与实扣一致：预算中途耗尽买几级算几级', () => {
     const game = useGameStore()
     const resources = useResourcesStore()
-    resources.setAmount('energy', 30) // 成本 10 / 12 / 14：10 + 12 = 22 ≤ 30 < 36 → 买 2 级停
+    // 成本曲线由 buildingCost 实算：预算设为「够 2 级、不够第 3 级」（防曲线漂移）
+    const c0 = buildingCost(BUILDINGS[0], 0).energy!
+    const c1 = buildingCost(BUILDINGS[0], 1).energy!
+    const c2 = buildingCost(BUILDINGS[0], 2).energy!
+    resources.setAmount('energy', c0 + c1 + Math.floor(c2 / 2))
     const preview = game.previewUpgradeBuildingSteps(SOLAR, 10)
     expect(preview.count).toBe(2)
-    expect(preview.cost.energy).toBe(22)
+    expect(preview.cost.energy).toBe(c0 + c1)
     const before = resources.getAmount('energy')
     game.tryUpgradeBuildingSteps(SOLAR, 10)
     expect(before.minus(resources.getAmount('energy')).toNumber()).toBe(preview.cost.energy)
@@ -411,23 +415,6 @@ function writeBackupSave(data: SaveData): void {
 }
 
 describe('game store — 初始化错误态（v0.75）', () => {
-  function validSave(): SaveData {
-    return {
-      version: 1,
-      savedAt: Date.now(),
-      player: { id: 'p1', name: '指挥官' },
-      totalPlayTime: 0,
-      resources: { amounts: { energy: '100' }, totals: { energy: '100' } },
-      buildings: { levels: {} },
-      research: { completed: [] },
-      military: { owned: {}, training: [], formations: [] },
-      combat: { garrisoned: {}, completed: [] },
-      exploration: { progress: {} },
-      relics: { owned: [], equipped: [] },
-      transcend: { negativeEntropy: '0', totalTranscends: 0, tree: [] },
-    }
-  }
-
   beforeEach(async () => {
     setActivePinia(createPinia())
     setRelicSlotProvider(() => 0)
@@ -437,7 +424,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 
   it('版本过新：initError=too_new，不启动游戏循环', async () => {
-    writeBackupSave({ ...validSave(), version: 2 })
+    writeBackupSave({ ...minimalSaveData(), version: 2 })
     const game = useGameStore()
     const loaded = await game.init()
     expect(loaded).toBe(false)
@@ -446,7 +433,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 
   it('hydrate 抛错：initError=failed，不启动游戏循环', async () => {
-    writeBackupSave(validSave())
+    writeBackupSave(minimalSaveData())
     const combat = useCombatStore()
     const spy = vi.spyOn(combat, 'hydrate').mockImplementation(() => {
       throw new Error('boom')
@@ -469,7 +456,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 
   it('hardReset 清除错误态并启动', async () => {
-    writeBackupSave({ ...validSave(), version: 2 })
+    writeBackupSave({ ...minimalSaveData(), version: 2 })
     const game = useGameStore()
     await game.init()
     expect(game.initError).toBe('too_new')
@@ -525,7 +512,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   it('v0.93 too_new 优先：主档版本过新时不静默采用旧备份', async () => {
     // 主档 version=2（too_new），备份为可读旧档——修复前旧备份胜出被静默
     // hydrate，随后自动存档覆盖新版主档（不可逆回滚）；修复后进 too_new 错误屏
-    const stale = { ...validSave(), savedAt: 1000 }
+    const stale = { ...minimalSaveData(), savedAt: 1000 }
     try {
       const { default: localforage } = await import('localforage')
       const store = localforage.createInstance({ name: 'starcore', storeName: 'save' })
@@ -556,7 +543,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
 
   it('v0.93 too_new 优先（备份档版）：备份版本过新即报错，不静默开新档', async () => {
     // 只写备份档 version=2 → 修复前后都进 too_new 错误屏（锚定 too_new 不垫底语义）
-    writeBackupSave({ ...validSave(), version: 2 })
+    writeBackupSave({ ...minimalSaveData(), version: 2 })
     const game = useGameStore()
     const loaded = await game.init()
     expect(loaded).toBe(false)
@@ -584,10 +571,10 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 
   it('v0.81 双档取新：savedAt 更新的备份档胜出主档', async () => {
-    const now = { ...validSave(), savedAt: Date.now() }
+    const now = { ...minimalSaveData(), savedAt: Date.now() }
     now.buildings.levels = { solar_collector: 7 }
     // 主档 = 旧档（savedAt=1000）；备份 = 新档
-    const stale = { ...validSave(), savedAt: 1000 }
+    const stale = { ...minimalSaveData(), savedAt: 1000 }
     try {
       const { default: localforage } = await import('localforage')
       const store = localforage.createInstance({ name: 'starcore', storeName: 'save' })
@@ -617,19 +604,11 @@ describe('game store — 初始化错误态（v0.75）', () => {
     game.research.complete('military_basic')
     game.buildings.setLevel('solar_collector', 4)
     // 导入一份极简档（多数字段缺省、totalTranscends=0）
-    const minimal: SaveData = {
-      version: 1,
-      savedAt: Date.now(),
+    const minimal = minimalSaveData({
       player: { id: 'p2', name: '新档' },
       resources: { amounts: { energy: '10' }, totals: { energy: '10' } },
-      buildings: { levels: {} },
-      research: { completed: [] },
       military: { owned: { assault: 1 }, training: [], formations: [] },
-      combat: { garrisoned: {}, completed: [] },
-      exploration: { progress: {} },
-      relics: { owned: [], equipped: [] },
-      transcend: { negativeEntropy: '0', totalTranscends: 0, tree: [] },
-    }
+    })
     const code = await exportSave(minimal)
     const result = await game.doImport(code)
     expect(result.success).toBe(true)
@@ -650,18 +629,6 @@ describe('v0.82 驻扎守卫真实规则分支', () => {
     setRelicSlotProvider(() => 0)
   })
 
-  function explored(...nodeIds: string[]) {
-    const exploration = useExplorationStore()
-    const progress: Record<
-      string,
-      { nodeId: string; startTime: number; endTime: number; completed: boolean }
-    > = {}
-    for (const id of nodeIds) {
-      progress[id] = { nodeId: id, startTime: 0, endTime: 0, completed: true }
-    }
-    exploration.hydrate({ progress })
-  }
-
   it('据点 requires 探索未完成 → 拒绝驻扎', () => {
     useGameStore() // 注册守卫
     const combat = useCombatStore()
@@ -672,7 +639,7 @@ describe('v0.82 驻扎守卫真实规则分支', () => {
 
   it('编队不存在 → 拒绝驻扎', () => {
     useGameStore()
-    explored('node_orbit')
+    exploredNodes('node_orbit')
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
     expect(combat.garrison('raider_1', 'f9')).toBe(false)
@@ -680,7 +647,7 @@ describe('v0.82 驻扎守卫真实规则分支', () => {
 
   it('编队已被其他据点占用 → 拒绝驻扎', () => {
     useGameStore()
-    explored('node_orbit', 'node_inner')
+    exploredNodes('node_orbit', 'node_inner')
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
     combat.completedStrongholds.add('raider_2')
@@ -690,7 +657,7 @@ describe('v0.82 驻扎守卫真实规则分支', () => {
 
   it('三规则全过 → 允许驻扎', () => {
     useGameStore()
-    explored('node_orbit')
+    exploredNodes('node_orbit')
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
     expect(combat.garrison('raider_1', 'f1')).toBe(true)

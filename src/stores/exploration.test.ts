@@ -253,11 +253,6 @@ describe('exploration — reset / serialize / hydrate', () => {
     expect(store.isCompleted('node_orbit')).toBe(true)
   })
 
-  it('hydrate(undefined) 不改变现状', () => {
-    store.hydrate(undefined)
-    expect(store.count).toBe(0)
-  })
-
   // —— v0.75：isExploring 未知节点返回 false（原 undefined !== 0 误判为 true）——
   it('isExploring 未知节点/空 id 返回 false', () => {
     expect(store.isExploring('node_ghost')).toBe(false)

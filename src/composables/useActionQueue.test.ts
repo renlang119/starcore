@@ -12,6 +12,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useActionQueue } from './useActionQueue'
 import { useGameStore } from '@/stores/game'
 import type { UnitId } from '@/data/units'
+import { EXPLORE_NODES } from '@/data/explore'
+import { exploredNodes } from '@/tests/fixtures'
 
 function freshGame() {
   setActivePinia(createPinia())
@@ -55,50 +57,8 @@ describe('useActionQueue 行动队列', () => {
     for (const r of ['energy', 'crystal', 'alloy', 'data', 'dark'] as const) {
       game.resources.setAmount(r, 0)
     }
-    const now = Date.now()
-    for (const n of [
-      'node_orbit',
-      'node_inner',
-      'node_outer',
-      'node_deep',
-      'node_stellar_gate',
-      'node_stellar_mine',
-      'node_stellar_forge',
-      'node_stellar_dead',
-      'node_stellar_core',
-      'node_stellar_edge',
-      'node_cluster_gate',
-      'node_cluster_swarm',
-      'node_cluster_ruin',
-      'node_cluster_heart',
-      'node_cluster_hollow',
-      'node_cluster_silence',
-      'node_arm_gate',
-      'node_arm_cradle',
-      'node_arm_grave',
-      'node_arm_spine',
-      'node_arm_abyss',
-      'node_arm_threshold',
-      'node_galaxy_gate',
-      'node_galaxy_range',
-      'node_galaxy_archive',
-      'node_galaxy_hub',
-      'node_galaxy_halo',
-      'node_galaxy_heart',
-      'node_void_gate',
-      'node_void_beacon',
-      'node_void_watch',
-      'node_void_hub',
-      'node_void_veil',
-      'node_void_origin',
-    ]) {
-      game.exploration.progress[n] = {
-        nodeId: n,
-        startTime: now - 1000,
-        endTime: now,
-        completed: true,
-      }
-    }
+    // 全部节点完成（由数据表派生，新增节点自动跟随）
+    exploredNodes(...EXPLORE_NODES.map((n) => n.id))
     const { displayActions, hasActions } = useActionQueue()
     expect(hasActions.value).toBe(false)
     expect(displayActions.value.length).toBe(2)

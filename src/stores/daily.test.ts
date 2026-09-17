@@ -11,7 +11,13 @@ import {
   RETURN_GIFT,
   STREAK_CYCLE,
   CHALLENGE_TEMPLATES,
+  type WeeklyChallenge,
 } from './daily'
+
+/** 周挑战条目工厂（v1.04 收敛 10 份字面量；默认 wk_battles 形态，按字段覆盖） */
+function ch(templateId: string, over: Partial<WeeklyChallenge> = {}): WeeklyChallenge {
+  return { templateId, kind: 'battles', tier: 0, target: 5, rewardDark: 3, claimed: false, ...over }
+}
 
 /** 构造指定日期（本地时区） */
 function dateOf(y: number, m: number, d: number): Date {
@@ -185,30 +191,9 @@ describe('daily — 存档', () => {
       weeklyCounters: { battles: 99, explores: 99, researches: 99, upgrades: 99, transcends: 99 },
       challengeWeek: '2020-W01',
       weekChallenges: [
-        {
-          templateId: 'wk_battles',
-          kind: 'battles',
-          tier: 0,
-          target: 5,
-          rewardDark: 3,
-          claimed: false,
-        },
-        {
-          templateId: 'wk_explores',
-          kind: 'explores',
-          tier: 0,
-          target: 6,
-          rewardDark: 3,
-          claimed: false,
-        },
-        {
-          templateId: 'wk_researches',
-          kind: 'researches',
-          tier: 0,
-          target: 3,
-          rewardDark: 3,
-          claimed: false,
-        },
+        ch('wk_battles'),
+        ch('wk_explores', { kind: 'explores', target: 6 }),
+        ch('wk_researches', { kind: 'researches', target: 3 }),
       ],
     })
     expect(store.challengeWeek).toBe(weekStr())
@@ -234,24 +219,7 @@ describe('daily — 存档', () => {
       streak: 3,
       weeklyCounters: { battles: 1, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
       challengeWeek: weekStr(),
-      weekChallenges: [
-        {
-          templateId: 'wk_battles',
-          kind: 'battles',
-          tier: 0,
-          target: 5,
-          rewardDark: 3,
-          claimed: false,
-        },
-        {
-          templateId: 'wk_hacked',
-          kind: 'battles',
-          tier: 0,
-          target: 1,
-          rewardDark: 999,
-          claimed: false,
-        },
-      ],
+      weekChallenges: [ch('wk_battles'), ch('wk_hacked', { target: 1, rewardDark: 999 })],
     })
     // 过滤后仅剩 1 项（不足 3）→ 重掷补全，未知模板不会存活
     expect(store.weekChallenges).toHaveLength(3)
@@ -273,30 +241,9 @@ describe('daily — 存档', () => {
       weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
       challengeWeek: weekStr(),
       weekChallenges: [
-        {
-          templateId: 'wk_battles',
-          kind: 'upgrades' as never,
-          tier: 0,
-          target: 0,
-          rewardDark: 999999,
-          claimed: false,
-        },
-        {
-          templateId: 'wk_explores',
-          kind: 'explores',
-          tier: 0,
-          target: 6,
-          rewardDark: 3,
-          claimed: false,
-        },
-        {
-          templateId: 'wk_researches',
-          kind: 'researches',
-          tier: 0,
-          target: 3,
-          rewardDark: 3,
-          claimed: false,
-        },
+        ch('wk_battles', { kind: 'upgrades' as never, target: 0, rewardDark: 999999 }),
+        ch('wk_explores', { kind: 'explores', target: 6 }),
+        ch('wk_researches', { kind: 'researches', target: 3 }),
       ],
     })
     // 3 项齐全（含伪造项）→ 列表完整不重掷，伪造值逐项按模板重推导
@@ -319,22 +266,8 @@ describe('daily — 存档', () => {
       weeklyCounters: { battles: 2, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
       challengeWeek: weekStr(),
       weekChallenges: [
-        {
-          templateId: 'wk_battles',
-          kind: 'battles',
-          tier: 99,
-          target: 1,
-          rewardDark: 1,
-          claimed: false,
-        },
-        {
-          templateId: 'wk_explores',
-          kind: 'explores',
-          tier: 1.5,
-          target: 1,
-          rewardDark: 1,
-          claimed: false,
-        },
+        ch('wk_battles', { tier: 99, target: 1, rewardDark: 1 }),
+        ch('wk_explores', { kind: 'explores', tier: 1.5, target: 1, rewardDark: 1 }),
       ],
     })
     // 两项均非法被丢弃 → 列表不完整 → 重掷为 3 项；同周修复保留计数
