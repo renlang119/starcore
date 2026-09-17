@@ -188,42 +188,10 @@ function upgradeLabel(id: string): string {
 </template>
 
 <style scoped>
-.auto-badge {
-  font-size: var(--text-xs);
-  color: var(--color-quantum);
-  margin-top: calc(-1 * var(--space-2));
-  margin-bottom: var(--space-2);
-  letter-spacing: 0.05em;
-}
-
-/* v0.86 批量升级段位切换器（页头级） */
+/* v0.86 批量升级段位切换器（页头级；.bulk-toggle/.seg-btn 基座为全局类） */
 .bulk-toggle {
-  display: inline-flex;
-  gap: 0;
   margin-bottom: var(--space-3);
-  border: 1px solid var(--color-border-line);
-  border-radius: var(--radius-md);
-  overflow: hidden;
   width: fit-content;
-}
-.seg-btn {
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-xs);
-  font-family: var(--font-mono, monospace);
-  color: var(--color-t-secondary);
-  background: transparent;
-  transition: all 0.15s var(--ease-out);
-}
-.seg-btn + .seg-btn {
-  border-left: 1px solid var(--color-border-line);
-}
-.seg-btn:hover {
-  color: var(--color-t-primary);
-  background: var(--color-hover);
-}
-.seg-btn.active {
-  color: var(--color-core);
-  background: color-mix(in srgb, var(--color-core) 10%, transparent);
 }
 
 .build-view {

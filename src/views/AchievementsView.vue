@@ -7,6 +7,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtTime } from '@/lib/format'
 import type { Decimal } from '@/lib/decimal'
+import ProgressBar from '@/components/ui/ProgressBar.vue'
 import {
   ACHIEVEMENTS,
   ACHIEVEMENT_CATEGORIES,
@@ -111,9 +112,7 @@ const bonusSummary = computed(() => {
             </div>
             <template v-else>
               <div class="ach-progress">
-                <div class="bar">
-                  <div class="bar-fill" :style="{ width: progressPct(def) + '%' }"></div>
-                </div>
+                <ProgressBar class="bar" fill-class="bar-fill" :pct="progressPct(def)" />
                 <span class="progress-text font-mono">
                   {{ fmtMetricValue(def.metric, ach.metricValue(def.metric)) }} /
                   {{ fmtMetricValue(def.metric, def.threshold) }}
@@ -266,16 +265,8 @@ const bonusSummary = computed(() => {
 }
 .bar {
   flex: 1;
-  height: 6px;
-  background: var(--color-elevated);
-  border-radius: var(--radius-pill, 999px);
-  overflow: hidden;
-}
-.bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-core), var(--color-quantum));
-  border-radius: inherit;
-  transition: width 0.3s var(--ease-out);
+  --pb-fill: linear-gradient(90deg, var(--color-core), var(--color-quantum));
+  --pb-transition: width 0.3s var(--ease-out);
 }
 .progress-text {
   font-size: var(--text-xs);

@@ -5,6 +5,7 @@ import { fmt, fmtTime } from '@/lib/format'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLD_TYPES } from '@/data/pve'
 import CostTag from '@/components/ui/CostTag.vue'
+import ProgressBar from '@/components/ui/ProgressBar.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
@@ -179,15 +180,12 @@ const endlessSection = {
 
             <!-- 探索进度 -->
             <div v-if="game.exploration.isExploring(node.id)" class="n-progress">
-              <div class="progress-bar">
-                <div
-                  class="progress-fill"
-                  :style="{
-                    width: getProgress(node.id) * 100 + '%',
-                    background: LAYER_INFO[layer].color,
-                  }"
-                ></div>
-              </div>
+              <ProgressBar
+                class="progress-bar"
+                fill-class="progress-fill"
+                :pct="getProgress(node.id) * 100"
+                :fill="LAYER_INFO[layer].color"
+              />
               <span class="progress-text font-mono"
                 >{{ Math.floor(getProgress(node.id) * 100) }}%</span
               >
@@ -324,14 +322,6 @@ const endlessSection = {
 </template>
 
 <style scoped>
-.auto-badge {
-  font-size: var(--text-xs);
-  color: var(--color-quantum);
-  margin-top: calc(-1 * var(--space-2));
-  margin-bottom: var(--space-2);
-  letter-spacing: 0.05em;
-}
-
 .map-view {
   display: flex;
   flex-direction: column;
@@ -425,15 +415,7 @@ const endlessSection = {
 }
 .progress-bar {
   flex: 1;
-  height: 6px;
-  background: var(--color-elevated);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s;
+  --pb-radius: 3px;
 }
 .progress-text {
   font-size: var(--text-xs);
@@ -498,10 +480,6 @@ const endlessSection = {
 .s-name {
   font-size: var(--text-sm);
   font-weight: 600;
-}
-.s-type {
-  font-size: var(--text-xs);
-  color: var(--color-t-secondary);
 }
 .s-arrow {
   color: var(--color-t-tertiary);

@@ -75,6 +75,19 @@
   color: var(--color-t-tertiary);
   text-align: center;
 }
+/* 协议徽标（建造/星图/科技三页页头同一形态，v1.02 收敛） */
+.auto-badge {
+  font-size: var(--text-xs);
+  color: var(--color-quantum);
+  margin-top: calc(-1 * var(--space-2));
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.05em;
+}
+/* 小字次要标签（据点/区域类型，v1.02 收敛自 MapView/BattleView） */
+.s-type {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+}
 
 /* fade transition */
 .fade-enter-active,
@@ -125,6 +138,20 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
+}
+
+/* 确认弹窗共用骨架（v1.02 收敛自 ArmyView/PrestigeView；
+   PrestigeView 的标题尺寸与色由视图 scoped 覆盖） */
+.confirm-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-alert);
+  text-align: center;
+  margin-bottom: var(--space-2);
+}
+.confirm-actions {
+  display: flex;
+  gap: var(--space-2);
 }
 
 /* ============================================================
@@ -180,4 +207,31 @@
   font-size: var(--text-sm);
   font-weight: 600;
   margin-bottom: var(--space-1);
+}
+/* 遗物卡面共用结构（v1.02 收敛：图鉴/强化弹窗/合成产物三处同源） */
+.r-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-1);
+  color: var(--c);
+}
+.r-effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.eff-mini {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-elevated);
+  border-radius: 3px;
+  color: var(--color-t-primary);
+}
+.synth-product {
+  border: 1px solid var(--c);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
 }
