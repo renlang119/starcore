@@ -46,6 +46,17 @@ const infPreviews = computed(() => {
   return map
 })
 
+/**
+ * 无限节点按钮文案：段位 >1 时按当前负熵实际可买级数显示（随资源动态变化），
+ * 一级都买不起时退回原文案（按钮同时处于禁用态，成本行另有「可买 0 级」）。
+ */
+function purchaseLabel(node: { id: string; level: number }): string {
+  const base = node.level === 0 ? '购买' : '升级'
+  if (infBulk.value <= 1) return base
+  const count = infPreviews.value[node.id]?.count ?? 0
+  return count > 0 ? `${base} ×${count}` : base
+}
+
 function tryTranscend() {
   if (!canTranscend.value) return
   showConfirm.value = true
@@ -277,7 +288,7 @@ onUnmounted(() => {
             :disabled="negEntropy.lt(nextCost(node))"
             @click="tryPurchase(node.id, infBulk)"
           >
-            {{ node.level === 0 ? '购买' : '升级' }}{{ infBulk > 1 ? ` ×${infBulk}` : '' }}
+            {{ purchaseLabel(node) }}
           </button>
         </div>
       </div>

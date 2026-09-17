@@ -30,6 +30,7 @@ import {
 import { TECHS, adjustedTechCost } from '@/data/tech'
 import { BUILDINGS, buildingCost } from '@/data/buildings'
 import { getStronghold } from '@/data/pve'
+import { enhanceCost, MAX_RELIC_LEVEL } from '@/data/relics'
 import type { ResourceType } from '@/data/buildings'
 
 const TICK_INTERVAL = 1000 // ms
@@ -613,6 +614,28 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /**
+   * 批量强化预览：返回当前能量下点击一次批量强化的实际可完成级数。
+   * 逐级按新等级取价，能量不足或达 20 级上限自然停止，最多 steps 级；
+   * 取价与扣费顺序同 relics.enhanceSteps，供按钮文案按实际级数显示。
+   */
+  function previewRelicEnhanceSteps(instanceId: string, steps: number): number {
+    const relic = relics.owned.find((r) => r.instanceId === instanceId)
+    if (!relic || steps < 1) return 0
+    let remain = resources.getAmount('energy')
+    let level = relic.level
+    let count = 0
+    for (let i = 0; i < steps; i++) {
+      if (level >= MAX_RELIC_LEVEL) break
+      const cost = D(enhanceCost(relic.rarity, level + 1))
+      if (remain.lt(cost)) break
+      remain = remain.minus(cost)
+      level++
+      count++
+    }
+    return count
+  }
+
+  /**
    * 批量升级建筑（v0.86）：至多 steps 级、买满语义。
    * 内部逐级复用 tryUpgradeBuilding 原子操作，等级/成就/周挑战记账
    * 粒度与连点完全一致；买不起下一级或已满级自然停止。
@@ -695,6 +718,7 @@ export const useGameStore = defineStore('game', () => {
     tryUpgradeBuilding,
     tryUpgradeBuildingSteps,
     previewUpgradeBuildingSteps,
+    previewRelicEnhanceSteps,
     tryResearch,
     // transcend
     canTranscend,
