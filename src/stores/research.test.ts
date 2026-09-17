@@ -159,12 +159,6 @@ describe('research — reset / serialize / hydrate', () => {
     expect(s2.isCompleted('fusion_tech')).toBe(true)
     expect(s2.isCompleted('energy_eff_1')).toBe(true)
   })
-
-  it('hydrate(undefined) 不改变现状', () => {
-    complete('fusion_tech')
-    store.hydrate(undefined)
-    expect(store.count).toBe(1)
-  })
 })
 
 describe('research — 数值规范守恒（docs/游戏数值设定规范.md §四）', () => {

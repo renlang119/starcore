@@ -18,8 +18,10 @@ import { useTranscendStore } from '@/stores/transcend'
 import { TECHS } from '@/data/tech'
 import { D } from '@/lib/decimal'
 import { setRelicSlotProvider } from '@/stores/relics'
+import { BUILDINGS } from '@/data/buildings'
 
-const SOLAR = 'solar_collector'
+/** 基础能量采集建筑（数据表首个建筑，v1.04 派生） */
+const SOLAR = BUILDINGS[0].id
 
 /** 健康断言：全资源有限非负 */
 function expectFiniteNonNegative(resources: ReturnType<typeof useResourcesStore>) {

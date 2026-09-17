@@ -38,4 +38,23 @@ export function resetProviderSingletons(): void {
   })
 }
 
+/** 成就外部指标全零桩 + 按需覆盖（achievements.test 七处字面量重复的收敛，v1.04） */
+export function zeroAchievementProviders(
+  overrides?: Partial<
+    Record<
+      'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime' | 'expeditionBest',
+      () => number
+    >
+  >
+): void {
+  setAchievementExternalProviders({
+    relicsOwned: () => 0,
+    relicKinds: () => 0,
+    transcends: () => 0,
+    playtime: () => 0,
+    expeditionBest: () => 0,
+    ...overrides,
+  })
+}
+
 resetProviderSingletons()

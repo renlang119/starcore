@@ -10,92 +10,49 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent } from 'vue'
+import { describe, it, expect, vi } from 'vitest'
+import { mountView, useViewTestHooks, vueRouterMock, focusTrapMock } from '@/tests/view-mount'
 import RelicView from './RelicView.vue'
 import { useRelicsStore } from '@/stores/relics'
 import { useGameStore } from '@/stores/game'
 import { RELIC_POOL, RELIC_SETS, getRelicById } from '@/data/relics'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: {} }),
-  useRouter: () => ({ push: vi.fn() }),
-  RouterLink: defineComponent({
-    props: { to: { type: String, required: false, default: '' } },
-    template: '<a><slot /></a>',
-  }),
-  RouterView: defineComponent({ template: '<div />' }),
-}))
+vi.mock('vue-router', () => vueRouterMock())
 
-vi.mock('@/composables/useFocusTrap', () => ({
-  useFocusTrap: () => {},
-}))
-
-let pinia: ReturnType<typeof createPinia>
-const wrappers: VueWrapper[] = []
-
-function mountView() {
-  const wrapper = mount(RelicView, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        Icons: defineComponent({ template: '<svg />' }),
-        Transition: { template: '<div><slot /></div>' },
-      },
-    },
-  })
-  wrappers.push(wrapper)
-  return wrapper
-}
+vi.mock('@/composables/useFocusTrap', () => focusTrapMock())
 
 describe('RelicView — 挂载与空状态', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('正常挂载：装备槽、合成工坊、套装区块齐备', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     expect(wrapper.find('.relic-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('遗物')
-    // 槽位数 = maxSlots（4 + 转生加成 0 = 4）
-    expect(wrapper.findAll('.slot').length).toBe(4)
+    // 槽位数 = maxSlots（默认 4 + 转生加成，由 store 派生）
+    expect(wrapper.findAll('.slot').length).toBe(useRelicsStore().maxSlots)
     expect(wrapper.find('[data-testid="fusion-section"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="sets-section"]').exists()).toBe(true)
     expect(wrapper.findAll('.set-row').length).toBe(RELIC_SETS.length)
   })
 
   it('无遗物时图鉴显示空状态', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     expect(wrapper.text()).toContain('尚未发现遗物')
     expect(wrapper.find('.relic-list').exists()).toBe(false)
   })
 })
 
 describe('RelicView — 装备与卸下', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('点装备按钮装到首个空槽，再点同槽卸下', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0]) // r_energy_1
     await wrapper.vm.$nextTick()
@@ -121,7 +78,9 @@ describe('RelicView — 装备与卸下', () => {
   })
 
   it('装备遗物产生「当前效果」区块', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0])
     await wrapper.vm.$nextTick()
@@ -134,20 +93,12 @@ describe('RelicView — 装备与卸下', () => {
 })
 
 describe('RelicView — 合成工坊', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('选材模式开关与选材回填', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0])
     relics.obtain(RELIC_POOL[1])
@@ -171,7 +122,9 @@ describe('RelicView — 合成工坊', () => {
   })
 
   it('稀有度混选被 toast 拒绝', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0]) // common
     relics.obtain(RELIC_POOL.find((r) => r.id === 'r_energy_2')!) // rare
@@ -189,7 +142,9 @@ describe('RelicView — 合成工坊', () => {
   })
 
   it('合成成功：3 件 common → 1 件 rare，材料消耗，产物弹窗出现', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0])
     relics.obtain(RELIC_POOL[1])
@@ -215,7 +170,9 @@ describe('RelicView — 合成工坊', () => {
   })
 
   it('不足 3 件时合成按钮禁用', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     relics.obtain(RELIC_POOL[0])
     relics.obtain(RELIC_POOL[1])
@@ -225,20 +182,12 @@ describe('RelicView — 合成工坊', () => {
 })
 
 describe('RelicView — 套装', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('装备 2 件同系遗物激活 partial 套装', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     // 掠夺者战团成员：r_energy_1 / r_alloy_1（均 common）
     const a = relics.obtain(RELIC_POOL.find((r) => r.id === 'r_energy_1')!)
@@ -262,20 +211,12 @@ describe('RelicView — 套装', () => {
 })
 
 describe('RelicView — 丢弃', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('丢弃需两次点击确认，已装备遗物禁用丢弃', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const relics = useRelicsStore()
     const r1 = relics.obtain(RELIC_POOL[0])
     relics.obtain(RELIC_POOL[1])
@@ -302,20 +243,12 @@ describe('RelicView — 丢弃', () => {
 })
 
 describe('RelicView — 强化（v0.70）', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('打开强化面板：显示等级与下一级成本', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.relics.obtain(getRelicById('r_energy_3')!) // epic
     await wrapper.vm.$nextTick()
@@ -330,7 +263,9 @@ describe('RelicView — 强化（v0.70）', () => {
   })
 
   it('强化成功：等级+1、能量扣除、卡面 Lv 与效果 label 更新', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.resources.setAmount('energy', 1e8)
     game.relics.obtain(getRelicById('r_energy_3')!)
@@ -351,7 +286,9 @@ describe('RelicView — 强化（v0.70）', () => {
   })
 
   it('能量不足：按钮禁用且等级不变（一级都买不起时禁用）', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.relics.obtain(getRelicById('r_energy_3')!) // 新档能量 50，远低于 25M
     await wrapper.vm.$nextTick()
@@ -368,7 +305,9 @@ describe('RelicView — 强化（v0.70）', () => {
   })
 
   it('段位 ×100 的按钮文案按实际可完成级数显示（v1.00）', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(RelicView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     // epic 首级 25M、每级 ×1.5：25 + 37.5 = 62.5M ≤ 100M < +56.25M → 可完成 2 级
     game.resources.setAmount('energy', 1e8)
