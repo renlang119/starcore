@@ -159,32 +159,6 @@ const rarityColor = relicRarityColor
 /* 弹窗内容样式自 RelicView 原样迁入（.enhance-modal 是 ModalOverlay 根节点上的 class，
    scoped 规则匹配不到它，与拆分前实际生效范围一致。
    标题原无专属配色（plasma 色是 synth-modal 专属），故此处 .result-title 不设色） */
-.r-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-1);
-  color: var(--c);
-}
-.r-effects {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-.eff-mini {
-  font-size: var(--text-xs);
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-elevated);
-  border-radius: 3px;
-  color: var(--color-t-primary);
-}
-.synth-product {
-  border: 1px solid var(--c);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
-  padding: var(--space-3);
-  margin: var(--space-3) 0;
-}
 .enhance-level {
   font-size: var(--text-sm);
   color: var(--color-t-secondary);
@@ -230,30 +204,5 @@ const rarityColor = relicRarityColor
   align-items: stretch;
   gap: var(--space-2);
   flex: 1;
-}
-.bulk-toggle {
-  display: inline-flex;
-  border: 1px solid var(--color-border-line);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-.seg-btn {
-  padding: var(--space-1) var(--space-3); /* 分段切换器统一定标 */
-  font-size: var(--text-xs);
-  font-family: var(--font-mono, monospace);
-  color: var(--color-t-secondary);
-  background: transparent;
-  transition: all 0.15s var(--ease-out);
-}
-.seg-btn + .seg-btn {
-  border-left: 1px solid var(--color-border-line);
-}
-.seg-btn:hover {
-  color: var(--color-t-primary);
-  background: var(--color-hover);
-}
-.seg-btn.active {
-  color: var(--color-core);
-  background: color-mix(in srgb, var(--color-core) 10%, transparent);
 }
 </style>

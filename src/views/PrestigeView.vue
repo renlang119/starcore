@@ -554,30 +554,8 @@ onUnmounted(() => {
 }
 /* v0.86 无限天赋批量购买段位切换器（区标题行内） */
 .bulk-toggle {
-  display: inline-flex;
   margin-left: auto;
-  border: 1px solid var(--color-border-line);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-.seg-btn {
-  padding: var(--space-1) var(--space-3); /* 分段切换器统一定标 */
-  font-size: var(--text-xs);
-  font-family: var(--font-mono, monospace);
-  color: var(--color-t-secondary);
-  background: transparent;
-  transition: all 0.15s var(--ease-out);
-}
-.seg-btn + .seg-btn {
-  border-left: 1px solid var(--color-border-line);
-}
-.seg-btn:hover {
-  color: var(--color-t-primary);
-  background: var(--color-hover);
-}
-.seg-btn.active {
-  color: var(--color-amber);
-  background: color-mix(in srgb, var(--color-amber) 10%, transparent);
+  --accent: var(--color-amber);
 }
 .infinite-badge {
   display: inline-flex;
@@ -651,11 +629,10 @@ onUnmounted(() => {
 :deep(.modal) {
   border-color: var(--color-amber);
 }
+/* 标题基样式为全局 .confirm-title，此处仅保留本视图差异（v1.02） */
 .confirm-title {
   font-size: var(--text-lg);
-  font-weight: 700;
   color: var(--color-amber);
-  text-align: center;
   margin-bottom: var(--space-3);
 }
 .warning-box {
@@ -678,10 +655,6 @@ onUnmounted(() => {
   font-size: var(--text-sm);
   color: var(--color-quantum);
   margin-bottom: var(--space-3);
-}
-.confirm-actions {
-  display: flex;
-  gap: var(--space-2);
 }
 .save-msg {
   font-size: var(--text-xs);

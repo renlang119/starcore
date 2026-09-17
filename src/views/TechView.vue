@@ -154,14 +154,6 @@ function tryResearch(id: string) {
 </template>
 
 <style scoped>
-.auto-badge {
-  font-size: var(--text-xs);
-  color: var(--color-quantum);
-  margin-top: calc(-1 * var(--space-2));
-  margin-bottom: var(--space-2);
-  letter-spacing: 0.05em;
-}
-
 .tech-view {
   display: flex;
   flex-direction: column;
