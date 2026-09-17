@@ -58,6 +58,21 @@ function doEnhance() {
 // v0.86 批量强化段位（默认 ×1 与既有行为一致；封顶 20 级，×100 可一键拉满）
 const bulkSteps = ref(1)
 
+/**
+ * 批量强化实际可完成级数（按当前能量逐级模拟，与 enhanceSteps 扣费顺序一致）。
+ * 段位 >1 时用于按钮文案，随能量与当前等级动态变化。
+ */
+const bulkCount = computed(() =>
+  bulkSteps.value > 1 && props.relic
+    ? game.previewRelicEnhanceSteps(props.relic.instanceId, bulkSteps.value)
+    : bulkSteps.value
+)
+
+/** 按钮文案：段位 >1 时显示实际可完成级数；一级都买不起时退回原文案（按钮同时禁用） */
+const enhanceButtonLabel = computed(() =>
+  bulkSteps.value > 1 && bulkCount.value > 0 ? `强化 ×${bulkCount.value}` : '强化'
+)
+
 const rarityColor = relicRarityColor
 </script>
 
@@ -123,7 +138,7 @@ const rarityColor = relicRarityColor
             :disabled="!canAffordOne"
             @click="doEnhance"
           >
-            {{ bulkSteps > 1 ? `强化 ×${bulkSteps}` : '强化' }}
+            {{ enhanceButtonLabel }}
           </button>
         </div>
         <button

@@ -366,4 +366,30 @@ describe('RelicView — 强化（v0.70）', () => {
     expect(game.relics.owned[0].level).toBe(0)
     expect(wrapper.find('[data-testid="relic-level-badge"]').exists()).toBe(false)
   })
+
+  it('段位 ×100 的按钮文案按实际可完成级数显示（v1.00）', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    // epic 首级 25M、每级 ×1.5：25 + 37.5 = 62.5M ≤ 100M < +56.25M → 可完成 2 级
+    game.resources.setAmount('energy', 1e8)
+    game.relics.obtain(getRelicById('r_energy_3')!)
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('[data-testid="enhance-button"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-testid="enhance-confirm"]').text()).toBe('强化')
+
+    await wrapper
+      .findAll('.enhance-actions .seg-btn')
+      .find((b) => b.text() === '×100')!
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="enhance-confirm"]').text()).toBe('强化 ×2')
+    // 与实扣一致：点一次只完成 2 级（不是标称的 100 级）
+    await wrapper.find('[data-testid="enhance-confirm"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(game.relics.owned[0].level).toBe(2)
+    expect(wrapper.find('[data-testid="relic-level-badge"]').text()).toBe('Lv2')
+  })
 })
