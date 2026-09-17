@@ -6,8 +6,8 @@
 > 当前版本：v1.00
 >
 > 本文件为活跃档（v0.71 起，30 个版本），新条目置顶；更早条目见
-> [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36 - v0.70）与
-> [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01 - v0.35）。
+> [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36-v0.70）与
+> [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
 
 ---
 
