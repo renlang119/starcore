@@ -22,16 +22,7 @@ export namespace Decimal {
 export const D = (v: _Decimal.Value | number | string): _Decimal => new Decimal(v ?? 0)
 
 export const add = (a: _Decimal.Value, b: _Decimal.Value): _Decimal => D(a).plus(b)
-export const sub = (a: _Decimal.Value, b: _Decimal.Value): _Decimal => D(a).minus(b)
-export const mul = (a: _Decimal.Value, b: _Decimal.Value): _Decimal => D(a).times(b)
-export const div = (a: _Decimal.Value, b: _Decimal.Value): _Decimal => D(a).dividedBy(b)
-export const min = (a: _Decimal.Value, b: _Decimal.Value): _Decimal => Decimal.min(D(a), D(b))
-export const max = (a: _Decimal.Value, b: _Decimal.Value): _Decimal => Decimal.max(D(a), D(b))
 export const gte = (a: _Decimal.Value, b: _Decimal.Value): boolean => D(a).gte(b)
-export const gt = (a: _Decimal.Value, b: _Decimal.Value): boolean => D(a).gt(b)
-export const lte = (a: _Decimal.Value, b: _Decimal.Value): boolean => D(a).lte(b)
-export const lt = (a: _Decimal.Value, b: _Decimal.Value): boolean => D(a).lt(b)
-export const eq = (a: _Decimal.Value, b: _Decimal.Value): boolean => D(a).eq(b)
 
 /** 序列化 Decimal → string（安全保留精度，可反序列化） */
 export const ser = (v: _Decimal.Value): string => D(v).toString()

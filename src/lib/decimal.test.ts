@@ -2,7 +2,7 @@
  * decimal.test.ts — decimal.ts 序列化与基础运算测试
  */
 import { describe, it, expect } from 'vitest'
-import { D, ser, deser, add, sub, mul, div, gte, gt, lte, lt, eq, min, max } from './decimal'
+import { D, ser, deser, add } from './decimal'
 
 describe('decimal serialization', () => {
   it('ser 输出精确形态（存档落盘依赖此形态）', () => {
@@ -45,44 +45,6 @@ describe('decimal arithmetic', () => {
   it('add', () => {
     expect(add(2, 3).toNumber()).toBe(5)
     expect(add('1e20', '1e20').toNumber()).toBe(2e20)
-  })
-
-  it('sub', () => {
-    expect(sub(10, 3).toNumber()).toBe(7)
-  })
-
-  it('mul', () => {
-    expect(mul(6, 7).toNumber()).toBe(42)
-    expect(mul('1e10', '1e10').toNumber()).toBe(1e20)
-  })
-
-  it('div', () => {
-    expect(div(10, 4).toNumber()).toBe(2.5)
-  })
-})
-
-describe('decimal comparisons', () => {
-  it('eq', () => {
-    expect(eq(5, 5)).toBe(true)
-    expect(eq(5, 6)).toBe(false)
-  })
-
-  it('gt / gte', () => {
-    expect(gt(5, 3)).toBe(true)
-    expect(gt(3, 5)).toBe(false)
-    expect(gt(5, 5)).toBe(false)
-    expect(gte(5, 5)).toBe(true)
-  })
-
-  it('lt / lte', () => {
-    expect(lt(3, 5)).toBe(true)
-    expect(lt(5, 3)).toBe(false)
-    expect(lte(5, 5)).toBe(true)
-  })
-
-  it('min / max', () => {
-    expect(min(3, 5).toNumber()).toBe(3)
-    expect(max(3, 5).toNumber()).toBe(5)
   })
 })
 

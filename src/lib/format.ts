@@ -83,23 +83,6 @@ function sci(d: Decimal): string {
   return m + 'e' + exp.replace('+', '')
 }
 
-/** 整数千分位 */
-export function fmtInt(v: number | Decimal.Value): string {
-  const n = typeof v === 'number' ? v : new Decimal(v).toNumber()
-  if (!isFinite(n) || isNaN(n)) return '0'
-  return Math.floor(n).toLocaleString('en-US')
-}
-
-/** 百分比；NaN/Infinity 兜底为 0（v0.78）；负零归一（v0.95） */
-export function pct(v: number | Decimal.Value, fixed = 1): string {
-  const n = typeof v === 'number' ? v : new Decimal(v).toNumber()
-  if (!isFinite(n)) return (0).toFixed(fixed) + '%'
-  const s = (n * 100).toFixed(fixed)
-  // 四舍五入归零的负值不带负号（如 -0.0001 → 0.0%）
-  const zero = (0).toFixed(fixed)
-  return (s === '-' + zero ? zero : s) + '%'
-}
-
 /** 秒 → 友好时间（如 "2h 30m"） */
 export function fmtTime(seconds: number): string {
   if (seconds < 0 || !isFinite(seconds)) return '0s'
@@ -117,31 +100,4 @@ export function fmtRate(v: Decimal.Value): string {
   const d = v instanceof Decimal ? v : new Decimal(v)
   if (d.isZero()) return '0 /s'
   return (d.lt(0) ? '' : '+') + fmt(d) + ' /s'
-}
-
-/**
- * 秒 → 倒计时格式化（带"约"前缀，精确到分钟）
- * @param seconds 预估秒数
- * @param bottleneckName 瓶颈资源名称（可选），如传入则追加"（名称）"
- * @returns 如 "约5h23m后（木材）"
- */
-export function fmtCountdown(seconds: number, bottleneckName?: string): string {
-  if (!isFinite(seconds) || seconds < 0) return ''
-  const suffix = bottleneckName ? `（${bottleneckName}）` : ''
-  if (seconds < 60) return `约<1m后${suffix}`
-  const m = Math.floor(seconds / 60)
-  if (m < 60) return `约${m}m后${suffix}`
-  const h = Math.floor(m / 60)
-  const remM = m % 60
-  if (h < 24) {
-    const mPart = remM > 0 ? `${remM}m` : ''
-    return `约${h}h${mPart}后${suffix}`
-  }
-  const d = Math.floor(h / 24)
-  const remH = h % 24
-  if (d < 30) {
-    const hPart = remH > 0 ? `${remH}h` : ''
-    return `约${d}d${hPart}后${suffix}`
-  }
-  return `约${d}d后${suffix}`
 }
