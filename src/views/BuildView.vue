@@ -54,6 +54,16 @@ function tryUpgrade(id: string) {
   const name = BUILDINGS.find((b) => b.id === id)?.name ?? id
   showToast(done > 1 ? `开始建造：${name} ×${done}` : `开始建造：${name}`)
 }
+
+/**
+ * 按钮文案：段位 >1 时按当前资源实际可升级级数显示（随资源动态变化），
+ * 一级都买不起时退回原文案（按钮同时处于禁用态，成本行另有「可买 0 级」）。
+ */
+function upgradeLabel(id: string): string {
+  if (bulkSteps.value <= 1) return '升级'
+  const count = bulkPreviews.value[id]?.count ?? 0
+  return count > 0 ? `升级 ×${count}` : '升级'
+}
 </script>
 
 <template>
@@ -166,7 +176,7 @@ function tryUpgrade(id: string) {
             :disabled="!game.resources.canAfford(game.buildings.getCost(b.id))"
             @click="tryUpgrade(b.id)"
           >
-            {{ bulkSteps > 1 ? `升级 ×${bulkSteps}` : '升级' }}
+            {{ upgradeLabel(b.id) }}
           </button>
         </template>
       </li>

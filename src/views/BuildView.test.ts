@@ -158,6 +158,27 @@ describe('BuildView — 升级流程', () => {
 
     const costText = wrapper.find('.b-cost').text().replace(/\s+/g, '')
     expect(costText).toBe('可买2级·共能量22')
+    // v1.00 按钮文案按实际可升级级数显示（非段位标称值）
+    const card = wrapper.findAll('.build-card').find((c) => c.text().includes('光能收集器'))
+    expect(card!.find('button.btn-primary').text()).toBe('升级 ×2')
+  })
+
+  it('段位 ×10 但一级都买不起：按钮退回原文案且禁用', async () => {
+    const wrapper = mountView()
+    const game = useGameStore()
+    game.resources.setAmount('energy', 5) // 低于首级成本 10
+    await wrapper.vm.$nextTick()
+
+    await wrapper
+      .findAll('.bulk-toggle .seg-btn')
+      .find((b) => b.text() === '×10')!
+      .trigger('click')
+    await wrapper.vm.$nextTick()
+
+    const card = wrapper.findAll('.build-card').find((c) => c.text().includes('光能收集器'))
+    const btn = card!.find('button.btn-primary')
+    expect(btn.text()).toBe('升级')
+    expect((btn.element as HTMLButtonElement).disabled).toBe(true)
   })
 })
 
