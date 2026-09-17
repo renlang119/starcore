@@ -32,7 +32,7 @@ const pendingBulkAction = ref<{
 const showBulkModal = computed(() => !!pendingBulkAction.value)
 
 // P3-3 onboarding
-const { activeStep, dismiss, skipAll } = useOnboarding('army', ['army-train'])
+const { activeStep, dismiss, skipAll } = useOnboarding(['army-train'])
 
 // v0.86.2：满槽时训练按钮显示「训练中…」与最早完成队列的剩余时间，
 // 替代此前无反馈的死「训练」文案（新手误以为按钮坏了）

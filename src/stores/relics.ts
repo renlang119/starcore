@@ -17,6 +17,8 @@ import {
   enhanceValue,
   enhanceLabel,
 } from '@/data/relics'
+import { aggregateMult } from '@/lib/effect-system'
+import { repeatUntilFail } from '@/lib/batch'
 import type { RelicSaveData } from '@/lib/storage'
 
 export interface OwnedRelic extends RelicDef {
@@ -193,15 +195,9 @@ export const useRelicsStore = defineStore('relics', () => {
     return obtain(product)
   }
 
-  /** 获取某类乘数 */
+  /** 获取某类乘数（对外保持 number 契约，聚合逻辑委托 lib） */
   function getMult(type: RelicEffect['type'], target?: string): number {
-    let mult = 1
-    for (const eff of equippedEffects.value) {
-      if (eff.type !== type) continue
-      if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
-      mult *= eff.value
-    }
-    return mult
+    return aggregateMult(equippedEffects.value, type, target).toNumber()
   }
 
   // —— 强化（v0.70）：instance 级等级轴 ——
@@ -233,12 +229,7 @@ export const useRelicsStore = defineStore('relics', () => {
    * 上限自然停止；返回实际完成级数（0 = 一级都买不起）。
    */
   function enhanceSteps(instanceId: string, steps: number): number {
-    let done = 0
-    for (let i = 0; i < steps; i++) {
-      if (!enhance(instanceId)) break
-      done++
-    }
-    return done
+    return repeatUntilFail(steps, () => enhance(instanceId))
   }
 
   function reset() {

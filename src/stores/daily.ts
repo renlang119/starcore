@@ -113,10 +113,15 @@ export function streakReward(day: number): { energy: number; dark: number } | nu
 /** 断签回归补偿包 */
 export const RETURN_GIFT = { energy: 5e4, dark: 2 }
 
+/** 周计数零值表（初始化/换周清零/重置共用，v1.03 收敛） */
+function emptyCounters() {
+  return { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
+}
+
 export const useDailyStore = defineStore('daily', () => {
   const lastCheckIn = ref('') // YYYY-MM-DD，空 = 从未签到
   const streak = ref(0)
-  const weeklyCounters = ref({ battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 })
+  const weeklyCounters = ref(emptyCounters())
   const challengeWeek = ref('')
   const weekChallenges = ref<WeeklyChallenge[]>([])
 
@@ -162,7 +167,7 @@ export const useDailyStore = defineStore('daily', () => {
     if (challengeWeek.value === wk && weekChallenges.value.length === 3) return
     if (challengeWeek.value !== wk) {
       // 换周才清计数；同周补掷保留本周计数
-      weeklyCounters.value = { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
+      weeklyCounters.value = emptyCounters()
     }
     challengeWeek.value = wk
     const rng = mulberry32(fnv1a(wk))
@@ -211,7 +216,7 @@ export const useDailyStore = defineStore('daily', () => {
   function reset(): void {
     lastCheckIn.value = ''
     streak.value = 0
-    weeklyCounters.value = { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
+    weeklyCounters.value = emptyCounters()
     challengeWeek.value = ''
     weekChallenges.value = []
   }
