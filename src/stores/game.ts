@@ -7,6 +7,7 @@ import { ref, computed } from 'vue'
 import { D, Decimal, add } from '@/lib/decimal'
 import { EffectSystem, type EffectSource } from '@/lib/effect-system'
 import { computeOfflineGains as calcOfflineGains, type OfflineReport } from '@/lib/offline-gains'
+import { repeatUntilFail, simulateSteps } from '@/lib/batch'
 import { useResourcesStore, START_ENERGY } from './resources'
 import { useBuildingsStore } from './buildings'
 import { useResearchStore } from './research'
@@ -72,7 +73,7 @@ export const useGameStore = defineStore('game', () => {
   setGarrisonGuard((strongholdId, formationId) => {
     const def = getStronghold(strongholdId)
     if (!def) return false
-    if (def.requires && !exploration.isCompleted(def.requires)) return false
+    if (!exploration.prereqMet(def.requires)) return false
     const f = military.formations.find((f) => f.id === formationId)
     if (!f) return false
     for (const [sid, g] of Object.entries(combat.garrisoned)) {
@@ -394,8 +395,7 @@ export const useGameStore = defineStore('game', () => {
     daily.hydrate(data.daily)
     // 终身计数快照对齐已恢复的 totals——否则首个 tick 会把整轮历史产量
     // 当作增量重复计入终身计数
-    lifetimeTotalsSnapshot.energy = resources.getTotal('energy')
-    lifetimeTotalsSnapshot.dark = resources.getTotal('dark')
+    alignLifetimeSnapshot()
   }
 
   // —— 离线收益 ——
@@ -441,6 +441,27 @@ export const useGameStore = defineStore('game', () => {
   function exportCorruptRaw(): string {
     return corruptRaw.value ?? ''
   }
+  /** 重置全部 store（doImport 替换语义与 hardReset 共用清单；combat 传 fullReset
+   * 连远征深度一并清零。转生路径保留 relics/transcend 与远征深度，不纳入此清单） */
+  function resetAllStores() {
+    resources.reset()
+    buildings.reset()
+    research.reset()
+    military.reset()
+    combat.reset(true)
+    exploration.reset()
+    relics.reset()
+    transcend.reset(true)
+    achievements.reset()
+    daily.reset()
+  }
+
+  /** 终身计数快照对齐：toZero 归零（转生/清档），否则对齐当前 totals 现值（hydrate 后） */
+  function alignLifetimeSnapshot(toZero = false) {
+    lifetimeTotalsSnapshot.energy = toZero ? D(0) : resources.getTotal('energy')
+    lifetimeTotalsSnapshot.dark = toZero ? D(0) : resources.getTotal('dark')
+  }
+
   async function doImport(code: string): Promise<{ success: boolean; message?: string }> {
     const result = await importSave(code)
     if (!result.ok) {
@@ -455,19 +476,8 @@ export const useGameStore = defineStore('game', () => {
     try {
       // 导入 = 替换语义：hydrate 各 store 只覆盖出现的键，
       // 不先 reset 的话导入档缺省字段会保留会话现值（totalTranscends=0 也无法清零）。
-      // 重置清单对齐 hardReset（resources.reset() 回到含初始能量的新档状态；
-      // combat 传 fullReset 清远征深度），但不清存档、不停游戏循环；
-      // reset 后由 hydrateAll 恢复导入档快照，终身计数不重复计入
-      resources.reset()
-      buildings.reset()
-      research.reset()
-      military.reset()
-      combat.reset(true)
-      exploration.reset()
-      relics.reset()
-      transcend.reset(true)
-      achievements.reset()
-      daily.reset()
+      // 重置后由 hydrateAll 恢复导入档快照，终身计数不重复计入
+      resetAllStores()
       totalPlayTime.value = 0
       hydrateAll(result.data)
       await save()
@@ -483,18 +493,8 @@ export const useGameStore = defineStore('game', () => {
     await clearSave()
     initError.value = null
     corruptRaw.value = null
-    resources.reset()
-    buildings.reset()
-    research.reset()
-    military.reset()
-    combat.reset(true) // hardReset 连远征深度一并清零
-    exploration.reset()
-    relics.reset()
-    transcend.reset(true)
-    achievements.reset()
-    daily.reset()
-    lifetimeTotalsSnapshot.energy = D(0)
-    lifetimeTotalsSnapshot.dark = D(0)
+    resetAllStores()
+    alignLifetimeSnapshot(true)
     offlineReport.value = null
     totalPlayTime.value = 0
     // 给初始资源
@@ -528,8 +528,7 @@ export const useGameStore = defineStore('game', () => {
     // 成就终身计数：转生前先把本轮未采集的 totals 增量收进终身计数，
     // 再把快照归零对齐 reset 后的 totals（否则差值为负被钳掉，白丢一段计数）
     collectLifetimeTotals()
-    lifetimeTotalsSnapshot.energy = D(0)
-    lifetimeTotalsSnapshot.dark = D(0)
+    alignLifetimeSnapshot(true)
     // 执行转生
     transcend.transcend(gain)
     daily.bump('transcends')
@@ -581,32 +580,13 @@ export const useGameStore = defineStore('game', () => {
   ): { count: number; cost: Record<string, number> } {
     const def = BUILDINGS.find((b) => b.id === id)
     if (!def || steps < 1) return { count: 0, cost: {} }
-    const remain: Record<string, Decimal> = { ...resources.amounts }
-    let level = buildings.getLevel(id)
-    let count = 0
-    const totals: Record<string, Decimal> = {}
-    for (let i = 0; i < steps; i++) {
-      if (buildings.isMaxed(id, level)) break
-      const cost = buildingCost(def, level)
-      let affordable = true
-      for (const [k, v] of Object.entries(cost)) {
-        const have = remain[k]
-        if (have && !have.gte(v)) {
-          affordable = false
-          break
-        }
-      }
-      if (!affordable) break
-      for (const [k, v] of Object.entries(cost)) {
-        if (k in remain) remain[k] = remain[k].minus(v)
-        totals[k] = (totals[k] ?? D(0)).plus(v)
-      }
-      level++
-      count++
-    }
-    const result: Record<string, number> = {}
-    for (const [k, v] of Object.entries(totals)) result[k] = v.toNumber()
-    return { count, cost: result }
+    return simulateSteps(
+      steps,
+      buildings.getLevel(id),
+      (level) => buildingCost(def, level),
+      { ...resources.amounts },
+      (level) => !buildings.isMaxed(id, level)
+    )
   }
 
   /**
@@ -617,18 +597,13 @@ export const useGameStore = defineStore('game', () => {
   function previewRelicEnhanceSteps(instanceId: string, steps: number): number {
     const relic = relics.owned.find((r) => r.instanceId === instanceId)
     if (!relic || steps < 1) return 0
-    let remain = resources.getAmount('energy')
-    let level = relic.level
-    let count = 0
-    for (let i = 0; i < steps; i++) {
-      if (level >= MAX_RELIC_LEVEL) break
-      const cost = D(enhanceCost(relic.rarity, level + 1))
-      if (remain.lt(cost)) break
-      remain = remain.minus(cost)
-      level++
-      count++
-    }
-    return count
+    return simulateSteps(
+      steps,
+      relic.level,
+      (level) => ({ energy: enhanceCost(relic.rarity, level + 1) }),
+      { energy: resources.getAmount('energy') },
+      (level) => level < MAX_RELIC_LEVEL
+    ).count
   }
 
   /**
@@ -637,12 +612,7 @@ export const useGameStore = defineStore('game', () => {
    * 粒度与连点完全一致；买不起下一级或已满级自然停止。
    */
   function tryUpgradeBuildingSteps(id: string, steps: number): number {
-    let done = 0
-    for (let i = 0; i < steps; i++) {
-      if (!tryUpgradeBuilding(id)) break
-      done++
-    }
-    return done
+    return repeatUntilFail(steps, () => tryUpgradeBuilding(id))
   }
 
   /**

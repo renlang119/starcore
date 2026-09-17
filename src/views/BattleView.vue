@@ -76,8 +76,7 @@ const strongholdUnlocked = computed(() => {
   if (isEndless.value) return game.combat.isEndlessUnlocked()
   const def = getStronghold(strongholdId.value)
   if (!def) return false
-  if (def.requires && !game.exploration.isCompleted(def.requires)) return false
-  return true
+  return game.exploration.prereqMet(def.requires)
 })
 /** 已攻克：正式据点须在通关集内（未攻克可出战但不可驻扎） */
 const strongholdConquered = computed(

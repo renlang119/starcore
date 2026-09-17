@@ -38,13 +38,19 @@ export const useExplorationStore = defineStore('exploration', () => {
     return !!p && p.startTime > 0 && !p.completed
   }
 
+  /** 前置探索是否全部完成（接受单节点 id 或 id 数组；缺省视为已满足） */
+  function prereqMet(requires: string | string[] | undefined): boolean {
+    if (!requires) return true
+    if (typeof requires === 'string') return isCompleted(requires)
+    return requires.every((r) => isCompleted(r))
+  }
+
   /** 可探索的节点（不含已完成与进行中；行动队列曾对进行中节点重复计数，v0.81 收口） */
   function availableNodes(): ExploreNode[] {
     return EXPLORE_NODES.filter((n) => {
       if (isCompleted(n.id)) return false
       if (isExploring(n.id)) return false
-      if (!n.requires) return true
-      return n.requires.every((r) => isCompleted(r))
+      return prereqMet(n.requires)
     })
   }
 
@@ -58,7 +64,7 @@ export const useExplorationStore = defineStore('exploration', () => {
     const node = getNode(nodeId)
     if (!node) return false
     if (isCompleted(nodeId) || isExploring(nodeId)) return false
-    if (node.requires && !node.requires.every((r) => isCompleted(r))) return false
+    if (!prereqMet(node.requires)) return false
     if (!canAffordFn(node.cost)) return false
     if (!spendFn(node.cost)) return false
     // 锁定完成时间：基于当前 exploreMult 计算，之后 mult 变化不影响本次探索
@@ -130,6 +136,7 @@ export const useExplorationStore = defineStore('exploration', () => {
     count,
     isCompleted,
     isExploring,
+    prereqMet,
     availableNodes,
     startExplore,
     applyTick,

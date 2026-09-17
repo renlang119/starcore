@@ -37,6 +37,37 @@ export interface EffectSource {
  *   system.register(transcend)
  *   system.getMult('production_mult', 'energy')  // → Decimal
  */
+/** 可聚合效果条目的最小形状（repeat 缺省按 1 计，对应 transcend 的幂聚合口径） */
+export interface EffectEntry {
+  type: string
+  target?: string
+  value: number
+  repeat?: number
+}
+
+/**
+ * 聚合乘数：type 过滤 + target 过滤（缺省或 'all' 对任意 target 生效）+
+ * repeat 次幂。四个 EffectSource store 的 getMult 统一委托于此（v1.03）。
+ */
+export function aggregateMult(effects: EffectEntry[], type: string, target?: string): Decimal {
+  let m = D(1)
+  for (const eff of effects) {
+    if (eff.type !== type) continue
+    if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
+    m = m.times(D(eff.value).pow(eff.repeat ?? 1))
+  }
+  return m
+}
+
+/** 聚合累加值：type 过滤 + repeat 次累乘（getValue 型效果，如 training_slot） */
+export function aggregateValue(effects: EffectEntry[], type: string): number {
+  let total = 0
+  for (const eff of effects) {
+    if (eff.type === type) total += eff.value * (eff.repeat ?? 1)
+  }
+  return total
+}
+
 export class EffectSystem {
   private sources: EffectSource[] = []
 

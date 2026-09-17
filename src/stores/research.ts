@@ -4,7 +4,8 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { D, Decimal } from '@/lib/decimal'
+import { Decimal } from '@/lib/decimal'
+import { aggregateMult, aggregateValue } from '@/lib/effect-system'
 import { getTech, techAvailable, type TechDef, type TechEffect } from '@/data/tech'
 import type { ResearchSaveData } from '@/lib/storage'
 
@@ -31,22 +32,12 @@ export const useResearchStore = defineStore('research', () => {
 
   /** 某类乘数汇总，如 production_mult / energy → 1.2 * 1.3 = 1.56 */
   function getMult(type: TechEffect['type'], target?: string): Decimal {
-    let mult = D(1)
-    for (const eff of allEffects.value) {
-      if (eff.type !== type) continue
-      if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
-      mult = mult.times(eff.value)
-    }
-    return mult
+    return aggregateMult(allEffects.value, type, target)
   }
 
   /** 某类累加值汇总（非乘数型效果，如 training_slot）——EffectSource 接口 */
   function getValue(type: string): number {
-    let total = 0
-    for (const eff of allEffects.value) {
-      if (eff.type === type) total += eff.value
-    }
-    return total
+    return aggregateValue(allEffects.value, type)
   }
 
   // —— actions ——

@@ -5,11 +5,11 @@
  * 视图只需 const toast = useToast()，模板挂 <Toast :toast="toast" />。
  * duration 可调（PrestigeView 存档/导入类提示曾用 3000–5000ms）。
  */
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, type Ref } from 'vue'
 
 export interface ToastApi {
-  /** 当前显示的消息（空串=隐藏） */
-  msg: Readonly<ReturnType<typeof ref<string>>>
+  /** 当前显示的消息（空串=隐藏，仅 show 内部改写） */
+  msg: Ref<string>
   show: (msg: string, duration?: number) => void
 }
 

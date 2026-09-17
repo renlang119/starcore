@@ -9,11 +9,7 @@ import DailyCard from '@/components/home/DailyCard.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 // P3-3 新手引导（HomeView 3 步）
-const { activeStep, dismiss, skipAll } = useOnboarding('home', [
-  'home-core',
-  'home-quick',
-  'home-actions',
-])
+const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick', 'home-actions'])
 </script>
 
 <template>

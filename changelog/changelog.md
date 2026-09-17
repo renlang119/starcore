@@ -3,11 +3,59 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v1.02
+> 当前版本：v1.03
 >
-> 本文件为活跃档（v0.71 起，32 个版本），新条目置顶；更早条目见
+> 本文件为活跃档（v0.71 起，33 个版本），新条目置顶；更早条目见
 > [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36-v0.70）与
 > [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
+
+---
+
+## v1.03 — 重构: 核心逻辑层收敛与存档校验助手
+
+**变更性质：重构（store/lib 重复实现收敛，行为零变化）**
+**开发时间：2026-09-17**
+
+### 概述
+
+核心逻辑层的重复实现收进 lib 单一出处：四个效果来源的乘数与累加
+聚合、批量操作的执行与预览骨架、解锁与前置判定、存档读写通道的
+载荷拼装与解析、存档校验的高频判定。存档结构与读写语义不变，
+界面唯一变化是存档管理区显示指挥官名（既有存档字段接入展示）。
+
+### 变更明细
+
+- 效果聚合：`lib/effect-system.ts` 新增 `aggregateMult` 与
+  `aggregateValue`，research/relics/achievements/transcend 四个
+  store 的 `getMult`/`getValue` 统一委托，transcend 的 repeat
+  幂语义归一进助手。
+- 批量操作：新增 `lib/batch.ts` 的 `repeatUntilFail` 与
+  `simulateSteps`，建筑升级、遗物强化、转生树购买的批量执行与
+  预览函数各自收敛，实扣与预览口径不变。
+- 解锁与前置判定：新增 `lib/requires.ts` 的 `isUnlockedBy`，
+  buildings 与 military store、行动队列、文明概况四处共用；
+  探索 store 新增 `prereqMet`，星图、战斗页与驻扎守卫统一调用。
+- 存档读写：`_parseStored` 与 `_parseBackup` 合并为
+  `_parsePayload`；`clearAllSaves` 与 `clearSave` 合并为一份
+  实现；`writeSave` 与 `writeSaveSync` 的载荷拼装抽为
+  `_encodePayload`。
+- 存档校验：新增 `_isNonNegFinite`/`_isNonNegInt`/
+  `_isValidStrArray` 三个判定助手，替换校验段十余处展开写法，
+  判定口径不变。
+- 默认编队：三处逐字重复的编队骨架收进 `data/units.ts` 的
+  `defaultFormations()` 工厂。
+- 资源与日常：五资源零值表与周挑战计数零值表各抽工厂函数。
+- 游戏枢纽：导入与清档的十行重置清单抽为 `resetAllStores()`，
+  终身计数快照对齐三段抽为 `alignLifetimeSnapshot()`。
+- 引导与轻提示：`useOnboarding` 去掉不消费的流程参数并复用单次
+  读取结果；`useToast` 的消息类型改为直接的 `Ref<string>`。
+- 存档管理区显示指挥官名（存档既有 `player` 字段此前只存不显）。
+
+### 验证
+
+- `corepack pnpm check` 全绿：32 个测试文件 478 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- Playwright 回归套件 27 脚本全过。
 
 ---
 
