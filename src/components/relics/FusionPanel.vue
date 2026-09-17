@@ -8,8 +8,8 @@ import ModalOverlay from '@/components/ui/ModalOverlay.vue'
  *
  * 选材状态由 useRelicFusion 持有、视图层传入；本组件只负责工坊 UI 与合成动作。
  * data-testid 与 DOM 结构与拆分前一致，供单测与 Playwright 脚本断言。
- * 图鉴卡上的 .r-head 等卡面样式仍在 RelicView；.rarity-badge 与 .r-name
- * 已收敛为全局工具类（v0.97），此处不再各存一份。
+ * 图鉴卡的 .r-head 等卡面样式与 .rarity-badge / .r-name 同为全局工具类
+ * （v0.97 / v1.02 两批收敛），此处不再各存一份。
  */
 defineProps<{ fusion: RelicFusionApi }>()
 
@@ -191,31 +191,5 @@ function closeResult(fusion: RelicFusionApi) {
    .result-sub 原本无本视图样式定义，保留类名维持 DOM 不变） */
 .result-title {
   color: var(--color-plasma);
-}
-.r-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-1);
-  color: var(--c);
-}
-.r-effects {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-.eff-mini {
-  font-size: var(--text-xs);
-  padding: var(--space-1) var(--space-2);
-  background: var(--color-elevated);
-  border-radius: 3px;
-  color: var(--color-t-primary);
-}
-.synth-product {
-  border: 1px solid var(--c);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--c) 8%, var(--color-surface));
-  padding: var(--space-3);
-  margin: var(--space-3) 0;
 }
 </style>

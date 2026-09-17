@@ -527,10 +527,6 @@ function cancelGarrison() {
   font-weight: 700;
   color: var(--c);
 }
-.s-type {
-  font-size: var(--text-xs);
-  color: var(--color-t-secondary);
-}
 .s-desc {
   font-size: var(--text-xs);
   color: var(--color-t-secondary);

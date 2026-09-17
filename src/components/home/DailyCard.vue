@@ -4,6 +4,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { localDateStr } from '@/stores/daily'
+import ProgressBar from '@/components/ui/ProgressBar.vue'
 
 const game = useGameStore()
 const daily = computed(() => game.daily)
@@ -62,9 +63,7 @@ function claim(templateId: string) {
       >
         <div class="c-info">
           <span class="c-name">{{ challengeName(c) }}</span>
-          <div class="c-bar">
-            <div class="c-fill" :style="{ width: game.daily.progressOf(c) * 100 + '%' }"></div>
-          </div>
+          <ProgressBar class="c-bar" fill-class="c-fill" :pct="game.daily.progressOf(c) * 100" />
           <span class="c-count font-mono"
             >{{ Math.min(daily.weeklyCounters[c.kind], c.target) }}/{{ c.target }}</span
           >
@@ -167,16 +166,10 @@ function claim(templateId: string) {
 }
 .c-bar {
   flex: 1;
-  height: 6px;
   min-width: 40px;
-  background: var(--color-border-line);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-.c-fill {
-  height: 100%;
-  background: var(--color-quantum);
-  border-radius: var(--radius-pill);
+  --pb-track: var(--color-border-line);
+  --pb-fill: var(--color-quantum);
+  --pb-transition: none;
 }
 .c-count {
   font-size: var(--text-xs);
