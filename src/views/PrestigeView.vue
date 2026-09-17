@@ -297,6 +297,7 @@ onUnmounted(() => {
     <!-- 存档管理 -->
     <div class="save-section">
       <h3 class="section-title">存档管理</h3>
+      <p class="save-meta">{{ game.player.name }} · 本地存档</p>
       <div class="save-actions">
         <button class="btn-secondary sm" @click="doExport">导出存档</button>
         <button class="btn-secondary sm" @click="manualSave">手动保存</button>
@@ -655,6 +656,11 @@ onUnmounted(() => {
   font-size: var(--text-sm);
   color: var(--color-quantum);
   margin-bottom: var(--space-3);
+}
+.save-meta {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+  margin-bottom: var(--space-2);
 }
 .save-msg {
   font-size: var(--text-xs);

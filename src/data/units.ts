@@ -92,6 +92,15 @@ export const UNITS: UnitDef[] = [
   },
 ]
 
+/** 默认编队骨架工厂：初始/重置/存档自愈三处共用（每次返回新副本，v1.03 收敛） */
+export function defaultFormations(): { id: string; name: string; units: Record<UnitId, number> }[] {
+  return [
+    { id: 'f1', name: '先锋编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+    { id: 'f2', name: '第二编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+    { id: 'f3', name: '第三编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+  ]
+}
+
 /** 兵种查找 Map（O(1) 查找） */
 const UNIT_MAP = new Map(UNITS.map((u) => [u.id, u]))
 

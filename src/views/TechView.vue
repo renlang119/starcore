@@ -31,7 +31,7 @@ const emptyText = computed(() =>
 )
 
 // P3-3 onboarding
-const { activeStep, dismiss, skipAll } = useOnboarding('tech', ['tech-research'])
+const { activeStep, dismiss, skipAll } = useOnboarding(['tech-research'])
 
 function techStatus(id: string): 'completed' | 'available' | 'locked' {
   if (game.research.isCompleted(id)) return 'completed'

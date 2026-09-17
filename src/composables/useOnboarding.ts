@@ -7,16 +7,13 @@
  * - 支持 dismiss / skipAll
  *
  * 用法：
- *   const { activeStep, dismiss, skipAll } = useOnboarding('home')
+ *   const { activeStep, dismiss, skipAll } = useOnboarding(['step1', 'step2'])
  *   // activeStep.value === 'step1' 时显示气泡
  */
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const STORAGE_KEY = 'starcore_onboarding'
 const TIMEOUT_MS = 10_000
-
-/** 所有引导流程 ID */
-export type OnboardingFlow = 'home' | 'build' | 'tech' | 'map' | 'army'
 
 /** 已完成 step 集合（跨页面共享）
  *  存储结构（体验增强设计规范 §3.3.4）：JSON 对象，每个 step 一个 boolean，
@@ -43,13 +40,11 @@ function saveCompleted(set: Set<string>) {
 }
 
 /**
- * 使用引导流程
- * @param _flow 流程 ID：签名保留供调用点自解释（各流程共享同一存储 key 与 steps 列表），
- *   当前实现不消费；未来若需按流程区分（如分流程独立存储）在此接入
+ * 使用引导流程（各流程共享同一存储 key；按步骤区分，无需流程参数）
  * @param steps 该流程的 step ID 列表（按顺序）
  * @returns activeStep — 当前应显示的 step（null 表示不显示）
  */
-export function useOnboarding(_flow: OnboardingFlow, steps: string[]) {
+export function useOnboarding(steps: string[]) {
   const activeStep = ref<string | null>(null)
   let timer: ReturnType<typeof setTimeout> | null = null
 
@@ -71,14 +66,13 @@ export function useOnboarding(_flow: OnboardingFlow, steps: string[]) {
 
   /** 标记当前 step 完成，自动推进到下一个 */
   function dismiss() {
+    const completed = loadCompleted()
     if (activeStep.value) {
-      const completed = loadCompleted()
       completed.add(activeStep.value)
       saveCompleted(completed)
     }
     clearTimer()
-    // 推进到下一个未完成的 step
-    const completed = loadCompleted()
+    // 推进到下一个未完成的 step（复用上面读取的集合）
     const next = steps.find((s) => !completed.has(s))
     activeStep.value = next ?? null
     if (activeStep.value) startTimeout()

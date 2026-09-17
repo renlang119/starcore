@@ -8,6 +8,11 @@ import { Decimal, D, add, ser, deser, gte } from '@/lib/decimal'
 import type { ResourceType } from '@/data/buildings'
 import type { ResourceSaveData } from '@/lib/storage'
 
+/** 五资源零值表（state 初始化与 reset 共用，v1.03 收敛） */
+function zeroResources(): Record<ResourceType, Decimal> {
+  return { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
+}
+
 /** 新档初始能量（新档/硬重置/转生统一引用） */
 export const START_ENERGY = 50
 
@@ -29,27 +34,12 @@ const RES_META: Record<ResourceType, ResourceMeta> = {
 export const useResourcesStore = defineStore('resources', () => {
   // —— state ——
   const amounts = ref<Record<ResourceType, Decimal>>({
+    ...zeroResources(),
     energy: D(START_ENERGY),
-    crystal: D(0),
-    alloy: D(0),
-    data: D(0),
-    dark: D(0),
   })
-  const totals = ref<Record<ResourceType, Decimal>>({
-    energy: D(0),
-    crystal: D(0),
-    alloy: D(0),
-    data: D(0),
-    dark: D(0),
-  })
+  const totals = ref<Record<ResourceType, Decimal>>(zeroResources())
   /** 每秒产出（由 game loop 每帧计算并写入） */
-  const production = ref<Record<ResourceType, Decimal>>({
-    energy: D(0),
-    crystal: D(0),
-    alloy: D(0),
-    data: D(0),
-    dark: D(0),
-  })
+  const production = ref<Record<ResourceType, Decimal>>(zeroResources())
 
   // —— getters ——
   const getAmount = (t: ResourceType) => amounts.value[t]
@@ -109,15 +99,9 @@ export const useResourcesStore = defineStore('resources', () => {
   /** 重置（转生用） */
   function reset(keepDark = false) {
     const darkKeep = keepDark ? amounts.value.dark : D(0)
-    amounts.value = {
-      energy: D(START_ENERGY),
-      crystal: D(0),
-      alloy: D(0),
-      data: D(0),
-      dark: darkKeep,
-    }
-    totals.value = { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
-    production.value = { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
+    amounts.value = { ...zeroResources(), energy: D(START_ENERGY), dark: darkKeep }
+    totals.value = zeroResources()
+    production.value = zeroResources()
   }
 
   // —— 序列化 ——

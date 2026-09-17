@@ -30,7 +30,7 @@ const allMaxed = computed(
 )
 
 // P3-3 onboarding
-const { activeStep, dismiss, skipAll } = useOnboarding('build', ['build-upgrade'])
+const { activeStep, dismiss, skipAll } = useOnboarding(['build-upgrade'])
 
 // 3.12：使用原子操作替代 canAfford + spendCost + upgrade 三步
 // v0.86 批量升级：段位切换 ×1/×10/×100，买满语义（能买几级买几级）
