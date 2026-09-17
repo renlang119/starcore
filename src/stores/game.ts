@@ -53,7 +53,7 @@ export const useGameStore = defineStore('game', () => {
 
   // 修复：显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
-  // 强化能量支出通道（v0.70）：接入 resources.spend 原子扣费
+  // 强化能量支出通道：接入 resources.spend 原子扣费
   setRelicEnhanceSpendProvider((cost) => resources.spend('energy', cost))
   // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
   setAchievementExternalProviders({
@@ -67,7 +67,7 @@ export const useGameStore = defineStore('game', () => {
   setTrainingSlotProvider(() =>
     Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
   )
-  // 驻扎前置守卫（v0.82 驻扎校验）：据点须解锁（探索前置完成）+ 编队存在且未被其他据点占用。
+  // 驻扎前置守卫：据点须解锁（探索前置完成）+ 编队存在且未被其他据点占用。
   // 据点已攻克门槛由 combat.garrison 本体校验（completedStrongholds 属 combat 自身状态）
   setGarrisonGuard((strongholdId, formationId) => {
     const def = getStronghold(strongholdId)
@@ -92,7 +92,7 @@ export const useGameStore = defineStore('game', () => {
    * 初始化错误态（A2 兜底）：读档/hydrate 异常或存档版本过新时置位。
    * 置位后不启动 tick 与自动存档（保护原始存档不被空状态覆盖），
    * App 展示错误屏，由玩家选择导出原始存档或「清除存档重开」。
-   * corrupt（v0.81）：主备档都存在但全部不可读——与「无档」严格区分，
+   * corrupt：主备档都存在但全部不可读——与「无档」严格区分，
    * 不静默开新档（旧路径 15 秒后自动存档会用空状态覆盖损坏档，造成数据丢失）。
    * corruptRaw 保存原始存档载荷，供错误屏「导出原始存档」。
    */
@@ -122,15 +122,13 @@ export const useGameStore = defineStore('game', () => {
   const prestigeMult = computed(() => effectSystem.getMult('prestige_mult'))
   const offlineMult = computed(() => effectSystem.getMult('offline_bonus'))
   const techCostMult = computed(() => effectSystem.getMult('cost_mult', 'tech'))
-  // —— 自动化 QoL 开关（v0.58，转生树买断节点；getValue 累加通道 > 0 即已购）——
+  // —— 自动化 QoL 开关（转生树买断节点；getValue 累加通道 > 0 即已购）——
   const autoBuild = computed(() => effectSystem.getValue('auto_build') > 0)
   const autoResearch = computed(() => effectSystem.getValue('auto_research') > 0)
   const autoExplore = computed(() => effectSystem.getValue('auto_explore') > 0)
 
   /** 5.2：缓存总产出——仅当建筑等级或乘数变化时重算 */
   const totalProduction = computed(() => buildings.getTotalProduction(productionMults.value))
-
-  // —— 计算属性直接暴露（已移除冗余包装函数）——
 
   // —— 主 tick ——
   /**
@@ -151,7 +149,7 @@ export const useGameStore = defineStore('game', () => {
     lifetimeTotalsSnapshot.dark = curDark
   }
 
-  // —— 每日签到/周期挑战（v0.62）——
+  // —— 每日签到/周期挑战 ——
   /** 挑战奖励发放（DailyCard 领取按钮回调） */
   function claimChallenge(templateId: string): { dark: number; streakBonus: number } | null {
     const result = daily.claim(templateId)
@@ -195,7 +193,7 @@ export const useGameStore = defineStore('game', () => {
     // 2. 资源增长
     resources.applyTick(dt)
 
-    // 2.5 自动化 QoL（v0.58）：建造协议/研究协议/探索协议，买断常开只在线生效。
+    // 2.5 自动化 QoL：建造协议/研究协议/探索协议，买断常开只在线生效。
     // 复用既有原子操作（tryUpgradeBuilding/tryResearch/startExplore），
     // 成就钩子、科技成本乘数、并发口径与手动路径天然一致。
     if (autoBuild.value || autoResearch.value || autoExplore.value) {
@@ -221,7 +219,7 @@ export const useGameStore = defineStore('game', () => {
     collectLifetimeTotals()
     achievements.checkAndUnlock()
 
-    // 6. 每日签到/周期挑战（v0.62）：换天自动签到 + 换周重掷（字符串比对，开销忽略）
+    // 6. 每日签到/周期挑战：换天自动签到 + 换周重掷（字符串比对，开销忽略）
     const checkIn = daily.onTickCheckIn()
     if (checkIn) {
       for (const [res, v] of Object.entries(checkIn)) {
@@ -233,7 +231,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /**
-   * 自动化 QoL（v0.58）：每 tick 一遍，三种协议独立开关。
+   * 自动化 QoL：每 tick 一遍，三种协议独立开关。
    * - 建造协议：按 BUILDINGS 数据序扫描已解锁建筑，买得起即升 1 级（每建筑每 tick 至多 1 级）
    * - 研究协议：按 TECHS 数据序扫描可用科技，买得起即完成（含 techCostMult，与手动一致）
    * - 探索协议：availableNodes 已挡完成/进行中/前置，逐个尝试开始（与 MapView 手动同路径）
@@ -243,8 +241,7 @@ export const useGameStore = defineStore('game', () => {
     if (autoBuild.value) {
       for (const b of BUILDINGS) {
         // isUnlocked 查 b.requires（科技 id），须传已完成科技集合；
-        // v0.82 前曾误传按 unlock 效果目标派生的集合（建筑 id 集合），
-        // 两集合永不相交，17/20 建筑永不自动升级
+        // 误传 unlock 效果目标派生的集合会使两集合永不相交，建筑永不自动升级
         if (!buildings.isUnlocked(b, research.completed)) continue
         tryUpgradeBuilding(b.id)
       }
@@ -357,7 +354,7 @@ export const useGameStore = defineStore('game', () => {
         return false
       }
       if (outcome.status === 'corrupt') {
-        // 主备档都在但都不可读（v0.81）：进错误屏给导出/清除出口，
+        // 主备档都在但都不可读：进错误屏给导出/清除出口，
         // 绝不按无档处理——否则 15 秒自动存档会用空状态覆盖损坏档
         initError.value = 'corrupt'
         corruptRaw.value = outcome.raw ?? null
@@ -432,7 +429,6 @@ export const useGameStore = defineStore('game', () => {
       const report = doComputeOfflineGains()
       setOfflineReport(report)
     }
-    lastTickTime.value = Date.now()
     start()
     return loaded
   }
@@ -457,7 +453,7 @@ export const useGameStore = defineStore('game', () => {
       return { success: false, message: msg }
     }
     try {
-      // 导入 = 替换语义（v0.81）：hydrate 各 store 只覆盖出现的键，
+      // 导入 = 替换语义：hydrate 各 store 只覆盖出现的键，
       // 不先 reset 的话导入档缺省字段会保留会话现值（totalTranscends=0 也无法清零）。
       // 重置清单对齐 hardReset（resources.reset() 回到含初始能量的新档状态；
       // combat 传 fullReset 清远征深度），但不清存档、不停游戏循环；
@@ -574,7 +570,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /**
-   * 批量升级预览（v0.94）：返回当前资源下点击一次批量升级的实际
+   * 批量升级预览：返回当前资源下点击一次批量升级的实际
    * 可买级数与逐级累计总花费。逐级取价与扣费模拟同 tryUpgradeBuilding
    * 的实扣顺序一致（资源不足或达等级上限自然停止，最多 steps 级），
    * 供 ×N>1 档位在成本行展示「可买级数 + 预计总花费」。
@@ -636,7 +632,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   /**
-   * 批量升级建筑（v0.86）：至多 steps 级、买满语义。
+   * 批量升级建筑：至多 steps 级、买满语义。
    * 内部逐级复用 tryUpgradeBuilding 原子操作，等级/成就/周挑战记账
    * 粒度与连点完全一致；买不起下一级或已满级自然停止。
    */

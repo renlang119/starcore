@@ -32,8 +32,6 @@ export type IntLifetimeKey = 'upgrades' | 'maxBuildingLevel' | 'researches' | 'e
 export type ExternalMetric =
   'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime' | 'expeditionBest'
 
-export type LifetimeMetric = BigLifetimeKey | IntLifetimeKey
-
 const INT_KEYS: IntLifetimeKey[] = [
   'upgrades',
   'maxBuildingLevel',

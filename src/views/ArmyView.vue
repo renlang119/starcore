@@ -216,7 +216,7 @@ function removeAll(fid: string, uid: UnitId) {
     </div>
 
     <!-- 兵营：训练 -->
-    <div v-if="activeTab === 'barracks'" class="barracks">
+    <div v-if="activeTab === 'barracks'">
       <!-- 空状态 1：军事科技未解锁 -->
       <EmptyState
         v-if="!armyUnlocked"
@@ -251,7 +251,7 @@ function removeAll(fid: string, uid: UnitId) {
                 <use :href="'#' + u.icon" />
               </svg>
             </div>
-            <div class="u-info">
+            <div>
               <div class="u-name">
                 {{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span>
               </div>
@@ -336,7 +336,7 @@ function removeAll(fid: string, uid: UnitId) {
     </div>
 
     <!-- 编组 -->
-    <div v-else class="formation-view">
+    <div v-else>
       <div v-for="f in formations" :key="f.id" class="formation-card">
         <div class="f-head">
           <span class="f-name">{{ f.name }}</span>
@@ -344,7 +344,7 @@ function removeAll(fid: string, uid: UnitId) {
             >战力 {{ game.military.formationPower(f, atkMult, defMult).atk }}</span
           >
         </div>
-        <div class="f-units">
+        <div>
           <div v-for="u in UNITS" :key="u.id" class="f-unit-row">
             <div class="fu-top">
               <div class="fu-info">

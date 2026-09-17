@@ -124,12 +124,8 @@ export const useRelicsStore = defineStore('relics', () => {
       obtainedAt: Date.now(),
       level: 0,
     }
-    pushRelic(newRelic)
+    owned.value.push(newRelic)
     return newRelic
-  }
-  // 辅助：避免 obtain 中 owned 变量名冲突
-  function pushRelic(r: OwnedRelic) {
-    owned.value.push(r)
   }
 
   /** 计算当前已装备遗物的所有效果（含强化放大与套装派生加成，v0.61/v0.70） */
@@ -189,7 +185,6 @@ export const useRelicsStore = defineStore('relics', () => {
     const rarity = materials[0].rarity
     if (!materials.every((m) => m.rarity === rarity)) return null
     const nextRarity = RARITY_ORDER[RARITY_ORDER.indexOf(rarity) + 1]
-    if (!nextRarity) return null
     const pool = RELIC_POOL.filter((r) => r.rarity === nextRarity)
     if (pool.length === 0) return null
     const product = pool[Math.floor(rng() * pool.length)]

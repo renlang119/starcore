@@ -11,11 +11,6 @@ import type { ResourceSaveData } from '@/lib/storage'
 /** 新档初始能量（新档/硬重置/转生统一引用） */
 export const START_ENERGY = 50
 
-export interface ResourceState {
-  amount: Decimal
-  total: Decimal // 历史总产出
-}
-
 export interface ResourceMeta {
   id: ResourceType
   name: string

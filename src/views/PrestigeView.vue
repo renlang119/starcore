@@ -181,11 +181,11 @@ onUnmounted(() => {
 
     <!-- 负熵面板 -->
     <div class="neg-panel">
-      <div class="neg-display">
+      <div>
         <div class="neg-label">负熵（永久货币）</div>
         <div class="neg-value font-display">{{ fmt(negEntropy) }}</div>
       </div>
-      <div class="neg-preview">
+      <div>
         <div class="preview-label">本次转生可获得</div>
         <div class="preview-value font-mono" :class="{ ready: canTranscend }">
           +{{ fmt(previewGain) }}
@@ -204,7 +204,7 @@ onUnmounted(() => {
     <p v-else class="ready-hint">已满足转生条件！</p>
 
     <!-- 转生树 -->
-    <div class="tree-section">
+    <div>
       <h3 class="section-title">转生天赋树</h3>
       <div class="tree-grid">
         <div
@@ -587,7 +587,7 @@ onUnmounted(() => {
   height: 1.4em;
   padding: 0 0.3em;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-amber) 14.000000000000002%, transparent);
+  background: color-mix(in srgb, var(--color-amber) 14%, transparent);
   border: 1px solid var(--color-amber);
   color: var(--color-amber);
   font-size: var(--text-xs);
