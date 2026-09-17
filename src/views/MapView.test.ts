@@ -9,10 +9,8 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent } from 'vue'
+import { describe, it, expect, vi } from 'vitest'
+import { mountView, useViewTestHooks, vueRouterMock, focusTrapMock } from '@/tests/view-mount'
 import MapView from './MapView.vue'
 import { useGameStore } from '@/stores/game'
 import { EXPLORE_NODES, LAYER_INFO } from '@/data/explore'
@@ -20,52 +18,17 @@ import { STRONGHOLDS } from '@/data/pve'
 
 const mockPush = vi.fn()
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: {} }),
-  useRouter: () => ({ push: mockPush }),
-  RouterLink: defineComponent({
-    props: { to: { type: String, required: false, default: '' } },
-    template: '<a><slot /></a>',
-  }),
-  RouterView: defineComponent({ template: '<div />' }),
-}))
+vi.mock('vue-router', () => vueRouterMock({ push: () => mockPush }))
 
-vi.mock('@/composables/useFocusTrap', () => ({
-  useFocusTrap: () => {},
-}))
-
-let pinia: ReturnType<typeof createPinia>
-const wrappers: VueWrapper[] = []
-
-function mountView() {
-  const wrapper = mount(MapView, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        Icons: defineComponent({ template: '<svg />' }),
-        Transition: { template: '<div><slot /></div>' },
-      },
-    },
-  })
-  wrappers.push(wrapper)
-  return wrapper
-}
+vi.mock('@/composables/useFocusTrap', () => focusTrapMock())
 
 describe('MapView — 挂载与渲染', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('正常挂载并渲染各层（当前 9 层）星图', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     expect(wrapper.find('.map-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('探索星图')
     // 各层区块（当前 9 层：orbit/inner/outer/deep/stellar/cluster/arm/galaxy/void）
@@ -75,7 +38,9 @@ describe('MapView — 挂载与渲染', () => {
   })
 
   it('首个节点可探索，深层节点锁定并显示前置', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     // node_orbit 无前置
     const orbitCard = wrapper.findAll('.node-card').find((c) => c.find('.n-name').text() !== '')!
     expect(orbitCard.find('.btn-accent').exists()).toBe(true)
@@ -85,7 +50,9 @@ describe('MapView — 挂载与渲染', () => {
   })
 
   it('未解锁据点不显示，远征区块默认置灰', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     // 新档无已完成节点 → 无已解锁据点
     expect(wrapper.find('.stronghold-section').exists()).toBe(false)
     // 远征区块可见但禁用
@@ -98,20 +65,12 @@ describe('MapView — 挂载与渲染', () => {
 })
 
 describe('MapView — 探索流程', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('资源不足时探索按钮禁用', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.resources.setAmount('energy', 0)
     const orbitBtn = wrapper
@@ -125,7 +84,9 @@ describe('MapView — 探索流程', () => {
     const game = useGameStore()
     // 成本 100 > 新档能量底值 50，须在挂载前备足（disabled 按钮不触发 click）
     game.resources.setAmount('energy', 1e6)
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
 
     const orbitCard = wrapper
       .findAll('.node-card')
@@ -142,7 +103,9 @@ describe('MapView — 探索流程', () => {
   })
 
   it('节点完成后显示已完成态与据点区块', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     // 直接完成 node_orbit（raider_1 的前置）
     const prog = game.exploration.progress['node_orbit']
@@ -160,7 +123,9 @@ describe('MapView — 探索流程', () => {
   })
 
   it('攻克沉默者旗舰后远征解锁，点击跳转远征页', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     // 真实玩家态：锚点据点已攻克 + 前沿深度已记录
     game.combat.completedStrongholds.add('silencer_3')
@@ -176,7 +141,9 @@ describe('MapView — 探索流程', () => {
   })
 
   it('据点卡片点击跳转战斗页', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     game.exploration.progress['node_orbit'].completed = true
     await wrapper.vm.$nextTick()
@@ -187,20 +154,12 @@ describe('MapView — 探索流程', () => {
 })
 
 describe('MapView — 空状态', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('全部节点完成后显示空状态', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
     const game = useGameStore()
     for (const n of EXPLORE_NODES) game.exploration.progress[n.id].completed = true
     await wrapper.vm.$nextTick()

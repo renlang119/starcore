@@ -102,6 +102,9 @@ export interface WeeklyChallenge {
 
 /** 连击节点奖励：第 1/3/7 天，7 天封顶循环 */
 export const STREAK_CYCLE = 7
+
+/** 每周挑战条数（模板池洗牌后截取数；测试断言派生用，v1.04） */
+export const WEEK_CHALLENGE_COUNT = 3
 export function streakReward(day: number): { energy: number; dark: number } | null {
   const d = ((day - 1) % STREAK_CYCLE) + 1
   if (d === 1) return { energy: 2e4, dark: 0 }
@@ -177,7 +180,7 @@ export const useDailyStore = defineStore('daily', () => {
       const j = Math.floor(rng() * (i + 1))
       ;[pool[i], pool[j]] = [pool[j], pool[i]]
     }
-    weekChallenges.value = pool.slice(0, 3).map((t) => {
+    weekChallenges.value = pool.slice(0, WEEK_CHALLENGE_COUNT).map((t) => {
       const tier = Math.floor(rng() * t.targets.length)
       return {
         templateId: t.templateId,

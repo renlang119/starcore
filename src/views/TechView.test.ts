@@ -9,59 +9,27 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent } from 'vue'
+import { describe, it, expect, vi } from 'vitest'
+import {
+  mountView,
+  useViewTestHooks,
+  vueRouterMock,
+  focusTrapMock,
+  expectOnboardingBubble,
+} from '@/tests/view-mount'
 import TechView from './TechView.vue'
 import { useGameStore } from '@/stores/game'
 import { TECHS, TECH_BRANCHES } from '@/data/tech'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: {} }),
-  useRouter: () => ({ push: vi.fn() }),
-  RouterLink: defineComponent({
-    props: { to: { type: String, required: false, default: '' } },
-    template: '<a><slot /></a>',
-  }),
-  RouterView: defineComponent({ template: '<div />' }),
-}))
+vi.mock('vue-router', () => vueRouterMock())
 
-vi.mock('@/composables/useFocusTrap', () => ({
-  useFocusTrap: () => {},
-}))
-
-let pinia: ReturnType<typeof createPinia>
-const wrappers: VueWrapper[] = []
-
-function mountView() {
-  const wrapper = mount(TechView, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        Icons: defineComponent({ template: '<svg />' }),
-      },
-    },
-  })
-  wrappers.push(wrapper)
-  return wrapper
-}
+vi.mock('@/composables/useFocusTrap', () => focusTrapMock())
 
 describe('TechView — 挂载与筛选', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('正常挂载，默认「全部」显示所有科技', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     expect(wrapper.find('.tech-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('科技树')
     // 「全部」+ 各分支页签
@@ -70,7 +38,7 @@ describe('TechView — 挂载与筛选', () => {
   })
 
   it('点击分支页签只显示该分支科技', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     // 第 2 个页签 = 第一个分支（energy）
     await wrapper.findAll('.branch-tab')[1].trigger('click')
     expect(wrapper.findAll('.tech-card').length).toBe(
@@ -82,7 +50,7 @@ describe('TechView — 挂载与筛选', () => {
   })
 
   it('科技卡按 tier 升序排列', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     const tiers = wrapper.findAll('.tech-card').map((c) => c.text())
     expect(tiers.length).toBe(TECHS.length)
     // 通过 vm 状态校验排序（activeBranch = 'all' 时 techsToShow 已按 tier 排序）
@@ -95,20 +63,10 @@ describe('TechView — 挂载与筛选', () => {
 })
 
 describe('TechView — 状态与成本', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('前置满足的科技显示「研究」按钮，未满足的显示锁定提示', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     // 新档：无前置的科技可用，有前置的锁定
     expect(wrapper.findAll('.tech-card.available').length).toBeGreaterThan(0)
     expect(wrapper.findAll('.tech-card.locked').length).toBeGreaterThan(0)
@@ -116,7 +74,7 @@ describe('TechView — 状态与成本', () => {
   })
 
   it('资源不足时研究按钮禁用，充足时可点击', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     const game = useGameStore()
     // fusion_tech 无前置，cost { data: 30, energy: 200 }
     const fusionCard = wrapper
@@ -134,7 +92,7 @@ describe('TechView — 状态与成本', () => {
   })
 
   it('成本乘数生效：complete 后 techCostMult 影响显示成本', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     const game = useGameStore()
     const fusionCard = wrapper
       .findAll('.tech-card')
@@ -152,20 +110,10 @@ describe('TechView — 状态与成本', () => {
 })
 
 describe('TechView — 研究流程', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('点击研究走原子操作：科技完成、资源扣减、状态转为 completed', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     const game = useGameStore()
     game.resources.setAmount('data', 1e6)
     game.resources.setAmount('energy', 1e6)
@@ -188,7 +136,7 @@ describe('TechView — 研究流程', () => {
   })
 
   it('全部完成后显示空状态', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     const game = useGameStore()
     for (const t of TECHS) game.research.complete(t.id)
     await wrapper.vm.$nextTick()
@@ -198,7 +146,7 @@ describe('TechView — 研究流程', () => {
   })
 
   it('分支筛选下空态写分支口径结论（v0.97）', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(TechView)
     const game = useGameStore()
     // 完成全部科技后切到单分支：文案写分支结论而非全量结论
     for (const t of TECHS) game.research.complete(t.id)
@@ -214,29 +162,9 @@ describe('TechView — 研究流程', () => {
 })
 
 describe('TechView — 新手引导', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('未读时显示引导气泡，已读时不显示', async () => {
-    const wrapper = mountView()
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('.onboard-tech').exists()).toBe(true)
-    wrapper.unmount()
-
-    // 预置已读后重新挂载，不显示气泡
-    localStorage.setItem('starcore_onboarding', JSON.stringify({ 'tech-research': true }))
-    const wrapper2 = mountView()
-    wrappers.push(wrapper2)
-    await wrapper2.vm.$nextTick()
-    expect(wrapper2.find('.onboard-tech').exists()).toBe(false)
+    await expectOnboardingBubble(TechView, { selector: '.onboard-tech', stepId: 'tech-research' })
   })
 })

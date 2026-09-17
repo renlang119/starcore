@@ -9,59 +9,27 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent } from 'vue'
+import { describe, it, expect, vi } from 'vitest'
+import {
+  mountView,
+  useViewTestHooks,
+  vueRouterMock,
+  focusTrapMock,
+  selectBulk10,
+} from '@/tests/view-mount'
 import BuildView from './BuildView.vue'
 import { useGameStore } from '@/stores/game'
-import { BUILDINGS, SECTORS } from '@/data/buildings'
+import { BUILDINGS, SECTORS, buildingCost } from '@/data/buildings'
 
-vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: {} }),
-  useRouter: () => ({ push: vi.fn() }),
-  RouterLink: defineComponent({
-    props: { to: { type: String, required: false, default: '' } },
-    template: '<a><slot /></a>',
-  }),
-  RouterView: defineComponent({ template: '<div />' }),
-}))
+vi.mock('vue-router', () => vueRouterMock())
 
-vi.mock('@/composables/useFocusTrap', () => ({
-  useFocusTrap: () => {},
-}))
-
-let pinia: ReturnType<typeof createPinia>
-const wrappers: VueWrapper[] = []
-
-function mountView() {
-  const wrapper = mount(BuildView, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        Icons: defineComponent({ template: '<svg />' }),
-      },
-    },
-  })
-  wrappers.push(wrapper)
-  return wrapper
-}
+vi.mock('@/composables/useFocusTrap', () => focusTrapMock())
 
 describe('BuildView — 挂载与渲染', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('正常挂载并渲染标题与扇区页签', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     expect(wrapper.find('.build-view').exists()).toBe(true)
     expect(wrapper.text()).toContain('建造')
     // 扇区页签数量 = SECTORS 全部扇区
@@ -71,7 +39,7 @@ describe('BuildView — 挂载与渲染', () => {
   })
 
   it('点击扇区页签切换建筑列表', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     const energyCards = wrapper.findAll('.build-card').length
     expect(energyCards).toBe(BUILDINGS.filter((b) => b.sector === 'energy').length)
 
@@ -85,7 +53,7 @@ describe('BuildView — 挂载与渲染', () => {
   })
 
   it('锁定建筑卡显示所需科技', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     // energy 扇区存在需要科技解锁的建筑（如聚变反应堆）
     const lockedCards = wrapper.findAll('.build-card.locked')
     expect(lockedCards.length).toBeGreaterThan(0)
@@ -93,7 +61,7 @@ describe('BuildView — 挂载与渲染', () => {
   })
 
   it('解锁建筑卡显示产出与升级按钮', () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     // solar_collector 无科技前置，默认解锁
     const firstCard = wrapper.findAll('.build-card').find((c) => !c.classes().includes('locked'))
     expect(firstCard).toBeDefined()
@@ -103,20 +71,10 @@ describe('BuildView — 挂载与渲染', () => {
 })
 
 describe('BuildView — 升级流程', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('资源不足时升级按钮禁用', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     const game = useGameStore()
     game.resources.setAmount('energy', 0)
     await wrapper.vm.$nextTick()
@@ -128,7 +86,7 @@ describe('BuildView — 升级流程', () => {
   })
 
   it('点击升级走原子操作：等级 +1 且资源扣减', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     const game = useGameStore()
     game.resources.setAmount('energy', 1e6)
 
@@ -146,34 +104,33 @@ describe('BuildView — 升级流程', () => {
   })
 
   it('切至 ×10 档位显示可买级数与预计总花费', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     const game = useGameStore()
-    game.resources.setAmount('energy', 30) // 成本 10 / 12 / 14：10 + 12 = 22 ≤ 30 < 36 → 可买 2 级
+    // 成本曲线由 buildingCost 实算：预算设为「够 2 级、不够第 3 级」（防曲线漂移）
+    const c0 = buildingCost(BUILDINGS[0], 0).energy!
+    const c1 = buildingCost(BUILDINGS[0], 1).energy!
+    const c2 = buildingCost(BUILDINGS[0], 2).energy!
+    game.resources.setAmount('energy', c0 + c1 + Math.floor(c2 / 2))
     await wrapper.vm.$nextTick()
+    const preview = game.previewUpgradeBuildingSteps(BUILDINGS[0].id, 10)
+    expect(preview.count).toBe(2) // 预算设计的档位
 
-    const bulkBtn = wrapper.findAll('.bulk-toggle .seg-btn').find((b) => b.text() === '×10')
-    expect(bulkBtn).toBeTruthy()
-    await bulkBtn!.trigger('click')
-    await wrapper.vm.$nextTick()
+    await selectBulk10(wrapper, '.bulk-toggle')
 
     const costText = wrapper.find('.b-cost').text().replace(/\s+/g, '')
-    expect(costText).toBe('可买2级·共能量22')
+    expect(costText).toBe(`可买${preview.count}级·共能量${preview.cost.energy}`)
     // v1.00 按钮文案按实际可升级级数显示（非段位标称值）
     const card = wrapper.findAll('.build-card').find((c) => c.text().includes('光能收集器'))
-    expect(card!.find('button.btn-primary').text()).toBe('升级 ×2')
+    expect(card!.find('button.btn-primary').text()).toBe(`升级 ×${preview.count}`)
   })
 
   it('段位 ×10 但一级都买不起：按钮退回原文案且禁用', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     const game = useGameStore()
     game.resources.setAmount('energy', 5) // 低于首级成本 10
     await wrapper.vm.$nextTick()
 
-    await wrapper
-      .findAll('.bulk-toggle .seg-btn')
-      .find((b) => b.text() === '×10')!
-      .trigger('click')
-    await wrapper.vm.$nextTick()
+    await selectBulk10(wrapper, '.bulk-toggle')
 
     const card = wrapper.findAll('.build-card').find((c) => c.text().includes('光能收集器'))
     const btn = card!.find('button.btn-primary')
@@ -183,20 +140,10 @@ describe('BuildView — 升级流程', () => {
 })
 
 describe('BuildView — 新手引导', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  afterEach(() => {
-    for (const w of wrappers) w.unmount()
-    wrappers.length = 0
-  })
+  useViewTestHooks()
 
   it('未读时显示引导气泡，确认后消失', async () => {
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.ob-build').exists()).toBe(true)
 
@@ -208,7 +155,7 @@ describe('BuildView — 新手引导', () => {
 
   it('已读（localStorage 预置）时不显示气泡', () => {
     localStorage.setItem('starcore_onboarding', JSON.stringify({ 'build-upgrade': true }))
-    const wrapper = mountView()
+    const wrapper = mountView(BuildView)
     expect(wrapper.find('.ob-build').exists()).toBe(false)
   })
 })

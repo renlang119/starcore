@@ -3,11 +3,55 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v1.03
+> 当前版本：v1.04
 >
-> 本文件为活跃档（v0.71 起，33 个版本），新条目置顶；更早条目见
+> 本文件为活跃档（v0.71 起，34 个版本），新条目置顶；更早条目见
 > [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36-v0.70）与
 > [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
+
+---
+
+## v1.04 — 测试: 测试装配样板收敛与共享测试基建
+
+**变更性质：测试（测试代码样板收敛，覆盖口径不变）**
+**开发时间：2026-09-17**
+
+### 概述
+
+测试体系的装配样板收进 `src/tests/` 单一出处：七个视图测试的
+挂载与清理三件套、vue-router 与焦点陷阱 mock、存档与探索完成态
+工厂、成就外部指标桩、周挑战条目工厂。四个 store 同名同义的
+hydrate(undefined) 用例合并为一条跨 store 一致性测试。产品代码
+唯一变化是每日挑战条数提为具名常量。
+
+### 变更明细
+
+- 新增 `src/tests/view-mount.ts`：`mountView` 挂载登记、
+  `useViewTestHooks` 标准钩子、`vueRouterMock`/`focusTrapMock`
+  工厂、引导气泡双态断言、段位切换器 ×10 交互，七个视图测试的
+  逐字装配段全部收敛。
+- 新增 `src/tests/fixtures.ts`：`makeSaveData`/`minimalSaveData`
+  存档工厂与 `exploredNodes` 探索完成态构造，storage.test 与
+  game.test 的四份存档字面量改调用。
+- 新增 `src/tests/hydrate-noop.test.ts`：四个 store 的
+  hydrate(undefined) 同名用例合并为一（用例数 478 → 475，
+  README 双语基线同步）。
+- `reset-providers.ts` 新增 `zeroAchievementProviders`，
+  achievements.test 的七处五键指标桩各一行收敛。
+- daily.test 的十份周挑战条目字面量抽 `ch()` 工厂；BattleView、
+  PrestigeView、CostTag 的内联挂载各补本地 helper。
+- 断言与数据源对齐：连击天数、挑战条数、编队数、装备槽数改由
+  常量或 store 派生，两处手抄探索节点串改由 EXPLORE_NODES 派生，
+  三处建筑常量改由 BUILDINGS[0] 派生，批量预览断言值改由
+  buildingCost/nextCost 实算（曲线调整不再让注释先撒谎）。
+- daily.ts 导出 `WEEK_CHALLENGE_COUNT`（唯一产品代码改动，
+  数值不变）。
+
+### 验证
+
+- `corepack pnpm check` 全绿：33 个测试文件 475 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- Playwright 回归套件 27 脚本全过。
 
 ---
 
