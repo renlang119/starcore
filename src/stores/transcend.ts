@@ -18,6 +18,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { D, Decimal, ser, deser } from '@/lib/decimal'
+import { aggregateMult, aggregateValue } from '@/lib/effect-system'
+import { repeatUntilFail, simulateSteps } from '@/lib/batch'
 import type { TranscendSaveData } from '@/lib/storage'
 
 export interface TranscendEffect {
@@ -266,22 +268,12 @@ export const useTranscendStore = defineStore('transcend', () => {
   })
 
   function getMult(type: string, target?: string): Decimal {
-    let m = D(1)
-    for (const eff of allEffects.value) {
-      if (eff.type !== type) continue
-      if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
-      m = m.times(D(eff.value).pow(eff.repeat))
-    }
-    return m
+    return aggregateMult(allEffects.value, type, target)
   }
 
   /** 获取某属性值（非乘数型效果，如 starting_energy, relic_slot） */
   function getValue(type: string): number {
-    let v = 0
-    for (const eff of allEffects.value) {
-      if (eff.type === type) v += eff.value * eff.repeat
-    }
-    return v
+    return aggregateValue(allEffects.value, type)
   }
 
   /** 预估可获得的负熵（基于当前历史总能量） */
@@ -318,12 +310,7 @@ export const useTranscendStore = defineStore('transcend', () => {
    * maxLevel 自然停止）；买断节点 maxLevel=1，批量与单次等价。
    */
   function purchaseNodeSteps(id: string, steps: number): number {
-    let done = 0
-    for (let i = 0; i < steps; i++) {
-      if (!purchaseNode(id)) break
-      done++
-    }
-    return done
+    return repeatUntilFail(steps, () => purchaseNode(id))
   }
 
   /**
@@ -336,20 +323,14 @@ export const useTranscendStore = defineStore('transcend', () => {
     const node = tree.value.find((n) => n.id === id)
     if (!node || steps < 1) return { count: 0, cost: 0 }
     const cap = node.maxLevel ?? 1
-    let remain = negativeEntropy.value
-    let level = node.level
-    let count = 0
-    let cost = 0
-    for (let i = 0; i < steps; i++) {
-      if (level >= cap) break
-      const c = nextCost(node, level)
-      if (remain.lt(c)) break
-      remain = remain.minus(c)
-      level++
-      count++
-      cost += c
-    }
-    return { count, cost }
+    const r = simulateSteps(
+      steps,
+      node.level,
+      (level) => ({ neg: nextCost(node, level) }),
+      { neg: negativeEntropy.value },
+      (level) => level < cap
+    )
+    return { count: r.count, cost: r.cost.neg ?? 0 }
   }
 
   function reset(fullReset = false) {

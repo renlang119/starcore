@@ -27,7 +27,7 @@ let timer: ReturnType<typeof setInterval> | null = null
 const hasExploring = computed(() => EXPLORE_NODES.some((n) => game.exploration.isExploring(n.id)))
 
 // P3-3 onboarding
-const { activeStep, dismiss, skipAll } = useOnboarding('map', ['map-explore'])
+const { activeStep, dismiss, skipAll } = useOnboarding(['map-explore'])
 
 function startTimer() {
   if (timer) return
@@ -164,7 +164,7 @@ const endlessSection = {
             :class="{
               completed: game.exploration.isCompleted(node.id),
               exploring: game.exploration.isExploring(node.id),
-              locked: node.requires && !node.requires.every((r) => game.exploration.isCompleted(r)),
+              locked: !game.exploration.prereqMet(node.requires),
             }"
           >
             <div class="n-head">
@@ -216,14 +216,11 @@ const endlessSection = {
             </div>
 
             <!-- 锁定 -->
-            <div
-              v-else-if="
-                node.requires && !node.requires.every((r) => game.exploration.isCompleted(r))
-              "
-              class="n-locked"
-            >
+            <div v-else-if="!game.exploration.prereqMet(node.requires)" class="n-locked">
               需先完成：{{
-                node.requires.map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name).join(', ')
+                (node.requires ?? [])
+                  .map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name)
+                  .join(', ')
               }}
             </div>
 

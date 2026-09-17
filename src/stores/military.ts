@@ -5,7 +5,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Decimal } from '@/lib/decimal'
-import { UNITS, getUnit, type UnitId, type UnitDef } from '@/data/units'
+import { UNITS, getUnit, defaultFormations, type UnitId, type UnitDef } from '@/data/units'
+import { isUnlockedBy } from '@/lib/requires'
 import type { MilitarySaveData } from '@/lib/storage'
 
 export interface Formation {
@@ -42,11 +43,7 @@ export const useMilitaryStore = defineStore('military', () => {
     psionic: 0,
   })
   const trainingQueue = ref<TrainingTask[]>([])
-  const formations = ref<Formation[]>([
-    { id: 'f1', name: '先锋编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-    { id: 'f2', name: '第二编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-    { id: 'f3', name: '第三编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-  ])
+  const formations = ref<Formation[]>(defaultFormations())
 
   let taskId = 0
 
@@ -58,7 +55,7 @@ export const useMilitaryStore = defineStore('military', () => {
     Math.min(MAX_TRAINING_SLOTS, Math.max(BASE_TRAINING_SLOTS, trainingSlotProvider()))
   )
   const isUnlocked = (def: UnitDef, completedTechs: Set<string>) =>
-    !def.requires || completedTechs.has(def.requires)
+    isUnlockedBy(def.requires, completedTechs)
 
   /** 编队总战力（用于 UI 展示） */
   function formationPower(
@@ -183,11 +180,7 @@ export const useMilitaryStore = defineStore('military', () => {
   function reset() {
     owned.value = { assault: 0, guard: 0, heavy: 0, psionic: 0 }
     trainingQueue.value = []
-    formations.value = [
-      { id: 'f1', name: '先锋编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-      { id: 'f2', name: '第二编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-      { id: 'f3', name: '第三编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-    ]
+    formations.value = defaultFormations()
   }
 
   function serialize() {

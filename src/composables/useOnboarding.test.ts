@@ -20,7 +20,7 @@ let api: ReturnType<typeof useOnboarding> | null = null
 function mountOnboarding() {
   const Comp = defineComponent({
     setup() {
-      api = useOnboarding('home', STEPS)
+      api = useOnboarding(STEPS)
       activeRef = api.activeStep
       return () => h('div')
     },

@@ -16,6 +16,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { D, Decimal, add, ser, deser } from '@/lib/decimal'
+import { aggregateMult } from '@/lib/effect-system'
 import type { AchievementsSaveData } from '@/lib/storage'
 import {
   ACHIEVEMENTS,
@@ -155,13 +156,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
   })
 
   function getMult(type: string, target?: string): Decimal {
-    let m = D(1)
-    for (const eff of allEffects.value) {
-      if (eff.type !== type) continue
-      if (target && eff.target && eff.target !== target && eff.target !== 'all') continue
-      m = m.times(eff.value)
-    }
-    return m
+    return aggregateMult(allEffects.value, type, target)
   }
 
   // —— 生命周期 ——

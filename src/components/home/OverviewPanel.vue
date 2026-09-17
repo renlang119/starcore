@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmtTime } from '@/lib/format'
 import { BUILDINGS } from '@/data/buildings'
+import { isUnlockedBy } from '@/lib/requires'
 import { TECHS } from '@/data/tech'
 
 const game = useGameStore()
@@ -11,7 +12,7 @@ const game = useGameStore()
 // —— 文明概况 ——
 const buildingsUnlocked = computed(() => {
   const completed = game.research.completed
-  return BUILDINGS.filter((b) => !b.requires || completed.has(b.requires)).length
+  return BUILDINGS.filter((b) => isUnlockedBy(b.requires, completed)).length
 })
 const techCompleted = computed(() => game.research.count)
 const totalUnits = computed(() => game.military.totalUnits)

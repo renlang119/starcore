@@ -12,6 +12,7 @@ import {
   type BuildingDef,
   type SectorId,
 } from '@/data/buildings'
+import { isUnlockedBy } from '@/lib/requires'
 import type { BuildingSaveData } from '@/lib/storage'
 
 export const useBuildingsStore = defineStore('buildings', () => {
@@ -23,7 +24,7 @@ export const useBuildingsStore = defineStore('buildings', () => {
   // —— getters ——
   const getLevel = (id: string) => levels.value[id] ?? 0
   const isUnlocked = (def: BuildingDef, completedTechs: Set<string>) =>
-    !def.requires || completedTechs.has(def.requires)
+    isUnlockedBy(def.requires, completedTechs)
   const getCost = (id: string) => {
     const def = getBuilding(id)
     if (!def) return {}

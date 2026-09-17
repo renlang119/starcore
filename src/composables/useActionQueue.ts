@@ -13,6 +13,7 @@ import { BUILDINGS } from '@/data/buildings'
 import { TECHS, adjustedTechCost } from '@/data/tech'
 import { getNode } from '@/data/explore'
 import { getUnit } from '@/data/units'
+import { isUnlockedBy } from '@/lib/requires'
 
 export interface ActionItem {
   id: string
@@ -99,7 +100,7 @@ export function useActionQueue() {
     // 3. 可升级建筑（资源已够的）
     let upgradable = 0
     for (const b of BUILDINGS) {
-      if (b.requires && !completedTechs.has(b.requires)) continue
+      if (!isUnlockedBy(b.requires, completedTechs)) continue
       if (game.buildings.isMaxed(b.id)) continue // 上限判定统一走 store 单一门槛
       const cost = game.buildings.getCost(b.id)
       if (game.resources.canAfford(cost)) upgradable++
