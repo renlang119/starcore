@@ -9,7 +9,7 @@ import ModalOverlay from '@/components/ui/ModalOverlay.vue'
  * 选材状态由 useRelicFusion 持有、视图层传入；本组件只负责工坊 UI 与合成动作。
  * data-testid 与 DOM 结构与拆分前一致，供单测与 Playwright 脚本断言。
  * 图鉴卡的 .r-head 等卡面样式与 .rarity-badge / .r-name 同为全局工具类
- * （v0.97 / v1.02 两批收敛），此处不再各存一份。
+ * （v0.97 / v1.02 两次收敛），此处不再各存一份。
  */
 defineProps<{ fusion: RelicFusionApi }>()
 
