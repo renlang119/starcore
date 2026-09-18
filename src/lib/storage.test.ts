@@ -512,3 +512,21 @@ describe('storage — 存档安全（v0.81）', () => {
     if (result.ok) expect(result.data.player.name).toBe('中文名')
   })
 })
+
+/**
+ * v1.06 存档校验补强：玩家名类型与长度约束（该字段在存档管理区上屏）
+ */
+describe('storage — 玩家名约束（v1.06）', () => {
+  it('name 非字符串 / 超长（>24）拒绝，上限内接受', async () => {
+    for (const bad of [123, null, {}, '字'.repeat(25)]) {
+      const data = makeSaveData()
+      ;(data.player as { name: unknown }).name = bad
+      const result = await importSave(await exportSave(data))
+      expect(result.ok, `name=${JSON.stringify(bad).slice(0, 40)} 应拒绝`).toBe(false)
+    }
+
+    const okData = makeSaveData()
+    okData.player.name = '字'.repeat(24)
+    expect((await importSave(await exportSave(okData))).ok).toBe(true)
+  })
+})

@@ -1,7 +1,8 @@
 # 星核纪元 · 版本更新日志（历史存档 v0.36-v0.70）
 
-> 本文件为历史存档（35 个版本），不再更新；新条目写入
-> [changelog.md](changelog.md)（v0.71 起），更早条目见
+> 本文件为历史存档（35 个版本），不再更新；后续条目见
+> [changelog-v0.71-v1.05.md](changelog-v0.71-v1.05.md)（v0.71-v1.05）与
+> [changelog.md](changelog.md)（v1.06 起），更早条目见
 > [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
 > 条目新 → 旧倒序。
 
