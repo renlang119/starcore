@@ -20,15 +20,13 @@ import { ref, computed } from 'vue'
 import { D, Decimal, ser, deser } from '@/lib/decimal'
 import { aggregateMult, aggregateValue } from '@/lib/effect-system'
 import { repeatUntilFail, simulateSteps } from '@/lib/batch'
+import { ceilPow } from '@/lib/cost'
+import type { EffectTypeBase } from '@/lib/effect-types'
 import type { TranscendSaveData } from '@/lib/storage'
 
 export interface TranscendEffect {
   type:
-    | 'production_mult'
-    | 'combat_mult'
-    | 'explore_mult'
-    | 'prestige_mult'
-    | 'offline_bonus'
+    | EffectTypeBase
     | 'relic_slot'
     | 'starting_energy'
     | 'auto_build'
@@ -61,7 +59,7 @@ export function isInfiniteNode(node: TranscendNode): boolean {
 /** 节点在给定等级处的下一级购买成本（缺省当前等级；买断节点 = 基础成本；无限节点 = 指数递增取整） */
 export function nextCost(node: TranscendNode, level = node.level): number {
   if (!isInfiniteNode(node)) return node.cost
-  return Math.ceil(node.cost * Math.pow(node.costGrowth ?? 1.5, level))
+  return ceilPow(node.cost, node.costGrowth ?? 1.5, level)
 }
 
 // 导出供守恒脚本取真值（转生树节点清单），运行期消费方为本文件内部

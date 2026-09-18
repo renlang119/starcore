@@ -29,7 +29,6 @@ export interface StrongholdDef {
    *  难度梯度以敌方总强度为准，见 endless.ts 的 TEMPLATE_NORMALIZE */
   tier: number
   desc: string
-  icon: string
   enemies: EnemyUnit[]
   /** 胜利奖励 */
   rewards: {
@@ -56,10 +55,20 @@ export const STRONGHOLD_TYPES: Record<
   StrongholdType,
   { id: StrongholdType; name: string; color: string; icon: string }
 > = {
-  raider: { id: 'raider', name: '掠夺者营地', color: '#F43F5E', icon: 'i-stronghold-raider' },
-  beast: { id: 'beast', name: '异星巨兽', color: '#FFB627', icon: 'i-stronghold-beast' },
-  ruin: { id: 'ruin', name: '古代遗迹', color: '#A78BFA', icon: 'i-stronghold-ruin' },
-  silencer: { id: 'silencer', name: '沉默者前哨', color: '#94A3B8', icon: 'i-stronghold-silencer' },
+  raider: {
+    id: 'raider',
+    name: '掠夺者营地',
+    color: 'var(--color-alert)',
+    icon: 'i-stronghold-raider',
+  },
+  beast: { id: 'beast', name: '异星巨兽', color: 'var(--color-amber)', icon: 'i-stronghold-beast' },
+  ruin: { id: 'ruin', name: '古代遗迹', color: 'var(--color-plasma)', icon: 'i-stronghold-ruin' },
+  silencer: {
+    id: 'silencer',
+    name: '沉默者前哨',
+    color: 'var(--color-silencer)',
+    icon: 'i-stronghold-silencer',
+  },
 }
 
 export const STRONGHOLDS: StrongholdDef[] = [
@@ -70,7 +79,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 1,
     desc: '盘踞在轨道残骸带的零散掠夺者，适合新兵练手',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_grunt',
@@ -92,7 +100,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 2,
     desc: '有组织的掠夺者据点，火力较强',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_grunt',
@@ -123,7 +130,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 3,
     desc: '掠夺者的大型要塞，重兵把守',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_gun',
@@ -163,7 +169,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 1,
     desc: '栖息在晶体矿脉中的群体生物，防御较低但数量多',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'crystal_spider',
@@ -185,7 +190,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 3,
     desc: '游荡于深空的巨型生物，单体极强',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'void_beast',
@@ -216,7 +220,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 2,
     desc: '先驱文明留下的自动防御设施，内含珍贵数据',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'ancient_drone',
@@ -238,7 +241,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 4,
     desc: '传说中储存奇点知识的圣殿，守护者极其强大',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'temple_guardian',
@@ -278,7 +280,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 4,
     desc: '神秘的沉默者种族建立的前哨，终局挑战',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'silencer_scout',
@@ -318,7 +319,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 5,
     desc: '越过虫洞的掠夺者主力舰队，在门户星系劫掠往来的殖民船',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_gun',
@@ -356,7 +356,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 4,
     desc: '以晶脉为食的巨型生物群落，晶化背甲坚不可摧',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'crystal_back_beast',
@@ -378,7 +377,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 4,
     desc: '先驱文明设在年轻星系的资料库，封存着远航年代的星图',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'ancient_drone',
@@ -400,7 +398,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 4,
     desc: '静静悬浮在死寂星系中的殖民舰队，没有战斗痕迹，也没有生还者',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'silencer_scout',
@@ -437,7 +434,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 5,
     desc: '围绕中子星建立的掠夺者母巢，所有星际劫掠舰队的源头',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_grunt',
@@ -468,7 +464,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 5,
     desc: '在中子星引力摇篮中产卵的虚空巨兽母体，幼兽环绕',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'void_matriarch',
@@ -505,7 +500,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 5,
     desc: '先驱文明的最后方舟，载着奇点知识停泊在悬臂边缘',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'temple_guardian',
@@ -542,7 +536,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 5,
     desc: '沉默者舰队的旗舰残骸，黑匣子里藏着来自星团深处的回应',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'silencer_flagship',
@@ -582,7 +575,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 6,
     desc: '抢先闯入星团的掠夺者舰队，正在打捞环状结构外散的残骸',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_pirate',
@@ -622,7 +614,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 6,
     desc: '在晶尘云中以静止殖民舰为巢的织网兽群，晶丝横贯整片云带',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'crystal_matriarch',
@@ -677,7 +668,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 6,
     desc: '先驱者留下的观测信标，仍在向环状结构重复播送同一段询问',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'archon_core',
@@ -732,7 +722,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 6,
     desc: '围绕环状结构建立的掠夺者母巢舰群，暴君旗舰坐镇核心',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'hive_tyrant',
@@ -781,7 +770,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 6,
     desc: '守门者的本体，冻结之门前的最后港湾，一切信号的起点',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'motherport_bastion',
@@ -830,7 +818,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 7,
     desc: '抢先穿过冻结之门的掠夺者王庭，把古代航道当成了私产',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_pirate',
@@ -879,7 +866,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 7,
     desc: '在原生星区的尘埃茧中沉睡的噬星巨兽，苏醒时以恒星胚胎为食',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'crystal_matriarch',
@@ -934,7 +920,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 7,
     desc: '整支先驱者远征舰队的长眠之地，长堤核心仍在执行最后的护航指令',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'archon_core',
@@ -989,7 +974,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 7,
     desc: '盘踞臂脊航道枢纽的掠夺者王庭主力，暴君旗舰统领全部舰群',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'hive_tyrant',
@@ -1047,7 +1031,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 7,
     desc: '坐镇门扉回廊的沉默者君王本体，冻结之门真正的守门中枢',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'silencer_sovereign',
@@ -1105,7 +1088,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 8,
     desc: '越过门扉的掠夺者建立的终极王庭，银河尺度的劫掠由此开始',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_pirate',
@@ -1163,7 +1145,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 8,
     desc: '在银河盘面放牧星尘的鲲群，迁徙路线像在听从某种驱赶',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'crystal_matriarch',
@@ -1227,7 +1208,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 8,
     desc: '先驱者文明的银河级万神殿，核心仍在等待一支永不返航的舰队',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'pantheon_core',
@@ -1291,7 +1271,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 8,
     desc: '帝庭的裁决舰队，所有王庭进贡的终点，目标是银心「永不熄灭的炉」',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_emperor',
@@ -1349,7 +1328,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 8,
     desc: '所有守门者的指挥中枢，应答源的实体，坐镇银河之心',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'silencer_mainbrain',
@@ -1416,7 +1394,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 9,
     desc: '穿出银河的掠夺者残部，把先驱者的虚空航标当成了猎场',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_phantom',
@@ -1480,7 +1457,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'beast',
     tier: 9,
     desc: '游弋在虚空航标周围的巨兽种群，以航标灯语为迁徙号令',
-    icon: 'i-stronghold-beast',
     enemies: [
       {
         unitId: 'void_matriarch',
@@ -1544,7 +1520,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'ruin',
     tier: 9,
     desc: '先驱者望台改成的归航港，核心仍在等待一支穿门而入的舰队',
-    icon: 'i-stronghold-ruin',
     enemies: [
       {
         unitId: 'pantheon_core',
@@ -1617,7 +1592,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'raider',
     tier: 9,
     desc: '掠夺者在星幕枢纽竖碑称王的裁决军团，越界而不自知',
-    icon: 'i-stronghold-raider',
     enemies: [
       {
         unitId: 'raider_emperor',
@@ -1681,7 +1655,6 @@ export const STRONGHOLDS: StrongholdDef[] = [
     type: 'silencer',
     tier: 9,
     desc: '一切信号的源头：门后的沉默者回响，世代守门的接收者',
-    icon: 'i-stronghold-silencer',
     enemies: [
       {
         unitId: 'silencer_echo',

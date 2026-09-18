@@ -3,6 +3,8 @@
  * 8 大分支：能量学、晶脉学、材料学、计算学、军事学、探索学、暗物质学、奇点学
  */
 
+import { combatPair, type EffectTypeBase } from '@/lib/effect-types'
+
 export type TechBranch =
   | 'energy'
   | 'crystallography'
@@ -28,15 +30,7 @@ export interface TechDef {
 }
 
 export interface TechEffect {
-  type:
-    | 'production_mult'
-    | 'cost_mult'
-    | 'unlock'
-    | 'combat_mult'
-    | 'explore_mult'
-    | 'prestige_mult'
-    | 'offline_bonus'
-    | 'training_slot'
+  type: EffectTypeBase | 'cost_mult' | 'unlock' | 'training_slot'
   target?: string // buildingId | resourceId | unitId | etc
   value: number // 乘数，1.1 = +10%
   label: string
@@ -46,22 +40,42 @@ export const TECH_BRANCHES: Record<
   TechBranch,
   { id: TechBranch; name: string; color: string; icon: string }
 > = {
-  energy: { id: 'energy', name: '能量学', color: '#00E5FF', icon: 'i-branch-energy' },
+  energy: { id: 'energy', name: '能量学', color: 'var(--color-core)', icon: 'i-branch-energy' },
   crystallography: {
     id: 'crystallography',
     name: '晶脉学',
-    color: '#2EE6A0',
+    color: 'var(--color-quantum)',
     icon: 'i-branch-crystal',
   },
-  materials: { id: 'materials', name: '材料学', color: '#FFB627', icon: 'i-branch-material' },
-  computing: { id: 'computing', name: '计算学', color: '#A78BFA', icon: 'i-branch-computing' },
-  military: { id: 'military', name: '军事学', color: '#F43F5E', icon: 'i-branch-military' },
-  exploration: { id: 'exploration', name: '探索学', color: '#38BDF8', icon: 'i-branch-explore' },
-  dark: { id: 'dark', name: '暗物质学', color: '#94A3B8', icon: 'i-branch-dark' },
+  materials: {
+    id: 'materials',
+    name: '材料学',
+    color: 'var(--color-amber)',
+    icon: 'i-branch-material',
+  },
+  computing: {
+    id: 'computing',
+    name: '计算学',
+    color: 'var(--color-plasma)',
+    icon: 'i-branch-computing',
+  },
+  military: {
+    id: 'military',
+    name: '军事学',
+    color: 'var(--color-alert)',
+    icon: 'i-branch-military',
+  },
+  exploration: {
+    id: 'exploration',
+    name: '探索学',
+    color: 'var(--color-layer-void)',
+    icon: 'i-branch-explore',
+  },
+  dark: { id: 'dark', name: '暗物质学', color: 'var(--color-silencer)', icon: 'i-branch-dark' },
   singularity: {
     id: 'singularity',
     name: '奇点学',
-    color: '#FBBF24',
+    color: 'var(--color-singularity)',
     icon: 'i-branch-singularity',
   },
 }
@@ -542,10 +556,7 @@ export const TECHS: TechDef[] = [
     tier: 5,
     cost: { data: 6000, energy: 50000, alloy: 2000, dark: 10 },
     requires: ['adv_units'],
-    effects: [
-      { type: 'combat_mult', target: 'attack', value: 1.3, label: '部队攻击 ×1.3' },
-      { type: 'combat_mult', target: 'defense', value: 1.3, label: '部队防御 ×1.3' },
-    ],
+    effects: combatPair(1.3),
   },
   {
     id: 'dark_resonance',
@@ -579,10 +590,7 @@ export const TECHS: TechDef[] = [
     tier: 6,
     cost: { data: 60000, energy: 1500000, alloy: 50000, dark: 120 },
     requires: ['fleet_logistics'],
-    effects: [
-      { type: 'combat_mult', target: 'attack', value: 1.25, label: '部队攻击 ×1.25' },
-      { type: 'combat_mult', target: 'defense', value: 1.25, label: '部队防御 ×1.25' },
-    ],
+    effects: combatPair(1.25),
   },
   {
     id: 'dark_amplifier',
@@ -627,10 +635,7 @@ export const TECHS: TechDef[] = [
     tier: 7,
     cost: { data: 80000, energy: 3000000, alloy: 150000, dark: 220 },
     requires: ['flagship_doctrine'],
-    effects: [
-      { type: 'combat_mult', target: 'attack', value: 1.25, label: '部队攻击 ×1.25' },
-      { type: 'combat_mult', target: 'defense', value: 1.25, label: '部队防御 ×1.25' },
-    ],
+    effects: combatPair(1.25),
   },
   {
     id: 'dark_harvester',
@@ -675,10 +680,7 @@ export const TECHS: TechDef[] = [
     tier: 8,
     cost: { data: 1600000, energy: 75000000, alloy: 3500000, dark: 480 },
     requires: ['armada_tactics'],
-    effects: [
-      { type: 'combat_mult', target: 'attack', value: 1.25, label: '部队攻击 ×1.25' },
-      { type: 'combat_mult', target: 'defense', value: 1.25, label: '部队防御 ×1.25' },
-    ],
+    effects: combatPair(1.25),
   },
   {
     id: 'dark_web',
@@ -723,10 +725,7 @@ export const TECHS: TechDef[] = [
     tier: 9,
     cost: { data: 4000000, energy: 190000000, alloy: 8750000, dark: 1200 },
     requires: ['galaxy_command'],
-    effects: [
-      { type: 'combat_mult', target: 'attack', value: 1.25, label: '部队攻击 ×1.25' },
-      { type: 'combat_mult', target: 'defense', value: 1.25, label: '部队防御 ×1.25' },
-    ],
+    effects: combatPair(1.25),
   },
   {
     id: 'dark_veil',
