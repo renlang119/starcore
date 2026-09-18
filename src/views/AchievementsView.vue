@@ -88,7 +88,7 @@ const bonusSummary = computed(() => {
           :class="{ unlocked: ach.isUnlocked(def.id) }"
         >
           <div class="ach-icon-wrap">
-            <Icon class="ach-icon" :name="def.icon" />
+            <Icon class="ach-icon" :name="ACHIEVEMENT_CATEGORIES[def.category].icon" />
             <Icon v-if="ach.isUnlocked(def.id)" class="ach-check" name="i-ui-check" />
           </div>
           <div class="ach-body">
