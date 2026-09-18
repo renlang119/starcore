@@ -66,14 +66,14 @@ hydrate(undefined) 用例合并为一条跨 store 一致性测试。产品代码
   逐字装配段全部收敛。
 - 新增 `src/tests/fixtures.ts`：`makeSaveData`/`minimalSaveData`
   存档工厂与 `exploredNodes` 探索完成态构造，storage.test 与
-  game.test 的四份存档字面量改调用。
+  game.test 的三份存档字面量改调用。
 - 新增 `src/tests/hydrate-noop.test.ts`：四个 store 的
   hydrate(undefined) 同名用例合并为一（用例数 478 → 475，
   README 双语基线同步）。
 - `reset-providers.ts` 新增 `zeroAchievementProviders`，
   achievements.test 的七处五键指标桩各一行收敛。
-- daily.test 的十份周挑战条目字面量抽 `ch()` 工厂；BattleView、
-  PrestigeView、CostTag 的内联挂载各补本地 helper。
+- daily.test 的十份周挑战条目字面量抽 `ch()` 工厂；BattleView 复用
+  既有本地 helper，PrestigeView、CostTag 各补本地 helper。
 - 断言与数据源对齐：连击天数、挑战条数、编队数、装备槽数改由
   常量或 store 派生，两处手抄探索节点串改由 EXPLORE_NODES 派生，
   三处建筑常量改由 BUILDINGS[0] 派生，批量预览断言值改由
