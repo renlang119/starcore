@@ -95,9 +95,9 @@ sudo rsync -rcv --delete \
 echo "  注入分享元数据绝对地址 ..."
 sudo sed -i \
   -e "s|<meta property=\"og:url\" content=\"/\" />|<meta property=\"og:url\" content=\"${SITE_URL}/\" />\n  <link rel=\"canonical\" href=\"${SITE_URL}/\" />|" \
-  -e "s|content=\"/og.png\"|content=\"${SITE_URL}/og.png\"|g" \
+  -e "s|content=\"/og.webp\"|content=\"${SITE_URL}/og.webp\"|g" \
   "$DEST/index.html"
-INJECTED_OG=$(sudo grep -c "content=\"${SITE_URL}/og.png\"" "$DEST/index.html" || true)
+INJECTED_OG=$(sudo grep -c "content=\"${SITE_URL}/og.webp\"" "$DEST/index.html" || true)
 INJECTED_CANONICAL=$(sudo grep -c "rel=\"canonical\" href=\"${SITE_URL}/\"" "$DEST/index.html" || true)
 if [[ "$INJECTED_OG" != "2" || "$INJECTED_CANONICAL" != "1" ]]; then
   echo "  [WARN] 分享元数据注入命中异常（og ${INJECTED_OG}/2，canonical ${INJECTED_CANONICAL}/1），请人工检查 $DEST/index.html" >&2
