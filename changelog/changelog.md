@@ -3,12 +3,48 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v1.09
+> 当前版本：v1.10
 >
 > 本文件为活跃档（v1.06 起），新条目置顶；更早条目见
 > [changelog-v0.71-v1.05.md](changelog-v0.71-v1.05.md)（v0.71-v1.05）、
 > [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36-v0.70）与
 > [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
+
+---
+
+## v1.10 — 工程化: 分享图转 WebP 与冗余字体分片删除
+
+**变更性质：工程化（线上资产瘦身，视觉与功能零变化）**
+**开发时间：2026-09-18**
+
+### 概述
+
+线上资产瘦身：分享图 og.png 转码为 WebP，336 KB 降至约 27 KB，
+线上省约 309 KB；删除零字符命中的 JetBrains Mono 西文扩展字体
+分片，省 11.6 KB 与一个请求。仓库与预览保持相对路径形态，部署
+侧分享元数据注入逻辑同步改指新文件名。
+
+### 变更明细
+
+- 分享图转码：public/og.png 转码为 public/og.webp，尺寸 1200×630
+  不变，质量 85 编码；index.html 的 og:image 与 twitter:image 指向
+  同步更新；deploy.sh 分享元数据注入的文件名与命中计数同步改指
+  og.webp；README 双语头图引用同步更新。
+- 字体分片删除：public/fonts/JetBrainsMono-latin-ext.woff2 在全库
+  源码、文案与文档中零字符命中，连同 fonts.css 对应 @font-face
+  块一并删除；字形由 latin 分片与后备字体承接，页面字体无变化。
+- 验证脚本：回归套件内分享卡检查改指 og.webp 与 image/webp；新增
+  资产探针脚本，覆盖分享图可达性与尺寸、旧文件下线、字体分片
+  下线与保留分片可达、字体可加载。
+
+### 验证
+
+- corepack pnpm check 全绿：33 个测试文件 476 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- Playwright 回归套件 27 脚本全过；非套件专项 9 份全过，含新增
+  资产探针 8 断言。
+- 部署后线上复跑 17 脚本全过；线上 bundle 哈希与本地构建逐字节
+  一致。
 
 ---
 
