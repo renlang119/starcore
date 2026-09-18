@@ -82,7 +82,7 @@ starcore/
 ├─ docs/            11 specification documents (in Chinese), see Documentation (plus archived history)
 ├─ public/          favicon and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation check)
-├─ changelog/       version history; active file and two archives
+├─ changelog/       version history; active file and three archives
 ├─ deploy.sh        deployment script
 └─ project configs (vite.config.ts, vitest.config.ts, tsconfig*.json, eslint.config.js)
 ```
@@ -90,7 +90,7 @@ starcore/
 ## Quality
 
 - **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 33 test files,
-  475 cases
+  476 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document
@@ -115,7 +115,8 @@ starcore/
 
 ## Version History
 
-- [changelog.md](changelog/changelog.md) · from v0.71, newest first
+- [changelog.md](changelog/changelog.md) · from v1.06, newest first
+- [changelog-v0.71-v1.05.md](changelog/changelog-v0.71-v1.05.md) · v0.71 to v1.05 archive
 - [changelog-v0.36-v0.70.md](changelog/changelog-v0.36-v0.70.md) · v0.36 to v0.70 archive
 - [changelog-v0.01-v0.35.md](changelog/changelog-v0.01-v0.35.md) · v0.01 to v0.35 archive
 

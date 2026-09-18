@@ -70,14 +70,14 @@ starcore/
 ├─ docs/            十一册规范文档，见「文档索引」（含 archive 历史归档）
 ├─ public/          favicon 与本地字体（Orbitron、JetBrains Mono）
 ├─ scripts/         质量脚本（计数守恒检查）
-├─ changelog/       版本历史三档（活跃档 changelog.md 与两份历史存档）
+├─ changelog/       版本历史四档（活跃档 changelog.md 与三份历史存档）
 ├─ deploy.sh        部署脚本
 └─ 工程配置（vite.config.ts、vitest.config.ts、tsconfig*.json、eslint.config.js）
 ```
 
 ## 质量
 
-- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，33 个测试文件 475 个用例
+- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，33 个测试文件 476 个用例
 - **类型与规范**：构建内置 vue-tsc 类型检查；ESLint 与 Prettier 全量检查零输出
 - **计数守恒**：`scripts/check-conservation.mjs` 校验文档计数、成就文案联动与
   测试硬断言，防止数值漂移（`corepack pnpm check:conservation`）
@@ -98,7 +98,8 @@ starcore/
 
 ## 版本历史
 
-- [changelog.md](changelog/changelog.md)：v0.71 起，新条目置顶
+- [changelog.md](changelog/changelog.md)：v1.06 起，新条目置顶
+- [changelog-v0.71-v1.05.md](changelog/changelog-v0.71-v1.05.md)：v0.71 至 v1.05 存档
 - [changelog-v0.36-v0.70.md](changelog/changelog-v0.36-v0.70.md)：v0.36 至 v0.70 存档
 - [changelog-v0.01-v0.35.md](changelog/changelog-v0.01-v0.35.md)：v0.01 至 v0.35 存档
 
