@@ -2,7 +2,7 @@
   "name": "starcore",
   "private": true,
   "license": "MIT",
-  "version": "1.08.0",
+  "version": "1.09.0",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
