@@ -4,8 +4,10 @@
  *
  * 收敛 MapView / ArmyView / AchievementsView / DailyCard / ActionQueuePanel
  * 五处同构实现（v1.02）。调用方类名自动落在组件根节点，填充条类名经
- * fillClass 保留（单测与 Playwright 锚点不变）；高度/配色/圆角/过渡经
- * --pb-* 变量在调用方 scoped 规则里注入（缺省值见样式段）。
+ * fillClass 保留（单测与 Playwright 锚点不变）；高度/配色/圆角/过渡/辉光
+ * 经 `--pb-*` 变量在调用方 scoped 规则里注入（缺省值见样式段）。
+ * 根节点溢出裁剪同样走变量：带辉光的实例（如行动队列底部细条）注入
+ * `--pb-overflow: visible`，否则光晕会被裁平。
  */
 import { computed } from 'vue'
 
@@ -35,7 +37,7 @@ const width = computed(() => props.pct + '%')
   height: var(--pb-h, 6px);
   background: var(--pb-track, var(--color-elevated));
   border-radius: var(--pb-radius, var(--radius-pill, 999px));
-  overflow: hidden;
+  overflow: var(--pb-overflow, hidden);
 }
 .pb-fill {
   height: 100%;

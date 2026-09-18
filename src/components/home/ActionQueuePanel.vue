@@ -167,6 +167,7 @@ const { displayActions, hasActions } = useActionQueue()
   --pb-fill-radius: 0 2px 2px 0;
   --pb-transition: width 0.5s var(--ease-out);
   --pb-glow: 0 0 4px var(--c);
+  --pb-overflow: visible;
 }
 
 /* —— 可执行（actionable）—— */
