@@ -396,7 +396,13 @@ function validateSaveData(data: unknown): data is SaveData {
   const d = data as Record<string, unknown>
   if (!_isNonNegFinite(d.version) || d.version < 1 || d.version > SAVE_VERSION) return false
   if (!_isNonNegFinite(d.savedAt)) return false
-  if (d.player != null && !_isObject(d.player)) return false
+  // player（可选字段）：存在则须为对象；名字段须为字符串且长度不超过 24
+  // （名字段会在存档管理区展示，约束类型与长度防脏值上屏）
+  if (d.player != null) {
+    if (!_isObject(d.player)) return false
+    const p = d.player as Record<string, unknown>
+    if (typeof p.name !== 'string' || p.name.length > 24) return false
+  }
   // totalPlayTime（可选字段）：存在则必须是非负有限数字
   if (d.totalPlayTime !== undefined && !_isNonNegFinite(d.totalPlayTime)) return false
 
@@ -480,7 +486,7 @@ function validateSaveData(data: unknown): data is SaveData {
     const p = val as Record<string, unknown>
     if (p.nodeId !== key) return false
     if (!_isNonNegFinite(p.startTime) || !_isNonNegFinite(p.endTime)) return false
-    if (typeof p.completed !== 'boolean') return false
+    if (!_isBool(p.completed)) return false
   }
 
   // relics: owned 条目的 id 必须是有效遗物 ID（未知 id 条目在 _validateAndRepair
@@ -556,7 +562,7 @@ function validateSaveData(data: unknown): data is SaveData {
       if (!_isObject(c)) return false
       if (typeof c.templateId !== 'string') return false
       if (!_isNonNegFinite(c.tier)) return false
-      if (typeof c.claimed !== 'boolean') return false
+      if (!_isBool(c.claimed)) return false
     }
   }
   return true
@@ -596,6 +602,11 @@ function _isNonNegInt(v: unknown): v is number {
   return Number.isInteger(v) && (v as number) >= 0
 }
 
+/** 布尔判定（存档布尔字段） */
+function _isBool(v: unknown): v is boolean {
+  return typeof v === 'boolean'
+}
+
 /** 字符串数组白名单判定（completed 类 id 列表，v1.03） */
 function _isValidStrArray(v: unknown, ids: Set<string>): boolean {
   return Array.isArray(v) && v.every((x) => typeof x === 'string' && ids.has(x))
@@ -606,7 +617,7 @@ function _isValidIdNumberRecord(v: unknown, validIds: Set<string>, intOnly: bool
   if (!_isObject(v)) return false
   for (const [key, val] of Object.entries(v)) {
     if (!validIds.has(key)) return false
-    if (typeof val !== 'number' || !isFinite(val) || val < 0) return false
+    if (!_isNonNegFinite(val)) return false
     if (intOnly && !Number.isInteger(val)) return false
   }
   return true
