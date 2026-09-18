@@ -1,38 +1,29 @@
 /**
  * game.ts — 主游戏 store
- * 统筹 tick 循环、存档、离线收益、转生协调
+ * 统筹 tick 循环、转生协调与跨 store 编排；
+ * 效果系统见 game-effects，存档簇见 game-persistence
  */
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { D, Decimal, add } from '@/lib/decimal'
-import { EffectSystem, type EffectSource } from '@/lib/effect-system'
-import { computeOfflineGains as calcOfflineGains, type OfflineReport } from '@/lib/offline-gains'
+import { ref } from 'vue'
+import { D, add, type Decimal } from '@/lib/decimal'
 import { repeatUntilFail, simulateSteps } from '@/lib/batch'
 import { useResourcesStore, START_ENERGY } from './resources'
 import { useBuildingsStore } from './buildings'
 import { useResearchStore } from './research'
-import { useMilitaryStore, setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
-import { useCombatStore, setGarrisonGuard } from './combat'
+import { useMilitaryStore } from './military'
+import { useCombatStore } from './combat'
 import { useExplorationStore } from './exploration'
-import { useRelicsStore, setRelicSlotProvider, setRelicEnhanceSpendProvider } from './relics'
+import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
-import { useAchievementsStore, setAchievementExternalProviders } from './achievements'
+import { useAchievementsStore } from './achievements'
 import { useDailyStore } from './daily'
-import {
-  readSave,
-  writeSave,
-  writeSaveSync,
-  clearSave,
-  exportSave,
-  importSave,
-  SAVE_VERSION,
-  type SaveData,
-} from '@/lib/storage'
+import { createGameEffects, wireGameProviders } from './game-effects'
+import { createGamePersistence } from './game-persistence'
 import { TECHS, adjustedTechCost } from '@/data/tech'
 import { BUILDINGS, buildingCost } from '@/data/buildings'
-import { getStronghold } from '@/data/pve'
 import { enhanceCost, MAX_RELIC_LEVEL } from '@/data/relics'
 import type { ResourceType } from '@/data/buildings'
+import type { OfflineReport } from '@/lib/offline-gains'
 
 const TICK_INTERVAL = 1000 // ms
 // 后台 tick 补算后，仅当离线时长超过此阈值才弹窗展示报告；
@@ -52,36 +43,6 @@ export const useGameStore = defineStore('game', () => {
   const achievements = useAchievementsStore()
   const daily = useDailyStore()
 
-  // 修复：显式注入槽位扩展依赖，避免 relics store setup 阶段隐式引用 transcend
-  setRelicSlotProvider(() => transcend.getValue('relic_slot'))
-  // 强化能量支出通道：接入 resources.spend 原子扣费
-  setRelicEnhanceSpendProvider((cost) => resources.spend('energy', cost))
-  // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
-  setAchievementExternalProviders({
-    relicsOwned: () => relics.ownedCount,
-    relicKinds: () => relics.ownedKinds,
-    transcends: () => transcend.totalTranscends,
-    playtime: () => totalPlayTime.value,
-    expeditionBest: () => combat.expeditionBest,
-  })
-  // 训练并行槽：基础 1 槽 + 科技加成（集群操练 I/II 各 +1），封顶 MAX_TRAINING_SLOTS
-  setTrainingSlotProvider(() =>
-    Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
-  )
-  // 驻扎前置守卫：据点须解锁（探索前置完成）+ 编队存在且未被其他据点占用。
-  // 据点已攻克门槛由 combat.garrison 本体校验（completedStrongholds 属 combat 自身状态）
-  setGarrisonGuard((strongholdId, formationId) => {
-    const def = getStronghold(strongholdId)
-    if (!def) return false
-    if (!exploration.prereqMet(def.requires)) return false
-    const f = military.formations.find((f) => f.id === formationId)
-    if (!f) return false
-    for (const [sid, g] of Object.entries(combat.garrisoned)) {
-      if (sid !== strongholdId && g.formationId === formationId) return false
-    }
-    return true
-  })
-
   // —— game meta state ——
   const lastSaveTime = ref(Date.now())
   const lastTickTime = ref(Date.now())
@@ -99,39 +60,40 @@ export const useGameStore = defineStore('game', () => {
    */
   const initError = ref<'too_new' | 'corrupt' | 'failed' | null>(null)
   const corruptRaw = ref<string | null>(null)
+  /**
+   * 存档写入失败标志：双通道全失败（配额/隐私模式）时置位，由全局提示层
+   * 给玩家可见反馈；下次成功保存自动清除。避免整段进度只在内存而玩家不知情。
+   */
+  const saveFailed = ref(false)
 
-  // —— 统一效果系统（6.2：替代三处重复 getMax 逻辑）——
-  const effectSystem = new EffectSystem()
-  // 各 store 通过 getMult/getValue 接口注册为 EffectSource
-  effectSystem.register(research as EffectSource)
-  effectSystem.register(relics as EffectSource)
-  effectSystem.register(transcend as EffectSource)
-  effectSystem.register(achievements as EffectSource)
+  // —— 效果系统与全局乘数 ——
+  const {
+    effectSystem,
+    productionMults,
+    atkMult,
+    defMult,
+    exploreMult,
+    prestigeMult,
+    offlineMult,
+    techCostMult,
+    autoBuild,
+    autoResearch,
+    autoExplore,
+    totalProduction,
+  } = createGameEffects({ research, relics, transcend, achievements, buildings })
 
-  // —— 计算全局乘数（5.1：改为 computed 缓存，仅在依赖变化时重算）——
-  const productionMults = computed<Record<string, Decimal>>(() => {
-    const result: Record<string, Decimal> = {}
-    for (const res of ['energy', 'crystal', 'alloy', 'data', 'dark']) {
-      result[res] = effectSystem.getMult('production_mult', res)
-    }
-    return result
+  // 各 store 一次性依赖注入（槽位扩展 / 强化支出通道 / 成就外部指标 / 训练并行槽 / 驻扎前置守卫）
+  wireGameProviders({
+    effectSystem,
+    resources,
+    relics,
+    transcend,
+    combat,
+    military,
+    exploration,
+    totalPlayTime,
   })
 
-  const atkMult = computed(() => effectSystem.getMult('combat_mult', 'attack'))
-  const defMult = computed(() => effectSystem.getMult('combat_mult', 'defense'))
-  const exploreMult = computed(() => effectSystem.getMult('explore_mult'))
-  const prestigeMult = computed(() => effectSystem.getMult('prestige_mult'))
-  const offlineMult = computed(() => effectSystem.getMult('offline_bonus'))
-  const techCostMult = computed(() => effectSystem.getMult('cost_mult', 'tech'))
-  // —— 自动化 QoL 开关（转生树买断节点；getValue 累加通道 > 0 即已购）——
-  const autoBuild = computed(() => effectSystem.getValue('auto_build') > 0)
-  const autoResearch = computed(() => effectSystem.getValue('auto_research') > 0)
-  const autoExplore = computed(() => effectSystem.getValue('auto_explore') > 0)
-
-  /** 5.2：缓存总产出——仅当建筑等级或乘数变化时重算 */
-  const totalProduction = computed(() => buildings.getTotalProduction(productionMults.value))
-
-  // —— 主 tick ——
   /**
    * 成就终身计数采集：totals 差值快照法。
    * resources.totals 记录本轮总产出（建筑 tick/探索奖励/战斗奖励/离线补算全部入 totals），
@@ -150,6 +112,48 @@ export const useGameStore = defineStore('game', () => {
     lifetimeTotalsSnapshot.dark = curDark
   }
 
+  /** 终身计数快照对齐：toZero 归零（转生/清档），否则对齐当前 totals 现值（hydrate 后） */
+  function alignLifetimeSnapshot(toZero = false) {
+    lifetimeTotalsSnapshot.energy = toZero ? D(0) : resources.getTotal('energy')
+    lifetimeTotalsSnapshot.dark = toZero ? D(0) : resources.getTotal('dark')
+  }
+
+  // —— 存档簇（存档组装 / 读写通道 / hydrate / 导入导出 / 离线补算 / 清档重置）——
+  const {
+    save,
+    saveSync,
+    load,
+    computeOfflineGains,
+    setOfflineReport,
+    doExport,
+    exportCorruptRaw,
+    doImport,
+    hardReset,
+  } = createGamePersistence({
+    resources,
+    buildings,
+    research,
+    military,
+    combat,
+    exploration,
+    relics,
+    transcend,
+    achievements,
+    daily,
+    totalProduction,
+    offlineMult,
+    lastSaveTime,
+    totalPlayTime,
+    player,
+    offlineReport,
+    initError,
+    corruptRaw,
+    saveFailed,
+    alignLifetimeSnapshot,
+    stop,
+    start,
+  })
+
   // —— 每日签到/周期挑战 ——
   /** 挑战奖励发放（DailyCard 领取按钮回调） */
   function claimChallenge(templateId: string): { dark: number; streakBonus: number } | null {
@@ -159,6 +163,7 @@ export const useGameStore = defineStore('game', () => {
     return result
   }
 
+  // —— 主 tick ——
   function tick() {
     const now = Date.now()
     let dt = (now - lastTickTime.value) / 1000
@@ -168,7 +173,7 @@ export const useGameStore = defineStore('game', () => {
     if (!Number.isFinite(dt) || dt <= 0) dt = 1 // 异常保护
     if (dt > 60) {
       // 标签页后台过久：补算离线收益，本次 tick 只算 1 秒
-      const report = doComputeOfflineGains(dt)
+      const report = computeOfflineGains(dt)
       // 短时离线（<5分钟）静默补算不弹窗——浏览器对不活跃标签页的
       // setInterval 有节流（常降至 1 次/分钟甚至更低），或系统短暂
       // 休眠唤醒，都会导致 dt 突然超过 60 秒。这种情况下玩家并未真正
@@ -296,210 +301,16 @@ export const useGameStore = defineStore('game', () => {
     visibilityHandler = null
   }
 
-  // —— 存档 ——
-  function buildSaveData(): SaveData {
-    return {
-      version: SAVE_VERSION,
-      savedAt: Date.now(),
-      player: { ...player.value },
-      totalPlayTime: totalPlayTime.value,
-      resources: resources.serialize(),
-      buildings: buildings.serialize(),
-      research: research.serialize(),
-      military: military.serialize(),
-      combat: combat.serialize(),
-      exploration: exploration.serialize(),
-      relics: relics.serialize(),
-      transcend: transcend.serialize(),
-      achievements: achievements.serialize(),
-      daily: daily.serialize(),
-    }
-  }
-
-  // —— 存档（错误态守卫：initError 置位时拒绝一切写入，防空状态覆盖原始存档）——
-  /**
-   * 存档写入失败标志：双通道全失败（配额/隐私模式）时置位，由全局提示层
-   * 给玩家可见反馈；下次成功保存自动清除。避免整段进度只在内存而玩家不知情。
-   */
-  const saveFailed = ref(false)
-  async function save(): Promise<boolean> {
-    if (initError.value) return false
-    const ok = await writeSave(buildSaveData())
-    if (ok) {
-      lastSaveTime.value = Date.now()
-      saveFailed.value = false
-    } else {
-      saveFailed.value = true
-    }
-    return ok
-  }
-
-  /** 同步存档（仅 localStorage），用于 beforeunload 场景 */
-  function saveSync(): void {
-    if (initError.value) return
-    const ok = writeSaveSync(buildSaveData())
-    if (ok) {
-      lastSaveTime.value = Date.now()
-      saveFailed.value = false
-    } else {
-      saveFailed.value = true
-    }
-  }
-
-  async function load(): Promise<boolean> {
-    try {
-      const outcome = await readSave()
-      if (outcome.status === 'too_new') {
-        // 版本过新：不静默 hydrate 未知结构，进入错误态等玩家处理
-        initError.value = 'too_new'
-        return false
-      }
-      if (outcome.status === 'corrupt') {
-        // 主备档都在但都不可读：进错误屏给导出/清除出口，
-        // 绝不按无档处理——否则 15 秒自动存档会用空状态覆盖损坏档
-        initError.value = 'corrupt'
-        corruptRaw.value = outcome.raw ?? null
-        return false
-      }
-      if (outcome.status === 'none') return false
-      hydrateAll(outcome.data)
-      return true
-    } catch {
-      // 读档/hydrate 异常（数据损坏/解析失败）：进入错误态，不启动游戏循环
-      initError.value = 'failed'
-      return false
-    }
-  }
-
-  function hydrateAll(data: SaveData) {
-    if (data.player) player.value = { ...player.value, ...data.player }
-    // 恢复上次保存时间，否则 computeOfflineGains 会因 elapsed≈0 直接 return null
-    if (data.savedAt) lastSaveTime.value = data.savedAt
-    // 终身游玩时长入档（旧档缺失保持 0）
-    if (
-      typeof data.totalPlayTime === 'number' &&
-      isFinite(data.totalPlayTime) &&
-      data.totalPlayTime >= 0
-    ) {
-      totalPlayTime.value = data.totalPlayTime
-    }
-    resources.hydrate(data.resources)
-    buildings.hydrate(data.buildings)
-    research.hydrate(data.research)
-    military.hydrate(data.military)
-    combat.hydrate(data.combat)
-    exploration.hydrate(data.exploration)
-    transcend.hydrate(data.transcend)
-    relics.hydrate(data.relics)
-    achievements.hydrate(data.achievements)
-    daily.hydrate(data.daily)
-    // 终身计数快照对齐已恢复的 totals——否则首个 tick 会把整轮历史产量
-    // 当作增量重复计入终身计数
-    alignLifetimeSnapshot()
-  }
-
-  // —— 离线收益 ——
-  function doComputeOfflineGains(elapsedOverride?: number): OfflineReport | null {
-    const now = Date.now()
-    const elapsed = elapsedOverride ?? (now - lastSaveTime.value) / 1000
-    // 非有限守卫：NaN/Infinity 不做离线补算（lib 层同样自守，此处提前
-    // 拦截避免 lastSaveTime 被推进后返回 null 报告的语义混淆）
-    if (!Number.isFinite(elapsed) || elapsed < 60) return null
-    // 防止重复计算：将 lastSaveTime 推进到当前时刻（无论是否有 elapsedOverride）
-    lastSaveTime.value = now
-    return calcOfflineGains(elapsed, {
-      totalProduction: totalProduction.value,
-      offlineMult: offlineMult.value,
-      garrisoned: combat.garrisoned,
-      garrisonIdleReward: combat.garrisonIdleReward.bind(combat),
-      gainResource: (res, amount) => resources.gain(res, amount),
-      advanceTraining: (duration) => military.applyTick(duration),
-    })
-  }
-
-  function setOfflineReport(r: OfflineReport | null) {
-    offlineReport.value = r
-  }
-
   async function init(): Promise<boolean> {
     const loaded = await load()
     // 错误态：不启动 tick 与自动存档，等待玩家在错误屏选择清档重开
     if (initError.value) return false
     if (loaded) {
-      const report = doComputeOfflineGains()
+      const report = computeOfflineGains()
       setOfflineReport(report)
     }
     start()
     return loaded
-  }
-
-  // —— 导出 / 导入 ——
-  async function doExport(): Promise<string> {
-    return exportSave(buildSaveData())
-  }
-  /** 错误屏「导出原始存档」：把损坏档的原始载荷原样交出（不解析不改写） */
-  function exportCorruptRaw(): string {
-    return corruptRaw.value ?? ''
-  }
-  /** 重置全部 store（doImport 替换语义与 hardReset 共用清单；combat 传 fullReset
-   * 连远征深度一并清零。转生路径保留 relics/transcend 与远征深度，不纳入此清单） */
-  function resetAllStores() {
-    resources.reset()
-    buildings.reset()
-    research.reset()
-    military.reset()
-    combat.reset(true)
-    exploration.reset()
-    relics.reset()
-    transcend.reset(true)
-    achievements.reset()
-    daily.reset()
-  }
-
-  /** 终身计数快照对齐：toZero 归零（转生/清档），否则对齐当前 totals 现值（hydrate 后） */
-  function alignLifetimeSnapshot(toZero = false) {
-    lifetimeTotalsSnapshot.energy = toZero ? D(0) : resources.getTotal('energy')
-    lifetimeTotalsSnapshot.dark = toZero ? D(0) : resources.getTotal('dark')
-  }
-
-  async function doImport(code: string): Promise<{ success: boolean; message?: string }> {
-    const result = await importSave(code)
-    if (!result.ok) {
-      const msg =
-        result.reason === 'corrupted'
-          ? '存档数据已损坏或被篡改'
-          : result.reason === 'too_new'
-            ? '存档来自更新的游戏版本，无法导入'
-            : '存档无效或已损坏'
-      return { success: false, message: msg }
-    }
-    try {
-      // 导入 = 替换语义：hydrate 各 store 只覆盖出现的键，
-      // 不先 reset 的话导入档缺省字段会保留会话现值（totalTranscends=0 也无法清零）。
-      // 重置后由 hydrateAll 恢复导入档快照，终身计数不重复计入
-      resetAllStores()
-      totalPlayTime.value = 0
-      hydrateAll(result.data)
-      await save()
-      return { success: true }
-    } catch {
-      // hydrate 异常兜底：不再裸抛中断导入流程
-      return { success: false, message: '存档数据异常，导入失败' }
-    }
-  }
-
-  async function hardReset() {
-    stop()
-    await clearSave()
-    initError.value = null
-    corruptRaw.value = null
-    resetAllStores()
-    alignLifetimeSnapshot(true)
-    offlineReport.value = null
-    totalPlayTime.value = 0
-    // 给初始资源
-    resources.setAmount('energy', START_ENERGY)
-    start()
   }
 
   // —— 转生 ——
@@ -673,7 +484,7 @@ export const useGameStore = defineStore('game', () => {
     load,
     hardReset,
     // offline
-    computeOfflineGains: doComputeOfflineGains,
+    computeOfflineGains,
     setOfflineReport,
     // import/export
     doExport,
