@@ -2,7 +2,7 @@
 
 [简体中文](README.md) | **English**
 
-![StarCore Era](public/og.png)
+![StarCore Era](public/og.webp)
 
 A sci-fi idle web game. In 2387 AD, a colony ship arrives at the ruins of a
 Dyson sphere in the Andromeda Galaxy. You run a StarCore civilization,
