@@ -5,6 +5,7 @@ import { TECHS, TECH_BRANCHES, adjustedTechCost, type TechBranch } from '@/data/
 import CostTag from '@/components/ui/CostTag.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import Icon from '@/components/ui/Icon.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 const game = useGameStore()
@@ -84,7 +85,7 @@ function tryResearch(id: string) {
         :style="{ '--c': b.color }"
         @click="activeBranch = b.id"
       >
-        <svg class="b-icon" aria-hidden="true"><use :href="'#' + b.icon" /></svg>
+        <Icon class="b-icon" :name="b.icon" />
         {{ b.name }}
       </button>
     </div>
@@ -104,9 +105,7 @@ function tryResearch(id: string) {
       <li v-for="t in techsToShow" :key="t.id" class="tech-card" :class="techStatus(t.id)">
         <div class="t-head">
           <div class="t-icon" :style="{ color: TECH_BRANCHES[t.branch].color }">
-            <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-              <use :href="'#' + t.icon" />
-            </svg>
+            <Icon :name="t.icon" size="md" />
           </div>
           <div class="t-info">
             <div class="t-name">{{ t.name }}</div>
@@ -116,9 +115,7 @@ function tryResearch(id: string) {
           </div>
           <div>
             <span v-if="techStatus(t.id) === 'completed'" class="status-done">
-              <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-                <use href="#i-ui-check" />
-              </svg>
+              <Icon name="i-ui-check" size="md" />
             </span>
           </div>
         </div>

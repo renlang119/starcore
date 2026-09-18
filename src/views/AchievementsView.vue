@@ -5,9 +5,10 @@
  */
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { fmt, fmtTime } from '@/lib/format'
+import { fmt, fmtDate, fmtTime } from '@/lib/format'
 import type { Decimal } from '@/lib/decimal'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
+import Icon from '@/components/ui/Icon.vue'
 import {
   ACHIEVEMENTS,
   ACHIEVEMENT_CATEGORIES,
@@ -20,8 +21,6 @@ const game = useGameStore()
 const ach = game.achievements
 
 const groups = groupByCategory()
-
-const unlockedCount = computed(() => ach.unlockedCount)
 
 /** 阈值/当前值的展示格式化（按指标类型选择） */
 function fmtMetricValue(metric: AchievementMetric, v: number): string {
@@ -37,9 +36,7 @@ function progressPct(def: AchievementDef): number {
 function unlockedDate(def: AchievementDef): string {
   const ts = ach.unlocked[def.id]
   if (ts === undefined) return ''
-  const d = new Date(ts)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  return fmtDate(ts)
 }
 
 /** 顶部汇总：已解锁成就的效果合并预览（连乘口径，与实际生效一致，v0.95） */
@@ -68,7 +65,7 @@ const bonusSummary = computed(() => {
     <!-- 汇总面板 -->
     <div class="summary-panel">
       <div class="summary-count">
-        <span class="count-num font-display">{{ unlockedCount }}</span>
+        <span class="count-num font-display">{{ ach.unlockedCount }}</span>
         <span class="count-total font-mono">/ {{ ACHIEVEMENTS.length }}</span>
       </div>
       <div class="summary-bonus">
@@ -80,9 +77,7 @@ const bonusSummary = computed(() => {
     <!-- 分类成就列表 -->
     <section v-for="[cat, defs] in groups" :key="cat" class="ach-section">
       <h3 class="section-title with-icon">
-        <svg class="cat-icon" aria-hidden="true">
-          <use :href="'#' + ACHIEVEMENT_CATEGORIES[cat].icon" />
-        </svg>
+        <Icon class="cat-icon" :name="ACHIEVEMENT_CATEGORIES[cat].icon" />
         {{ ACHIEVEMENT_CATEGORIES[cat].label }}
       </h3>
       <div class="ach-grid">
@@ -93,12 +88,8 @@ const bonusSummary = computed(() => {
           :class="{ unlocked: ach.isUnlocked(def.id) }"
         >
           <div class="ach-icon-wrap">
-            <svg class="ach-icon" aria-hidden="true">
-              <use :href="'#' + def.icon" />
-            </svg>
-            <svg v-if="ach.isUnlocked(def.id)" class="ach-check" aria-hidden="true">
-              <use href="#i-ui-check" />
-            </svg>
+            <Icon class="ach-icon" :name="def.icon" />
+            <Icon v-if="ach.isUnlocked(def.id)" class="ach-check" name="i-ui-check" />
           </div>
           <div class="ach-body">
             <div class="ach-head">

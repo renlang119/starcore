@@ -7,6 +7,7 @@
  * 引导按钮为纯路由跳转：action 与 to 同时传入才渲染（无 to 即无按钮，杜绝死按钮）。
  */
 import { useRouter } from 'vue-router'
+import Icon from '@/components/ui/Icon.vue'
 
 withDefaults(
   defineProps<{
@@ -33,9 +34,7 @@ const router = useRouter()
 
 <template>
   <div class="empty-state">
-    <svg class="empty-icon" style="width: 32px; height: 32px" aria-hidden="true">
-      <use :href="'#' + icon" />
-    </svg>
+    <Icon class="empty-icon" :name="icon" style="width: 32px; height: 32px" />
     <span class="empty-text">{{ text }}</span>
     <span v-if="hint" class="empty-hint">{{ hint }}</span>
     <button v-if="action && to" class="btn-secondary sm es-action" @click="router.push(to)">

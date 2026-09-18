@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // HeroCore — 星核核心视觉（v0.54 从 HomeView 拆出）
 // 核心能量值 + 产出率 + 三层状态环 + 点击跳转建造页
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTimeout } from '@/composables/useTimeout'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
 import { TECHS } from '@/data/tech'
@@ -76,22 +77,16 @@ const r3Phase = computed(() => {
   return 'phase-idle'
 })
 
-// P2-4 核心点击脉动
+// P2-4 核心点击脉动（重触发先清旧；卸载清理由 useTimeout 承载）
 const coreClicked = ref(false)
-let clickTimer: ReturnType<typeof setTimeout> | null = null
+const clickTimer = useTimeout()
 function onCoreClick() {
   coreClicked.value = true
-  if (clickTimer) clearTimeout(clickTimer)
-  clickTimer = setTimeout(() => {
+  clickTimer.set(() => {
     coreClicked.value = false
-    clickTimer = null
   }, 600)
   router.push('/build')
 }
-
-onUnmounted(() => {
-  if (clickTimer) clearTimeout(clickTimer)
-})
 
 // 产出率（带 /s 后缀，负值时变红）
 const rateDisplay = computed(() => {

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBreakpoint } from '@/composables/useBreakpoint'
 import { useToast } from '@/composables/useToast'
+import { useTimeout } from '@/composables/useTimeout'
 import { useGameStore } from '@/stores/game'
 import TopBar from './TopBar.vue'
 import BottomNav from './BottomNav.vue'
@@ -91,16 +92,14 @@ const showBattleBack = computed(() => route.path.startsWith('/battle'))
 
 // P3-5 路由跃迁白光 overlay 触发控制
 const warpFlash = ref(false)
-let warpTimer: ReturnType<typeof setTimeout> | null = null
+const warpTimer = useTimeout()
 watch(
   () => route.path,
   () => {
     // 防抖：新触发先清旧 timer，避免上一次的熄灭回调提前中断本次白光
-    if (warpTimer) clearTimeout(warpTimer)
     warpFlash.value = true
-    warpTimer = setTimeout(() => {
+    warpTimer.set(() => {
       warpFlash.value = false
-      warpTimer = null
     }, 350)
   }
 )

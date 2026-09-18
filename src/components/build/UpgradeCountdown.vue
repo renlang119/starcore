@@ -180,6 +180,23 @@ const bottleneckColor = computed(() => {
   return ''
 })
 
+/**
+ * 倒计时行描述（四种形态收敛为数据驱动）：kind 决定色点与文案，
+ * hint 决定是否带「明细」入口（混合态第二行无入口）。
+ */
+const rows = computed(() => {
+  const r = result.value
+  if (r.type === 'countdown' && r.hasManual) {
+    return [
+      { key: 'countdown', kind: 'countdown' as const, hint: true },
+      { key: 'manual', kind: 'manual' as const, hint: false },
+    ]
+  }
+  if (r.type === 'countdown') return [{ key: 'countdown', kind: 'countdown' as const, hint: true }]
+  if (r.type === 'manual') return [{ key: 'manual', kind: 'manual' as const, hint: true }]
+  return []
+})
+
 // —— 辅助函数 ——
 function resColor(rt: ResourceType): string {
   return game.resources.getMeta(rt).color
@@ -207,110 +224,38 @@ function toggleExpand() {
 
 <template>
   <div v-if="result.type === 'countdown' || result.type === 'manual'" class="countdown-zone">
-    <!-- 情况 C：混合瓶颈 — 两行并列 -->
-    <div v-if="result.type === 'countdown' && result.hasManual" class="countdown-mixed">
-      <div
-        class="countdown-row"
-        role="button"
-        tabindex="0"
-        :aria-expanded="expanded"
-        aria-label="资源预估倒计时，点击查看明细"
-        @click="toggleExpand"
-        @keydown.enter="toggleExpand"
-        @keydown.space.prevent="toggleExpand"
-      >
-        <span
-          class="res-dot"
-          :style="{ background: bottleneckColor, color: bottleneckColor }"
-        ></span>
-        <span class="countdown-text">
+    <!-- 倒计时行（v-for 数据驱动，四种形态共用一份行体；混合态两行并列） -->
+    <div
+      v-for="row in rows"
+      :key="row.key"
+      class="countdown-row"
+      :class="{ 'rate-zero': row.kind === 'manual' }"
+      role="button"
+      tabindex="0"
+      :aria-expanded="expanded"
+      :aria-label="
+        row.kind === 'countdown' ? '资源预估倒计时，点击查看明细' : '需手动获取的资源，点击查看明细'
+      "
+      @click="toggleExpand"
+      @keydown.enter="toggleExpand"
+      @keydown.space.prevent="toggleExpand"
+    >
+      <span
+        v-if="row.kind === 'countdown'"
+        class="res-dot"
+        :style="{ background: bottleneckColor, color: bottleneckColor }"
+      ></span>
+      <span v-else class="res-dot"></span>
+      <span class="countdown-text">
+        <template v-if="row.kind === 'countdown'">
           <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span
           ><span class="cd-prefix">后可升级</span>
-        </span>
-        <span class="cd-hint">
-          明细
-          <svg
-            class="cd-arrow"
-            width="10"
-            height="10"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </span>
-      </div>
-      <div
-        class="countdown-row rate-zero"
-        role="button"
-        tabindex="0"
-        :aria-expanded="expanded"
-        aria-label="需手动获取的资源，点击查看明细"
-        @click="toggleExpand"
-        @keydown.enter="toggleExpand"
-        @keydown.space.prevent="toggleExpand"
-      >
-        <span class="res-dot"></span>
-        <span class="countdown-text">
+        </template>
+        <template v-else>
           <span class="cd-time">需手动获取</span>
-        </span>
-      </div>
-    </div>
-
-    <!-- 情况 B：仅可产出瓶颈 -->
-    <div
-      v-else-if="result.type === 'countdown'"
-      class="countdown-row"
-      role="button"
-      tabindex="0"
-      :aria-expanded="expanded"
-      aria-label="资源预估倒计时，点击查看明细"
-      @click="toggleExpand"
-      @keydown.enter="toggleExpand"
-      @keydown.space.prevent="toggleExpand"
-    >
-      <span class="res-dot" :style="{ background: bottleneckColor, color: bottleneckColor }"></span>
-      <span class="countdown-text">
-        <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span
-        ><span class="cd-prefix">后可升级</span>
+        </template>
       </span>
-      <span class="cd-hint">
-        明细
-        <svg
-          class="cd-arrow"
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </span>
-    </div>
-
-    <!-- 情况 D：仅手动瓶颈 -->
-    <div
-      v-else-if="result.type === 'manual'"
-      class="countdown-row rate-zero"
-      role="button"
-      tabindex="0"
-      :aria-expanded="expanded"
-      aria-label="需手动获取的资源，点击查看明细"
-      @click="toggleExpand"
-      @keydown.enter="toggleExpand"
-      @keydown.space.prevent="toggleExpand"
-    >
-      <span class="res-dot"></span>
-      <span class="countdown-text">
-        <span class="cd-time">需手动获取</span>
-      </span>
-      <span class="cd-hint">
+      <span v-if="row.hint" class="cd-hint">
         明细
         <svg
           class="cd-arrow"
@@ -476,11 +421,9 @@ function toggleExpand() {
   color: var(--color-amber);
 }
 
-/* —— 混合状态 —— */
-.countdown-mixed {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+/* —— 混合态两行间距（行体收敛后以相邻兄弟边距表达） —— */
+.countdown-row + .countdown-row {
+  margin-top: var(--space-1);
 }
 
 /* —— 展开面板 —— */

@@ -4,6 +4,7 @@
 import { useRouter } from 'vue-router'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
+import Icon from '@/components/ui/Icon.vue'
 import { useActionQueue } from '@/composables/useActionQueue'
 
 defineProps<{
@@ -42,19 +43,15 @@ const { displayActions, hasActions } = useActionQueue()
       >
         <button class="action-btn" @click="router.push(item.path)">
           <!-- in-progress: 纯色图标 -->
-          <svg
+          <Icon
             v-if="item.status === 'in-progress'"
             class="action-icon"
-            style="width: var(--icon-md); height: var(--icon-md)"
-            aria-hidden="true"
-          >
-            <use :href="'#' + item.icon" />
-          </svg>
+            :name="item.icon"
+            size="md"
+          />
           <!-- actionable: 色块 + 图标 -->
           <div v-else class="action-icon-block">
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-              <use :href="'#' + item.icon" />
-            </svg>
+            <Icon :name="item.icon" size="lg" />
           </div>
           <div class="action-info">
             <span class="action-label">{{ item.label }}</span>
@@ -63,13 +60,7 @@ const { displayActions, hasActions } = useActionQueue()
             }}</span>
             <span v-else class="action-desc">{{ item.detail }}</span>
           </div>
-          <svg
-            class="action-arrow"
-            style="width: var(--icon-sm); height: var(--icon-sm)"
-            aria-hidden="true"
-          >
-            <use href="#i-ui-arrow-right" />
-          </svg>
+          <Icon class="action-arrow" name="i-ui-arrow-right" size="sm" />
         </button>
         <!-- 进度条（仅 in-progress） -->
         <ProgressBar

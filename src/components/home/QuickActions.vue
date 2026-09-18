@@ -1,7 +1,9 @@
 <script setup lang="ts">
 // QuickActions — 首页快速操作入口（v0.54 从 HomeView 拆出）
 import { useRouter } from 'vue-router'
+import { NAV_ITEMS } from '@/data/navigation'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import Icon from '@/components/ui/Icon.vue'
 
 defineProps<{
   /** 当前应显示的引导 step（null 表示不显示） */
@@ -14,19 +16,18 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
-// P3-2 快速操作入口
-const quickActions = [
-  { id: 'build', label: '建造', icon: 'i-nav-build', path: '/build', color: 'var(--color-core)' },
-  { id: 'tech', label: '科技', icon: 'i-nav-tech', path: '/tech', color: 'var(--color-plasma)' },
-  {
-    id: 'explore',
-    label: '探索',
-    icon: 'i-nav-explore',
-    path: '/map',
-    color: 'var(--color-quantum)',
-  },
-  { id: 'army', label: '部队', icon: 'i-nav-army', path: '/army', color: 'var(--color-alert)' },
+// P3-2 快速操作入口：按 id 白名单从 NAV_ITEMS 派生（图标/路径同源），入口色为首页专属映射
+const QUICK_ENTRIES: { id: string; color: string; label?: string }[] = [
+  { id: 'build', color: 'var(--color-core)' },
+  // 「科技树」在首页入口沿用既有「科技」文案（v0.54 起口径，避免可见文案变化）
+  { id: 'tech', color: 'var(--color-plasma)', label: '科技' },
+  { id: 'map', color: 'var(--color-quantum)' },
+  { id: 'army', color: 'var(--color-alert)' },
 ]
+const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
+  const item = NAV_ITEMS.find((n) => n.id === id)!
+  return { ...item, color, label: label ?? item.label }
+})
 </script>
 
 <template>
@@ -48,9 +49,7 @@ const quickActions = [
       :style="{ '--c': action.color }"
       @click="router.push(action.path)"
     >
-      <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-        <use :href="'#' + action.icon" />
-      </svg>
+      <Icon :name="action.icon" size="md" />
       <span>{{ action.label }}</span>
     </button>
   </section>

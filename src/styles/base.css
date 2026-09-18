@@ -90,5 +90,5 @@ a {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border-glow);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
 }
