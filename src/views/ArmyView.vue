@@ -6,17 +6,17 @@ import { UNITS, getUnit, type UnitId } from '@/data/units'
 import { getTech } from '@/data/tech'
 import CostTag from '@/components/ui/CostTag.vue'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
-import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import Toast from '@/components/ui/Toast.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import Icon from '@/components/ui/Icon.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 import { useToast } from '@/composables/useToast'
 
 const game = useGameStore()
 // 全局轻提示（v0.77：训练开始反馈）
 const toast = useToast()
-const showToast = toast.show
 const activeTab = ref<'barracks' | 'formation'>('barracks')
 const trainCount = ref<Record<UnitId, number>>(
   Object.fromEntries(UNITS.map((u) => [u.id, 0])) as Record<UnitId, number>
@@ -54,15 +54,9 @@ function cancelBulkAction() {
   pendingBulkAction.value = null
 }
 
-const completedTechs = computed(() => game.research.completed)
-const atkMult = computed(() => game.atkMult)
-const defMult = computed(() => game.defMult)
-
-const formations = computed(() => game.military.formations)
-
-// 军事系统解锁状态：任一兵种解锁即可训练（military_basic）
+/** 军事系统解锁状态：任一兵种解锁即可训练（military_basic） */
 const armyUnlocked = computed(() =>
-  UNITS.some((u) => game.military.isUnlocked(u, completedTechs.value))
+  UNITS.some((u) => game.military.isUnlocked(u, game.research.completed))
 )
 
 // 空状态（已解锁分支）：无全量部队（含编入编队）且无训练中任务（v0.95 全量口径）
@@ -72,16 +66,18 @@ const hasAnyUnits = computed(
     game.military.trainingQueue.length > 0
 )
 
-const totalPower = computed(() => game.military.totalPower(atkMult.value, defMult.value))
+const totalPower = computed(() => game.military.totalPower(game.atkMult, game.defMult))
 
 // 训练并行槽：满槽时禁用训练按钮并提示（集群操练 I/II 各 +1 槽，上限 3）
-const maxSlots = computed(() => game.military.maxTrainingSlots)
-const slotsFull = computed(() => game.military.trainingQueue.length >= maxSlots.value)
+const slotsFull = computed(
+  () => game.military.trainingQueue.length >= game.military.maxTrainingSlots
+)
 const slotHint = computed(() => {
   if (!slotsFull.value) return ''
-  if (maxSlots.value >= 3) return '训练槽已满'
-  const nextTech = maxSlots.value < 2 ? '集群操练 I' : '集群操练 II'
-  return `训练槽已满 · 研究「${nextTech}」可扩展至 ${maxSlots.value + 1} 槽`
+  const max = game.military.maxTrainingSlots
+  if (max >= 3) return '训练槽已满'
+  const nextTech = max < 2 ? '集群操练 I' : '集群操练 II'
+  return `训练槽已满 · 研究「${nextTech}」可扩展至 ${max + 1} 槽`
 })
 
 function tryTrain(unitId: UnitId) {
@@ -94,8 +90,8 @@ function tryTrain(unitId: UnitId) {
     (c) => game.resources.spendCost(c)
   )
   // 长周期操作「开始」反馈（v0.77 反馈口径）；失败路径明示原因（连点竞态等边缘场景）
-  if (ok) showToast(`开始训练：${getUnit(unitId)?.name ?? unitId} ×${count}`)
-  else showToast(slotsFull.value ? '训练槽已满' : '资源不足')
+  if (ok) toast.show(`开始训练：${getUnit(unitId)?.name ?? unitId} ×${count}`)
+  else toast.show(slotsFull.value ? '训练槽已满' : '资源不足')
 }
 
 function getUnitCost(unitId: UnitId, count: number) {
@@ -110,15 +106,45 @@ function getUnitPower(unitId: UnitId) {
   const def = getUnit(unitId)
   if (!def) return { atk: 0, def: 0, hp: 0 }
   return {
-    atk: Math.round(def.attack * atkMult.value.toNumber()),
-    def: Math.round(def.defense * defMult.value.toNumber()),
+    atk: Math.round(def.attack * game.atkMult.toNumber()),
+    def: Math.round(def.defense * game.defMult.toNumber()),
     hp: def.hp,
   }
 }
 
 function getInFormation(fid: string, uid: UnitId): number {
-  return formations.value.find((f) => f.id === fid)?.units[uid] ?? 0
+  return game.military.formations.find((f) => f.id === fid)?.units[uid] ?? 0
 }
+
+/** 兵营单位卡视图行：解锁/拥有/战力/成本/可负担一次性派生（模板不再逐处重复调用） */
+const unitRows = computed(() =>
+  UNITS.map((u) => {
+    const count = trainCount.value[u.id]
+    const cost = getUnitCost(u.id, count)
+    return {
+      def: u,
+      count,
+      unlocked: game.military.isUnlocked(u, game.research.completed),
+      owned: game.military.totalOwnedOf(u.id),
+      power: getUnitPower(u.id),
+      cost,
+      canAfford: game.resources.canAfford(cost),
+    }
+  })
+)
+
+/** 编队卡视图行：战力与各兵种库存/编入数一次性派生 */
+const formationRows = computed(() =>
+  game.military.formations.map((f) => ({
+    f,
+    power: game.military.formationPower(f, game.atkMult, game.defMult).atk,
+    units: UNITS.map((u) => ({
+      def: u,
+      owned: game.military.getOwned(u.id),
+      inFormation: f.units[u.id],
+    })),
+  }))
+)
 
 function assignCount(fid: string, uid: UnitId, count: number) {
   const owned = game.military.getOwned(uid)
@@ -236,78 +262,73 @@ function removeAll(fid: string, uid: UnitId) {
           hint="训练你的第一支星际防卫军"
         />
         <div
-          v-for="u in UNITS"
-          :key="u.id"
+          v-for="row in unitRows"
+          :key="row.def.id"
           class="unit-card"
-          :class="{ locked: !game.military.isUnlocked(u, completedTechs) }"
+          :class="{ locked: !row.unlocked }"
         >
           <div class="u-head">
             <div
               class="u-icon"
               :style="{
-                color: u.rarity === 'rare' ? 'var(--color-amber)' : 'var(--color-t-primary)',
+                color: row.def.rarity === 'rare' ? 'var(--color-amber)' : 'var(--color-t-primary)',
               }"
             >
-              <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-                <use :href="'#' + u.icon" />
-              </svg>
+              <Icon :name="row.def.icon" size="lg" />
             </div>
             <div>
               <div class="u-name">
-                {{ u.name }} <span v-if="u.rarity === 'rare'" class="rare-tag">稀有</span>
+                {{ row.def.name }}
+                <span v-if="row.def.rarity === 'rare'" class="rare-tag">稀有</span>
               </div>
-              <div class="u-count font-mono">已拥有：{{ game.military.totalOwnedOf(u.id) }}</div>
+              <div class="u-count font-mono">已拥有：{{ row.owned }}</div>
             </div>
           </div>
-          <p class="u-desc">{{ u.desc }}</p>
+          <p class="u-desc">{{ row.def.desc }}</p>
 
           <div class="u-stats">
-            <span class="stat">攻 {{ getUnitPower(u.id).atk }}</span>
-            <span class="stat">防 {{ getUnitPower(u.id).def }}</span>
-            <span class="stat">HP {{ getUnitPower(u.id).hp }}</span>
+            <span class="stat">攻 {{ row.power.atk }}</span>
+            <span class="stat">防 {{ row.power.def }}</span>
+            <span class="stat">HP {{ row.power.hp }}</span>
             <span class="stat counter"
-              >克制 {{ u.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
+              >克制 {{ row.def.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
             >
           </div>
 
-          <div v-if="!game.military.isUnlocked(u, completedTechs)" class="u-locked">
-            需要科技：{{ getTech(u.requires)?.name ?? u.requires }}
+          <div v-if="!row.unlocked" class="u-locked">
+            需要科技：{{ getTech(row.def.requires)?.name ?? row.def.requires }}
           </div>
           <template v-else>
             <!-- 训练数量 -->
             <div class="train-control">
               <button
                 class="count-btn"
-                @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 10)"
+                @click="trainCount[row.def.id] = Math.max(0, trainCount[row.def.id] - 10)"
               >
                 -10
               </button>
               <button
                 class="count-btn"
-                @click="trainCount[u.id] = Math.max(0, trainCount[u.id] - 1)"
+                @click="trainCount[row.def.id] = Math.max(0, trainCount[row.def.id] - 1)"
               >
                 -1
               </button>
-              <span class="count-display font-mono">{{ trainCount[u.id] }}</span>
-              <button class="count-btn" @click="trainCount[u.id] += 1">+1</button>
-              <button class="count-btn" @click="trainCount[u.id] += 10">+10</button>
+              <span class="count-display font-mono">{{ row.count }}</span>
+              <button class="count-btn" @click="trainCount[row.def.id] += 1">+1</button>
+              <button class="count-btn" @click="trainCount[row.def.id] += 10">+10</button>
             </div>
 
             <!-- 成本 -->
             <div class="u-cost">
-              <CostTag :cost="getUnitCost(u.id, trainCount[u.id])" />
-              <span class="time-tag font-mono">{{ fmtTime(u.trainTime * trainCount[u.id]) }}</span>
+              <CostTag :cost="row.cost" />
+              <span class="time-tag font-mono">{{ fmtTime(row.def.trainTime * row.count) }}</span>
             </div>
 
             <button
               class="btn-accent block"
               style="--accent: var(--color-alert)"
-              :disabled="
-                slotsFull ||
-                trainCount[u.id] === 0 ||
-                !game.resources.canAfford(getUnitCost(u.id, trainCount[u.id]))
-              "
-              @click="tryTrain(u.id)"
+              :disabled="slotsFull || row.count === 0 || !row.canAfford"
+              @click="tryTrain(row.def.id)"
             >
               <span aria-live="polite">{{ slotsFull ? `训练中…剩 ${trainingEta}` : '训练' }}</span>
             </button>
@@ -317,7 +338,7 @@ function removeAll(fid: string, uid: UnitId) {
         <!-- 训练队列 -->
         <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
           <h3 class="section-title">
-            训练中（{{ game.military.trainingQueue.length }}/{{ maxSlots }}）
+            训练中（{{ game.military.trainingQueue.length }}/{{ game.military.maxTrainingSlots }}）
           </h3>
           <p v-if="slotHint" class="slot-hint">{{ slotHint }}</p>
           <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">
@@ -337,67 +358,63 @@ function removeAll(fid: string, uid: UnitId) {
 
     <!-- 编组 -->
     <div v-else>
-      <div v-for="f in formations" :key="f.id" class="formation-card">
+      <div v-for="row in formationRows" :key="row.f.id" class="formation-card">
         <div class="f-head">
-          <span class="f-name">{{ f.name }}</span>
-          <span class="f-power font-mono"
-            >战力 {{ game.military.formationPower(f, atkMult, defMult).atk }}</span
-          >
+          <span class="f-name">{{ row.f.name }}</span>
+          <span class="f-power font-mono">战力 {{ row.power }}</span>
         </div>
         <div>
-          <div v-for="u in UNITS" :key="u.id" class="f-unit-row">
+          <div v-for="cell in row.units" :key="cell.def.id" class="f-unit-row">
             <div class="fu-top">
               <div class="fu-info">
-                <svg style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true">
-                  <use :href="'#' + u.icon" />
-                </svg>
-                <span class="fu-name">{{ u.name }}</span>
+                <Icon :name="cell.def.icon" size="sm" />
+                <span class="fu-name">{{ cell.def.name }}</span>
               </div>
               <div class="fu-numbers">
-                <span class="fu-owned">库存 {{ game.military.getOwned(u.id) }}</span>
-                <span class="fu-count font-mono">编入 {{ f.units[u.id] }}</span>
+                <span class="fu-owned">库存 {{ cell.owned }}</span>
+                <span class="fu-count font-mono">编入 {{ cell.inFormation }}</span>
               </div>
             </div>
             <div class="fu-controls">
               <button
                 class="fu-btn"
-                :disabled="f.units[u.id] <= 0"
-                @click.stop="removeCount(f.id, u.id, 10)"
+                :disabled="cell.inFormation <= 0"
+                @click.stop="removeCount(row.f.id, cell.def.id, 10)"
               >
                 -10
               </button>
               <button
                 class="fu-btn"
-                :disabled="f.units[u.id] <= 0"
-                @click.stop="removeCount(f.id, u.id, 1)"
+                :disabled="cell.inFormation <= 0"
+                @click.stop="removeCount(row.f.id, cell.def.id, 1)"
               >
                 -1
               </button>
               <button
                 class="fu-btn"
-                :disabled="game.military.getOwned(u.id) <= 0"
-                @click.stop="assignCount(f.id, u.id, 1)"
+                :disabled="cell.owned <= 0"
+                @click.stop="assignCount(row.f.id, cell.def.id, 1)"
               >
                 +1
               </button>
               <button
                 class="fu-btn"
-                :disabled="game.military.getOwned(u.id) <= 0"
-                @click.stop="assignCount(f.id, u.id, 10)"
+                :disabled="cell.owned <= 0"
+                @click.stop="assignCount(row.f.id, cell.def.id, 10)"
               >
                 +10
               </button>
               <button
                 class="fu-btn fu-btn-wide"
-                :disabled="game.military.getOwned(u.id) <= 0"
-                @click.stop="assignAll(f.id, u.id)"
+                :disabled="cell.owned <= 0"
+                @click.stop="assignAll(row.f.id, cell.def.id)"
               >
                 全入
               </button>
               <button
                 class="fu-btn fu-btn-wide fu-btn-remove"
-                :disabled="f.units[u.id] <= 0"
-                @click.stop="removeAll(f.id, u.id)"
+                :disabled="cell.inFormation <= 0"
+                @click.stop="removeAll(row.f.id, cell.def.id)"
               >
                 全撤
               </button>
@@ -411,10 +428,12 @@ function removeAll(fid: string, uid: UnitId) {
     <Toast :toast="toast" />
 
     <!-- 批量操作确认弹窗 -->
-    <ModalOverlay
+    <ConfirmModal
       :model-value="showBulkModal"
       :aria-label="pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤'"
-      @overlay-click="cancelBulkAction"
+      confirm-text="确认"
+      @cancel="cancelBulkAction"
+      @confirm="confirmBulkAction"
     >
       <h2 class="confirm-title font-display">
         {{ pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤' }}
@@ -426,17 +445,7 @@ function removeAll(fid: string, uid: UnitId) {
         }}</span>
         名士兵
       </p>
-      <div class="confirm-actions">
-        <button class="btn-secondary" style="flex: 1" @click="cancelBulkAction">取消</button>
-        <button
-          class="btn-accent"
-          style="flex: 1; --accent: var(--color-alert)"
-          @click="confirmBulkAction"
-        >
-          确认
-        </button>
-      </div>
-    </ModalOverlay>
+    </ConfirmModal>
   </div>
 </template>
 
@@ -539,7 +548,7 @@ function removeAll(fid: string, uid: UnitId) {
   padding: 1px var(--space-1);
   background: var(--color-amber);
   color: var(--color-void);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
 }
 .u-count {
   font-size: var(--text-xs);

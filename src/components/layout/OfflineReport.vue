@@ -1,43 +1,61 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { fmt, fmtTime } from '@/lib/format'
+import { fmtTime } from '@/lib/format'
+import { resourceRows } from '@/lib/resource-rows'
 import { UNITS } from '@/data/units'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 
 const game = useGameStore()
-const report = computed(() => game.offlineReport)
-const visible = computed(() => !!report.value)
-const gainsList = computed(() => {
-  if (!report.value) return []
+const visible = computed(() => !!game.offlineReport)
+
+/**
+ * 分组展示数据：标题 / 色调 / 行（资源行走 resourceRows，训练行查兵种表）。
+ * 建筑产出沿用「标题行在列表内」的既有结构（titleInList），间距与其余分组不同属历史形态。
+ */
+const groups = computed(() => {
+  const report = game.offlineReport
+  if (!report) return []
   const metaMap = game.resources.allMeta
-  return Object.entries(report.value.gains).map(([k, v]) => {
-    const meta = metaMap[k]
-    return { id: k, name: meta?.name ?? k, color: meta?.color ?? '#fff', amount: fmt(v) }
-  })
-})
-const garrisonList = computed(() => {
-  if (!report.value?.garrisonGains) return []
-  const metaMap = game.resources.allMeta
-  return Object.entries(report.value.garrisonGains).map(([k, v]) => {
-    const meta = metaMap[k]
-    return { id: k, name: meta?.name ?? k, color: meta?.color ?? '#fff', amount: fmt(v) }
-  })
-})
-const eventList = computed(() => {
-  if (!report.value?.eventGains) return []
-  const metaMap = game.resources.allMeta
-  return Object.entries(report.value.eventGains).map(([k, v]) => {
-    const meta = metaMap[k]
-    return { id: k, name: meta?.name ?? k, color: meta?.color ?? '#fff', amount: fmt(v) }
-  })
-})
-const trainedList = computed(() => {
-  if (!report.value?.trainedUnits) return []
-  return Object.entries(report.value.trainedUnits).map(([k, v]) => {
-    const unit = UNITS.find((u) => u.id === k)
-    return { id: k, name: unit?.name ?? k, count: v as number }
-  })
+  return [
+    {
+      key: 'gains',
+      title: '建筑产出',
+      titleClass: 'section-title sub',
+      color: '',
+      titleInList: true,
+      rows: resourceRows(report.gains, metaMap),
+    },
+    {
+      key: 'garrison',
+      title: '据点驻扎收益',
+      titleClass: 'gain-title',
+      color: 'var(--color-plasma)',
+      titleInList: false,
+      rows: resourceRows(report.garrisonGains ?? {}, metaMap),
+    },
+    {
+      key: 'event',
+      title: '深空事件',
+      titleClass: 'gain-title',
+      color: 'var(--color-core)',
+      titleInList: false,
+      rows: resourceRows(report.eventGains ?? {}, metaMap),
+    },
+    {
+      key: 'trained',
+      title: '部队训练完成',
+      titleClass: 'gain-title',
+      color: 'var(--color-alert)',
+      titleInList: false,
+      rows: Object.entries(report.trainedUnits ?? {}).map(([k, v]) => ({
+        id: k,
+        name: UNITS.find((u) => u.id === k)?.name ?? k,
+        color: '',
+        amount: String(v),
+      })),
+    },
+  ].filter((g) => g.rows.length > 0)
 })
 function dismiss() {
   game.setOfflineReport(null)
@@ -47,52 +65,25 @@ function dismiss() {
 <template>
   <ModalOverlay :model-value="visible" aria-label="离线收益报告" @overlay-click="dismiss">
     <h2 class="title font-display">离线收益报告</h2>
-    <p class="subtitle">你离开了 {{ fmtTime(report?.duration ?? 0) }}</p>
-    <div v-if="gainsList.length > 0" class="gains">
-      <h3 class="section-title sub">建筑产出</h3>
-      <div v-for="g in gainsList" :key="g.id" class="gain-item">
-        <span class="g-name" :style="{ color: g.color }">{{ g.name }}</span>
-        <span class="g-amount font-mono">+{{ g.amount }}</span>
-      </div>
-    </div>
-    <div v-if="garrisonList.length > 0" class="garrison-section">
-      <h3 class="garrison-title">据点驻扎收益</h3>
-      <div class="gains">
-        <div v-for="g in garrisonList" :key="g.id" class="gain-item">
-          <span class="g-name" :style="{ color: g.color }">{{ g.name }}</span>
-          <span class="g-amount font-mono">+{{ g.amount }}</span>
-        </div>
-      </div>
-    </div>
-    <div v-if="eventList.length > 0" class="event-section">
-      <h3 class="event-title">深空事件</h3>
-      <div class="gains">
-        <div v-for="g in eventList" :key="g.id" class="gain-item">
-          <span class="g-name" :style="{ color: g.color }">{{ g.name }}</span>
-          <span class="g-amount font-mono">+{{ g.amount }}</span>
-        </div>
-      </div>
-    </div>
-    <div v-if="trainedList.length > 0" class="trained-section">
-      <h3 class="trained-title">部队训练完成</h3>
-      <div class="gains">
-        <div v-for="t in trainedList" :key="t.id" class="gain-item">
-          <span class="g-name">{{ t.name }}</span>
-          <span class="g-amount font-mono">+{{ t.count }}</span>
-        </div>
-      </div>
-    </div>
-    <p
-      v-if="
-        gainsList.length === 0 &&
-        garrisonList.length === 0 &&
-        eventList.length === 0 &&
-        trainedList.length === 0
-      "
-      class="empty"
+    <p class="subtitle">你离开了 {{ fmtTime(game.offlineReport?.duration ?? 0) }}</p>
+    <div
+      v-for="g in groups"
+      :key="g.key"
+      class="gain-section"
+      :style="g.color ? { '--c': g.color } : undefined"
     >
-      离线期间没有产出（建造更多建筑以获得离线收益）
-    </p>
+      <h3 v-if="!g.titleInList" :class="g.titleClass">{{ g.title }}</h3>
+      <div class="gains">
+        <h3 v-if="g.titleInList" :class="g.titleClass">{{ g.title }}</h3>
+        <div v-for="row in g.rows" :key="row.id" class="gain-item">
+          <span class="g-name" :style="row.color ? { color: row.color } : undefined">{{
+            row.name
+          }}</span>
+          <span class="g-amount font-mono">+{{ row.amount }}</span>
+        </div>
+      </div>
+    </div>
+    <p v-if="groups.length === 0" class="empty">离线期间没有产出（建造更多建筑以获得离线收益）</p>
     <button class="btn-primary block" @click="dismiss">继续</button>
   </ModalOverlay>
 </template>
@@ -138,31 +129,14 @@ function dismiss() {
   text-align: center;
   padding: var(--space-4);
 }
-.garrison-section {
+/* 分组区块（据点驻扎/深空事件/部队训练共用；标题色经 --c 注入） */
+.gain-section {
   margin-bottom: var(--space-5);
 }
-.garrison-title {
+.gain-title {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--color-plasma);
-  margin-bottom: var(--space-2);
-}
-.event-section {
-  margin-bottom: var(--space-5);
-}
-.event-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-core);
-  margin-bottom: var(--space-2);
-}
-.trained-section {
-  margin-bottom: var(--space-5);
-}
-.trained-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-alert);
+  color: var(--c);
   margin-bottom: var(--space-2);
 }
 </style>

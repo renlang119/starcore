@@ -6,21 +6,21 @@ import { BUILDINGS, SECTORS, type SectorId } from '@/data/buildings'
 import { getTech } from '@/data/tech'
 import CostTag from '@/components/ui/CostTag.vue'
 import UpgradeCountdown from '@/components/build/UpgradeCountdown.vue'
+import Icon from '@/components/ui/Icon.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import Toast from '@/components/ui/Toast.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 import { useToast } from '@/composables/useToast'
+import { bulkLabel } from '@/composables/useBulkLabel'
 
 const game = useGameStore()
 // 全局轻提示（v0.77：建造开始反馈）
 const toast = useToast()
-const showToast = toast.show
 const activeSector = ref<SectorId>('energy')
 
 const sectors = Object.values(SECTORS)
 const buildingsInSector = computed(() => BUILDINGS.filter((b) => b.sector === activeSector.value))
-const completedTechs = computed(() => game.research.completed)
 
 // 空状态：当前扇区全部建筑已满级（无可操作项）
 const allMaxed = computed(
@@ -47,22 +47,32 @@ const bulkPreviews = computed(() => {
   return map
 })
 
+/**
+ * 建筑卡视图行：解锁/满级/等级/成本/可负担与按钮文案一次性派生（模板不再对
+ * 同一建筑重复调用 getLevel/getCost/canAfford）。
+ * 按钮文案按当前资源实际可升级级数显示，一级都买不起时退回原文案（v1.00 口径）。
+ */
+const rows = computed(() =>
+  buildingsInSector.value.map((b) => {
+    const cost = game.buildings.getCost(b.id)
+    return {
+      b,
+      unlocked: game.buildings.isUnlocked(b, game.research.completed),
+      maxed: game.buildings.isMaxed(b.id),
+      level: game.buildings.getLevel(b.id),
+      cost,
+      canAfford: game.resources.canAfford(cost),
+      label: bulkLabel('升级', bulkPreviews.value[b.id]?.count ?? 0),
+    }
+  })
+)
+
 function tryUpgrade(id: string) {
   const done = game.tryUpgradeBuildingSteps(id, bulkSteps.value)
   if (!done) return
   // 资源消耗操作受理反馈（v0.77 反馈口径；批量时带实际完成级数）
   const name = BUILDINGS.find((b) => b.id === id)?.name ?? id
-  showToast(done > 1 ? `开始建造：${name} ×${done}` : `开始建造：${name}`)
-}
-
-/**
- * 按钮文案：段位 >1 时按当前资源实际可升级级数显示（随资源动态变化），
- * 一级都买不起时退回原文案（按钮同时处于禁用态，成本行另有「可买 0 级」）。
- */
-function upgradeLabel(id: string): string {
-  if (bulkSteps.value <= 1) return '升级'
-  const count = bulkPreviews.value[id]?.count ?? 0
-  return count > 0 ? `升级 ×${count}` : '升级'
+  toast.show(done > 1 ? `开始建造：${name} ×${done}` : `开始建造：${name}`)
 }
 </script>
 
@@ -123,60 +133,51 @@ function upgradeLabel(id: string): string {
 
     <!-- 建筑列表 -->
     <ul v-else class="building-list" aria-label="建筑列表">
-      <li
-        v-for="b in buildingsInSector"
-        :key="b.id"
-        class="build-card"
-        :class="{ locked: !game.buildings.isUnlocked(b, completedTechs) }"
-      >
+      <li v-for="row in rows" :key="row.b.id" class="build-card" :class="{ locked: !row.unlocked }">
         <div class="b-head">
-          <div class="b-icon" :style="{ color: SECTORS[b.sector].color }">
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-              <use :href="'#' + b.icon" />
-            </svg>
+          <div class="b-icon" :style="{ color: SECTORS[row.b.sector].color }">
+            <Icon :name="row.b.icon" size="lg" />
           </div>
-          <span class="b-level font-mono"
-            >Tier {{ b.tier }} · Lv.{{ game.buildings.getLevel(b.id) }}</span
-          >
+          <span class="b-level font-mono">Tier {{ row.b.tier }} · Lv.{{ row.level }}</span>
         </div>
-        <div class="b-name">{{ b.name }}</div>
-        <div class="b-desc">{{ b.desc }}</div>
+        <div class="b-name">{{ row.b.name }}</div>
+        <div class="b-desc">{{ row.b.desc }}</div>
 
         <!-- 产出 -->
-        <div v-if="b.produces" class="b-prod">
-          <span v-for="(v, k) in b.produces" :key="k" class="prod-tag">
+        <div v-if="row.b.produces" class="b-prod">
+          <span v-for="(v, k) in row.b.produces" :key="k" class="prod-tag">
             +{{ fmt(v as number) }}/s
             {{ game.resources.allMeta[k as keyof typeof game.resources.allMeta]?.name }}
           </span>
         </div>
 
         <!-- 成本与升级 -->
-        <div v-if="!game.buildings.isUnlocked(b, completedTechs)" class="b-locked">
+        <div v-if="!row.unlocked" class="b-locked">
           <span class="lock-msg"
-            >需要科技：{{ getTech(b.requires ?? '')?.name ?? b.requires }}</span
+            >需要科技：{{ getTech(row.b.requires ?? '')?.name ?? row.b.requires }}</span
           >
         </div>
-        <div v-else-if="game.buildings.isMaxed(b.id)" class="b-maxed">
+        <div v-else-if="row.maxed" class="b-maxed">
           <span>已满级</span>
         </div>
         <template v-else>
           <div class="b-cost">
             <template v-if="bulkSteps > 1">
-              <span class="bulk-preview">可买 {{ bulkPreviews[b.id].count }} 级</span>
-              <template v-if="bulkPreviews[b.id].count > 0">
+              <span class="bulk-preview">可买 {{ bulkPreviews[row.b.id].count }} 级</span>
+              <template v-if="bulkPreviews[row.b.id].count > 0">
                 <span class="bulk-preview">· 共</span>
-                <CostTag :cost="bulkPreviews[b.id].cost" />
+                <CostTag :cost="bulkPreviews[row.b.id].cost" />
               </template>
             </template>
-            <CostTag v-else :cost="game.buildings.getCost(b.id)" />
+            <CostTag v-else :cost="row.cost" />
           </div>
-          <UpgradeCountdown :building-id="b.id" />
+          <UpgradeCountdown :building-id="row.b.id" />
           <button
             class="btn-primary block"
-            :disabled="!game.resources.canAfford(game.buildings.getCost(b.id))"
-            @click="tryUpgrade(b.id)"
+            :disabled="!row.canAfford"
+            @click="tryUpgrade(row.b.id)"
           >
-            {{ upgradeLabel(b.id) }}
+            {{ row.label }}
           </button>
         </template>
       </li>

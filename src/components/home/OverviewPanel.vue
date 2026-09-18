@@ -6,6 +6,7 @@ import { fmtTime } from '@/lib/format'
 import { BUILDINGS } from '@/data/buildings'
 import { isUnlockedBy } from '@/lib/requires'
 import { TECHS } from '@/data/tech'
+import Icon from '@/components/ui/Icon.vue'
 
 const game = useGameStore()
 
@@ -14,8 +15,6 @@ const buildingsUnlocked = computed(() => {
   const completed = game.research.completed
   return BUILDINGS.filter((b) => isUnlockedBy(b.requires, completed)).length
 })
-const techCompleted = computed(() => game.research.count)
-const totalUnits = computed(() => game.military.totalUnits)
 const relicsEquipped = computed(() => game.relics.equippedRelics.length)
 const playTime = computed(() => fmtTime(game.totalPlayTime))
 
@@ -39,14 +38,14 @@ const overviewItems = computed<OverviewItem[]>(() => {
     {
       key: 'tech',
       label: '科技',
-      value: `${techCompleted.value}/${TECHS.length}`,
+      value: `${game.research.count}/${TECHS.length}`,
       icon: 'i-nav-tech',
       color: 'var(--color-plasma)',
     },
     {
       key: 'army',
       label: '部队',
-      value: `${totalUnits.value}`,
+      value: `${game.military.totalUnits}`,
       icon: 'i-nav-army',
       color: 'var(--color-alert)',
     },
@@ -90,13 +89,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
         :style="{ '--ov-color': item.color }"
       >
         <div class="ov-top">
-          <svg
-            class="ov-icon"
-            style="width: var(--icon-sm); height: var(--icon-sm)"
-            aria-hidden="true"
-          >
-            <use :href="'#' + item.icon" />
-          </svg>
+          <Icon class="ov-icon" :name="item.icon" size="sm" />
           <span class="ov-value font-mono" :style="{ color: item.color }">{{ item.value }}</span>
         </div>
         <span class="ov-label">{{ item.label }}</span>

@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
 import { NAV_ITEMS } from '@/data/navigation'
+import { useActiveNavId } from '@/composables/useActiveNavId'
+import Icon from '@/components/ui/Icon.vue'
 
-const route = useRoute()
 const router = useRouter()
 const game = useGameStore()
 
 const navItems = NAV_ITEMS
 /** 匹配不到（如战斗页 /battle/:id）返回 undefined：不高亮、不打 aria-current（v0.95） */
-const activeId = computed(() => navItems.find((n) => n.path === route.path)?.id)
+const { activeId } = useActiveNavId()
 function nav(path: string) {
   router.push(path)
 }
@@ -63,9 +64,7 @@ function toggleCollapsed() {
       :aria-label="collapsed ? n.label : undefined"
       @click="nav(n.path)"
     >
-      <svg class="icon" style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-        <use :href="'#' + n.icon" />
-      </svg>
+      <Icon class="icon" :name="n.icon" size="md" />
       <span class="nav-label">{{ n.label }}</span>
     </button>
     <div class="side-footer">

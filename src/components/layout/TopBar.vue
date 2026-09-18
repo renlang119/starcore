@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect, onUnmounted } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
+import { resourceRows } from '@/lib/resource-rows'
 import { APP_VERSION } from '@/version'
 import { useResourceParticles } from '@/composables/useResourceParticles'
+import { useTimeoutMap } from '@/composables/useTimeout'
+import Icon from '@/components/ui/Icon.vue'
 import type { ResourceType } from '@/data/buildings'
 
 const game = useGameStore()
@@ -13,32 +16,19 @@ const res = game.resources
 // 使用 ref + watchEffect 替代 computed 内突变 reactive，消除副作用
 const flashState = ref<Record<string, boolean>>({})
 const prevAmounts: Record<string, string> = {}
-/** 高亮熄灭定时器句柄（按资源 id；重触发清旧、卸载全清，v0.84） */
-const flashTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+/** 高亮熄灭定时器（按资源 id；重触发清旧、卸载全清经 useTimeoutMap 承载） */
+const flashTimers = useTimeoutMap()
 
 const resourceList = computed(() => {
-  const items: {
-    id: string
-    name: string
-    icon: string
-    color: string
-    amount: string
-    rate: string
-    flash: boolean
-  }[] = []
-  for (const [id, meta] of Object.entries(res.allMeta)) {
-    const amountStr = fmt(res.getAmount(id as ResourceType))
-    items.push({
-      id,
-      name: meta.name,
-      icon: meta.icon,
-      color: meta.color,
-      amount: amountStr,
-      rate: fmtRate(res.getRate(id as ResourceType)),
-      flash: !!flashState.value[id],
-    })
-  }
-  return items
+  const amounts = Object.fromEntries(
+    (Object.keys(res.allMeta) as ResourceType[]).map((id) => [id, res.getAmount(id)])
+  )
+  return resourceRows(amounts, res.allMeta).map((r) => ({
+    ...r,
+    icon: res.allMeta[r.id as ResourceType].icon,
+    rate: fmtRate(res.getRate(r.id as ResourceType)),
+    flash: !!flashState.value[r.id],
+  }))
 })
 
 // watchEffect 追踪资源数量变化，检测格式化值变化时触发高亮
@@ -49,19 +39,16 @@ watchEffect(() => {
     const prev = prevAmounts[id]
     if (prev !== undefined && prev !== amountStr) {
       flashState.value[id] = true
-      const old = flashTimers[id]
-      if (old) clearTimeout(old)
-      flashTimers[id] = setTimeout(() => {
-        flashState.value[id] = false
-        delete flashTimers[id]
-      }, 300)
+      flashTimers.set(
+        id,
+        () => {
+          flashState.value[id] = false
+        },
+        300
+      )
     }
     prevAmounts[id] = amountStr
   }
-})
-
-onUnmounted(() => {
-  for (const t of Object.values(flashTimers)) clearTimeout(t)
 })
 
 // P3-6 资源产出粒子动画 — 仅 rate > 0 的资源才生成粒子
@@ -88,13 +75,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
         :class="{ flash: r.flash }"
         :style="{ '--c': r.color }"
       >
-        <svg
-          class="r-icon"
-          style="width: var(--icon-sm); height: var(--icon-sm)"
-          aria-hidden="true"
-        >
-          <use :href="'#' + r.icon" />
-        </svg>
+        <Icon class="r-icon" :name="r.icon" size="sm" />
         <span class="sr-only">{{ r.name }}</span>
         <span class="r-amount font-mono">{{ r.amount }}</span>
         <span class="r-rate font-mono" :style="{ color: r.color }">{{ r.rate }}</span>

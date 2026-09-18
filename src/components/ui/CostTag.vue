@@ -8,6 +8,7 @@
 import { useResourcesStore } from '@/stores/resources'
 import { fmt } from '@/lib/format'
 import { computed } from 'vue'
+import Icon from '@/components/ui/Icon.vue'
 
 const props = defineProps<{
   /** 成本字典 { resourceId: amount } */
@@ -34,9 +35,7 @@ const items = computed(() =>
     class="cost-tag"
     :class="item.enough ? 'enough' : 'not-enough'"
   >
-    <svg v-if="item.icon" style="width: var(--icon-xs); height: var(--icon-xs)" aria-hidden="true">
-      <use :href="'#' + item.icon" />
-    </svg>
+    <Icon v-if="item.icon" :name="item.icon" size="xs" />
     <span class="sr-only">{{ item.name }}</span>
     {{ fmt(item.value) }}
   </span>

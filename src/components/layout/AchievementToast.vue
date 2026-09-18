@@ -5,29 +5,27 @@
  * shiftToast 取下一条（连续解锁排队展示）。
  * 挂载于 AppShell，所有路由下可见。
  */
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useAchievementsStore } from '@/stores/achievements'
 import { ACHIEVEMENTS } from '@/data/achievements'
+import { useTimeout } from '@/composables/useTimeout'
+import Icon from '@/components/ui/Icon.vue'
 
 const ach = useAchievementsStore()
 const SHOW_MS = 2500
 
 const current = ref<(typeof ACHIEVEMENTS)[number] | null>(null)
-let timer: ReturnType<typeof setTimeout> | null = null
+const timer = useTimeout()
 
 function showNext() {
-  if (timer) {
-    clearTimeout(timer)
-    timer = null
-  }
+  timer.clear()
   const toast = ach.toastQueue[0]
   if (!toast) {
     current.value = null
     return
   }
   current.value = ACHIEVEMENTS.find((a) => a.id === toast.id) ?? null
-  timer = setTimeout(() => {
-    timer = null
+  timer.set(() => {
     ach.shiftToast()
   }, SHOW_MS)
 }
@@ -35,18 +33,12 @@ function showNext() {
 // 队列长度变化即调度下一条（current 非空时说明正在展示，shiftToast 后会再次触发）
 watch(() => ach.toastQueue.length, showNext, { immediate: true })
 // 展示中一条被消费后 length 变化也会触发 showNext，链式推进
-
-onUnmounted(() => {
-  if (timer) clearTimeout(timer)
-})
 </script>
 
 <template>
   <transition name="ach-toast">
     <div v-if="current" class="ach-toast" role="status" aria-live="polite">
-      <svg class="toast-icon" aria-hidden="true">
-        <use href="#i-ui-check" />
-      </svg>
+      <Icon class="toast-icon" name="i-ui-check" />
       <div class="toast-body">
         <div class="toast-title">成就解锁</div>
         <div class="toast-name">{{ current.name }}</div>

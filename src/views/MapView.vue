@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted, watch } from 'vue'
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { fmt, fmtTime } from '@/lib/format'
+import { fmtTime } from '@/lib/format'
+import { resourceRows } from '@/lib/resource-rows'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLD_TYPES } from '@/data/pve'
 import CostTag from '@/components/ui/CostTag.vue'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import Icon from '@/components/ui/Icon.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 import { useToast } from '@/composables/useToast'
 import Toast from '@/components/ui/Toast.vue'
@@ -16,50 +18,11 @@ import { useRouter } from 'vue-router'
 const game = useGameStore()
 const router = useRouter()
 
-const exploreMult = computed(() => game.exploreMult)
-const completedNodes = computed(() => game.exploration.completedNodes)
-
-// 响应式当前时间，驱动进度条自动刷新
-const now = ref(Date.now())
-let timer: ReturnType<typeof setInterval> | null = null
-
-// 是否有节点正在探索
-const hasExploring = computed(() => EXPLORE_NODES.some((n) => game.exploration.isExploring(n.id)))
-
 // P3-3 onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding(['map-explore'])
 
-function startTimer() {
-  if (timer) return
-  timer = setInterval(() => {
-    now.value = Date.now()
-  }, 1000)
-}
-
-function stopTimer() {
-  if (timer) {
-    clearInterval(timer)
-    timer = null
-  }
-}
-
-// 有探索中节点时启动定时器，无探索时停止，避免空转
-watch(
-  hasExploring,
-  (val) => {
-    if (val) startTimer()
-    else stopTimer()
-  },
-  { immediate: true }
-)
-
-onUnmounted(() => {
-  stopTimer()
-})
-
 // 点击反馈 toast
 const toast = useToast()
-const showToast = toast.show
 
 // 按层级分组（清单由 LAYER_INFO 派生，v0.97）
 const layers = Object.keys(LAYER_INFO) as StarLayer[]
@@ -68,52 +31,57 @@ const layers = Object.keys(LAYER_INFO) as StarLayer[]
 const allNodesCompleted = computed(
   () => EXPLORE_NODES.length > 0 && EXPLORE_NODES.every((n) => game.exploration.isCompleted(n.id))
 )
+/** 节点视图行：状态 / 进度 / 奖励一次性派生（读取 store 每秒 tick 时间戳驱动进度刷新） */
+interface NodeRow {
+  node: (typeof EXPLORE_NODES)[number]
+  completed: boolean
+  exploring: boolean
+  locked: boolean
+  progressPct: number
+  rewards: ReturnType<typeof resourceRows>
+}
 const nodesByLayer = computed(() => {
-  const map = Object.fromEntries(layers.map((l) => [l, [] as typeof EXPLORE_NODES])) as Record<
+  void game.lastTickTime
+  const metaMap = game.resources.allMeta
+  const map = Object.fromEntries(layers.map((l) => [l, [] as NodeRow[]])) as Record<
     StarLayer,
-    typeof EXPLORE_NODES
+    NodeRow[]
   >
-  for (const n of EXPLORE_NODES) map[n.layer].push(n)
+  for (const node of EXPLORE_NODES) {
+    const exploring = game.exploration.isExploring(node.id)
+    map[node.layer].push({
+      node,
+      completed: game.exploration.isCompleted(node.id),
+      exploring,
+      locked: !game.exploration.prereqMet(node.requires),
+      progressPct: exploring ? game.exploration.getProgress(node.id) * 100 : 0,
+      rewards: resourceRows(node.rewards, metaMap),
+    })
+  }
   return map
 })
 
 function tryExplore(nodeId: string) {
   const ok = game.exploration.startExplore(
     nodeId,
-    exploreMult.value,
+    game.exploreMult,
     (c) => game.resources.canAfford(c),
     (c) => game.resources.spendCost(c)
   )
   if (ok) {
-    now.value = Date.now()
-    showToast('探索已开始')
+    toast.show('探索已开始')
   }
-}
-
-function getProgress(nodeId: string) {
-  // 读取 now.value 使计算依赖响应式时间，驱动进度条自动刷新
-  void now.value
-  return game.exploration.getProgress(nodeId)
-}
-
-function getNodeRewards(node: (typeof EXPLORE_NODES)[0]) {
-  return Object.entries(node.rewards).map(([k, v]) => ({
-    name: game.resources.allMeta[k as keyof typeof game.resources.allMeta]?.name ?? k,
-    color: game.resources.allMeta[k as keyof typeof game.resources.allMeta]?.color ?? '#fff',
-    amount: fmt(v as number),
-  }))
 }
 
 // 已解锁的据点
 const availableStrongholds = computed(() => {
-  return game.combat.availableStrongholds(completedNodes.value)
+  return game.combat.availableStrongholds(game.exploration.completedNodes)
 })
 
 // —— 无尽远征（v0.60）——
 const endlessUnlockedNow = computed(() => game.combat.isEndlessUnlocked())
-const endlessBest = computed(() => game.combat.expeditionBest)
 /** 前沿深度 = 历史最深 + 1（攻克即推进） */
-const endlessFrontier = computed(() => endlessBest.value + 1)
+const endlessFrontier = computed(() => game.combat.expeditionBest + 1)
 const endlessSection = {
   title: '无尽远征',
   desc: '来自星团深处的未知威胁，越深入越危险，收获也越丰',
@@ -158,77 +126,63 @@ const endlessSection = {
 
         <div class="node-list">
           <div
-            v-for="node in nodesByLayer[layer]"
-            :key="node.id"
+            v-for="row in nodesByLayer[layer]"
+            :key="row.node.id"
             class="node-card"
-            :class="{
-              completed: game.exploration.isCompleted(node.id),
-              exploring: game.exploration.isExploring(node.id),
-              locked: !game.exploration.prereqMet(node.requires),
-            }"
+            :class="{ completed: row.completed, exploring: row.exploring, locked: row.locked }"
           >
             <div class="n-head">
               <div class="n-dot" :style="{ background: LAYER_INFO[layer].color }"></div>
-              <div class="n-name">{{ node.name }}</div>
-              <span v-if="game.exploration.isCompleted(node.id)" class="n-done">
-                <svg style="width: var(--icon-sm); height: var(--icon-sm)" aria-hidden="true">
-                  <use href="#i-ui-check" />
-                </svg>
+              <div class="n-name">{{ row.node.name }}</div>
+              <span v-if="row.completed" class="n-done">
+                <Icon name="i-ui-check" size="sm" />
               </span>
             </div>
-            <p class="n-desc">{{ node.desc }}</p>
+            <p class="n-desc">{{ row.node.desc }}</p>
 
             <!-- 探索进度 -->
-            <div v-if="game.exploration.isExploring(node.id)" class="n-progress">
+            <div v-if="row.exploring" class="n-progress">
               <ProgressBar
                 class="progress-bar"
                 fill-class="progress-fill"
-                :pct="getProgress(node.id) * 100"
+                :pct="row.progressPct"
                 :fill="LAYER_INFO[layer].color"
               />
-              <span class="progress-text font-mono"
-                >{{ Math.floor(getProgress(node.id) * 100) }}%</span
-              >
+              <span class="progress-text font-mono">{{ Math.floor(row.progressPct) }}%</span>
             </div>
 
             <!-- 成本 -->
-            <div
-              v-else-if="
-                !game.exploration.isCompleted(node.id) &&
-                (!node.requires || node.requires.every((r) => game.exploration.isCompleted(r)))
-              "
-              class="n-info"
-            >
+            <div v-else-if="!row.completed && !row.locked" class="n-info">
               <div class="n-cost">
-                <CostTag :cost="node.cost" />
+                <CostTag :cost="row.node.cost" />
                 <span class="time-tag font-mono">{{
-                  fmtTime(node.time / exploreMult.toNumber())
+                  fmtTime(row.node.time / game.exploreMult.toNumber())
                 }}</span>
               </div>
               <button
                 class="btn-accent sm"
                 style="--accent: var(--color-quantum)"
-                :disabled="!game.resources.canAfford(node.cost)"
-                @click="tryExplore(node.id)"
+                :disabled="!game.resources.canAfford(row.node.cost)"
+                @click="tryExplore(row.node.id)"
               >
                 探索
               </button>
             </div>
 
             <!-- 锁定 -->
-            <div v-else-if="!game.exploration.prereqMet(node.requires)" class="n-locked">
+            <div v-else-if="row.locked" class="n-locked">
               需先完成：{{
-                (node.requires ?? [])
+                (row.node.requires ?? [])
                   .map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name)
                   .join(', ')
               }}
             </div>
 
             <!-- 已完成奖励预览 -->
-            <div v-if="game.exploration.isCompleted(node.id)" class="n-rewards">
+            <div v-if="row.completed" class="n-rewards">
               <span class="rewards-label">已获得：</span>
               <span
-                v-for="r in getNodeRewards(node)"
+                v-for="r in row.rewards"
                 :key="r.name"
                 class="reward-tag"
                 :style="{ color: r.color }"
@@ -252,21 +206,13 @@ const endlessSection = {
           @click="router.push('/battle/' + s.id)"
         >
           <div class="s-icon">
-            <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-              <use :href="'#' + s.icon" />
-            </svg>
+            <Icon :name="s.icon" size="md" />
           </div>
           <div class="s-info">
             <div class="s-name">{{ s.name }}</div>
             <div class="s-type">{{ STRONGHOLD_TYPES[s.type].name }} · Tier {{ s.tier }}</div>
           </div>
-          <svg
-            class="s-arrow"
-            style="width: var(--icon-md); height: var(--icon-md)"
-            aria-hidden="true"
-          >
-            <use href="#i-ui-arrow-right" />
-          </svg>
+          <Icon class="s-arrow" name="i-ui-arrow-right" size="md" />
         </button>
       </div>
     </div>
@@ -289,27 +235,20 @@ const endlessSection = {
         @click="router.push('/battle/endless')"
       >
         <div class="s-icon">
-          <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-            <use :href="'#' + STRONGHOLD_TYPES.silencer.icon" />
-          </svg>
+          <Icon :name="STRONGHOLD_TYPES.silencer.icon" size="md" />
         </div>
         <div class="s-info">
           <div class="s-name">
             {{ endlessUnlockedNow ? `深渊·第 ${endlessFrontier} 层` : '？？？' }}
           </div>
           <div class="s-type font-mono">
-            <template v-if="endlessUnlockedNow">历史最深 第 {{ endlessBest }} 层</template>
+            <template v-if="endlessUnlockedNow"
+              >历史最深 第 {{ game.combat.expeditionBest }} 层</template
+            >
             <template v-else>攻克「沉默者旗舰」后开放</template>
           </div>
         </div>
-        <svg
-          v-if="endlessUnlockedNow"
-          class="s-arrow"
-          style="width: var(--icon-md); height: var(--icon-md)"
-          aria-hidden="true"
-        >
-          <use href="#i-ui-arrow-right" />
-        </svg>
+        <Icon v-if="endlessUnlockedNow" class="s-arrow" name="i-ui-arrow-right" size="md" />
       </button>
     </div>
 
@@ -412,7 +351,7 @@ const endlessSection = {
 }
 .progress-bar {
   flex: 1;
-  --pb-radius: 3px;
+  --pb-radius: var(--radius-xs);
 }
 .progress-text {
   font-size: var(--text-xs);

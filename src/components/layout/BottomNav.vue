@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { NAV_ITEMS } from '@/data/navigation'
+import { useActiveNavId } from '@/composables/useActiveNavId'
+import { useClickOutside } from '@/composables/useClickOutside'
+import Icon from '@/components/ui/Icon.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,13 +17,7 @@ const secondaryTabs = NAV_ITEMS.filter((n) => n.tier === 'secondary')
 const moreOpen = ref(false)
 
 /** 非导航路由（如战斗页）返回 undefined：不高亮、不打 aria-current（v0.95） */
-const activeId = computed(() => {
-  const all = [...primaryTabs, ...secondaryTabs]
-  return all.find((t) => t.path === route.path)?.id
-})
-
-/** 「更多」按钮是否高亮（当前处于次级页面时） */
-const moreActive = computed(() => secondaryTabs.some((t) => t.path === route.path))
+const { activeId, moreActive } = useActiveNavId()
 
 function nav(path: string) {
   router.push(path)
@@ -44,16 +41,13 @@ watch(
 )
 
 /**
- * 点击面板外部关闭——监听 document 点击事件，
- * 若点击源不在底部导航容器内则收起。
+ * 点击面板外部关闭：若点击源不在底部导航容器内则收起（useClickOutside）。
  */
 const rootEl = ref<HTMLElement | null>(null)
 const moreBtnEl = ref<HTMLElement | null>(null)
-function handleDocClick(e: MouseEvent) {
-  if (moreOpen.value && rootEl.value && !rootEl.value.contains(e.target as Node)) {
-    moreOpen.value = false
-  }
-}
+useClickOutside(rootEl, () => {
+  if (moreOpen.value) moreOpen.value = false
+})
 /** Escape 关闭「更多」面板，并把焦点还给触发按钮（v0.95） */
 function handleDocKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && moreOpen.value) {
@@ -62,11 +56,9 @@ function handleDocKeydown(e: KeyboardEvent) {
   }
 }
 onMounted(() => {
-  document.addEventListener('click', handleDocClick)
   document.addEventListener('keydown', handleDocKeydown)
 })
 onUnmounted(() => {
-  document.removeEventListener('click', handleDocClick)
   document.removeEventListener('keydown', handleDocKeydown)
 })
 </script>
@@ -82,9 +74,7 @@ onUnmounted(() => {
       :aria-current="activeId === t.id ? 'page' : undefined"
       @click="nav(t.path)"
     >
-      <svg class="icon" style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-        <use :href="'#' + t.icon" />
-      </svg>
+      <Icon class="icon" :name="t.icon" size="lg" />
       <span class="label">{{ t.label }}</span>
     </button>
 
@@ -98,14 +88,7 @@ onUnmounted(() => {
       aria-controls="bottom-nav-more"
       @click="toggleMore"
     >
-      <svg
-        class="icon"
-        :class="{ popped: moreOpen }"
-        style="width: var(--icon-lg); height: var(--icon-lg)"
-        aria-hidden="true"
-      >
-        <use href="#i-ui-more" />
-      </svg>
+      <Icon class="icon" :class="{ popped: moreOpen }" name="i-ui-more" size="lg" />
       <span class="label">更多</span>
     </button>
 
@@ -120,13 +103,7 @@ onUnmounted(() => {
           :aria-current="activeId === t.id ? 'page' : undefined"
           @click="navSecondary(t.path)"
         >
-          <svg
-            class="icon"
-            style="width: var(--icon-md); height: var(--icon-md)"
-            aria-hidden="true"
-          >
-            <use :href="'#' + t.icon" />
-          </svg>
+          <Icon class="icon" :name="t.icon" size="md" />
           <span>{{ t.label }}</span>
         </button>
       </div>
