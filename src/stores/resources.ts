@@ -24,11 +24,11 @@ export interface ResourceMeta {
 }
 
 const RES_META: Record<ResourceType, ResourceMeta> = {
-  energy: { id: 'energy', name: '能量', icon: 'i-res-energy', color: '#00E5FF' },
-  crystal: { id: 'crystal', name: '晶体', icon: 'i-res-crystal', color: '#2EE6A0' },
-  alloy: { id: 'alloy', name: '合金', icon: 'i-res-alloy', color: '#FFB627' },
-  data: { id: 'data', name: '数据流', icon: 'i-res-data', color: '#A78BFA' },
-  dark: { id: 'dark', name: '暗物质', icon: 'i-res-dark', color: '#94A3B8' },
+  energy: { id: 'energy', name: '能量', icon: 'i-res-energy', color: 'var(--color-core)' },
+  crystal: { id: 'crystal', name: '晶体', icon: 'i-res-crystal', color: 'var(--color-quantum)' },
+  alloy: { id: 'alloy', name: '合金', icon: 'i-res-alloy', color: 'var(--color-amber)' },
+  data: { id: 'data', name: '数据流', icon: 'i-res-data', color: 'var(--color-plasma)' },
+  dark: { id: 'dark', name: '暗物质', icon: 'i-res-dark', color: 'var(--color-silencer)' },
 }
 
 export const useResourcesStore = defineStore('resources', () => {

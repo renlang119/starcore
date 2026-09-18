@@ -31,11 +31,16 @@ export const SECTORS: Record<
   SectorId,
   { id: SectorId; name: string; desc: string; color: string }
 > = {
-  energy: { id: 'energy', name: '能量扇区', desc: '采集星核能量', color: '#00E5FF' },
-  crystal: { id: 'crystal', name: '晶体扇区', desc: '开采硅基晶体', color: '#2EE6A0' },
-  alloy: { id: 'alloy', name: '合金扇区', desc: '精炼稀有合金', color: '#FFB627' },
-  data: { id: 'data', name: '数据扇区', desc: '生成数据流', color: '#A78BFA' },
-  dark: { id: 'dark', name: '暗物质扇区', desc: '捕获暗物质粒子', color: '#E84393' },
+  energy: { id: 'energy', name: '能量扇区', desc: '采集星核能量', color: 'var(--color-core)' },
+  crystal: { id: 'crystal', name: '晶体扇区', desc: '开采硅基晶体', color: 'var(--color-quantum)' },
+  alloy: { id: 'alloy', name: '合金扇区', desc: '精炼稀有合金', color: 'var(--color-amber)' },
+  data: { id: 'data', name: '数据扇区', desc: '生成数据流', color: 'var(--color-plasma)' },
+  dark: {
+    id: 'dark',
+    name: '暗物质扇区',
+    desc: '捕获暗物质粒子',
+    color: 'var(--color-sector-dark)',
+  },
 }
 
 export const BUILDINGS: BuildingDef[] = [

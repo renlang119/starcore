@@ -60,7 +60,6 @@ describe('combat store', () => {
       type: 'raider',
       tier: 1,
       desc: '',
-      icon: 'i-stronghold-raider',
       enemies: [{ unitId: 'dummy', name: '测试单位', attack: 0, defense: 0, hp, count }],
       rewards: {},
       idle: {},

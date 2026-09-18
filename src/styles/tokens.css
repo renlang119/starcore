@@ -22,6 +22,17 @@
   --color-alert: #f43f5e;
   --color-plasma: #a78bfa;
 
+  /* —— 领域色（星图层 / 扇区 / 稀有度与学域专属，v1.08 入库） —— */
+  --color-layer-stellar: #e879f9;
+  --color-layer-cluster: #60a5fa;
+  --color-layer-arm: #fb7185;
+  --color-layer-galaxy: #facc15;
+  --color-layer-void: #38bdf8;
+  --color-sector-dark: #e84393;
+  --color-silencer: #94a3b8;
+  --color-rarity-common: #8b96a8;
+  --color-singularity: #fbbf24;
+
   /* —— 文本 —— */
   --color-t-primary: #e8edf5;
   --color-t-secondary: #8b96a8;

@@ -248,7 +248,7 @@ function cancelGarrison() {
     <!-- 据点信息 -->
     <div class="stronghold-info" :style="{ '--c': STRONGHOLD_TYPES[stronghold.type].color }">
       <div class="s-icon">
-        <Icon :name="stronghold.icon" size="lg" />
+        <Icon :name="STRONGHOLD_TYPES[stronghold.type].icon" size="lg" />
       </div>
       <div>
         <h2 class="s-name font-display">{{ stronghold.name }}</h2>

@@ -125,7 +125,6 @@ export function endlessStronghold(depth: number): StrongholdDef {
     type: 'silencer',
     tier: ENDLESS_TIER_PLACEHOLDER,
     desc: '来自星团深处的未知威胁，越深入，敌影越强，收获也越丰',
-    icon: 'i-stronghold-silencer',
     enemies: endlessEnemies(d),
     rewards: {
       energy: scaleReward(base.rewards.energy),
