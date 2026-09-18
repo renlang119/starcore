@@ -20,10 +20,11 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { DailySaveData } from '@/lib/storage'
 import { fnv1a, mulberry32 } from '@/lib/random'
+import { fmtDate } from '@/lib/format'
 
-/** 本地日期字符串 YYYY-MM-DD（toLocaleDateString('sv') 为 ISO 形态） */
+/** 本地日期字符串 YYYY-MM-DD（与展示层 fmtDate 同源，dateOnly 口径） */
 export function localDateStr(d = new Date()): string {
-  return d.toLocaleDateString('sv')
+  return fmtDate(d, { dateOnly: true })
 }
 
 /** ISO 周标识 YYYY-Www（周一为每周起点，与刷新规则一致） */

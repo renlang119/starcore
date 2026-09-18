@@ -199,7 +199,7 @@
 .rarity-badge {
   font-size: var(--text-xs);
   padding: 1px var(--space-2);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   color: var(--color-void);
   font-weight: 700;
 }
@@ -225,7 +225,7 @@
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   background: var(--color-elevated);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   color: var(--color-t-primary);
 }
 .synth-product {

@@ -1,35 +1,43 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { RARITY_INFO, getSetByRelic, relicRarityColor } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
 import { useRelicFusion } from '@/composables/useRelicFusion'
 import { useToast } from '@/composables/useToast'
+import { useTimeout } from '@/composables/useTimeout'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import Toast from '@/components/ui/Toast.vue'
+import Icon from '@/components/ui/Icon.vue'
 import FusionPanel from '@/components/relics/FusionPanel.vue'
 import EnhanceModal from '@/components/relics/EnhanceModal.vue'
 
 const game = useGameStore()
 
-const owned = computed(() => game.relics.owned)
-const equipped = computed(() => game.relics.equipped)
-const equippedRelics = computed(() => game.relics.equippedRelics)
-const setProgress = computed(() => game.relics.setProgress)
-const ownedKinds = computed(() => game.relics.ownedKinds)
-
 // —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.73 收敛至 useToast） ——
 const toast = useToast()
-const showToast = toast.show
 
 // —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
-const fusion = useRelicFusion({ notify: showToast })
+const fusion = useRelicFusion({ notify: toast.show })
+
+/** 装备槽视图行：一次性解析遗物实例与展示字段（替代三处 owned.find 扫描） */
+const slotRows = computed(() =>
+  game.relics.equipped.map((id, idx) => {
+    const relic = id ? (game.relics.owned.find((r) => r.instanceId === id) ?? null) : null
+    return {
+      idx,
+      relic,
+      color: relic ? relicRarityColor(relic.rarity) : '',
+      label: !id ? `空槽位 ${idx + 1}` : relic ? `卸下 ${relic.name}` : '卸下该槽位遗物',
+    }
+  })
+)
 
 /** 图鉴卡主操作按钮：装备到首个空槽（选材模式下主操作由选材按钮承担） */
 function equipFromCard(r: OwnedRelic) {
   equip(
     r,
-    equipped.value.findIndex((s) => s === null)
+    game.relics.equipped.findIndex((s) => s === null)
   )
 }
 
@@ -38,24 +46,16 @@ const selectModeOn = computed(() => fusion.selectMode.value)
 
 /** 装备槽激活：卸下该槽位遗物（空槽无操作） */
 function onSlotActivate(idx: number) {
-  if (equipped.value[idx]) game.relics.unequip(idx)
-}
-
-/** 装备槽无障碍标签 */
-function slotLabel(idx: number): string {
-  const id = equipped.value[idx]
-  if (!id) return `空槽位 ${idx + 1}`
-  const relic = owned.value.find((r) => r.instanceId === id)
-  return relic ? `卸下 ${relic.name}` : '卸下该槽位遗物'
+  if (game.relics.equipped[idx]) game.relics.unequip(idx)
 }
 
 function equip(relic: OwnedRelic, slot: number) {
   // 槽位全满时 findIndex 返回 -1，需明确提示玩家
   if (slot < 0) {
-    showToast('装备槽位已满，请先卸下一个遗物')
+    toast.show('装备槽位已满，请先卸下一个遗物')
     return
   }
-  if (equipped.value[slot] === relic.instanceId) {
+  if (game.relics.equipped[slot] === relic.instanceId) {
     game.relics.unequip(slot)
   } else {
     game.relics.equip(relic.instanceId, slot)
@@ -66,7 +66,7 @@ const getRarityColor = relicRarityColor
 
 // —— 丢弃功能（两次点击确认） ——
 const pendingDiscardId = ref<string | null>(null)
-let discardTimer: ReturnType<typeof setTimeout> | null = null
+const discardTimer = useTimeout()
 
 function handleDiscard(e: Event, relic: OwnedRelic) {
   e.stopPropagation()
@@ -76,15 +76,11 @@ function handleDiscard(e: Event, relic: OwnedRelic) {
     // 第二次点击 → 确认丢弃
     game.relics.discard(relic.instanceId)
     pendingDiscardId.value = null
-    if (discardTimer) {
-      clearTimeout(discardTimer)
-      discardTimer = null
-    }
+    discardTimer.clear()
   } else {
     // 第一次点击 → 进入待确认状态
     pendingDiscardId.value = relic.instanceId
-    if (discardTimer) clearTimeout(discardTimer)
-    discardTimer = setTimeout(() => {
+    discardTimer.set(() => {
       pendingDiscardId.value = null
     }, 3000)
   }
@@ -98,12 +94,8 @@ function openEnhance(r: OwnedRelic) {
 }
 
 function onEnhanceFail(msg: string) {
-  showToast(msg)
+  toast.show(msg)
 }
-
-onUnmounted(() => {
-  if (discardTimer) clearTimeout(discardTimer)
-})
 </script>
 
 <template>
@@ -114,32 +106,22 @@ onUnmounted(() => {
     <!-- 装备槽 -->
     <div class="slots-grid">
       <div
-        v-for="(slotRelic, idx) in equipped"
-        :key="idx"
+        v-for="row in slotRows"
+        :key="row.idx"
         class="slot"
         role="button"
-        :tabindex="slotRelic ? 0 : -1"
-        :aria-label="slotLabel(idx)"
-        @click="onSlotActivate(idx)"
-        @keydown.enter="onSlotActivate(idx)"
-        @keydown.space.prevent="onSlotActivate(idx)"
+        :tabindex="row.relic ? 0 : -1"
+        :aria-label="row.label"
+        @click="onSlotActivate(row.idx)"
+        @keydown.enter="onSlotActivate(row.idx)"
+        @keydown.space.prevent="onSlotActivate(row.idx)"
       >
-        <div
-          v-if="slotRelic"
-          class="slot-filled"
-          :style="{
-            '--c': getRarityColor(owned.find((r) => r.instanceId === slotRelic)?.rarity ?? ''),
-          }"
-        >
-          <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-            <use
-              :href="'#' + (owned.find((r) => r.instanceId === slotRelic)?.icon ?? 'i-nav-relic')"
-            />
-          </svg>
-          <span class="slot-name">{{ owned.find((r) => r.instanceId === slotRelic)?.name }}</span>
+        <div v-if="row.relic" class="slot-filled" :style="{ '--c': row.color }">
+          <Icon :name="row.relic.icon" size="lg" />
+          <span class="slot-name">{{ row.relic.name }}</span>
         </div>
         <div v-else class="slot-empty">
-          <span>空槽位 {{ idx + 1 }}</span>
+          <span>空槽位 {{ row.idx + 1 }}</span>
         </div>
       </div>
     </div>
@@ -152,7 +134,7 @@ onUnmounted(() => {
       <h3 class="section-title">套装</h3>
       <div class="sets-list">
         <div
-          v-for="row in setProgress"
+          v-for="row in game.relics.setProgress"
           :key="row.set.id"
           class="set-row"
           :class="{ active: row.mode !== 'none', full: row.mode === 'full' }"
@@ -175,7 +157,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 已装备效果 -->
-    <div v-if="equippedRelics.length > 0" class="active-effects">
+    <div v-if="game.relics.equippedRelics.length > 0" class="active-effects">
       <h3 class="section-title">当前效果</h3>
       <div class="effect-list">
         <span v-for="(eff, i) in game.relics.equippedEffects" :key="i" class="eff-tag">{{
@@ -186,8 +168,10 @@ onUnmounted(() => {
 
     <!-- 遗物图鉴 -->
     <div class="inventory">
-      <h3 class="section-title">遗物收藏（{{ owned.length }} 件 / {{ ownedKinds }} 种）</h3>
-      <div v-if="owned.length === 0" class="empty-inv">
+      <h3 class="section-title">
+        遗物收藏（{{ game.relics.owned.length }} 件 / {{ game.relics.ownedKinds }} 种）
+      </h3>
+      <div v-if="game.relics.owned.length === 0" class="empty-inv">
         <EmptyState
           icon="i-nav-relic"
           text="尚未发现遗物"
@@ -198,7 +182,7 @@ onUnmounted(() => {
       </div>
       <div v-else class="relic-list">
         <div
-          v-for="r in owned"
+          v-for="r in game.relics.owned"
           :key="r.instanceId"
           class="relic-card"
           :class="{
@@ -208,9 +192,7 @@ onUnmounted(() => {
           :style="{ '--c': getRarityColor(r.rarity) }"
         >
           <div class="r-head">
-            <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-              <use :href="'#' + r.icon" />
-            </svg>
+            <Icon :name="r.icon" size="md" />
             <span class="rarity-badge" :style="{ background: getRarityColor(r.rarity) }">{{
               RARITY_INFO[r.rarity].name
             }}</span>

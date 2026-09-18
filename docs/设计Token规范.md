@@ -1,6 +1,6 @@
 # 星核纪元 · P0-5 / P0-6 Token 映射表
 
-> **同步状态**：基线 v0.55｜最后核对 v0.88.1（2026-09-13）
+> **同步状态**：基线 v0.55｜最后核对 v1.07（2026-09-18）
 
 > **产出方**：设计
 > **日期**：2026-07-16
@@ -36,8 +36,8 @@
 
 ### 1.2 Token 总表（权威登记处）
 
-> 通读 `src/styles/tokens.css` 全文登记（基线 v0.55，最后核对 v0.86.2）。
-> 全部全局 Token 共 48 项（含 1 项未落地）；值为 `tokens.css` `:root` 实读值。
+> 通读 `src/styles/tokens.css` 全文登记（基线 v0.55，最后核对 v1.07）。
+> 全部全局 Token 共 49 项（含 1 项未落地）；值为 `tokens.css` `:root` 实读值。
 
 | 名称 | 值 | 来源版本 | 主要引用方 |
 |------|-----|---------|-----------|
@@ -62,6 +62,7 @@
 | `--font-display` | `'Orbitron', 'PingFang SC', 'HarmonyOS Sans SC', system-ui, sans-serif` | 基线（v0.43 前已落地） | utilities.css（展示标题） |
 | `--font-body` | `'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei UI', system-ui, -apple-system, sans-serif` | 基线（v0.43 前已落地） | base.css（body） |
 | `--font-mono` | `'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace` | 基线（v0.43 前已落地） | 数值/产出率（8 文件）：CostTag、BattleView、MapView、PrestigeView |
+| `--radius-xs` | `3px` | v1.07 新增 | 最小圆角（6 文件）：小徽标、滚动条、星图进度条 |
 | `--radius-sm` | `6px` | 基线（v0.43 前已落地） | 小圆角（7 文件）：base.css、ArmyView/TechView 等 |
 | `--radius-md` | `10px` | 基线（v0.43 前已落地） | 按钮与卡片默认（19 文件） |
 | `--radius-lg` | `14px` | 基线（v0.43 前已落地） | 大圆角（15 文件）：ModalOverlay、OnboardingBubble、视图容器 |
@@ -154,7 +155,7 @@
 |:---:|---|---|
 | `80px` | AppShell `.content` padding-bottom | 底部导航高度 + safe-area，非间距语义 |
 | `1px` | 各处 border-width、padding `1px` | 边框/微修饰，非间距语义 |
-| `2px` | outline-offset、border-radius `3px` | 非间距属性，不纳入间距 Token |
+| `2px` | outline-offset | 非间距属性，不纳入间距 Token（`border-radius: 3px` 于 v1.07 归入 `--radius-xs`） |
 | `180px / 160px` | ~~UpgradeCountdown modal-log max-height~~ | 已废止：v0.5x 折叠动画改为 `max-height: 500px`（组件迁入 `src/components/build/`） |
 | `32px / 36px / 100px` | log-round width、q-name width 等 | 固定宽度，非间距 |
 

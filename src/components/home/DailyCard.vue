@@ -7,10 +7,9 @@ import { localDateStr } from '@/stores/daily'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
 
 const game = useGameStore()
-const daily = computed(() => game.daily)
-const checkedInToday = computed(() => daily.value.lastCheckIn === localDateStr())
+const checkedInToday = computed(() => game.daily.lastCheckIn === localDateStr())
 /** 连击在 7 天循环内的节点位置（1~7） */
-const cycleDay = computed(() => ((daily.value.streak - 1) % 7) + 1)
+const cycleDay = computed(() => ((game.daily.streak - 1) % 7) + 1)
 
 /** 挑战显示名 */
 const CHALLENGE_NAMES: Record<string, (t: number) => string> = {
@@ -24,7 +23,7 @@ function challengeName(c: { templateId: string; target: number }): string {
   return CHALLENGE_NAMES[c.templateId]?.(c.target) ?? c.templateId
 }
 
-const claimable = (c: (typeof daily.value.weekChallenges)[0]) => game.daily.claimable(c)
+const claimable = (c: (typeof game.daily.weekChallenges)[0]) => game.daily.claimable(c)
 
 function claim(templateId: string) {
   game.claimChallenge(templateId)
@@ -36,7 +35,7 @@ function claim(templateId: string) {
     <div class="daily-head">
       <h3 class="section-title">每日签到 · 周期挑战</h3>
       <span class="checkin-badge" :class="{ done: checkedInToday }" data-testid="checkin-badge">
-        {{ checkedInToday ? `今日已签 · 连击 ${daily.streak} 天` : '待签到（自动）' }}
+        {{ checkedInToday ? `今日已签 · 连击 ${game.daily.streak} 天` : '待签到（自动）' }}
       </span>
     </div>
 
@@ -49,13 +48,15 @@ function claim(templateId: string) {
         :class="{ lit: i <= cycleDay, bonus: [1, 3, 7].includes(i) }"
         :title="`第 ${i} 天`"
       ></span>
-      <span class="streak-num font-mono" data-testid="streak-count">{{ daily.streak }} 天</span>
+      <span class="streak-num font-mono" data-testid="streak-count"
+        >{{ game.daily.streak }} 天</span
+      >
     </div>
 
     <!-- 本周挑战 -->
     <div class="challenge-list" data-testid="challenge-list">
       <div
-        v-for="c in daily.weekChallenges"
+        v-for="c in game.daily.weekChallenges"
         :key="c.templateId"
         class="challenge-row"
         :class="{ done: claimable(c), claimed: c.claimed }"
@@ -65,7 +66,7 @@ function claim(templateId: string) {
           <span class="c-name">{{ challengeName(c) }}</span>
           <ProgressBar class="c-bar" fill-class="c-fill" :pct="game.daily.progressOf(c) * 100" />
           <span class="c-count font-mono"
-            >{{ Math.min(daily.weeklyCounters[c.kind], c.target) }}/{{ c.target }}</span
+            >{{ Math.min(game.daily.weeklyCounters[c.kind], c.target) }}/{{ c.target }}</span
           >
         </div>
         <button
