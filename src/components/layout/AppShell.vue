@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useBreakpoint } from '@/composables/useBreakpoint'
 import { useToast } from '@/composables/useToast'
 import { useTimeout } from '@/composables/useTimeout'
+import { APP_STARS } from '@/data/app-stars'
 import { useGameStore } from '@/stores/game'
 import TopBar from './TopBar.vue'
 import BottomNav from './BottomNav.vue'
@@ -31,57 +32,8 @@ watch(
 /** 宽版内容区：路由 meta.wide 控制（首页双列需要更宽的 max-width） */
 const isWideContent = computed(() => route.meta.wide === true)
 
-/** P2-2 星点闪烁 — 背景星点配置（替代 6 个静态 span） */
-const stars = [
-  {
-    top: '18%',
-    left: '12%',
-    background: 'rgba(255,255,255,.6)',
-    size: '2px',
-    duration: '3.2s',
-    delay: '0s',
-  },
-  {
-    top: '12%',
-    left: '78%',
-    background: 'color-mix(in srgb, var(--color-core) 50%, transparent)',
-    size: '2px',
-    duration: '2.8s',
-    delay: '-0.7s',
-  },
-  {
-    top: '65%',
-    left: '35%',
-    background: 'rgba(255,255,255,.4)',
-    size: '2px',
-    duration: '3.5s',
-    delay: '-1.4s',
-  },
-  {
-    top: '78%',
-    left: '88%',
-    background: 'color-mix(in srgb, var(--color-plasma) 40%, transparent)',
-    size: '2px',
-    duration: '3.0s',
-    delay: '-2.1s',
-  },
-  {
-    top: '88%',
-    left: '22%',
-    background: 'rgba(255,255,255,.3)',
-    size: '2px',
-    duration: '2.5s',
-    delay: '-0.5s',
-  },
-  {
-    top: '40%',
-    left: '60%',
-    background: 'color-mix(in srgb, var(--color-core) 30%, transparent)',
-    size: '3px',
-    duration: '4.0s',
-    delay: '-1.8s',
-  },
-] as const
+/** P2-2 星点闪烁 — 背景星点配置（表见 data/app-stars.ts） */
+const stars = APP_STARS
 
 /**
  * 战斗页面 (/battle/:id) 不在常规导航中，
