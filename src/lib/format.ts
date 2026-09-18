@@ -101,3 +101,11 @@ export function fmtRate(v: Decimal.Value): string {
   if (d.isZero()) return '0 /s'
   return (d.lt(0) ? '' : '+') + fmt(d) + ' /s'
 }
+
+/** 时间戳/日期 → 本地时间串（默认 'YYYY-MM-DD HH:mm'；dateOnly 时 'YYYY-MM-DD'） */
+export function fmtDate(ts: number | Date, opts: { dateOnly?: boolean } = {}): string {
+  const d = ts instanceof Date ? ts : new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  return opts.dateOnly ? date : `${date} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}

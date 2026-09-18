@@ -3,16 +3,20 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
+import { resourceRows } from '@/lib/resource-rows'
 import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID, MAX_ENDLESS_DEPTH } from '@/data/endless'
-import { RARITY_INFO } from '@/data/relics'
+import { RARITY_INFO, relicRarityColor } from '@/data/relics'
 import type { BattleLogEntry } from '@/stores/combat'
 import { getUnit } from '@/data/units'
 import type { UnitId } from '@/data/units'
 import type { ResourceType } from '@/data/buildings'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import ConfirmModal from '@/components/ui/ConfirmModal.vue'
+import Icon from '@/components/ui/Icon.vue'
+import LogList from '@/components/battle/LogList.vue'
 import { useToast } from '@/composables/useToast'
 import Toast from '@/components/ui/Toast.vue'
 
@@ -26,9 +30,8 @@ const isEndless = computed(() => strongholdId.value === ENDLESS_STRONGHOLD_ID)
 
 // —— 无尽远征（v0.60）：深度选择 + 按深度合成据点 ——
 const endlessDepth = ref(1)
-const endlessBest = computed(() => game.combat.expeditionBest)
 /** 可选深度：1 ~ 前沿（历史最深+1），并封顶于 MAX_ENDLESS_DEPTH；前沿胜利即推进 */
-const endlessMaxDepth = computed(() => Math.min(endlessBest.value + 1, MAX_ENDLESS_DEPTH))
+const endlessMaxDepth = computed(() => Math.min(game.combat.expeditionBest + 1, MAX_ENDLESS_DEPTH))
 /** 玩家手动调过深度后不再自动跟随前沿（只做越界钳制） */
 const endlessTouched = ref(false)
 const endlessStrongholdDef = computed<StrongholdDef>(() =>
@@ -93,21 +96,13 @@ const toast = useToast()
 // 驻扎收益预览（每秒 + 每小时）
 const garrisonPreview = computed(() => {
   const idle = game.combat.garrisonIdleReward(strongholdId.value)
-  const metaMap = game.resources.allMeta
-  return Object.entries(idle)
-    .filter(([, v]) => v > 0)
-    .map(([k, v]) => {
-      const meta = metaMap[k]
-      const perSec = v as number
-      const perHour = perSec * 3600
-      return {
-        id: k,
-        name: meta?.name ?? k,
-        color: meta?.color ?? '#fff',
-        perSec: fmt(perSec),
-        perHour: fmt(perHour),
-      }
-    })
+  return resourceRows(idle, game.resources.allMeta, { positiveOnly: true }).map((r) => ({
+    id: r.id,
+    name: r.name,
+    color: r.color,
+    perSec: r.amount,
+    perHour: fmt(Number(idle[r.id]) * 3600),
+  }))
 })
 
 // 编队详情（含兵种名和数量）
@@ -131,10 +126,7 @@ const isFormationEmpty = computed(() => formationRows.value.length === 0)
 // 战斗结果展示数据
 const rewardRows = computed(() => {
   if (!battleResult.value?.rewards) return []
-  const metaMap = game.resources.allMeta
-  return Object.entries(battleResult.value.rewards)
-    .filter(([, v]) => v)
-    .map(([k, v]) => ({ key: k, name: metaMap[k]?.name ?? k, amount: fmt(v as number) }))
+  return resourceRows(battleResult.value.rewards, game.resources.allMeta, { positiveOnly: true })
 })
 const lossRows = computed(() => {
   if (!battleResult.value?.losses) return []
@@ -256,9 +248,7 @@ function cancelGarrison() {
     <!-- 据点信息 -->
     <div class="stronghold-info" :style="{ '--c': STRONGHOLD_TYPES[stronghold.type].color }">
       <div class="s-icon">
-        <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-          <use :href="'#' + stronghold.icon" />
-        </svg>
+        <Icon :name="stronghold.icon" size="lg" />
       </div>
       <div>
         <h2 class="s-name font-display">{{ stronghold.name }}</h2>
@@ -354,9 +344,7 @@ function cancelGarrison() {
         data-testid="battle-start"
         @click="startBattle"
       >
-        <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-          <use href="#i-ui-sword" />
-        </svg>
+        <Icon name="i-ui-sword" size="md" />
         出征
       </button>
       <button
@@ -375,17 +363,7 @@ function cancelGarrison() {
     <!-- 战斗日志 -->
     <div v-if="battleLog && !showResult" class="battle-log">
       <h3 class="section-title">战斗日志</h3>
-      <div class="log-list">
-        <div
-          v-for="(entry, i) in battleLog"
-          :key="`${entry.round}-${i}`"
-          class="log-entry"
-          :class="entry.side"
-        >
-          <span class="log-round">R{{ entry.round }}</span>
-          <span>{{ entry.msg }}</span>
-        </div>
-      </div>
+      <LogList class="log-list" :entries="battleLog" />
     </div>
 
     <!-- 结果弹窗 -->
@@ -400,17 +378,12 @@ function cancelGarrison() {
 
       <div v-if="battleResult?.victory" class="result-rewards">
         <h4>战利品</h4>
-        <div v-for="r in rewardRows" :key="r.key" class="reward-row">
+        <div v-for="r in rewardRows" :key="r.id" class="reward-row">
           <span>{{ r.name }}</span>
           <span class="font-mono" style="color: var(--color-quantum)">+{{ r.amount }}</span>
         </div>
         <div v-if="battleResult.relic" class="relic-drop">
-          <span
-            class="rarity-tag"
-            :style="{
-              color: `var(--color-${battleResult.relic.rarity === 'legendary' ? 'amber' : battleResult.relic.rarity === 'epic' ? 'plasma' : battleResult.relic.rarity === 'rare' ? 'core' : 't-secondary'})`,
-            }"
-          >
+          <span class="rarity-tag" :style="{ color: relicRarityColor(battleResult.relic.rarity) }">
             🎁 获得遗物：{{ battleResult.relic.name }}（{{
               RARITY_INFO[battleResult.relic.rarity].name
             }}）
@@ -430,17 +403,7 @@ function cancelGarrison() {
       <!-- 战报日志（整合进弹窗，胜败均可见） -->
       <div v-if="battleLog && battleLog.length" class="result-log">
         <h4>战报</h4>
-        <div class="modal-log-list">
-          <div
-            v-for="(entry, i) in battleLog"
-            :key="`${entry.round}-${i}`"
-            class="log-entry"
-            :class="entry.side"
-          >
-            <span class="log-round">R{{ entry.round }}</span>
-            <span>{{ entry.msg }}</span>
-          </div>
-        </div>
+        <LogList class="modal-log-list" :entries="battleLog" />
       </div>
 
       <div class="btn-group">
@@ -454,11 +417,15 @@ function cancelGarrison() {
     </ModalOverlay>
 
     <!-- 驻扎确认弹窗 -->
-    <ModalOverlay
+    <ConfirmModal
       :model-value="showGarrisonConfirm"
       modal-class="garrison-confirm-modal"
       aria-label="挂机驻扎确认"
-      @overlay-click="cancelGarrison"
+      confirm-text="确认驻扎"
+      :confirm-flex="2"
+      accent="var(--color-quantum)"
+      @cancel="cancelGarrison"
+      @confirm="confirmGarrison"
     >
       <h2 class="result-title font-display">挂机驻扎</h2>
       <p class="result-sub">在「{{ stronghold.name }}」驻扎编队，持续获得以下收益</p>
@@ -473,17 +440,7 @@ function cancelGarrison() {
         </div>
         <p class="garrison-hint">收益将自动加入资源产出，离线时也会结算</p>
       </div>
-      <div class="btn-group">
-        <button class="btn-secondary" style="flex: 1" @click="cancelGarrison">取消</button>
-        <button
-          class="btn-accent"
-          style="flex: 2; --accent: var(--color-quantum)"
-          @click="confirmGarrison"
-        >
-          确认驻扎
-        </button>
-      </div>
-    </ModalOverlay>
+    </ConfirmModal>
   </div>
   <EmptyState
     v-else
@@ -553,7 +510,7 @@ function cancelGarrison() {
   gap: var(--space-2);
 }
 .stat {
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
 }
 .stat.count {
   color: var(--color-alert);
@@ -656,29 +613,6 @@ function cancelGarrison() {
 .log-list {
   max-height: 300px;
   overflow-y: auto;
-}
-.log-entry {
-  display: flex;
-  gap: var(--space-2);
-  padding: var(--space-1) 0;
-  font-size: var(--text-xs);
-  border-bottom: 1px solid var(--color-border-line);
-}
-.log-entry.player {
-  color: var(--color-core);
-}
-.log-entry.enemy {
-  color: var(--color-alert);
-}
-.log-entry.system {
-  color: var(--color-t-secondary);
-}
-.log-round {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-t-tertiary);
-  width: 32px;
-  flex-shrink: 0;
 }
 
 /* 弹窗本体挂载在 ModalOverlay 内部（只带 ModalOverlay 的 data-v），

@@ -1,26 +1,27 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
-import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import ConfirmModal from '@/components/ui/ConfirmModal.vue'
+import Icon from '@/components/ui/Icon.vue'
 import { useToast } from '@/composables/useToast'
+import { useTimeout } from '@/composables/useTimeout'
+import { bulkLabel } from '@/composables/useBulkLabel'
 
 const game = useGameStore()
 const showConfirm = ref(false)
 
-const negEntropy = computed(() => game.transcend.negativeEntropy)
 const previewGain = computed(() => game.previewTranscendGain())
 const canTranscend = computed(() => game.canTranscend())
 
-const tree = computed(() => game.transcend.tree)
 /** 买断节点（maxLevel=1）：引导期目标，购买一次封顶 */
-const buyoutNodes = computed(() => tree.value.filter((n) => !isInfiniteNode(n)))
+const buyoutNodes = computed(() => game.transcend.tree.filter((n) => !isInfiniteNode(n)))
 /** 无限节点（maxLevel>1）：负熵支出端永不枯竭的长期成长轴 */
-const infiniteNodes = computed(() => tree.value.filter((n) => isInfiniteNode(n)))
+const infiniteNodes = computed(() => game.transcend.tree.filter((n) => isInfiniteNode(n)))
 
 /** 无限节点当前总加成文案（乘数型 = value^level） */
-function totalBonusLabel(node: (typeof tree.value)[number]): string {
+function totalBonusLabel(node: (typeof game.transcend.tree)[number]): string {
   const eff = node.effects[0]
   if (!eff) return ''
   const total = Math.pow(eff.value, node.level)
@@ -51,10 +52,7 @@ const infPreviews = computed(() => {
  * 一级都买不起时退回原文案（按钮同时处于禁用态，成本行另有「可买 0 级」）。
  */
 function purchaseLabel(node: { id: string; level: number }): string {
-  const base = node.level === 0 ? '购买' : '升级'
-  if (infBulk.value <= 1) return base
-  const count = infPreviews.value[node.id]?.count ?? 0
-  return count > 0 ? `${base} ×${count}` : base
+  return bulkLabel(node.level === 0 ? '购买' : '升级', infPreviews.value[node.id]?.count ?? 0)
 }
 
 function tryTranscend() {
@@ -77,8 +75,8 @@ const showExportCode = ref(false)
 const exportCodeDisplay = ref('')
 const showResetConfirm = ref(false)
 const showImportConfirm = ref(false)
-/** 导入成功后的刷新定时器句柄（卸载时清理，v0.84） */
-let reloadTimer: ReturnType<typeof setTimeout> | null = null
+/** 导入成功后的刷新定时器（重触发先清旧、卸载清理由 useTimeout 承载） */
+const reloadTimer = useTimeout()
 
 /** 剪贴板复制（带回退，兼容非安全上下文 http） */
 async function copyToClipboard(text: string): Promise<boolean> {
@@ -142,8 +140,7 @@ async function confirmImport() {
     3000
   )
   if (result.success) {
-    if (reloadTimer) clearTimeout(reloadTimer)
-    reloadTimer = setTimeout(() => location.reload(), 1500)
+    reloadTimer.set(() => location.reload(), 1500)
   }
 }
 function cancelImport() {
@@ -168,10 +165,6 @@ async function confirmHardReset() {
 function cancelHardReset() {
   showResetConfirm.value = false
 }
-
-onUnmounted(() => {
-  if (reloadTimer) clearTimeout(reloadTimer)
-})
 </script>
 
 <template>
@@ -183,7 +176,7 @@ onUnmounted(() => {
     <div class="neg-panel">
       <div>
         <div class="neg-label">负熵（永久货币）</div>
-        <div class="neg-value font-display">{{ fmt(negEntropy) }}</div>
+        <div class="neg-value font-display">{{ fmt(game.transcend.negativeEntropy) }}</div>
       </div>
       <div>
         <div class="preview-label">本次转生可获得</div>
@@ -195,9 +188,7 @@ onUnmounted(() => {
 
     <!-- 转生按钮 -->
     <button class="btn-transcend" :disabled="!canTranscend" @click="tryTranscend">
-      <svg style="width: var(--icon-md); height: var(--icon-md)" aria-hidden="true">
-        <use href="#i-nav-prestige" />
-      </svg>
+      <Icon name="i-nav-prestige" size="md" />
       执行奇点重启
     </button>
     <p v-if="!canTranscend" class="req-hint">需达到 300,000 总能量产出才能转生</p>
@@ -213,7 +204,7 @@ onUnmounted(() => {
           class="tree-node"
           :class="{
             purchased: node.level > 0,
-            affordable: node.level === 0 && negEntropy.gte(node.cost),
+            affordable: node.level === 0 && game.transcend.negativeEntropy.gte(node.cost),
           }"
         >
           <div class="node-head">
@@ -228,7 +219,7 @@ onUnmounted(() => {
             v-if="node.level === 0"
             class="btn-accent sm block"
             style="--accent: var(--color-amber)"
-            :disabled="negEntropy.lt(node.cost)"
+            :disabled="game.transcend.negativeEntropy.lt(node.cost)"
             @click="tryPurchase(node.id)"
           >
             购买
@@ -261,7 +252,7 @@ onUnmounted(() => {
           class="tree-node infinite-node"
           :class="{
             purchased: node.level > 0,
-            affordable: negEntropy.gte(nextCost(node)),
+            affordable: game.transcend.negativeEntropy.gte(nextCost(node)),
           }"
         >
           <div class="node-head">
@@ -285,7 +276,7 @@ onUnmounted(() => {
           <button
             class="btn-accent sm block"
             style="--accent: var(--color-amber)"
-            :disabled="negEntropy.lt(nextCost(node))"
+            :disabled="game.transcend.negativeEntropy.lt(nextCost(node))"
             @click="tryPurchase(node.id, infBulk)"
           >
             {{ purchaseLabel(node) }}
@@ -325,28 +316,29 @@ onUnmounted(() => {
     </div>
 
     <!-- 导入确认弹窗：导入为全量替换，破坏性操作二次确认 -->
-    <ModalOverlay
+    <ConfirmModal
       :model-value="showImportConfirm"
       aria-label="确认导入存档"
-      @overlay-click="cancelImport"
+      confirm-text="确认导入"
+      :stretch="false"
+      actions-class="btn-group"
+      @cancel="cancelImport"
+      @confirm="confirmImport"
     >
       <h2 class="confirm-title font-display" style="color: var(--color-alert)">确认导入存档？</h2>
       <div class="warning-box">
         <p>⚠️ 导入将<strong>完全替换</strong>当前存档，当前进度不可恢复。</p>
       </div>
-      <div class="btn-group">
-        <button class="btn-secondary" @click="cancelImport">取消</button>
-        <button class="btn-accent" style="--accent: var(--color-alert)" @click="confirmImport">
-          确认导入
-        </button>
-      </div>
-    </ModalOverlay>
+    </ConfirmModal>
 
     <!-- 转生确认弹窗 -->
-    <ModalOverlay
+    <ConfirmModal
       :model-value="showConfirm"
       aria-label="确认奇点重启"
-      @overlay-click="cancelTranscend"
+      confirm-text="确认重启"
+      accent="var(--color-amber)"
+      @cancel="cancelTranscend"
+      @confirm="confirmTranscend"
     >
       <h2 class="confirm-title font-display">确认奇点重启？</h2>
       <div class="warning-box">
@@ -368,23 +360,15 @@ onUnmounted(() => {
         </ul>
       </div>
       <p class="gain-preview">获得 +{{ fmt(previewGain) }} 负熵</p>
-      <div class="confirm-actions">
-        <button class="btn-secondary" style="flex: 1" @click="cancelTranscend">取消</button>
-        <button
-          class="btn-accent"
-          style="flex: 1; --accent: var(--color-amber)"
-          @click="confirmTranscend"
-        >
-          确认重启
-        </button>
-      </div>
-    </ModalOverlay>
+    </ConfirmModal>
 
     <!-- 清除存档确认弹窗 -->
-    <ModalOverlay
+    <ConfirmModal
       :model-value="showResetConfirm"
       aria-label="确认清除存档"
-      @overlay-click="cancelHardReset"
+      confirm-text="确认清除"
+      @cancel="cancelHardReset"
+      @confirm="confirmHardReset"
     >
       <h2 class="confirm-title font-display" style="color: var(--color-alert)">确认清除存档？</h2>
       <div class="warning-box">
@@ -397,17 +381,7 @@ onUnmounted(() => {
         </ul>
         <p>游戏将回到全新开局状态。</p>
       </div>
-      <div class="confirm-actions">
-        <button class="btn-secondary" style="flex: 1" @click="cancelHardReset">取消</button>
-        <button
-          class="btn-accent"
-          style="flex: 1; --accent: var(--color-alert)"
-          @click="confirmHardReset"
-        >
-          确认清除
-        </button>
-      </div>
-    </ModalOverlay>
+    </ConfirmModal>
   </div>
 </template>
 
@@ -538,7 +512,7 @@ onUnmounted(() => {
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   background: var(--color-elevated);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
 }
 .purchased-tag {
   text-align: center;
@@ -586,7 +560,7 @@ onUnmounted(() => {
 .node-level {
   margin-left: var(--space-2);
   padding: 0 var(--space-1);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   background: var(--color-elevated);
   color: var(--color-quantum);
   font-size: var(--text-xs);

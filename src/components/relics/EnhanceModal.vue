@@ -11,7 +11,9 @@ import type { RelicEffect } from '@/data/relics'
 import { enhancedEffectsOf, type OwnedRelic } from '@/stores/relics'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
+import { bulkLabel } from '@/composables/useBulkLabel'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import Icon from '@/components/ui/Icon.vue'
 
 /**
  * EnhanceModal — 遗物强化弹窗（自 RelicView 拆出，v0.72）
@@ -59,18 +61,13 @@ function doEnhance() {
 const bulkSteps = ref(1)
 
 /**
- * 批量强化实际可完成级数（按当前能量逐级模拟，与 enhanceSteps 扣费顺序一致）。
- * 段位 >1 时用于按钮文案，随能量与当前等级动态变化。
+ * 按钮文案：段位 >1 时显示实际可完成级数（按当前能量逐级模拟，与 enhanceSteps
+ * 扣费顺序一致，随能量与当前等级动态变化）；一级都买不起时退回原文案（按钮同时禁用）。
  */
-const bulkCount = computed(() =>
-  bulkSteps.value > 1 && props.relic
-    ? game.previewRelicEnhanceSteps(props.relic.instanceId, bulkSteps.value)
-    : bulkSteps.value
-)
-
-/** 按钮文案：段位 >1 时显示实际可完成级数；一级都买不起时退回原文案（按钮同时禁用） */
 const enhanceButtonLabel = computed(() =>
-  bulkSteps.value > 1 && bulkCount.value > 0 ? `强化 ×${bulkCount.value}` : '强化'
+  bulkSteps.value > 1 && props.relic
+    ? bulkLabel('强化', game.previewRelicEnhanceSteps(props.relic.instanceId, bulkSteps.value))
+    : '强化'
 )
 
 const rarityColor = relicRarityColor
@@ -91,9 +88,7 @@ const rarityColor = relicRarityColor
         data-testid="enhance-modal"
       >
         <div class="r-head">
-          <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-            <use :href="'#' + relic.icon" />
-          </svg>
+          <Icon :name="relic.icon" size="lg" />
           <span class="rarity-badge" :style="{ background: rarityColor(relic.rarity) }">
             {{ RARITY_INFO[relic.rarity].name }}
           </span>

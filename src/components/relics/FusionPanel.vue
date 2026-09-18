@@ -2,6 +2,7 @@
 import { RARITY_INFO, relicRarityColor } from '@/data/relics'
 import type { RelicFusionApi } from '@/composables/useRelicFusion'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
+import Icon from '@/components/ui/Icon.vue'
 
 /**
  * FusionPanel — 合成工坊区块 + 合成产物弹窗（自 RelicView 拆出，v0.72）
@@ -99,9 +100,7 @@ function closeResult(fusion: RelicFusionApi) {
           :data-testid="'synth-product-' + fusion.synthResult.value.rarity"
         >
           <div class="r-head">
-            <svg style="width: var(--icon-lg); height: var(--icon-lg)" aria-hidden="true">
-              <use :href="'#' + fusion.synthResult.value.icon" />
-            </svg>
+            <Icon :name="fusion.synthResult.value.icon" size="lg" />
             <span
               class="rarity-badge"
               :style="{ background: rarityColor(fusion.synthResult.value.rarity) }"
