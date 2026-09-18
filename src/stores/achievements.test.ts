@@ -40,7 +40,7 @@ describe('achievements — 定义表完整性', () => {
       expect(ACHIEVEMENT_CATEGORIES[def.category]).toBeDefined()
       expect(def.threshold).toBeGreaterThan(0)
       expect(def.effects.length).toBeGreaterThan(0)
-      expect(def.icon.startsWith('i-')).toBe(true)
+      expect(ACHIEVEMENT_CATEGORIES[def.category].icon.startsWith('i-')).toBe(true)
       for (const e of def.effects) expect(e.value).toBeGreaterThan(1)
     }
   })

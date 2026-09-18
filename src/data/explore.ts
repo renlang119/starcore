@@ -26,25 +26,36 @@ export interface ExploreNode {
   rewards: { energy?: number; crystal?: number; alloy?: number; data?: number; dark?: number }
   /** 前置节点 */
   requires?: string[]
-  /** 完成后解锁的据点 id */
-  unlocksStronghold?: string[]
-  /** 完成后解锁的剧情片段 */
-  story?: string
 }
 
 export const LAYER_INFO: Record<
   StarLayer,
   { id: StarLayer; name: string; color: string; distance: string }
 > = {
-  orbit: { id: 'orbit', name: '轨道带', color: '#00E5FF', distance: '0.1-1 AU' },
-  inner: { id: 'inner', name: '内层星系', color: '#2EE6A0', distance: '1-50 AU' },
-  outer: { id: 'outer', name: '外层星系', color: '#FFB627', distance: '50-5000 AU' },
-  deep: { id: 'deep', name: '深空带', color: '#A78BFA', distance: '>5000 AU' },
-  stellar: { id: 'stellar', name: '恒星系层', color: '#E879F9', distance: '4.2 ly+' },
-  cluster: { id: 'cluster', name: '星团层', color: '#60A5FA', distance: '>10 kly' },
-  arm: { id: 'arm', name: '星臂层', color: '#FB7185', distance: '30-80 kly' },
-  galaxy: { id: 'galaxy', name: '星系层', color: '#FACC15', distance: '>100 kly' },
-  void: { id: 'void', name: '深空层', color: '#38BDF8', distance: '银河之外' },
+  orbit: { id: 'orbit', name: '轨道带', color: 'var(--color-core)', distance: '0.1-1 AU' },
+  inner: { id: 'inner', name: '内层星系', color: 'var(--color-quantum)', distance: '1-50 AU' },
+  outer: { id: 'outer', name: '外层星系', color: 'var(--color-amber)', distance: '50-5000 AU' },
+  deep: { id: 'deep', name: '深空带', color: 'var(--color-plasma)', distance: '>5000 AU' },
+  stellar: {
+    id: 'stellar',
+    name: '恒星系层',
+    color: 'var(--color-layer-stellar)',
+    distance: '4.2 ly+',
+  },
+  cluster: {
+    id: 'cluster',
+    name: '星团层',
+    color: 'var(--color-layer-cluster)',
+    distance: '>10 kly',
+  },
+  arm: { id: 'arm', name: '星臂层', color: 'var(--color-layer-arm)', distance: '30-80 kly' },
+  galaxy: {
+    id: 'galaxy',
+    name: '星系层',
+    color: 'var(--color-layer-galaxy)',
+    distance: '>100 kly',
+  },
+  void: { id: 'void', name: '深空层', color: 'var(--color-layer-void)', distance: '银河之外' },
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
@@ -57,8 +68,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     time: 30,
     cost: { energy: 100 },
     rewards: { energy: 300, crystal: 10, alloy: 20 },
-    unlocksStronghold: ['raider_1'],
-    story: '扫描器在轨道残骸带中发现了掠夺者的踪迹。他们似乎在寻找什么……',
   },
   // —— 内层星系 ——
   {
@@ -70,8 +79,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 1000, data: 50 },
     rewards: { energy: 5000, crystal: 50, alloy: 200, data: 100 },
     requires: ['node_orbit'],
-    unlocksStronghold: ['raider_2', 'beast_1'],
-    story: '内层行星表面布满了晶体矿脉，但深处传来未知的生物信号。',
   },
   // —— 外层星系 ——
   {
@@ -83,8 +90,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 10000, data: 500, alloy: 300 },
     rewards: { energy: 50000, crystal: 200, alloy: 2000, data: 1000, dark: 2 },
     requires: ['node_inner'],
-    unlocksStronghold: ['raider_3', 'ruin_1'],
-    story: '气态巨行星的卫星上发现了古代遗迹。遗迹深处，一个声音在低语：「他们来了。」',
   },
   // —— 深空 ——
   {
@@ -96,8 +101,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 100000, data: 5000, alloy: 2000, dark: 5 },
     rewards: { energy: 500000, crystal: 1000, alloy: 10000, data: 10000, dark: 20 },
     requires: ['node_outer'],
-    unlocksStronghold: ['beast_2', 'ruin_2', 'silencer_1'],
-    story: '虫洞的另一端，沉默者的舰队正在等待。他们的沉默，即将被打破。',
   },
   // —— 恒星系层 ——
   {
@@ -109,9 +112,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 500000, data: 20000, dark: 15 },
     rewards: { energy: 3000000, crystal: 5000, alloy: 50000, data: 50000, dark: 30 },
     requires: ['node_deep'],
-    unlocksStronghold: ['raider_4'],
-    story:
-      '穿过虫洞，三颗恒星的引力在远方彼此拉扯。门户残骸上刻着与先驱者相同的纹章——他们曾经也走过这条路。',
   },
   {
     id: 'node_stellar_mine',
@@ -122,9 +122,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 1500000, crystal: 20000, dark: 20 },
     rewards: { energy: 8000000, crystal: 30000, data: 120000 },
     requires: ['node_stellar_gate'],
-    unlocksStronghold: ['beast_3'],
-    story:
-      '碎片带深处回荡着晶体共振的嗡鸣。扫描器捕捉到巨大的生物轮廓在晶尘中游弋——它们以晶脉为食。',
   },
   {
     id: 'node_stellar_forge',
@@ -135,9 +132,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 1500000, alloy: 100000, dark: 20 },
     rewards: { energy: 8000000, alloy: 200000, dark: 25 },
     requires: ['node_stellar_gate'],
-    unlocksStronghold: ['ruin_3'],
-    story:
-      '原行星盘如熔炉般翻涌。在恒星的耀斑之间，一座人工建筑的剪影一闪而过——比掠夺者的技术精致得多。',
   },
   {
     id: 'node_stellar_dead',
@@ -148,8 +142,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 4000000, data: 80000, dark: 30 },
     rewards: { energy: 20000000, data: 300000, dark: 40 },
     requires: ['node_stellar_mine', 'node_stellar_forge'],
-    unlocksStronghold: ['silencer_2'],
-    story: '白矮星的残光下，一支殖民舰队的残骸静静悬浮。他们没有战斗过的痕迹——他们是安静地停止的。',
   },
   {
     id: 'node_stellar_core',
@@ -160,9 +152,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 10000000, alloy: 500000, dark: 40 },
     rewards: { energy: 50000000, alloy: 1000000, dark: 60 },
     requires: ['node_stellar_dead'],
-    unlocksStronghold: ['beast_4', 'raider_5'],
-    story:
-      '中子星的引力撕扯着舰体。在这片死亡的摇篮里，虚空巨兽产下了卵，掠夺者舰队却围绕它建立了母巢。',
   },
   {
     id: 'node_stellar_edge',
@@ -173,9 +162,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 50000000, data: 500000, dark: 60 },
     rewards: { energy: 300000000, data: 2000000, dark: 120 },
     requires: ['node_stellar_core'],
-    unlocksStronghold: ['silencer_3', 'ruin_4'],
-    story:
-      '悬臂尽头，沉默者旗舰的残骸缓缓旋转。黑匣子的最后一段记录只有一句话：「我们并非沉默，我们是在倾听。星团深处，有什么在回应。」',
   },
   // —— 星团层（v0.71）——
   {
@@ -187,9 +173,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 100000000, data: 200000, dark: 60 },
     rewards: { energy: 600000000, data: 1200000, dark: 120 },
     requires: ['node_stellar_edge'],
-    unlocksStronghold: ['raider_6'],
-    story:
-      '跃出悬臂，星团如眼睑在深空缓缓张开。扫描器捕捉到覆盖整片星团的异常射电背景，节奏与沉默者黑匣子的信号完全一致。',
   },
   {
     id: 'node_cluster_swarm',
@@ -200,8 +183,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 300000000, data: 600000, dark: 90 },
     rewards: { energy: 1500000000, crystal: 300000, data: 3000000, dark: 180 },
     requires: ['node_cluster_gate'],
-    unlocksStronghold: ['beast_5'],
-    story: '晶尘云中漂浮着数以千计的静止殖民舰，舷窗内的面孔完好如初。它们不是死去，是在等待。',
   },
   {
     id: 'node_cluster_ruin',
@@ -212,9 +193,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 300000000, data: 600000, alloy: 200000, dark: 90 },
     rewards: { energy: 1500000000, data: 3000000, alloy: 600000, dark: 180 },
     requires: ['node_cluster_gate'],
-    unlocksStronghold: ['ruin_5'],
-    story:
-      '先驱者天文台残骸，记录着同一信号来源：星团核心，一支比先驱文明更古老的舰队。先驱者在记录末尾写道：「我们造了一扇门，却不知道门后面是谁。」',
   },
   {
     id: 'node_cluster_heart',
@@ -225,8 +203,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 800000000, data: 1500000, dark: 120 },
     rewards: { energy: 4000000000, data: 8000000, crystal: 800000, dark: 240 },
     requires: ['node_cluster_swarm', 'node_cluster_ruin'],
-    unlocksStronghold: ['raider_7'],
-    story: '星团核心是一座环状人工结构。回响定位完成：信号起源于它，且是持续发讯，已历数十亿年。',
   },
   {
     id: 'node_cluster_hollow',
@@ -237,8 +213,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 1500000000, data: 3000000, dark: 160 },
     rewards: { energy: 7500000000, data: 15000000, dark: 320 },
     requires: ['node_cluster_heart'],
-    story:
-      '结构内部空无一物，只有不断重复的询问。黑匣子接口接入后，询问终于获得回答：「开始回归。接收者已就绪。」',
   },
   {
     id: 'node_cluster_silence',
@@ -249,9 +223,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 3000000000, data: 6000000, dark: 200 },
     rewards: { energy: 18000000000, data: 40000000, dark: 400 },
     requires: ['node_cluster_hollow'],
-    unlocksStronghold: ['silencer_4'],
-    story:
-      '沉默者的母港。他们不是沉默，是在守门。门已在开启前的一瞬被冻结，文明在完成使命前的最后时刻停工，等待来自星团的「召回信号」。我们触发了它。',
   },
   // —— 星臂层（v0.90，敌人编成经战斗模拟脚本三档验证）——
   {
@@ -263,9 +234,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 3000000000, data: 6000000, dark: 200 },
     rewards: { energy: 15000000000, data: 12000000, dark: 400 },
     requires: ['node_cluster_silence'],
-    unlocksStronghold: ['raider_8'],
-    story:
-      '门的彼端没有毁灭，只有一条被遗弃的航道。召回信号的应答源在相邻星臂深处规律闪烁，像一颗为归乡者留的灯。掠夺者早已在门这边扎下了王庭。',
   },
   {
     id: 'node_arm_cradle',
@@ -276,9 +244,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 8000000000, data: 15000000, crystal: 300000, dark: 250 },
     rewards: { energy: 40000000000, crystal: 1500000, data: 3000000, dark: 500 },
     requires: ['node_arm_gate'],
-    unlocksStronghold: ['beast_6'],
-    story:
-      '信号在摇篮星区变得格外清晰，仿佛「接收者」就藏在每一颗原恒星的胎动里。织网兽以静止的殖民舰为巢，晶丝横贯整片云带，把摇篮缠成了一枚茧。',
   },
   {
     id: 'node_arm_grave',
@@ -289,9 +254,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 8000000000, data: 15000000, alloy: 500000, dark: 250 },
     rewards: { energy: 40000000000, data: 3000000, alloy: 1500000, dark: 500 },
     requires: ['node_arm_gate'],
-    unlocksStronghold: ['ruin_6'],
-    story:
-      '数千艘先驱者战舰在同一时刻停止了引擎，没有战损，没有逃生舱。它们环绕成一道长堤，舰脊的纹章与环状结构上的完全一致——这支舰队是守门者的先行者。',
   },
   {
     id: 'node_arm_spine',
@@ -302,9 +264,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 20000000000, data: 30000000, dark: 300 },
     rewards: { energy: 100000000000, data: 16000000, crystal: 2000000, dark: 600 },
     requires: ['node_arm_cradle', 'node_arm_grave'],
-    unlocksStronghold: ['raider_9'],
-    story:
-      '两条分支在臂脊汇合。航道的每一座驿站都完好无损，仿佛舰队只是暂时离港。劫掠者的王庭舰队盘踞在航道枢纽，把整条古代航道当成了它们的私产。',
   },
   {
     id: 'node_arm_abyss',
@@ -315,8 +274,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 40000000000, data: 60000000, dark: 350 },
     rewards: { energy: 200000000000, data: 30000000, dark: 800 },
     requires: ['node_arm_spine'],
-    story:
-      '航道内侧是一片连信号都无法逃逸的空腔。守门者留下的最后记录写道：「深渊不是终点，是过滤器。能被听见的，才配得上穿过门扉。」',
   },
   {
     id: 'node_arm_threshold',
@@ -327,9 +284,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 80000000000, data: 120000000, dark: 450 },
     rewards: { energy: 480000000000, data: 80000000, dark: 1000 },
     requires: ['node_arm_abyss'],
-    unlocksStronghold: ['silencer_5'],
-    story:
-      '回廊尽头并列着七扇与冻结之门同款的巨门，只有一扇门的应答源仍在工作。信号穿门而出，指向的不是星臂深处，而是整条银河的尺度——门后的存在，在星系层面等我们。',
   },
   // —— 星系层（v0.91，敌人编成经战斗模拟脚本三档验证）——
   {
@@ -341,9 +295,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 80000000000, data: 120000000, dark: 450 },
     rewards: { energy: 400000000000, data: 240000000, dark: 900 },
     requires: ['node_arm_threshold'],
-    unlocksStronghold: ['raider_10'],
-    story:
-      '穿过唯一应答的门扉，门后不是房间，是整条银河。七扇门的应答源在此汇成一条仍在发讯的中继链，笔直指向银心。',
   },
   {
     id: 'node_galaxy_range',
@@ -354,9 +305,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 200000000000, data: 300000000, crystal: 6000000, dark: 550 },
     rewards: { energy: 1000000000000, data: 60000000, crystal: 30000000, dark: 1100 },
     requires: ['node_galaxy_gate'],
-    unlocksStronghold: ['beast_7'],
-    story:
-      '银河盘面上，噬星鲲群像牧群一样啃食星尘。它们的迁徙路线整齐地绕开某些空域，像在听从某种驱赶。',
   },
   {
     id: 'node_galaxy_archive',
@@ -367,9 +315,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 200000000000, data: 300000000, alloy: 10000000, dark: 550 },
     rewards: { energy: 1000000000000, data: 60000000, alloy: 30000000, dark: 1100 },
     requires: ['node_galaxy_gate'],
-    unlocksStronghold: ['ruin_7'],
-    story:
-      '先驱者总库的纪年终止于同一日：「门已交给守门者。我们出发去银河之外，寻找最初的发讯者。」',
   },
   {
     id: 'node_galaxy_hub',
@@ -380,9 +325,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 500000000000, data: 750000000, dark: 650 },
     rewards: { energy: 2500000000000, data: 400000000, crystal: 40000000, dark: 1400 },
     requires: ['node_galaxy_range', 'node_galaxy_archive'],
-    unlocksStronghold: ['raider_11'],
-    story:
-      '掠夺者所有王庭的进贡终点。他们相信银心藏着永不熄灭的炉，把整条银河的航道当成了献给炉火的柴。',
   },
   {
     id: 'node_galaxy_halo',
@@ -393,7 +335,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 1000000000000, data: 1500000000, dark: 800 },
     rewards: { energy: 5000000000000, data: 750000000, dark: 1800 },
     requires: ['node_galaxy_hub'],
-    story: '银河晕中的静默空腔，连中继链也绕开这里。守门者的石刻写着：「最亮的地方，影子最深。」',
   },
   {
     id: 'node_galaxy_heart',
@@ -404,9 +345,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 2000000000000, data: 3000000000, dark: 1000 },
     rewards: { energy: 12000000000000, data: 2000000000, dark: 2200 },
     requires: ['node_galaxy_halo'],
-    unlocksStronghold: ['silencer_6'],
-    story:
-      '银心旁，沉默者主脑在此沉睡，它是所有守门者的中枢，也是应答源的实体。接触完成的瞬间，它回放了先驱者的出航影像，并给出一组坐标：信号的最初源头，在银河之外。',
   },
   // —— 深空层（v0.92，敌人编成经战斗模拟脚本三档验证）——
   {
@@ -418,9 +356,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 2000000000000, data: 60000000000, dark: 2900 },
     rewards: { energy: 10000000000000, data: 120000000000, dark: 6400 },
     requires: ['node_galaxy_heart'],
-    unlocksStronghold: ['raider_12'],
-    story:
-      '出航影像的终点就是这里。银河在身后收拢成一枚光点，中继链在虚空边缘断开，断口处的坐标仍在闪烁——先驱者从这里离开了自己的星系。',
   },
   {
     id: 'node_void_beacon',
@@ -431,9 +366,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 5300000000000, data: 160000000000, crystal: 160000000, dark: 3750 },
     rewards: { energy: 26500000000000, data: 320000000000, crystal: 800000000, dark: 8300 },
     requires: ['node_void_gate'],
-    unlocksStronghold: ['beast_8'],
-    story:
-      '航标仍在工作，灯语只有一句：「航向未变。」白鲸群聚集在航标周围，像在等待一盏为它们亮了亿万年的灯。',
   },
   {
     id: 'node_void_watch',
@@ -444,9 +376,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 5300000000000, data: 160000000000, alloy: 260000000, dark: 3750 },
     rewards: { energy: 26500000000000, data: 320000000000, alloy: 1300000000, dark: 8300 },
     requires: ['node_void_gate'],
-    unlocksStronghold: ['ruin_8'],
-    story:
-      '望台的观测记录停在同一日：镜筒里的光点没有移动过，记录的最后写着「源头静止，非天体，非讯号，是一扇门」。',
   },
   {
     id: 'node_void_hub',
@@ -457,9 +386,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 13200000000000, data: 400000000000, dark: 4500 },
     rewards: { energy: 66000000000000, data: 800000000000, crystal: 1300000000, dark: 10000 },
     requires: ['node_void_beacon', 'node_void_watch'],
-    unlocksStronghold: ['raider_13'],
-    story:
-      '两条虚空航道在此汇成一条。掠夺者把界碑竖在航道正中，碑文却抄自先驱者：「越过此界者，不再归航。」他们没有读懂这句话。',
   },
   {
     id: 'node_void_veil',
@@ -470,8 +396,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 26500000000000, data: 800000000000, dark: 5350 },
     rewards: { energy: 132000000000000, data: 1600000000000, dark: 12300 },
     requires: ['node_void_hub'],
-    story:
-      '星幕之内，所有信号都失去了回声。主脑的回放影像在这里最后一次定格：先驱者的旗舰驶入光点，影像结束了，光点还在。',
   },
   {
     id: 'node_void_origin',
@@ -482,9 +406,6 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 53000000000000, data: 1600000000000, dark: 6100 },
     rewards: { energy: 265000000000000, data: 3200000000000, dark: 14000 },
     requires: ['node_void_veil'],
-    unlocksStronghold: ['silencer_7'],
-    story:
-      '信号的源头不是信标，是一座门。先驱者没有离开——他们穿门而入，沉默者世代守着这扇门。接触完成的瞬间，门后的回响第一次开口：「接收者已抵达。欢迎回家。」',
   },
 ]
 

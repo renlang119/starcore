@@ -4,16 +4,13 @@
  * 遗物提供永久增益，可装备到遗物槽位
  */
 
+import { ceilPow } from '@/lib/cost'
+import type { EffectTypeBase } from '@/lib/effect-types'
+
 export type RelicRarity = 'common' | 'rare' | 'epic' | 'legendary'
 
 export interface RelicEffect {
-  type:
-    | 'production_mult'
-    | 'combat_mult'
-    | 'explore_mult'
-    | 'prestige_mult'
-    | 'cost_mult'
-    | 'offline_bonus'
+  type: EffectTypeBase | 'cost_mult'
   target?: string
   value: number
   label: string
@@ -37,15 +34,15 @@ export const RARITY_INFO: Record<
   common: {
     id: 'common',
     name: '普通',
-    color: '#8B96A8',
+    color: 'var(--color-rarity-common)',
     weight: 100,
   },
-  rare: { id: 'rare', name: '稀有', color: '#00E5FF', weight: 35 },
-  epic: { id: 'epic', name: '史诗', color: '#A78BFA', weight: 10 },
+  rare: { id: 'rare', name: '稀有', color: 'var(--color-core)', weight: 35 },
+  epic: { id: 'epic', name: '史诗', color: 'var(--color-plasma)', weight: 10 },
   legendary: {
     id: 'legendary',
     name: '传说',
-    color: '#FFB627',
+    color: 'var(--color-amber)',
     weight: 2,
   },
 }
@@ -283,9 +280,12 @@ export function rollRelic(rarityBias = 0, rng: () => number = Math.random): Reli
   return RELIC_POOL[0]
 }
 
+/** 遗物查找 Map（O(1) 查找；与科技 / 节点各表口径对齐） */
+const RELIC_MAP = new Map(RELIC_POOL.map((r) => [r.id, r]))
+
 /** 按 id 从 RELIC_POOL 查找遗物定义 */
 export function getRelicById(id: string): RelicDef | undefined {
-  return RELIC_POOL.find((r) => r.id === id)
+  return RELIC_MAP.get(id)
 }
 
 /**
@@ -299,8 +299,6 @@ type RelicSetId = 'raiders' | 'beast' | 'ruin' | 'silencer'
 interface RelicSetDef {
   id: RelicSetId
   name: string
-  /** 一句话主题（UI 套装区块展示） */
-  desc: string
   color: string
   /** 套装成员遗物 id（RELIC_POOL 内） */
   memberIds: string[]
@@ -314,8 +312,7 @@ export const RELIC_SETS: RelicSetDef[] = [
   {
     id: 'raiders',
     name: '掠夺者战团',
-    desc: '从掠夺者残骸中回收的武器技术',
-    color: '#F43F5E',
+    color: 'var(--color-alert)',
     memberIds: ['r_energy_1', 'r_alloy_1', 'r_combat_1', 'r_combat_2'],
     partial: {
       type: 'combat_mult',
@@ -335,8 +332,7 @@ export const RELIC_SETS: RelicSetDef[] = [
   {
     id: 'beast',
     name: '巨兽血裔',
-    desc: '异星巨兽躯体内结晶的原始能量',
-    color: '#FFB627',
+    color: 'var(--color-amber)',
     memberIds: ['r_energy_2', 'r_crystal_2', 'r_energy_3'],
     partial: {
       type: 'production_mult',
@@ -356,8 +352,7 @@ export const RELIC_SETS: RelicSetDef[] = [
   {
     id: 'ruin',
     name: '先驱遗产',
-    desc: '先驱文明遗迹中封存的智慧结晶',
-    color: '#A78BFA',
+    color: 'var(--color-plasma)',
     memberIds: [
       'r_data_1',
       'r_crystal_1',
@@ -385,8 +380,7 @@ export const RELIC_SETS: RelicSetDef[] = [
   {
     id: 'silencer',
     name: '沉默者回响',
-    desc: '沉默者造物中残留的低语',
-    color: '#94A3B8',
+    color: 'var(--color-silencer)',
     memberIds: ['r_dark_1', 'r_dark_2', 'r_dark_3', 'r_combat_3', 'r_omega', 'r_silence'],
     partial: {
       type: 'production_mult',
@@ -445,7 +439,7 @@ const ENHANCE_COST_GROWTH = 1.5
 
 /** 升到 nextLevel（1..MAX_RELIC_LEVEL）所需能量 */
 export function enhanceCost(rarity: RelicRarity, nextLevel: number): number {
-  return Math.ceil(ENHANCE_COST_BASE[rarity] * Math.pow(ENHANCE_COST_GROWTH, nextLevel - 1))
+  return ceilPow(ENHANCE_COST_BASE[rarity], ENHANCE_COST_GROWTH, nextLevel - 1)
 }
 
 /** 强化后效果值：v → 1 + (v-1) × (1 + g × Lv)（正向放大、折扣加深统一公式） */

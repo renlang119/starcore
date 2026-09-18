@@ -1,6 +1,6 @@
 # 星核纪元 · P0-5 / P0-6 Token 映射表
 
-> **同步状态**：基线 v0.55｜最后核对 v1.07（2026-09-18）
+> **同步状态**：基线 v0.55｜最后核对 v1.08（2026-09-18）
 
 > **产出方**：设计
 > **日期**：2026-07-16
@@ -36,8 +36,8 @@
 
 ### 1.2 Token 总表（权威登记处）
 
-> 通读 `src/styles/tokens.css` 全文登记（基线 v0.55，最后核对 v1.07）。
-> 全部全局 Token 共 49 项（含 1 项未落地）；值为 `tokens.css` `:root` 实读值。
+> 通读 `src/styles/tokens.css` 全文登记（基线 v0.55，最后核对 v1.08）。
+> 全部全局 Token 共 58 项（含 1 项未落地）；值为 `tokens.css` `:root` 实读值。
 
 | 名称 | 值 | 来源版本 | 主要引用方 |
 |------|-----|---------|-----------|
@@ -54,6 +54,15 @@
 | `--color-quantum` | `#2ee6a0` | P0-4 | 成功/探索（14 文件）：TopBar、BattleView、MapView |
 | `--color-alert` | `#f43f5e` | P0-4 | 危险/负值（11 文件）：BattleView、CostTag、OfflineReport |
 | `--color-plasma` | `#a78bfa` | P0-4 | 科技/研究（7 文件）：TechView、RelicView、BattleView |
+| `--color-layer-stellar` | `#e879f9` | v1.08 新增 | 恒星系层色：MapView（LAYER_INFO.stellar） |
+| `--color-layer-cluster` | `#60a5fa` | v1.08 新增 | 星团层色：MapView（LAYER_INFO.cluster） |
+| `--color-layer-arm` | `#fb7185` | v1.08 新增 | 星臂层色：MapView（LAYER_INFO.arm） |
+| `--color-layer-galaxy` | `#facc15` | v1.08 新增 | 星系层色：MapView（LAYER_INFO.galaxy） |
+| `--color-layer-void` | `#38bdf8` | v1.08 新增 | 深空层色：MapView（LAYER_INFO.void）；同值复用于探索学分支 |
+| `--color-sector-dark` | `#e84393` | v1.08 新增 | 暗物质扇区色：BuildView（SECTORS.dark） |
+| `--color-silencer` | `#94a3b8` | v1.08 新增 | 沉默者 / 暗物质系：沉默者前哨、沉默者回响套装、暗物质资源、暗物质学分支 |
+| `--color-rarity-common` | `#8b96a8` | v1.08 新增 | 普通稀有度色：RelicView（RARITY_INFO.common） |
+| `--color-singularity` | `#fbbf24` | v1.08 新增 | 奇点学分支色：TechView（TECH_BRANCHES.singularity） |
 | `--color-t-primary` | `#e8edf5` | 基线（v0.43 前已落地） | 主文本（21 文件）：base.css、各视图标题 |
 | `--color-t-secondary` | `#8b96a8` | 基线（v0.43 前已落地） | 次文本（26 文件，全站最高频文本色） |
 | `--color-t-tertiary` | `#7a8699` | 基线（v0.88.1 提亮：vs void 5.46 / surface 4.98 / elevated 4.30，AA 达标） | 弱文本（19 文件）：描述、空态 |
@@ -92,6 +101,8 @@
 | `--elevation-3` | `0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5)` | P2-6 | ModalOverlay |
 
 **约定**：新增 token 只进本表，不再使用补充登记（原 §五 已改为指针注记）。
+
+> **v1.08**：领域色（星图层 / 扇区 / 稀有度与学域专属）入库；`src/data` 与资源、行动队列的数据色值一律引用本表令牌（`var(--color-*)` 字符串），不再写裸色值。
 
 ### 1.3 现状值 → Token 映射表
 

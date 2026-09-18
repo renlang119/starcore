@@ -206,7 +206,7 @@ const endlessSection = {
           @click="router.push('/battle/' + s.id)"
         >
           <div class="s-icon">
-            <Icon :name="s.icon" size="md" />
+            <Icon :name="STRONGHOLD_TYPES[s.type].icon" size="md" />
           </div>
           <div class="s-info">
             <div class="s-name">{{ s.name }}</div>
