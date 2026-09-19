@@ -68,10 +68,10 @@ Safari 14+; both desktop and mobile layouts are supported.
 ```text
 starcore/
 ├─ src/
-│  ├─ components/   27 components, grouped as ui / layout / home / relics / build
-│  ├─ composables/  7 composables (breakpoints, Toast, action queue, onboarding, particles, …)
-│  ├─ data/         9 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, navigation)
-│  ├─ lib/          6 core modules (decimal math, save, formatting, offline gains, random, effect system)
+│  ├─ components/   40 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
+│  ├─ composables/  13 composables (breakpoints, Toast, action queue, onboarding, particles, …)
+│  ├─ data/         11 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, navigation, story, background stars)
+│  ├─ lib/          16 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
 │  ├─ router/       route definitions
 │  ├─ stores/       11 Pinia stores (resources, buildings, research, military, combat,
 │  │                exploration, relics, rebirth, achievements, daily, game)
@@ -80,7 +80,7 @@ starcore/
 │  ├─ views/        9 views (home, build, tech, map, army, battle, relics, rebirth, achievements)
 │  └─ App.vue / main.ts / version.ts / style.css
 ├─ docs/            11 specification documents (in Chinese), see Documentation (plus archived history)
-├─ public/          favicon and self-hosted fonts (Orbitron, JetBrains Mono)
+├─ public/          favicon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation check)
 ├─ changelog/       version history; active file and three archives
 ├─ deploy.sh        deployment script
