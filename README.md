@@ -56,10 +56,10 @@ Vue 3 · TypeScript · Vite · Pinia · Vue Router · decimal.js · localforage
 ```text
 starcore/
 ├─ src/
-│  ├─ components/   27 个组件，按 ui / layout / home / relics / build 分组
-│  ├─ composables/  7 个组合式函数（断点、Toast、行动队列、引导、粒子等）
-│  ├─ data/         9 份数据表（建筑、科技、探索、据点、遗物、成就、远征、部队、导航）
-│  ├─ lib/          6 个基础模块（高精度数值、存档、格式化、离线收益、随机、效果系统）
+│  ├─ components/   40 个组件（含图标子组件 8 个），按 ui / layout / home / relics / build / army / battle / map / settings 分组
+│  ├─ composables/  13 个组合式函数（断点、Toast、行动队列、引导、粒子等）
+│  ├─ data/         11 份数据表（建筑、科技、探索、据点、遗物、成就、远征、部队、导航、剧情、背景星点）
+│  ├─ lib/          16 个基础模块（高精度数值、格式化、效果系统、离线收益、随机、存档链路（save/ 子目录）、批量与成本助手等）
 │  ├─ router/       路由定义
 │  ├─ stores/       11 个 Pinia store（资源、建筑、研究、军事、战斗、探索、
 │  │                遗物、转生、成就、签到、游戏）
@@ -68,7 +68,7 @@ starcore/
 │  ├─ views/        9 个页面视图（主界面、建造、科技、地图、军队、战斗、遗物、转生、成就）
 │  └─ App.vue / main.ts / version.ts / style.css
 ├─ docs/            十一册规范文档，见「文档索引」（含 archive 历史归档）
-├─ public/          favicon 与本地字体（Orbitron、JetBrains Mono）
+├─ public/          favicon、分享图与本地字体（Orbitron、JetBrains Mono）
 ├─ scripts/         质量脚本（计数守恒检查）
 ├─ changelog/       版本历史四档（活跃档 changelog.md 与三份历史存档）
 ├─ deploy.sh        部署脚本
