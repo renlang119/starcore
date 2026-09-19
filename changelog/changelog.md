@@ -5,10 +5,9 @@
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
 > 当前版本：v1.11
 >
-> 本文件为活跃档（v1.06 起），新条目置顶；更早条目见
-> [changelog-v0.71-v1.05.md](changelog-v0.71-v1.05.md)（v0.71-v1.05）、
-> [changelog-v0.36-v0.70.md](changelog-v0.36-v0.70.md)（v0.36-v0.70）与
-> [changelog-v0.01-v0.35.md](changelog-v0.01-v0.35.md)（v0.01-v0.35）。
+> 本文件为活跃档（v1.01 起），新条目置顶；更早条目见
+> [changelog-v0.51-v1.00.md](changelog-v0.51-v1.00.md)（v0.51-v1.00）与
+> [changelog-v0.01-v0.50.md](changelog-v0.01-v0.50.md)（v0.01-v0.50）。
 
 ---
 
@@ -251,9 +250,8 @@ UI 层多处以复制粘贴方式维护的同构实现收敛为共享组件与�
   玩家名 XSS 载荷换为 24 字符内的可触发形态，另加载荷活性自检，
   转义路径转为真实跑测。
 - 术语：组件注释一处计数表达改中性说法。
-- 版本历史：三档容量填满，原活跃档转为历史存档
-  `changelog-v0.71-v1.05.md`，新活跃档承载 v1.06 起条目；四档互
-  链、README 双语索引与结构树行同步。
+- 版本历史：三档容量填满，原活跃档转为历史存档，新活跃档承
+  载 v1.06 起条目；四档互链、README 双语索引与结构树行同步。
 
 ### 验证
 
@@ -264,5 +262,214 @@ UI 层多处以复制粘贴方式维护的同构实现收敛为共享组件与�
 - Playwright 回归套件 26/27 通过，唯一挂项为线上端版本断言的已知
   形态；安全专项零发现；部署后线上复跑全过。
 - 线上 bundle 哈希与本地构建逐字节一致。
+
+---
+
+## v1.05 — 修复: 行动队列进度条辉光恢复与条目口径校正
+
+**变更性质：修复（进度条组件补齐溢出控制变量，恢复行动队列细条的微光）**
+**开发时间：2026-09-18**
+
+### 概述
+
+通用进度条组件把根节点的溢出裁剪固定为 `hidden`，行动队列底部的细
+进度条因此失去向外发散的微光。溢出口径改为经变量注入，该处恢复
+`visible`；另校正更新日志中关于页标题样式收敛的失实表述。
+
+### 变更明细
+
+- `src/components/ui/ProgressBar.vue`：根节点 `overflow` 改由
+  `--pb-overflow` 变量承载，缺省 `hidden` 不变，与高度/配色/圆角
+  等既有变量同机制，组件注释同步补记。
+- `src/components/home/ActionQueuePanel.vue`：`.action-progress`
+  注入 `--pb-overflow: visible`，2px 细条的 4px 光晕恢复外溢；
+  其余四处调用方与填充条类名零改动。
+- 更新日志：v1.02 条目的页标题收敛表述按实际实现改写为保留在
+  视图内。
+
+### 验证
+
+- `corepack pnpm check` 全绿：33 个测试文件 475 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- 行动队列进度条与 v1.01 条身逐像素一致，光晕带亮度均值两版相
+  等，差异落在同配置重跑的噪声地板内；强制退回 `hidden` 时光晕
+  带均值低约 37%。
+- 五处调用方逐路由清点：根节点溢出值仅行动队列为 `visible`，其余
+  四处与 v1.01 一致，条数与高度逐项全等。
+- Playwright 回归套件 27 脚本全过（部署前 26/27，唯一挂项为线上端
+  版本断言的已知形态；部署后线上复跑 17/17 全过）。
+- 线上 bundle 哈希与本地构建逐字节一致。
+
+---
+
+## v1.04 — 测试: 测试装配样板收敛与共享测试基建
+
+**变更性质：测试（测试代码样板收敛，覆盖口径不变）**
+**开发时间：2026-09-17**
+
+### 概述
+
+测试体系的装配样板收进 `src/tests/` 单一出处：七个视图测试的
+挂载与清理三件套、vue-router 与焦点陷阱 mock、存档与探索完成态
+工厂、成就外部指标桩、周挑战条目工厂。四个 store 同名同义的
+hydrate(undefined) 用例合并为一条跨 store 一致性测试。产品代码
+唯一变化是每日挑战条数提为具名常量。
+
+### 变更明细
+
+- 新增 `src/tests/view-mount.ts`：`mountView` 挂载登记、
+  `useViewTestHooks` 标准钩子、`vueRouterMock`/`focusTrapMock`
+  工厂、引导气泡双态断言、段位切换器 ×10 交互，七个视图测试的
+  逐字装配段全部收敛。
+- 新增 `src/tests/fixtures.ts`：`makeSaveData`/`minimalSaveData`
+  存档工厂与 `exploredNodes` 探索完成态构造，storage.test 与
+  game.test 的三份存档字面量改调用。
+- 新增 `src/tests/hydrate-noop.test.ts`：四个 store 的
+  hydrate(undefined) 同名用例合并为一（用例数 478 → 475，
+  README 双语基线同步）。
+- `reset-providers.ts` 新增 `zeroAchievementProviders`，
+  achievements.test 的七处五键指标桩各一行收敛。
+- daily.test 的十份周挑战条目字面量抽 `ch()` 工厂；BattleView 复用
+  既有本地 helper，PrestigeView、CostTag 各补本地 helper。
+- 断言与数据源对齐：连击天数、挑战条数、编队数、装备槽数改由
+  常量或 store 派生，两处手抄探索节点串改由 EXPLORE_NODES 派生，
+  三处建筑常量改由 BUILDINGS[0] 派生，批量预览断言值改由
+  buildingCost/nextCost 实算（曲线调整不再让注释先撒谎）。
+- daily.ts 导出 `WEEK_CHALLENGE_COUNT`（唯一产品代码改动，
+  数值不变）。
+
+### 验证
+
+- `corepack pnpm check` 全绿：33 个测试文件 475 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- Playwright 回归套件 27 脚本全过。
+
+---
+
+## v1.03 — 重构: 核心逻辑层收敛与存档校验助手
+
+**变更性质：重构（store/lib 重复实现收敛，行为零变化）**
+**开发时间：2026-09-17**
+
+### 概述
+
+核心逻辑层的重复实现收进 lib 单一出处：四个效果来源的乘数与累加
+聚合、批量操作的执行与预览骨架、解锁与前置判定、存档读写通道的
+载荷拼装与解析、存档校验的高频判定。存档结构与读写语义不变，
+界面唯一变化是存档管理区显示指挥官名（既有存档字段接入展示）。
+
+### 变更明细
+
+- 效果聚合：`lib/effect-system.ts` 新增 `aggregateMult` 与
+  `aggregateValue`，research/relics/achievements/transcend 四个
+  store 的 `getMult`/`getValue` 统一委托，transcend 的 repeat
+  幂语义归一进助手。
+- 批量操作：新增 `lib/batch.ts` 的 `repeatUntilFail` 与
+  `simulateSteps`，建筑升级、遗物强化、转生树购买的批量执行与
+  预览函数各自收敛，实扣与预览口径不变。
+- 解锁与前置判定：新增 `lib/requires.ts` 的 `isUnlockedBy`，
+  buildings 与 military store、行动队列、文明概况四处共用；
+  探索 store 新增 `prereqMet`，星图、战斗页与驻扎守卫统一调用。
+- 存档读写：`_parseStored` 与 `_parseBackup` 合并为
+  `_parsePayload`；`clearAllSaves` 与 `clearSave` 合并为一份
+  实现；`writeSave` 与 `writeSaveSync` 的载荷拼装抽为
+  `_encodePayload`。
+- 存档校验：新增 `_isNonNegFinite`/`_isNonNegInt`/
+  `_isValidStrArray` 三个判定助手，替换校验段十余处展开写法，
+  判定口径不变。
+- 默认编队：三处逐字重复的编队骨架收进 `data/units.ts` 的
+  `defaultFormations()` 工厂。
+- 资源与日常：五资源零值表与周挑战计数零值表各抽工厂函数。
+- 游戏枢纽：导入与清档的十行重置清单抽为 `resetAllStores()`，
+  终身计数快照对齐三段抽为 `alignLifetimeSnapshot()`。
+- 引导与轻提示：`useOnboarding` 去掉不消费的流程参数并复用单次
+  读取结果；`useToast` 的消息类型改为直接的 `Ref<string>`。
+- 存档管理区显示指挥官名（存档既有 `player` 字段此前只存不显）。
+
+### 验证
+
+- `corepack pnpm check` 全绿：32 个测试文件 478 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- Playwright 回归套件 27 脚本全过。
+
+---
+
+## v1.02 — 重构: 全局样式收敛与通用进度条组件
+
+**变更性质：重构（跨视图重复样式收为全局单一出处）**
+**开发时间：2026-09-17**
+
+### 概述
+
+多个视图各自携带的同一样式规则收进全局样式表，消除多副本的口径
+漂移面。按钮骨架、分段切换器、遗物卡面、确认弹窗、协议徽标等样式
+各保留单一出处，五处进度条合并为通用组件。界面视觉与交互行为无
+变化，数值与存档不受影响。
+
+### 变更明细
+
+- 按钮系统：`.btn` 骨架的九条声明改由并集选择器一次承载，四个
+  语义变体只保留各自差异属性（`src/styles/buttons.css`）。
+- 分段切换器：`.bulk-toggle` 与 `.seg-btn` 家族收敛为全局类，
+  激活色经 `--accent` 注入，缺省 core 青，转生页注入琥珀色；
+  《组件与按钮设计规范》5.9 节同步回写。
+- 遗物卡面：`.r-head`、`.r-effects`、`.eff-mini`、
+  `.synth-product` 收进全局，图鉴、强化弹窗与合成产物三处同源。
+- 确认弹窗：`.confirm-title` 与 `.confirm-actions` 收进全局，
+  转生页标题的字号与琥珀色由视图内覆盖保留。
+- 协议徽标 `.auto-badge` 与类型标签 `.s-type` 收进全局工具类；
+  四个视图页标题的颜色覆盖保留在各视图样式块内。
+- 新增 `src/components/ui/ProgressBar.vue` 通用进度条组件，
+  星图探索、兵营队列、成就、每日挑战、行动队列五处接入；调用方
+  类名与填充条类名原样保留，高度与配色经 `--pb-*` 变量注入。
+
+### 验证
+
+- `corepack pnpm check` 全绿：32 个测试文件 478 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- 构建产物中各全局规则单份落位，视图样式块无残留副本。
+- Playwright 回归套件 27 脚本全过。
+
+---
+
+## v1.01 — 重构: 死代码清理与构建配置收口
+
+**变更性质：重构（零功能变化的死代码清理与配置收口）**
+**开发时间：2026-09-17**
+
+### 概述
+
+全项目代码评估后的首批清理，只删不增：移除生产代码零消费的导出与
+声明、不可达分支、冗余赋值与零引用动画，收敛无样式的冗余类名，并
+关闭构建的 sourcemap 产出。玩法、数值、存档结构与界面呈现均无变化，
+测试用例数由 496 降至 478。
+
+### 变更明细
+
+- 死导出清理：format 的 `fmtInt`/`pct`/`fmtCountdown`、decimal 的
+  9 个快捷函数、`LifetimeMetric`、`ResourceState`、daily 的
+  `checkedInToday`/`currentWeek`/`hashStr` 别名与 relics 的
+  `pushRelic` 包装函数，均在确认全库零消费后删除。
+- EmptyState 去掉全库无监听的 `action` 事件与 `onAction`，按钮改为
+  `action` 与 `to` 同时传入才渲染并直连路由跳转，从结构上消除死
+  按钮的可能。
+- 不可达与冗余：`buildings.getTotalProduction` 的键初始化守卫、
+  `relics.synthesize` 的升阶空值守卫、`game.init` 的重复时间戳赋值，
+  以及 `game.ts` 中已被更新日志承载的版本号叙事注释。
+- 样式与视图：删除全库零引用的 `@keyframes fadeIn`；清理 13 个模板
+  使用但无样式规则、也无测试与脚本消费的类名；修正一处 `color-mix`
+  百分比的浮点残留。
+- 构建配置：`sourcemap` 由 `hidden` 改为 `false`，本地构建不再产出
+  16 个无用途的映射文件，源码暴露面由不生成直接收口。
+- 文档同步：数值规范的专项格式化表随函数删除更新，组件与体验规范
+  的空状态行为条改写为新口径，动效规范与另两册的引导气泡降级行
+  改为全局降级规则口径，README 双语测试基线由 496 更新为 478。
+
+### 验证
+
+- `corepack pnpm check` 全绿：32 个测试文件 478 个用例。
+- 含 Playwright 段的计数守恒全绿。
+- 构建产物零映射文件，dist 体积由 3.0 MB 降至 0.9 MB。
+- Playwright 回归套件 27 脚本全过。
 
 ---
