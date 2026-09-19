@@ -82,7 +82,7 @@ starcore/
 ├─ docs/            11 specification documents (in Chinese), see Documentation (plus archived history)
 ├─ public/          favicon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation check)
-├─ changelog/       version history; active file and three archives
+├─ changelog/       version history; active file and two archives
 ├─ deploy.sh        deployment script
 └─ project configs (vite.config.ts, vitest.config.ts, tsconfig*.json, eslint.config.js)
 ```
@@ -115,10 +115,9 @@ starcore/
 
 ## Version History
 
-- [changelog.md](changelog/changelog.md) · from v1.06, newest first
-- [changelog-v0.71-v1.05.md](changelog/changelog-v0.71-v1.05.md) · v0.71 to v1.05 archive
-- [changelog-v0.36-v0.70.md](changelog/changelog-v0.36-v0.70.md) · v0.36 to v0.70 archive
-- [changelog-v0.01-v0.35.md](changelog/changelog-v0.01-v0.35.md) · v0.01 to v0.35 archive
+- [changelog.md](changelog/changelog.md) · from v1.01, newest first
+- [changelog-v0.51-v1.00.md](changelog/changelog-v0.51-v1.00.md) · v0.51 to v1.00 archive
+- [changelog-v0.01-v0.50.md](changelog/changelog-v0.01-v0.50.md) · v0.01 to v0.50 archive
 
 ## Deployment
 
