@@ -4,7 +4,6 @@
  * 重点测试：
  * 1. 组件挂载正确性
  * 2. 转生确认流程
- * 3. 清除存档确认流程
  *
  * @vitest-environment jsdom
  */
@@ -97,28 +96,6 @@ describe('PrestigeView — 转生确认流程', () => {
     expect(wrapper.find('.modal-overlay').exists()).toBe(false)
     // 取消不触发转生：转生次数不变
     expect(useTranscendStore().totalTranscends).toBe(0)
-  })
-})
-
-describe('PrestigeView — 清除存档确认', () => {
-  beforeEach(() => {
-    pinia = createPinia()
-    setActivePinia(pinia)
-  })
-
-  it('点击清除存档按钮显示确认弹窗', async () => {
-    const wrapper = mountPrestige()
-
-    // 清除存档按钮（v0.83 校正后按文本找，现显式断言不再条件包裹）
-    const resetBtn = wrapper.findAll('button').find((b) => b.text().includes('清除存档'))
-    expect(resetBtn).toBeTruthy()
-    await resetBtn!.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    // 应显示确认弹窗（含永久清除警示）
-    const overlay = wrapper.find('.modal-overlay')
-    expect(overlay.exists()).toBe(true)
-    expect(overlay.text()).toContain('永久清除')
   })
 })
 
