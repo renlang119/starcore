@@ -4,6 +4,8 @@
  * 探索节点提供一次性奖励 + 解锁据点
  */
 
+import { t } from '@/i18n'
+
 export type StarLayer =
   'orbit' | 'inner' | 'outer' | 'deep' | 'stellar' | 'cluster' | 'arm' | 'galaxy' | 'void'
 
@@ -32,39 +34,69 @@ export const LAYER_INFO: Record<
   StarLayer,
   { id: StarLayer; name: string; color: string; distance: string }
 > = {
-  orbit: { id: 'orbit', name: '轨道带', color: 'var(--color-core)', distance: '0.1-1 AU' },
-  inner: { id: 'inner', name: '内层星系', color: 'var(--color-quantum)', distance: '1-50 AU' },
-  outer: { id: 'outer', name: '外层星系', color: 'var(--color-amber)', distance: '50-5000 AU' },
-  deep: { id: 'deep', name: '深空带', color: 'var(--color-plasma)', distance: '>5000 AU' },
+  orbit: {
+    id: 'orbit',
+    name: t('content.explore.layer.orbit.name'),
+    color: 'var(--color-core)',
+    distance: '0.1-1 AU',
+  },
+  inner: {
+    id: 'inner',
+    name: t('content.explore.layer.inner.name'),
+    color: 'var(--color-quantum)',
+    distance: '1-50 AU',
+  },
+  outer: {
+    id: 'outer',
+    name: t('content.explore.layer.outer.name'),
+    color: 'var(--color-amber)',
+    distance: '50-5000 AU',
+  },
+  deep: {
+    id: 'deep',
+    name: t('content.explore.layer.deep.name'),
+    color: 'var(--color-plasma)',
+    distance: '>5000 AU',
+  },
   stellar: {
     id: 'stellar',
-    name: '恒星系层',
+    name: t('content.explore.layer.stellar.name'),
     color: 'var(--color-layer-stellar)',
     distance: '4.2 ly+',
   },
   cluster: {
     id: 'cluster',
-    name: '星团层',
+    name: t('content.explore.layer.cluster.name'),
     color: 'var(--color-layer-cluster)',
     distance: '>10 kly',
   },
-  arm: { id: 'arm', name: '星臂层', color: 'var(--color-layer-arm)', distance: '30-80 kly' },
+  arm: {
+    id: 'arm',
+    name: t('content.explore.layer.arm.name'),
+    color: 'var(--color-layer-arm)',
+    distance: '30-80 kly',
+  },
   galaxy: {
     id: 'galaxy',
-    name: '星系层',
+    name: t('content.explore.layer.galaxy.name'),
     color: 'var(--color-layer-galaxy)',
     distance: '>100 kly',
   },
-  void: { id: 'void', name: '深空层', color: 'var(--color-layer-void)', distance: '银河之外' },
+  void: {
+    id: 'void',
+    name: t('content.explore.layer.void.name'),
+    color: 'var(--color-layer-void)',
+    distance: t('content.explore.layer.void.distance'),
+  },
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
   // —— 轨道带 ——
   {
     id: 'node_orbit',
-    name: '轨道残骸带',
+    name: t('content.explore.node_orbit.name'),
     layer: 'orbit',
-    desc: '环绕母星的碎片带，可能藏有资源与敌人的踪迹',
+    desc: t('content.explore.node_orbit.desc'),
     time: 30,
     cost: { energy: 100 },
     rewards: { energy: 300, crystal: 10, alloy: 20 },
@@ -72,9 +104,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 内层星系 ——
   {
     id: 'node_inner',
-    name: '内层行星',
+    name: t('content.explore.node_inner.name'),
     layer: 'inner',
-    desc: '最近的岩石行星，适合建立前哨站',
+    desc: t('content.explore.node_inner.desc'),
     time: 120,
     cost: { energy: 1000, data: 50 },
     rewards: { energy: 5000, crystal: 50, alloy: 200, data: 100 },
@@ -83,9 +115,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 外层星系 ——
   {
     id: 'node_outer',
-    name: '外层气态巨行星',
+    name: t('content.explore.node_outer.name'),
     layer: 'outer',
-    desc: '巨大的气态行星，卫星上可能有遗迹',
+    desc: t('content.explore.node_outer.desc'),
     time: 600,
     cost: { energy: 10000, data: 500, alloy: 300 },
     rewards: { energy: 50000, crystal: 200, alloy: 2000, data: 1000, dark: 2 },
@@ -94,9 +126,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 深空 ——
   {
     id: 'node_deep',
-    name: '仙女座深空',
+    name: t('content.explore.node_deep.name'),
     layer: 'deep',
-    desc: '通往仙女座的虫洞边缘，终极挑战',
+    desc: t('content.explore.node_deep.desc'),
     time: 3600,
     cost: { energy: 100000, data: 5000, alloy: 2000, dark: 5 },
     rewards: { energy: 500000, crystal: 1000, alloy: 10000, data: 10000, dark: 20 },
@@ -105,9 +137,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 恒星系层 ——
   {
     id: 'node_stellar_gate',
-    name: '半人马门户',
+    name: t('content.explore.node_stellar_gate.name'),
     layer: 'stellar',
-    desc: '虫洞另一端的稳定跳跃点，通往邻近恒星系的门户',
+    desc: t('content.explore.node_stellar_gate.desc'),
     time: 5400,
     cost: { energy: 500000, data: 20000, dark: 15 },
     rewards: { energy: 3000000, crystal: 5000, alloy: 50000, data: 50000, dark: 30 },
@@ -115,9 +147,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_stellar_mine',
-    name: '碎晶星带',
+    name: t('content.explore.node_stellar_mine.name'),
     layer: 'stellar',
-    desc: '双星撕碎行星形成的晶体碎片带，晶脉密度超乎想象',
+    desc: t('content.explore.node_stellar_mine.desc'),
     time: 7200,
     cost: { energy: 1500000, crystal: 20000, dark: 20 },
     rewards: { energy: 8000000, crystal: 30000, data: 120000 },
@@ -125,9 +157,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_stellar_forge',
-    name: '熔炉星系',
+    name: t('content.explore.node_stellar_forge.name'),
     layer: 'stellar',
-    desc: '年轻恒星与原行星盘交织的熔炉，合金矿脉富集',
+    desc: t('content.explore.node_stellar_forge.desc'),
     time: 7200,
     cost: { energy: 1500000, alloy: 100000, dark: 20 },
     rewards: { energy: 8000000, alloy: 200000, dark: 25 },
@@ -135,9 +167,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_stellar_dead',
-    name: '死寂星系',
+    name: t('content.explore.node_stellar_dead.name'),
     layer: 'stellar',
-    desc: '恒星早已熄灭的死地，唯有沉默者的信号在此回响',
+    desc: t('content.explore.node_stellar_dead.desc'),
     time: 10800,
     cost: { energy: 4000000, data: 80000, dark: 30 },
     rewards: { energy: 20000000, data: 300000, dark: 40 },
@@ -145,9 +177,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_stellar_core',
-    name: '中子星残骸',
+    name: t('content.explore.node_stellar_core.name'),
     layer: 'stellar',
-    desc: '超新星爆发后的中子星，极端环境孕育极端造物',
+    desc: t('content.explore.node_stellar_core.desc'),
     time: 14400,
     cost: { energy: 10000000, alloy: 500000, dark: 40 },
     rewards: { energy: 50000000, alloy: 1000000, dark: 60 },
@@ -155,9 +187,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_stellar_edge',
-    name: '银河悬臂边缘',
+    name: t('content.explore.node_stellar_edge.name'),
     layer: 'stellar',
-    desc: '已知世界的尽头，越过这里是浩瀚的星团深空',
+    desc: t('content.explore.node_stellar_edge.desc'),
     time: 28800,
     cost: { energy: 50000000, data: 500000, dark: 60 },
     rewards: { energy: 300000000, data: 2000000, dark: 120 },
@@ -166,9 +198,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 星团层（v0.71）——
   {
     id: 'node_cluster_gate',
-    name: '星团之眼',
+    name: t('content.explore.node_cluster_gate.name'),
     layer: 'cluster',
-    desc: '跃出悬臂后的第一片深空，整片星团的异常射电背景在此张开',
+    desc: t('content.explore.node_cluster_gate.desc'),
     time: 43200,
     cost: { energy: 100000000, data: 200000, dark: 60 },
     rewards: { energy: 600000000, data: 1200000, dark: 120 },
@@ -176,9 +208,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_cluster_swarm',
-    name: '晶云星团',
+    name: t('content.explore.node_cluster_swarm.name'),
     layer: 'cluster',
-    desc: '晶尘云笼罩的星团分支，漂浮着数以千计的静止殖民舰',
+    desc: t('content.explore.node_cluster_swarm.desc'),
     time: 57600,
     cost: { energy: 300000000, data: 600000, dark: 90 },
     rewards: { energy: 1500000000, crystal: 300000, data: 3000000, dark: 180 },
@@ -186,9 +218,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_cluster_ruin',
-    name: '红拱遗迹',
+    name: t('content.explore.node_cluster_ruin.name'),
     layer: 'cluster',
-    desc: '先驱者天文台残骸构成的星团分支，红色拱廊横跨星海',
+    desc: t('content.explore.node_cluster_ruin.desc'),
     time: 57600,
     cost: { energy: 300000000, data: 600000, alloy: 200000, dark: 90 },
     rewards: { energy: 1500000000, data: 3000000, alloy: 600000, dark: 180 },
@@ -196,9 +228,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_cluster_heart',
-    name: '星团之心',
+    name: t('content.explore.node_cluster_heart.name'),
     layer: 'cluster',
-    desc: '两条分支汇合处的星团核心，一座环状人工结构悬浮于此',
+    desc: t('content.explore.node_cluster_heart.desc'),
     time: 72000,
     cost: { energy: 800000000, data: 1500000, dark: 120 },
     rewards: { energy: 4000000000, data: 8000000, crystal: 800000, dark: 240 },
@@ -206,9 +238,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_cluster_hollow',
-    name: '虚无空洞',
+    name: t('content.explore.node_cluster_hollow.name'),
     layer: 'cluster',
-    desc: '环状结构内部的空腔，没有星体、没有尘埃，只有不断重复的询问',
+    desc: t('content.explore.node_cluster_hollow.desc'),
     time: 79200,
     cost: { energy: 1500000000, data: 3000000, dark: 160 },
     rewards: { energy: 7500000000, data: 15000000, dark: 320 },
@@ -216,9 +248,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_cluster_silence',
-    name: '沉默之巢',
+    name: t('content.explore.node_cluster_silence.name'),
     layer: 'cluster',
-    desc: '星团最深处的沉默者母港，一切信号的起点',
+    desc: t('content.explore.node_cluster_silence.desc'),
     time: 86400,
     cost: { energy: 3000000000, data: 6000000, dark: 200 },
     rewards: { energy: 18000000000, data: 40000000, dark: 400 },
@@ -227,9 +259,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 星臂层（v0.90，敌人编成经战斗模拟脚本三档验证）——
   {
     id: 'node_arm_gate',
-    name: '臂缘哨站',
+    name: t('content.explore.node_arm_gate.name'),
     layer: 'arm',
-    desc: '越过冻结之门后的第一座前沿哨站，整片星臂的轮廓在远方展开',
+    desc: t('content.explore.node_arm_gate.desc'),
     time: 86400,
     cost: { energy: 3000000000, data: 6000000, dark: 200 },
     rewards: { energy: 15000000000, data: 12000000, dark: 400 },
@@ -237,9 +269,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_arm_cradle',
-    name: '摇篮星区',
+    name: t('content.explore.node_arm_cradle.name'),
     layer: 'arm',
-    desc: '恒星尚在孕育中的原生星区，尘埃云里漂浮着巨兽的巢',
+    desc: t('content.explore.node_arm_cradle.desc'),
     time: 108000,
     cost: { energy: 8000000000, data: 15000000, crystal: 300000, dark: 250 },
     rewards: { energy: 40000000000, crystal: 1500000, data: 3000000, dark: 500 },
@@ -247,9 +279,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_arm_grave',
-    name: '纹章墓场',
+    name: t('content.explore.node_arm_grave.name'),
     layer: 'arm',
-    desc: '整支先驱者远征舰队的长眠之地，舰脊上刻着同一枚纹章',
+    desc: t('content.explore.node_arm_grave.desc'),
     time: 108000,
     cost: { energy: 8000000000, data: 15000000, alloy: 500000, dark: 250 },
     rewards: { energy: 40000000000, data: 3000000, alloy: 1500000, dark: 500 },
@@ -257,9 +289,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_arm_spine',
-    name: '臂脊航道',
+    name: t('content.explore.node_arm_spine.name'),
     layer: 'arm',
-    desc: '沿星臂脊线铺开的古代航道，先驱者用它输送整支舰队',
+    desc: t('content.explore.node_arm_spine.desc'),
     time: 129600,
     cost: { energy: 20000000000, data: 30000000, dark: 300 },
     rewards: { energy: 100000000000, data: 16000000, crystal: 2000000, dark: 600 },
@@ -267,9 +299,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_arm_abyss',
-    name: '无声深渊',
+    name: t('content.explore.node_arm_abyss.name'),
     layer: 'arm',
-    desc: '臂脊航道内侧的空腔，连召回信号在这里也会沉默',
+    desc: t('content.explore.node_arm_abyss.desc'),
     time: 144000,
     cost: { energy: 40000000000, data: 60000000, dark: 350 },
     rewards: { energy: 200000000000, data: 30000000, dark: 800 },
@@ -277,9 +309,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_arm_threshold',
-    name: '门扉回廊',
+    name: t('content.explore.node_arm_threshold.name'),
     layer: 'arm',
-    desc: '星臂尽头并列的古代门扉，应答源的回响从门后传来',
+    desc: t('content.explore.node_arm_threshold.desc'),
     time: 172800,
     cost: { energy: 80000000000, data: 120000000, dark: 450 },
     rewards: { energy: 480000000000, data: 80000000, dark: 1000 },
@@ -288,9 +320,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 星系层（v0.91，敌人编成经战斗模拟脚本三档验证）——
   {
     id: 'node_galaxy_gate',
-    name: '越门浅滩',
+    name: t('content.explore.node_galaxy_gate.name'),
     layer: 'galaxy',
-    desc: '穿过唯一应答的门扉后抵达的星系尺度浅滩，整条银河在下方展开',
+    desc: t('content.explore.node_galaxy_gate.desc'),
     time: 172800,
     cost: { energy: 80000000000, data: 120000000, dark: 450 },
     rewards: { energy: 400000000000, data: 240000000, dark: 900 },
@@ -298,9 +330,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_galaxy_range',
-    name: '星尘牧场',
+    name: t('content.explore.node_galaxy_range.name'),
     layer: 'galaxy',
-    desc: '银河盘面上的星尘草原，噬星鲲群在此放牧',
+    desc: t('content.explore.node_galaxy_range.desc'),
     time: 216000,
     cost: { energy: 200000000000, data: 300000000, crystal: 6000000, dark: 550 },
     rewards: { energy: 1000000000000, data: 60000000, crystal: 30000000, dark: 1100 },
@@ -308,9 +340,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_galaxy_archive',
-    name: '先驱者总库',
+    name: t('content.explore.node_galaxy_archive.name'),
     layer: 'galaxy',
-    desc: '先驱者文明规模最大的数据库，纪年终止于同一日',
+    desc: t('content.explore.node_galaxy_archive.desc'),
     time: 216000,
     cost: { energy: 200000000000, data: 300000000, alloy: 10000000, dark: 550 },
     rewards: { energy: 1000000000000, data: 60000000, alloy: 30000000, dark: 1100 },
@@ -318,9 +350,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_galaxy_hub',
-    name: '银盘枢纽',
+    name: t('content.explore.node_galaxy_hub.name'),
     layer: 'galaxy',
-    desc: '两条分支汇合处的银盘航道枢纽，掠夺者帝庭的进贡终点',
+    desc: t('content.explore.node_galaxy_hub.desc'),
     time: 259200,
     cost: { energy: 500000000000, data: 750000000, dark: 650 },
     rewards: { energy: 2500000000000, data: 400000000, crystal: 40000000, dark: 1400 },
@@ -328,9 +360,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_galaxy_halo',
-    name: '静默银晕',
+    name: t('content.explore.node_galaxy_halo.name'),
     layer: 'galaxy',
-    desc: '银河晕中的静默空腔，连中继链也绕开这里',
+    desc: t('content.explore.node_galaxy_halo.desc'),
     time: 288000,
     cost: { energy: 1000000000000, data: 1500000000, dark: 800 },
     rewards: { energy: 5000000000000, data: 750000000, dark: 1800 },
@@ -338,9 +370,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_galaxy_heart',
-    name: '银河之心',
+    name: t('content.explore.node_galaxy_heart.name'),
     layer: 'galaxy',
-    desc: '银心旁的沉默者主脑所在，应答源的实体',
+    desc: t('content.explore.node_galaxy_heart.desc'),
     time: 345600,
     cost: { energy: 2000000000000, data: 3000000000, dark: 1000 },
     rewards: { energy: 12000000000000, data: 2000000000, dark: 2200 },
@@ -349,9 +381,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   // —— 深空层（v0.92，敌人编成经战斗模拟脚本三档验证）——
   {
     id: 'node_void_gate',
-    name: '银河彼岸',
+    name: t('content.explore.node_void_gate.name'),
     layer: 'void',
-    desc: '穿出银河后的第一片虚空，中继链的尽头指向更深的黑暗',
+    desc: t('content.explore.node_void_gate.desc'),
     time: 345600,
     cost: { energy: 2000000000000, data: 60000000000, dark: 2900 },
     rewards: { energy: 10000000000000, data: 120000000000, dark: 6400 },
@@ -359,9 +391,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_void_beacon',
-    name: '虚空航标',
+    name: t('content.explore.node_void_beacon.name'),
     layer: 'void',
-    desc: '虚空中仍规律闪烁的先驱者航标，灯语内容只有一句话',
+    desc: t('content.explore.node_void_beacon.desc'),
     time: 432000,
     cost: { energy: 5300000000000, data: 160000000000, crystal: 160000000, dark: 3750 },
     rewards: { energy: 26500000000000, data: 320000000000, crystal: 800000000, dark: 8300 },
@@ -369,9 +401,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_void_watch',
-    name: '虚空望台',
+    name: t('content.explore.node_void_watch.name'),
     layer: 'void',
-    desc: '先驱者建立的最后一座天文台，镜筒永远指向同一个坐标',
+    desc: t('content.explore.node_void_watch.desc'),
     time: 432000,
     cost: { energy: 5300000000000, data: 160000000000, alloy: 260000000, dark: 3750 },
     rewards: { energy: 26500000000000, data: 320000000000, alloy: 1300000000, dark: 8300 },
@@ -379,9 +411,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_void_hub',
-    name: '星幕枢纽',
+    name: t('content.explore.node_void_hub.name'),
     layer: 'void',
-    desc: '虚空航道的汇合点，掠夺者舰群在此竖起了他们的界碑',
+    desc: t('content.explore.node_void_hub.desc'),
     time: 518400,
     cost: { energy: 13200000000000, data: 400000000000, dark: 4500 },
     rewards: { energy: 66000000000000, data: 800000000000, crystal: 1300000000, dark: 10000 },
@@ -389,9 +421,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_void_veil',
-    name: '静默星幕',
+    name: t('content.explore.node_void_veil.name'),
     layer: 'void',
-    desc: '连回响都会被吞掉的星幕空腔，仿佛整个宇宙在此屏息',
+    desc: t('content.explore.node_void_veil.desc'),
     time: 576000,
     cost: { energy: 26500000000000, data: 800000000000, dark: 5350 },
     rewards: { energy: 132000000000000, data: 1600000000000, dark: 12300 },
@@ -399,9 +431,9 @@ export const EXPLORE_NODES: ExploreNode[] = [
   },
   {
     id: 'node_void_origin',
-    name: '信号源头',
+    name: t('content.explore.node_void_origin.name'),
     layer: 'void',
-    desc: '一切信号的最初源头，先驱者出航影像的终点',
+    desc: t('content.explore.node_void_origin.desc'),
     time: 691200,
     cost: { energy: 53000000000000, data: 1600000000000, dark: 6100 },
     rewards: { energy: 265000000000000, data: 3200000000000, dark: 14000 },

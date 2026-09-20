@@ -5,70 +5,42 @@
  * 当前无渲染接线，供后续节点详情/档案界面接入。键 = 探索节点 id。
  */
 
+import { t } from '@/i18n'
+
 /** 节点 id → 剧情文案 */
 export const NODE_STORIES: Record<string, string> = {
-  node_orbit: '扫描器在轨道残骸带中发现了掠夺者的踪迹。他们似乎在寻找什么……',
-  node_inner: '内层行星表面布满了晶体矿脉，但深处传来未知的生物信号。',
-  node_outer: '气态巨行星的卫星上发现了古代遗迹。遗迹深处，一个声音在低语：「他们来了。」',
-  node_deep: '虫洞的另一端，沉默者的舰队正在等待。他们的沉默，即将被打破。',
-  node_stellar_gate:
-    '穿过虫洞，三颗恒星的引力在远方彼此拉扯。门户残骸上刻着与先驱者相同的纹章——他们曾经也走过这条路。',
-  node_stellar_mine:
-    '碎片带深处回荡着晶体共振的嗡鸣。扫描器捕捉到巨大的生物轮廓在晶尘中游弋——它们以晶脉为食。',
-  node_stellar_forge:
-    '原行星盘如熔炉般翻涌。在恒星的耀斑之间，一座人工建筑的剪影一闪而过——比掠夺者的技术精致得多。',
-  node_stellar_dead:
-    '白矮星的残光下，一支殖民舰队的残骸静静悬浮。他们没有战斗过的痕迹——他们是安静地停止的。',
-  node_stellar_core:
-    '中子星的引力撕扯着舰体。在这片死亡的摇篮里，虚空巨兽产下了卵，掠夺者舰队却围绕它建立了母巢。',
-  node_stellar_edge:
-    '悬臂尽头，沉默者旗舰的残骸缓缓旋转。黑匣子的最后一段记录只有一句话：「我们并非沉默，我们是在倾听。星团深处，有什么在回应。」',
-  node_cluster_gate:
-    '跃出悬臂，星团如眼睑在深空缓缓张开。扫描器捕捉到覆盖整片星团的异常射电背景，节奏与沉默者黑匣子的信号完全一致。',
-  node_cluster_swarm:
-    '晶尘云中漂浮着数以千计的静止殖民舰，舷窗内的面孔完好如初。它们不是死去，是在等待。',
-  node_cluster_ruin:
-    '先驱者天文台残骸，记录着同一信号来源：星团核心，一支比先驱文明更古老的舰队。先驱者在记录末尾写道：「我们造了一扇门，却不知道门后面是谁。」',
-  node_cluster_heart:
-    '星团核心是一座环状人工结构。回响定位完成：信号起源于它，且是持续发讯，已历数十亿年。',
-  node_cluster_hollow:
-    '结构内部空无一物，只有不断重复的询问。黑匣子接口接入后，询问终于获得回答：「开始回归。接收者已就绪。」',
-  node_cluster_silence:
-    '沉默者的母港。他们不是沉默，是在守门。门已在开启前的一瞬被冻结，文明在完成使命前的最后时刻停工，等待来自星团的「召回信号」。我们触发了它。',
-  node_arm_gate:
-    '门的彼端没有毁灭，只有一条被遗弃的航道。召回信号的应答源在相邻星臂深处规律闪烁，像一颗为归乡者留的灯。掠夺者早已在门这边扎下了王庭。',
-  node_arm_cradle:
-    '信号在摇篮星区变得格外清晰，仿佛「接收者」就藏在每一颗原恒星的胎动里。织网兽以静止的殖民舰为巢，晶丝横贯整片云带，把摇篮缠成了一枚茧。',
-  node_arm_grave:
-    '数千艘先驱者战舰在同一时刻停止了引擎，没有战损，没有逃生舱。它们环绕成一道长堤，舰脊的纹章与环状结构上的完全一致——这支舰队是守门者的先行者。',
-  node_arm_spine:
-    '两条分支在臂脊汇合。航道的每一座驿站都完好无损，仿佛舰队只是暂时离港。劫掠者的王庭舰队盘踞在航道枢纽，把整条古代航道当成了它们的私产。',
-  node_arm_abyss:
-    '航道内侧是一片连信号都无法逃逸的空腔。守门者留下的最后记录写道：「深渊不是终点，是过滤器。能被听见的，才配得上穿过门扉。」',
-  node_arm_threshold:
-    '回廊尽头并列着七扇与冻结之门同款的巨门，只有一扇门的应答源仍在工作。信号穿门而出，指向的不是星臂深处，而是整条银河的尺度——门后的存在，在星系层面等我们。',
-  node_galaxy_gate:
-    '穿过唯一应答的门扉，门后不是房间，是整条银河。七扇门的应答源在此汇成一条仍在发讯的中继链，笔直指向银心。',
-  node_galaxy_range:
-    '银河盘面上，噬星鲲群像牧群一样啃食星尘。它们的迁徙路线整齐地绕开某些空域，像在听从某种驱赶。',
-  node_galaxy_archive:
-    '先驱者总库的纪年终止于同一日：「门已交给守门者。我们出发去银河之外，寻找最初的发讯者。」',
-  node_galaxy_hub:
-    '掠夺者所有王庭的进贡终点。他们相信银心藏着永不熄灭的炉，把整条银河的航道当成了献给炉火的柴。',
-  node_galaxy_halo:
-    '银河晕中的静默空腔，连中继链也绕开这里。守门者的石刻写着：「最亮的地方，影子最深。」',
-  node_galaxy_heart:
-    '银心旁，沉默者主脑在此沉睡，它是所有守门者的中枢，也是应答源的实体。接触完成的瞬间，它回放了先驱者的出航影像，并给出一组坐标：信号的最初源头，在银河之外。',
-  node_void_gate:
-    '出航影像的终点就是这里。银河在身后收拢成一枚光点，中继链在虚空边缘断开，断口处的坐标仍在闪烁——先驱者从这里离开了自己的星系。',
-  node_void_beacon:
-    '航标仍在工作，灯语只有一句：「航向未变。」白鲸群聚集在航标周围，像在等待一盏为它们亮了亿万年的灯。',
-  node_void_watch:
-    '望台的观测记录停在同一日：镜筒里的光点没有移动过，记录的最后写着「源头静止，非天体，非讯号，是一扇门」。',
-  node_void_hub:
-    '两条虚空航道在此汇成一条。掠夺者把界碑竖在航道正中，碑文却抄自先驱者：「越过此界者，不再归航。」他们没有读懂这句话。',
-  node_void_veil:
-    '星幕之内，所有信号都失去了回声。主脑的回放影像在这里最后一次定格：先驱者的旗舰驶入光点，影像结束了，光点还在。',
-  node_void_origin:
-    '信号的源头不是信标，是一座门。先驱者没有离开——他们穿门而入，沉默者世代守着这扇门。接触完成的瞬间，门后的回响第一次开口：「接收者已抵达。欢迎回家。」',
+  node_orbit: t('content.story.node_orbit'),
+  node_inner: t('content.story.node_inner'),
+  node_outer: t('content.story.node_outer'),
+  node_deep: t('content.story.node_deep'),
+  node_stellar_gate: t('content.story.node_stellar_gate'),
+  node_stellar_mine: t('content.story.node_stellar_mine'),
+  node_stellar_forge: t('content.story.node_stellar_forge'),
+  node_stellar_dead: t('content.story.node_stellar_dead'),
+  node_stellar_core: t('content.story.node_stellar_core'),
+  node_stellar_edge: t('content.story.node_stellar_edge'),
+  node_cluster_gate: t('content.story.node_cluster_gate'),
+  node_cluster_swarm: t('content.story.node_cluster_swarm'),
+  node_cluster_ruin: t('content.story.node_cluster_ruin'),
+  node_cluster_heart: t('content.story.node_cluster_heart'),
+  node_cluster_hollow: t('content.story.node_cluster_hollow'),
+  node_cluster_silence: t('content.story.node_cluster_silence'),
+  node_arm_gate: t('content.story.node_arm_gate'),
+  node_arm_cradle: t('content.story.node_arm_cradle'),
+  node_arm_grave: t('content.story.node_arm_grave'),
+  node_arm_spine: t('content.story.node_arm_spine'),
+  node_arm_abyss: t('content.story.node_arm_abyss'),
+  node_arm_threshold: t('content.story.node_arm_threshold'),
+  node_galaxy_gate: t('content.story.node_galaxy_gate'),
+  node_galaxy_range: t('content.story.node_galaxy_range'),
+  node_galaxy_archive: t('content.story.node_galaxy_archive'),
+  node_galaxy_hub: t('content.story.node_galaxy_hub'),
+  node_galaxy_halo: t('content.story.node_galaxy_halo'),
+  node_galaxy_heart: t('content.story.node_galaxy_heart'),
+  node_void_gate: t('content.story.node_void_gate'),
+  node_void_beacon: t('content.story.node_void_beacon'),
+  node_void_watch: t('content.story.node_void_watch'),
+  node_void_hub: t('content.story.node_void_hub'),
+  node_void_veil: t('content.story.node_void_veil'),
+  node_void_origin: t('content.story.node_void_origin'),
 }
