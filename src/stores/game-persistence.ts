@@ -5,6 +5,7 @@
  * 离线收益补算与清档重置。所依赖的状态 ref 与 store 由调用方注入，
  * 返回契约与拆分前一致（含错误态守卫：initError 置位时拒绝一切写入）。
  */
+import { t } from '@/i18n'
 import type { ComputedRef, Ref } from 'vue'
 import type { Decimal } from '@/lib/decimal'
 import { computeOfflineGains as calcOfflineGains, type OfflineReport } from '@/lib/offline-gains'
@@ -241,10 +242,10 @@ export function createGamePersistence(deps: {
     if (!result.ok) {
       const msg =
         result.reason === 'corrupted'
-          ? '存档数据已损坏或被篡改'
+          ? t('save.errTampered')
           : result.reason === 'too_new'
-            ? '存档来自更新的游戏版本，无法导入'
-            : '存档无效或已损坏'
+            ? t('save.errTooNew')
+            : t('save.errInvalid')
       return { success: false, message: msg }
     }
     try {
@@ -258,7 +259,7 @@ export function createGamePersistence(deps: {
       return { success: true }
     } catch {
       // hydrate 异常兜底：不再裸抛中断导入流程
-      return { success: false, message: '存档数据异常，导入失败' }
+      return { success: false, message: t('save.errBroken') }
     }
   }
 

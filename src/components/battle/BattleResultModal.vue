@@ -6,6 +6,7 @@
  * stay / confirm 事件交回父层（遮罩点击与按钮同语义：胜利留在原地、
  * 失败确认返回）。类名与文案保持不变。
  */
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import LogList from '@/components/battle/LogList.vue'
@@ -50,46 +51,52 @@ const hasNoLoss = computed(
   <ModalOverlay
     :model-value="show"
     :modal-class="{ victory: result?.victory === true, defeat: !result?.victory }"
-    :aria-label="result?.victory ? '战斗胜利' : '战斗失败'"
+    :aria-label="result?.victory ? t('battle.resultWin') : t('battle.resultLoss')"
     @overlay-click="result?.victory ? emit('stay') : emit('confirm')"
   >
-    <h2 class="result-title font-display">{{ result?.victory ? '胜 利' : '失 败' }}</h2>
-    <p class="result-sub">{{ result?.victory ? '据点已被攻克！' : '部队被击退…' }}</p>
+    <h2 class="result-title font-display">
+      {{ result?.victory ? t('battle.titleVictory') : t('battle.titleDefeat') }}
+    </h2>
+    <p class="result-sub">
+      {{ result?.victory ? t('battle.strongholdCaptured') : t('battle.repelled') }}
+    </p>
 
     <div v-if="result?.victory" class="result-rewards">
-      <h4>战利品</h4>
+      <h4>{{ t('battle.spoils') }}</h4>
       <div v-for="r in rewardRows" :key="r.id" class="reward-row">
         <span>{{ r.name }}</span>
         <span class="font-mono" style="color: var(--color-quantum)">+{{ r.amount }}</span>
       </div>
       <div v-if="result.relic" class="relic-drop">
         <span class="rarity-tag" :style="{ color: relicRarityColor(result.relic.rarity) }">
-          🎁 获得遗物：{{ result.relic.name }}（{{ RARITY_INFO[result.relic.rarity].name }}）
+          🎁 {{ t('battle.relicGained') }}：{{ result.relic.name }}（{{
+            RARITY_INFO[result.relic.rarity].name
+          }}）
         </span>
       </div>
     </div>
 
     <div v-if="result?.losses" class="result-losses">
-      <h4>损失</h4>
+      <h4>{{ t('battle.losses') }}</h4>
       <div v-for="l in lossRows" :key="l.key" class="loss-row">
         <span>{{ l.name }}</span>
         <span class="font-mono" style="color: var(--color-alert)">-{{ l.count }}</span>
       </div>
-      <div v-if="hasNoLoss" class="no-loss">无损失</div>
+      <div v-if="hasNoLoss" class="no-loss">{{ t('battle.noLosses') }}</div>
     </div>
 
     <!-- 战报日志（整合进弹窗，胜败均可见） -->
     <div v-if="log && log.length" class="result-log">
-      <h4>战报</h4>
+      <h4>{{ t('battle.report') }}</h4>
       <LogList class="modal-log-list" :entries="log" />
     </div>
 
     <div class="btn-group">
       <button v-if="result?.victory" class="btn-primary" style="flex: 2" @click="emit('stay')">
-        留在此据点
+        {{ t('battle.stay') }}
       </button>
       <button class="btn-secondary" style="flex: 1" @click="emit('confirm')">
-        {{ result?.victory ? '返回星图' : '确认' }}
+        {{ result?.victory ? t('battle.backToMap') : t('common.confirm') }}
       </button>
     </div>
   </ModalOverlay>

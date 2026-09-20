@@ -3,6 +3,7 @@
  * 统筹 tick 循环、转生协调与跨 store 编排；
  * 效果系统见 game-effects，存档簇见 game-persistence
  */
+import { t } from '@/i18n'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { D, add, type Decimal } from '@/lib/decimal'
@@ -48,7 +49,7 @@ export const useGameStore = defineStore('game', () => {
   const lastTickTime = ref(Date.now())
   const isRunning = ref(false)
   const totalPlayTime = ref(0)
-  const player = ref({ id: 'local', name: '指挥官' })
+  const player = ref({ id: 'local', name: t('game.commander') })
   const offlineReport = ref<OfflineReport | null>(null)
   /**
    * 初始化错误态（A2 兜底）：读档/hydrate 异常或存档版本过新时置位。

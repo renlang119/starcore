@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // ActionQueuePanel — 首页行动队列（v0.54 从 HomeView 拆出）
 // 数据组装逻辑在 useActionQueue，本组件只负责渲染
+import { t } from '@/i18n'
 import { useRouter } from 'vue-router'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
@@ -23,13 +24,13 @@ const { displayActions, hasActions } = useActionQueue()
 <template>
   <!-- 行动队列（P1-2 合并模块，P1-7 背景区分） -->
   <section class="action-queue" aria-labelledby="action-queue-title">
-    <h3 id="action-queue-title" class="section-title">行动队列</h3>
+    <h3 id="action-queue-title" class="section-title">{{ t('home.actionQueue.title') }}</h3>
     <!-- P3-3 onboarding: 行动队列引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-actions'"
       class="ob-actions"
-      title="行动队列"
-      text="这里显示当前正在进行和可执行的操作，点击即可跳转。"
+      :title="t('home.actionQueue.title')"
+      :text="t('home.actionQueue.onboarding')"
       @dismiss="emit('dismiss')"
       @skip="emit('skip')"
     />
@@ -72,7 +73,7 @@ const { displayActions, hasActions } = useActionQueue()
       </li>
     </ul>
     <div v-if="!hasActions" class="action-empty empty-state">
-      <span class="empty-text">星核静默中，等待你的指令…</span>
+      <span class="empty-text">{{ t('home.actionQueue.empty') }}…</span>
     </div>
   </section>
 </template>

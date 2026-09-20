@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
@@ -62,7 +63,7 @@ const rows = computed(() =>
       level: game.buildings.getLevel(b.id),
       cost,
       canAfford: game.resources.canAfford(cost),
-      label: bulkLabel('升级', bulkPreviews.value[b.id]?.count ?? 0),
+      label: bulkLabel(t('build.upgrade'), bulkPreviews.value[b.id]?.count ?? 0),
     }
   })
 )
@@ -72,15 +73,19 @@ function tryUpgrade(id: string) {
   if (!done) return
   // 资源消耗操作受理反馈（v0.77 反馈口径；批量时带实际完成级数）
   const name = BUILDINGS.find((b) => b.id === id)?.name ?? id
-  toast.show(done > 1 ? `开始建造：${name} ×${done}` : `开始建造：${name}`)
+  toast.show(
+    done > 1
+      ? t('build.startedBulk', { name: name, done: done })
+      : t('build.started', { name: name })
+  )
 }
 </script>
 
 <template>
   <div class="build-view">
-    <h2 class="page-title font-display">建造</h2>
+    <h2 class="page-title font-display">{{ t('build.title') }}</h2>
     <!-- v0.86 批量升级段位切换（页头级，全部建筑卡共用） -->
-    <div class="bulk-toggle" role="group" aria-label="单次升级级数">
+    <div class="bulk-toggle" role="group" :aria-label="t('build.bulkLevelAria')">
       <button
         v-for="s in [1, 10, 100]"
         :key="s"
@@ -92,16 +97,16 @@ function tryUpgrade(id: string) {
         ×{{ s }}
       </button>
     </div>
-    <p v-if="game.autoBuild" class="auto-badge" title="建造协议已激活：自动升级买得起的已解锁建筑">
-      ⚙ 建造协议进行中
+    <p v-if="game.autoBuild" class="auto-badge" :title="t('build.protocolActive')">
+      ⚙ {{ t('build.protocolOngoing') }}
     </p>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'build-upgrade'"
       class="ob-build"
-      title="建造"
-      text="选择扇区后点击建筑卡片即可升级，提升资源产能。"
+      :title="t('build.title')"
+      :text="t('build.onboarding')"
       @dismiss="dismiss"
       @skip="skipAll"
     />
@@ -125,14 +130,14 @@ function tryUpgrade(id: string) {
     <EmptyState
       v-if="allMaxed"
       icon="i-nav-build"
-      text="暂无可建造的建筑"
-      hint="研究科技可解锁更多建筑类型"
-      action="前往科技"
+      :text="t('build.emptyTitle')"
+      :hint="t('build.emptyHint')"
+      :action="t('common.goTech')"
       to="/tech"
     />
 
     <!-- 建筑列表 -->
-    <ul v-else class="building-list" aria-label="建筑列表">
+    <ul v-else class="building-list" :aria-label="t('build.listAria')">
       <li v-for="row in rows" :key="row.b.id" class="build-card" :class="{ locked: !row.unlocked }">
         <div class="b-head">
           <div class="b-icon" :style="{ color: SECTORS[row.b.sector].color }">
@@ -154,18 +159,23 @@ function tryUpgrade(id: string) {
         <!-- 成本与升级 -->
         <div v-if="!row.unlocked" class="b-locked">
           <span class="lock-msg"
-            >需要科技：{{ getTech(row.b.requires ?? '')?.name ?? row.b.requires }}</span
+            >{{ t('common.needsTech') }}：{{
+              getTech(row.b.requires ?? '')?.name ?? row.b.requires
+            }}</span
           >
         </div>
         <div v-else-if="row.maxed" class="b-maxed">
-          <span>已满级</span>
+          <span>{{ t('build.maxed') }}</span>
         </div>
         <template v-else>
           <div class="b-cost">
             <template v-if="bulkSteps > 1">
-              <span class="bulk-preview">可买 {{ bulkPreviews[row.b.id].count }} 级</span>
+              <span class="bulk-preview"
+                >{{ t('common.canBuy') }} {{ bulkPreviews[row.b.id].count }}
+                {{ t('common.unitLevel') }}</span
+              >
               <template v-if="bulkPreviews[row.b.id].count > 0">
-                <span class="bulk-preview">· 共</span>
+                <span class="bulk-preview">· {{ t('common.totalLead') }}</span>
                 <CostTag :cost="bulkPreviews[row.b.id].cost" />
               </template>
             </template>

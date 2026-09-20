@@ -5,6 +5,7 @@
  * 展示驻扎预期收益（每秒 + 每小时）与说明；确认/取消经事件交回父层。
  * 类名与文案保持不变。
  */
+import { t } from '@/i18n'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 
 defineProps<{
@@ -23,17 +24,19 @@ const emit = defineEmits<{ cancel: []; confirm: [] }>()
   <ConfirmModal
     :model-value="show"
     modal-class="garrison-confirm-modal"
-    aria-label="挂机驻扎确认"
-    confirm-text="确认驻扎"
+    :aria-label="t('battle.garrisonAria')"
+    :confirm-text="t('battle.garrisonConfirm')"
     :confirm-flex="2"
     accent="var(--color-quantum)"
     @cancel="emit('cancel')"
     @confirm="emit('confirm')"
   >
-    <h2 class="result-title font-display">挂机驻扎</h2>
-    <p class="result-sub">在「{{ strongholdName }}」驻扎编队，持续获得以下收益</p>
+    <h2 class="result-title font-display">{{ t('battle.garrison') }}</h2>
+    <p class="result-sub">
+      {{ t('battle.garrisonAt') }}「{{ strongholdName }}」{{ t('battle.garrisonDesc') }}
+    </p>
     <div class="garrison-rewards">
-      <h4>预期收益</h4>
+      <h4>{{ t('battle.garrisonGains') }}</h4>
       <div v-for="r in preview" :key="r.id" class="reward-row">
         <span class="g-reward-name" :style="{ color: r.color }">{{ r.name }}</span>
         <span class="g-reward-rates font-mono">
@@ -41,7 +44,7 @@ const emit = defineEmits<{ cancel: []; confirm: [] }>()
           <span class="rate-hour">（{{ r.perHour }}/h）</span>
         </span>
       </div>
-      <p class="garrison-hint">收益将自动加入资源产出，离线时也会结算</p>
+      <p class="garrison-hint">{{ t('battle.garrisonNote') }}</p>
     </div>
   </ConfirmModal>
 </template>

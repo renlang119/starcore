@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import {
   RARITY_INFO,
@@ -54,7 +55,7 @@ const nextEffects = computed<{ label: string; next: string }[]>(() => {
 function doEnhance() {
   if (!props.relic) return
   const done = game.relics.enhanceSteps(props.relic.instanceId, bulkSteps.value)
-  if (!done) emit('fail', '能量不足')
+  if (!done) emit('fail', t('relics.insufficientEnergy'))
 }
 
 // v0.86 批量强化段位（默认 ×1 与既有行为一致；封顶 20 级，×100 可一键拉满）
@@ -66,8 +67,11 @@ const bulkSteps = ref(1)
  */
 const enhanceButtonLabel = computed(() =>
   bulkSteps.value > 1 && props.relic
-    ? bulkLabel('强化', game.previewRelicEnhanceSteps(props.relic.instanceId, bulkSteps.value))
-    : '强化'
+    ? bulkLabel(
+        t('relics.enhance'),
+        game.previewRelicEnhanceSteps(props.relic.instanceId, bulkSteps.value)
+      )
+    : t('relics.enhance')
 )
 
 const rarityColor = relicRarityColor
@@ -77,11 +81,11 @@ const rarityColor = relicRarityColor
   <ModalOverlay
     :model-value="true"
     modal-class="enhance-modal"
-    aria-label="遗物强化"
+    :aria-label="t('relics.enhanceTitle')"
     @overlay-click="emit('close')"
   >
     <template v-if="relic">
-      <h2 class="result-title font-display">遗物强化</h2>
+      <h2 class="result-title font-display">{{ t('relics.enhanceTitle') }}</h2>
       <div
         class="synth-product"
         :style="{ '--c': rarityColor(relic.rarity) }"
@@ -95,7 +99,7 @@ const rarityColor = relicRarityColor
         </div>
         <div class="r-name">{{ relic.name }}</div>
         <div class="enhance-level" data-testid="enhance-level">
-          等级：{{ relic.level }} / {{ MAX_RELIC_LEVEL }}
+          {{ t('common.level') }}：{{ relic.level }} / {{ MAX_RELIC_LEVEL }}
         </div>
         <div class="r-effects">
           <span v-for="(e, i) in currentEffects" :key="i" class="eff-mini">{{ e.label }}</span>
@@ -107,14 +111,15 @@ const rarityColor = relicRarityColor
             <span class="preview-to">{{ p.next }}</span>
           </div>
         </div>
-        <div v-if="isMax" class="enhance-max">已达上限</div>
+        <div v-if="isMax" class="enhance-max">{{ t('relics.maxed') }}</div>
         <div v-else class="enhance-cost-row" data-testid="enhance-cost">
-          下一级消耗：<span class="font-mono">{{ fmt(nextCost ?? 0) }}</span> 能量
+          {{ t('relics.nextCost') }}：<span class="font-mono">{{ fmt(nextCost ?? 0) }}</span>
+          {{ t('resources.energy') }}
         </div>
       </div>
       <div class="btn-group">
         <div v-if="!isMax" class="enhance-actions">
-          <div class="bulk-toggle" role="group" aria-label="单次强化级数">
+          <div class="bulk-toggle" role="group" :aria-label="t('relics.enhanceStepsAria')">
             <button
               v-for="s in [1, 10, 100]"
               :key="s"
@@ -143,7 +148,7 @@ const rarityColor = relicRarityColor
           data-testid="enhance-close"
           @click="emit('close')"
         >
-          关闭
+          {{ t('common.close') }}
         </button>
       </div>
     </template>

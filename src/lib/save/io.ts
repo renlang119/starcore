@@ -5,6 +5,7 @@
  * 写路径双通道共用 { d, c } 校验载荷。读路径双通道都尝试并取较新一档，
  * 严格区分「无档」与「有值但损坏」，版本过新优先报错。
  */
+import { t } from '@/i18n'
 import localforage from 'localforage'
 import { fnv1a } from '@/lib/random'
 import type { SaveData } from './schema'
@@ -13,7 +14,7 @@ import { tooNewVersion, validateAndRepair } from './validate'
 const STORE = localforage.createInstance({
   name: 'starcore',
   storeName: 'save',
-  description: '星核纪元存档',
+  description: t('save.filePrefix'),
 })
 
 const SAVE_KEY = 'starcore_save_v1'

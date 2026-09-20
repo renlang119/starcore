@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
@@ -27,14 +28,14 @@ function showFeedback(msg: string) {
 
 <template>
   <div class="army-view">
-    <h2 class="page-title font-display">部队</h2>
+    <h2 class="page-title font-display">{{ t('army.title') }}</h2>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'army-train'"
       class="ob-army"
-      title="部队"
-      text="在兵营训练兵种，在编队页配置阵容后出征据点。"
+      :title="t('army.title')"
+      :text="t('army.onboarding')"
       @dismiss="dismiss"
       @skip="skipAll"
     />
@@ -42,19 +43,19 @@ function showFeedback(msg: string) {
     <!-- 全军战力 -->
     <div class="power-bar">
       <div class="power-item">
-        <span class="p-label">总攻击</span>
+        <span class="p-label">{{ t('army.totalAttack') }}</span>
         <span class="p-value font-mono" style="color: var(--color-alert)">{{
           fmt(totalPower.atk)
         }}</span>
       </div>
       <div class="power-item">
-        <span class="p-label">总防御</span>
+        <span class="p-label">{{ t('army.totalDefense') }}</span>
         <span class="p-value font-mono" style="color: var(--color-core)">{{
           fmt(totalPower.def)
         }}</span>
       </div>
       <div class="power-item">
-        <span class="p-label">总兵力</span>
+        <span class="p-label">{{ t('army.totalTroops') }}</span>
         <span class="p-value font-mono" style="color: var(--color-quantum)">{{
           fmt(totalPower.hp)
         }}</span>
@@ -68,14 +69,14 @@ function showFeedback(msg: string) {
         :class="{ active: activeTab === 'barracks' }"
         @click="activeTab = 'barracks'"
       >
-        兵营
+        {{ t('army.barracks') }}
       </button>
       <button
         class="tab"
         :class="{ active: activeTab === 'formation' }"
         @click="activeTab = 'formation'"
       >
-        编组
+        {{ t('army.formation') }}
       </button>
     </div>
 
