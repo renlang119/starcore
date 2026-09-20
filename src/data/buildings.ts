@@ -3,6 +3,7 @@
  * 建筑分布在 5 个扇区：能量扇区、晶体扇区、合金扇区、数据扇区、暗物质扇区
  * 每个建筑有等级、成本增长、产出
  */
+import { t } from '@/i18n'
 import { D } from '@/lib/decimal'
 
 export type ResourceType = 'energy' | 'crystal' | 'alloy' | 'data' | 'dark'
@@ -31,14 +32,34 @@ export const SECTORS: Record<
   SectorId,
   { id: SectorId; name: string; desc: string; color: string }
 > = {
-  energy: { id: 'energy', name: '能量扇区', desc: '采集星核能量', color: 'var(--color-core)' },
-  crystal: { id: 'crystal', name: '晶体扇区', desc: '开采硅基晶体', color: 'var(--color-quantum)' },
-  alloy: { id: 'alloy', name: '合金扇区', desc: '精炼稀有合金', color: 'var(--color-amber)' },
-  data: { id: 'data', name: '数据扇区', desc: '生成数据流', color: 'var(--color-plasma)' },
+  energy: {
+    id: 'energy',
+    name: t('content.buildings.sector.energy.name'),
+    desc: t('content.buildings.sector.energy.desc'),
+    color: 'var(--color-core)',
+  },
+  crystal: {
+    id: 'crystal',
+    name: t('content.buildings.sector.crystal.name'),
+    desc: t('content.buildings.sector.crystal.desc'),
+    color: 'var(--color-quantum)',
+  },
+  alloy: {
+    id: 'alloy',
+    name: t('content.buildings.sector.alloy.name'),
+    desc: t('content.buildings.sector.alloy.desc'),
+    color: 'var(--color-amber)',
+  },
+  data: {
+    id: 'data',
+    name: t('content.buildings.sector.data.name'),
+    desc: t('content.buildings.sector.data.desc'),
+    color: 'var(--color-plasma)',
+  },
   dark: {
     id: 'dark',
-    name: '暗物质扇区',
-    desc: '捕获暗物质粒子',
+    name: t('content.buildings.sector.dark.name'),
+    desc: t('content.buildings.sector.dark.desc'),
     color: 'var(--color-sector-dark)',
   },
 }
@@ -47,8 +68,8 @@ export const BUILDINGS: BuildingDef[] = [
   // —— 能量扇区 ——
   {
     id: 'solar_collector',
-    name: '光能收集器',
-    desc: '从恒星辐射中采集能量，最基础的能源设施',
+    name: t('content.buildings.solar_collector.name'),
+    desc: t('content.buildings.solar_collector.desc'),
     sector: 'energy',
     icon: 'i-res-energy',
     baseCost: { energy: 10 },
@@ -58,8 +79,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'fusion_reactor',
-    name: '聚变反应堆',
-    desc: '氘氚聚变提供稳定能量输出',
+    name: t('content.buildings.fusion_reactor.name'),
+    desc: t('content.buildings.fusion_reactor.desc'),
     sector: 'energy',
     icon: 'i-bld-reactor',
     baseCost: { energy: 200, crystal: 50 },
@@ -70,8 +91,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'core_extractor',
-    name: '星核提取器',
-    desc: '直接从行星星核汲取原始能量',
+    name: t('content.buildings.core_extractor.name'),
+    desc: t('content.buildings.core_extractor.desc'),
     sector: 'energy',
     icon: 'i-bld-extractor',
     baseCost: { energy: 5000, crystal: 800 },
@@ -82,8 +103,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'dyson_swarm',
-    name: '戴森云',
-    desc: '环绕恒星的能量收集卫星群，产能指数级跃升',
+    name: t('content.buildings.dyson_swarm.name'),
+    desc: t('content.buildings.dyson_swarm.desc'),
     sector: 'energy',
     icon: 'i-bld-dyson',
     baseCost: { energy: 50000, crystal: 10000, alloy: 1000 },
@@ -96,8 +117,8 @@ export const BUILDINGS: BuildingDef[] = [
   // —— 晶体扇区 ——
   {
     id: 'crystal_mine',
-    name: '晶体矿场',
-    desc: '开采硅基晶体，用于精密建造',
+    name: t('content.buildings.crystal_mine.name'),
+    desc: t('content.buildings.crystal_mine.desc'),
     sector: 'crystal',
     icon: 'i-res-crystal',
     baseCost: { energy: 30 },
@@ -107,8 +128,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'crystal_nursery',
-    name: '晶格培育室',
-    desc: '人工培育晶格结构，加速晶体生成',
+    name: t('content.buildings.crystal_nursery.name'),
+    desc: t('content.buildings.crystal_nursery.desc'),
     sector: 'crystal',
     icon: 'i-bld-crystal-nursery',
     baseCost: { energy: 250, crystal: 50 },
@@ -119,8 +140,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'deep_crystal_drill',
-    name: '深晶钻探站',
-    desc: '深入行星地壳钻探深层晶体矿脉',
+    name: t('content.buildings.deep_crystal_drill.name'),
+    desc: t('content.buildings.deep_crystal_drill.desc'),
     sector: 'crystal',
     icon: 'i-bld-deep-drill',
     baseCost: { energy: 5000, crystal: 1000 },
@@ -131,8 +152,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'silicon_ring',
-    name: '硅基星环',
-    desc: '环绕行星的硅基晶体采集环，持续产出高纯晶体',
+    name: t('content.buildings.silicon_ring.name'),
+    desc: t('content.buildings.silicon_ring.desc'),
     sector: 'crystal',
     icon: 'i-bld-silicon-ring',
     baseCost: { energy: 50000, crystal: 10000, alloy: 1000 },
@@ -144,8 +165,8 @@ export const BUILDINGS: BuildingDef[] = [
   // —— 合金扇区 ——
   {
     id: 'refinery',
-    name: '精炼厂',
-    desc: '将粗矿石精炼为可用合金',
+    name: t('content.buildings.refinery.name'),
+    desc: t('content.buildings.refinery.desc'),
     sector: 'alloy',
     icon: 'i-bld-refinery',
     baseCost: { energy: 300, crystal: 60 },
@@ -156,8 +177,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'nano_forge',
-    name: '纳米锻造厂',
-    desc: '纳米级精密锻造，提升合金产出效率',
+    name: t('content.buildings.nano_forge.name'),
+    desc: t('content.buildings.nano_forge.desc'),
     sector: 'alloy',
     icon: 'i-bld-nano-forge',
     baseCost: { energy: 2000, crystal: 400, alloy: 60 },
@@ -168,8 +189,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'ion_casting_plant',
-    name: '离子铸造站',
-    desc: '离子束精铸高纯度合金构件',
+    name: t('content.buildings.ion_casting_plant.name'),
+    desc: t('content.buildings.ion_casting_plant.desc'),
     sector: 'alloy',
     icon: 'i-bld-ion-casting',
     baseCost: { energy: 30000, crystal: 5000, alloy: 1200 },
@@ -180,8 +201,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'stellar_forge',
-    name: '星际熔炉',
-    desc: '恒星级高温熔炉，锻造暗物质合金',
+    name: t('content.buildings.stellar_forge.name'),
+    desc: t('content.buildings.stellar_forge.desc'),
     sector: 'alloy',
     icon: 'i-bld-stellar-forge',
     baseCost: { energy: 250000, crystal: 50000, alloy: 8000, dark: 10 },
@@ -193,8 +214,8 @@ export const BUILDINGS: BuildingDef[] = [
   // —— 暗物质扇区 ——
   {
     id: 'dark_detector',
-    name: '暗物质探测器',
-    desc: '探测环境中的暗物质微粒痕迹',
+    name: t('content.buildings.dark_detector.name'),
+    desc: t('content.buildings.dark_detector.desc'),
     sector: 'dark',
     icon: 'i-bld-dark-detector',
     baseCost: { energy: 2000, crystal: 300, alloy: 50 },
@@ -205,8 +226,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'dark_matter_lab',
-    name: '暗物质实验室',
-    desc: '捕获并稳定暗物质粒子',
+    name: t('content.buildings.dark_matter_lab.name'),
+    desc: t('content.buildings.dark_matter_lab.desc'),
     sector: 'dark',
     icon: 'i-bld-lab',
     baseCost: { energy: 8000, alloy: 200 },
@@ -217,8 +238,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'dark_capture_station',
-    name: '暗物质捕获站',
-    desc: '大规模捕获和浓缩暗物质',
+    name: t('content.buildings.dark_capture_station.name'),
+    desc: t('content.buildings.dark_capture_station.desc'),
     sector: 'dark',
     icon: 'i-bld-dark-capture',
     baseCost: { energy: 80000, alloy: 5000, dark: 20 },
@@ -229,8 +250,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'dark_singularity_well',
-    name: '暗物质奇点井',
-    desc: '在微型奇点附近汲取暗物质',
+    name: t('content.buildings.dark_singularity_well.name'),
+    desc: t('content.buildings.dark_singularity_well.desc'),
     sector: 'dark',
     icon: 'i-bld-dark-well',
     baseCost: { energy: 800000, alloy: 30000, dark: 200, crystal: 5000 },
@@ -243,8 +264,8 @@ export const BUILDINGS: BuildingDef[] = [
   // —— 数据扇区 ——
   {
     id: 'data_center',
-    name: '数据中心',
-    desc: '运算与存储数据流，研究的基础设施',
+    name: t('content.buildings.data_center.name'),
+    desc: t('content.buildings.data_center.desc'),
     sector: 'data',
     icon: 'i-res-data',
     baseCost: { energy: 100, crystal: 20 },
@@ -254,8 +275,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'quantum_lab',
-    name: '量子实验室',
-    desc: '量子计算加速数据流产出',
+    name: t('content.buildings.quantum_lab.name'),
+    desc: t('content.buildings.quantum_lab.desc'),
     sector: 'data',
     icon: 'i-bld-quantum',
     baseCost: { energy: 5000, alloy: 100, data: 50 },
@@ -266,8 +287,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'neural_hub',
-    name: '神经网络枢纽',
-    desc: '深度神经网络集群，智能数据处理',
+    name: t('content.buildings.neural_hub.name'),
+    desc: t('content.buildings.neural_hub.desc'),
     sector: 'data',
     icon: 'i-bld-neural-hub',
     baseCost: { energy: 40000, crystal: 8000, data: 500 },
@@ -278,8 +299,8 @@ export const BUILDINGS: BuildingDef[] = [
   },
   {
     id: 'holographic_core',
-    name: '全息计算核心',
-    desc: '全息态计算引擎，突破经典算力极限',
+    name: t('content.buildings.holographic_core.name'),
+    desc: t('content.buildings.holographic_core.desc'),
     sector: 'data',
     icon: 'i-bld-holo-core',
     baseCost: { energy: 300000, alloy: 8000, data: 5000, dark: 15 },
