@@ -1,0 +1,9 @@
+/**
+ * effects — 中文界面文案（值逐字保真自抽取原文）
+ *
+ * 简体中文为基线语言；新增文案直接在此维护，并跑缺键扫描守卫。
+ */
+export default {
+  'effects.unitAttack': '部队攻击 ×{mult}',
+  'effects.unitDefense': '部队防御 ×{mult}',
+}

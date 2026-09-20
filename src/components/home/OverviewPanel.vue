@@ -1,5 +1,6 @@
 <script setup lang="ts">
 // OverviewPanel — 首页文明概况（v0.54 从 HomeView 拆出）
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmtTime } from '@/lib/format'
@@ -30,35 +31,35 @@ const overviewItems = computed<OverviewItem[]>(() => {
   const items: OverviewItem[] = [
     {
       key: 'buildings',
-      label: '建筑',
+      label: t('home.overview.buildings'),
       value: `${buildingsUnlocked.value}/${BUILDINGS.length}`,
       icon: 'i-nav-build',
       color: 'var(--color-core)',
     },
     {
       key: 'tech',
-      label: '科技',
+      label: t('home.overview.tech'),
       value: `${game.research.count}/${TECHS.length}`,
       icon: 'i-nav-tech',
       color: 'var(--color-plasma)',
     },
     {
       key: 'army',
-      label: '部队',
+      label: t('home.overview.army'),
       value: `${game.military.totalUnits}`,
       icon: 'i-nav-army',
       color: 'var(--color-alert)',
     },
     {
       key: 'relics',
-      label: '遗物',
+      label: t('home.overview.relics'),
       value: `${relicsEquipped.value}/${game.relics.maxSlots}`,
       icon: 'i-nav-relic',
       color: 'var(--color-amber)',
     },
     {
       key: 'playtime',
-      label: '时长',
+      label: t('home.overview.playtime'),
       value: playTime.value,
       icon: 'i-ui-more',
       color: 'var(--color-t-primary)',
@@ -67,7 +68,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
   if (game.transcend.totalTranscends > 0) {
     items.push({
       key: 'transcends',
-      label: '转生',
+      label: t('home.overview.transcends'),
       value: `${game.transcend.totalTranscends}`,
       icon: 'i-nav-prestige',
       color: 'var(--color-amber)',
@@ -80,7 +81,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
 <template>
   <!-- 文明概况（P1-6 视觉层次，P1-3 桌面 6 列） -->
   <section class="overview" aria-labelledby="overview-title">
-    <h3 id="overview-title" class="section-title">文明概况</h3>
+    <h3 id="overview-title" class="section-title">{{ t('home.overview.title') }}</h3>
     <ul class="overview-grid">
       <li
         v-for="item in overviewItems"

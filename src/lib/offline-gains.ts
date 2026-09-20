@@ -4,6 +4,7 @@
  * 从 game.ts 中提取，独立计算玩家离线期间的资源收益、
  * 驻扎收益、训练完成等单位。
  */
+import { t } from '@/i18n'
 import { D, deser, ser, type Decimal } from './decimal'
 import type { ResourceType } from '@/data/buildings'
 import type { UnitId } from '@/data/units'
@@ -88,9 +89,9 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
 
   // 随机事件（20% 概率）
   const events = [
-    { msg: '深空探测到能量波动，获得额外能量', res: 'energy', mult: 60 },
-    { msg: '捕获漂流的数据碎片', res: 'data', mult: 120 },
-    { msg: '陨石带来少量合金', res: 'alloy', mult: 30 },
+    { msg: t('offline.eventEnergy'), res: 'energy', mult: 60 },
+    { msg: t('offline.eventData'), res: 'data', mult: 120 },
+    { msg: t('offline.eventAlloy'), res: 'alloy', mult: 30 },
   ]
   // 事件收益单列区块（不并入建筑产出）：事件基准是每秒产出 × 固定倍数
   // （最多 120 秒产量），与按 duration 计的建筑产出性质不同，混计会让

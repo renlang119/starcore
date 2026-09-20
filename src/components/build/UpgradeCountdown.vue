@@ -12,6 +12,7 @@
  *   D. 仅手动瓶颈 → 需手动获取
  *   E. 空成本 → 不渲染
  */
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
@@ -67,7 +68,7 @@ function resColor(rt: ResourceType): string {
 }
 
 function fmtEta(r: ResourceResult): string {
-  if (r.status === 'sufficient') return '已满足'
+  if (r.status === 'sufficient') return t('build.satisfied')
   if (r.status === 'manual') return '—'
   return fmtDuration(r.etaSeconds!)
 }
@@ -97,9 +98,7 @@ function toggleExpand() {
       role="button"
       tabindex="0"
       :aria-expanded="expanded"
-      :aria-label="
-        row.kind === 'countdown' ? '资源预估倒计时，点击查看明细' : '需手动获取的资源，点击查看明细'
-      "
+      :aria-label="row.kind === 'countdown' ? t('build.etaAria') : t('build.manualAria')"
       @click="toggleExpand"
       @keydown.enter="toggleExpand"
       @keydown.space.prevent="toggleExpand"
@@ -112,15 +111,16 @@ function toggleExpand() {
       <span v-else class="res-dot"></span>
       <span class="countdown-text">
         <template v-if="row.kind === 'countdown'">
-          <span class="cd-prefix">约</span><span class="cd-time">{{ timePart }}</span
-          ><span class="cd-prefix">后可升级</span>
+          <span class="cd-prefix">{{ t('build.approx') }}</span
+          ><span class="cd-time">{{ timePart }}</span
+          ><span class="cd-prefix">{{ t('build.upgradableSuffix') }}</span>
         </template>
         <template v-else>
-          <span class="cd-time">需手动获取</span>
+          <span class="cd-time">{{ t('build.manual') }}</span>
         </template>
       </span>
       <span v-if="row.hint" class="cd-hint">
-        明细
+        {{ t('build.details') }}
         <svg
           class="cd-arrow"
           width="10"
@@ -140,7 +140,7 @@ function toggleExpand() {
     <transition name="cd-expand">
       <div v-if="expanded" class="countdown-detail">
         <div class="countdown-detail-inner">
-          <div class="detail-title">资源明细</div>
+          <div class="detail-title">{{ t('build.detailsTitle') }}</div>
 
           <div
             v-for="r in result.resources"
@@ -175,8 +175,8 @@ function toggleExpand() {
               "
             >
               <template v-if="r.status === 'sufficient'">✓</template>
-              <template v-else-if="isBottleneck(r)">瓶颈</template>
-              <template v-else-if="r.status === 'manual'">需手动获取</template>
+              <template v-else-if="isBottleneck(r)">{{ t('build.bottleneck') }}</template>
+              <template v-else-if="r.status === 'manual'">{{ t('build.manual') }}</template>
             </span>
           </div>
 
@@ -193,7 +193,7 @@ function toggleExpand() {
               <circle cx="12" cy="12" r="10" />
               <path d="M12 8v4M12 16h.01" />
             </svg>
-            基于当前生产速率预估，实际时间可能因速率变化而偏移
+            {{ t('build.etaNote') }}
           </div>
         </div>
       </div>

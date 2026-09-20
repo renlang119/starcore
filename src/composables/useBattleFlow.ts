@@ -5,6 +5,7 @@
  * 确认、战损提示。依赖的派生值（据点 / 编队 / 远征深度 / 无尽标识）
  * 由调用方注入；行为、文案与结算时序与拆分前一致。
  */
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -93,17 +94,17 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     if (totalLoss > 0) {
       const survivors = Object.values(f.units).reduce((a, b) => a + b, 0)
       if (survivors === 0) {
-        toast.show(`${f.name} 全军覆没，已清空编队`)
+        toast.show(t('battle.logWiped', { formationName: f.name }))
         // 全灭的编队若驻扎中，自动撤驻
         for (const [sid, g] of Object.entries(game.combat.garrisoned)) {
           if (g.formationId === f.id) {
             game.combat.ungarrison(sid)
-            toast.show(`${f.name} 已从驻扎撤回`)
+            toast.show(t('battle.logWithdrawn', { formationName: f.name }))
             break
           }
         }
       } else if (totalLoss > 0) {
-        toast.show(`${f.name} 损失 ${totalLoss} 支部队`)
+        toast.show(t('battle.logLosses', { formationName: f.name, totalLoss: totalLoss }))
       }
     }
   }
@@ -150,7 +151,7 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     const ok = game.combat.garrison(deps.strongholdId.value, deps.formation.value.id)
     if (!ok) {
       // 守卫拒绝（未攻克/编队被他处占用等）：提示而非静默
-      toast.show(isGarrisoned.value ? '该据点已有编队驻扎' : '当前无法驻扎：据点未攻克或编队不可用')
+      toast.show(isGarrisoned.value ? t('battle.garrisonOccupied') : t('battle.garrisonBlocked'))
     }
     showGarrisonConfirm.value = false
   }

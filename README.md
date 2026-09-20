@@ -59,7 +59,9 @@ starcore/
 │  ├─ components/   40 个组件（含图标子组件 8 个），按 ui / layout / home / relics / build / army / battle / map / settings 分组
 │  ├─ composables/  13 个组合式函数（断点、Toast、行动队列、引导、粒子等）
 │  ├─ data/         11 份数据表（建筑、科技、探索、据点、遗物、成就、远征、部队、导航、剧情、背景星点）
+│  ├─ i18n/         多语言门面（取词与语言识别）
 │  ├─ lib/          16 个基础模块（高精度数值、格式化、效果系统、离线收益、随机、存档链路（save/ 子目录）、批量与成本助手等）
+│  ├─ locales/      语言包（zh-CN 基线，按域拆分）
 │  ├─ router/       路由定义
 │  ├─ stores/       11 个 Pinia store（资源、建筑、研究、军事、战斗、探索、
 │  │                遗物、转生、成就、签到、游戏）
@@ -69,7 +71,7 @@ starcore/
 │  └─ App.vue / main.ts / version.ts / style.css
 ├─ docs/            十一册规范文档，见「文档索引」（含 archive 历史归档）
 ├─ public/          favicon、分享图与本地字体（Orbitron、JetBrains Mono）
-├─ scripts/         质量脚本（计数守恒检查）
+├─ scripts/         质量脚本（计数守恒、文案缺键检查）
 ├─ changelog/       版本历史三档（活跃档 changelog.md 与两份历史存档）
 ├─ deploy.sh        部署脚本
 └─ 工程配置（vite.config.ts、vitest.config.ts、tsconfig*.json、eslint.config.js）
@@ -77,7 +79,7 @@ starcore/
 
 ## 质量
 
-- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，33 个测试文件 476 个用例
+- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，35 个测试文件 500 个用例
 - **类型与规范**：构建内置 vue-tsc 类型检查；ESLint 与 Prettier 全量检查零输出
 - **计数守恒**：`scripts/check-conservation.mjs` 校验文档计数、成就文案联动与
   测试硬断言，防止数值漂移（`corepack pnpm check:conservation`）

@@ -5,6 +5,7 @@
  * 从 ArmyView 拆出：编队战力与各兵种库存 / 编入数、±1 ±10 直接调整、
  * 全入 / 全撤超过阈值时的二次确认弹窗。类名与文案保持不变。
  */
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { UNITS, type UnitId } from '@/data/units'
@@ -96,7 +97,7 @@ function removeAll(fid: string, uid: UnitId) {
   <div v-for="row in formationRows" :key="row.f.id" class="formation-card">
     <div class="f-head">
       <span class="f-name">{{ row.f.name }}</span>
-      <span class="f-power font-mono">战力 {{ row.power }}</span>
+      <span class="f-power font-mono">{{ t('common.statPower') }} {{ row.power }}</span>
     </div>
     <div>
       <div v-for="cell in row.units" :key="cell.def.id" class="f-unit-row">
@@ -106,8 +107,8 @@ function removeAll(fid: string, uid: UnitId) {
             <span class="fu-name">{{ cell.def.name }}</span>
           </div>
           <div class="fu-numbers">
-            <span class="fu-owned">库存 {{ cell.owned }}</span>
-            <span class="fu-count font-mono">编入 {{ cell.inFormation }}</span>
+            <span class="fu-owned">{{ t('army.stock') }} {{ cell.owned }}</span>
+            <span class="fu-count font-mono">{{ t('army.assign') }} {{ cell.inFormation }}</span>
           </div>
         </div>
         <div class="fu-controls">
@@ -144,14 +145,14 @@ function removeAll(fid: string, uid: UnitId) {
             :disabled="cell.owned <= 0"
             @click.stop="assignAll(row.f.id, cell.def.id)"
           >
-            全入
+            {{ t('army.allIn') }}
           </button>
           <button
             class="fu-btn fu-btn-wide fu-btn-remove"
             :disabled="cell.inFormation <= 0"
             @click.stop="removeAll(row.f.id, cell.def.id)"
           >
-            全撤
+            {{ t('army.allOut') }}
           </button>
         </div>
       </div>
@@ -161,20 +162,23 @@ function removeAll(fid: string, uid: UnitId) {
   <!-- 批量操作确认弹窗 -->
   <ConfirmModal
     :model-value="showBulkModal"
-    :aria-label="pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤'"
-    confirm-text="确认"
+    :aria-label="
+      pendingBulkAction?.type === 'assign' ? t('army.confirmAllIn') : t('army.confirmAllOut')
+    "
+    :confirm-text="t('common.confirm')"
     @cancel="cancelBulkAction"
     @confirm="confirmBulkAction"
   >
     <h2 class="confirm-title font-display">
-      {{ pendingBulkAction?.type === 'assign' ? '确认全入' : '确认全撤' }}
+      {{ pendingBulkAction?.type === 'assign' ? t('army.confirmAllIn') : t('army.confirmAllOut') }}
     </h2>
     <p class="confirm-desc">
-      即将{{ pendingBulkAction?.type === 'assign' ? '编入' : '撤出' }}
+      {{ t('army.aboutTo')
+      }}{{ pendingBulkAction?.type === 'assign' ? t('army.assign') : t('army.withdraw') }}
       <span class="font-mono" style="color: var(--color-alert)">{{
         pendingBulkAction?.count
       }}</span>
-      名士兵
+      {{ t('army.soldiersUnit') }}
     </p>
   </ConfirmModal>
 </template>

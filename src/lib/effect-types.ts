@@ -7,6 +7,8 @@
  * 构造 helper 供数据表消除逐字重复的 effects 块（EffectSystem 零改动）。
  */
 
+import { t } from '@/i18n'
+
 /** 四域共用的效果类型基线（乘数族） */
 export type EffectTypeBase =
   'production_mult' | 'combat_mult' | 'explore_mult' | 'prestige_mult' | 'offline_bonus'
@@ -18,13 +20,13 @@ export function combatPair(mult: number) {
       type: 'combat_mult' as const,
       target: 'attack' as const,
       value: mult,
-      label: `部队攻击 ×${mult}`,
+      label: t('effects.unitAttack', { mult: mult }),
     },
     {
       type: 'combat_mult' as const,
       target: 'defense' as const,
       value: mult,
-      label: `部队防御 ×${mult}`,
+      label: t('effects.unitDefense', { mult: mult }),
     },
   ]
 }

@@ -3,6 +3,7 @@
  * AchievementsView.vue — 成就/里程碑页（v0.57 玩法扩展方案 2）
  * 按类别分区展示 37 个成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
  */
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtDate, fmtTime } from '@/lib/format'
@@ -48,19 +49,19 @@ const bonusSummary = computed(() => {
   const offline = toPct(ach.getMult('offline_bonus'))
   const prestige = toPct(ach.getMult('prestige_mult'))
   const parts: string[] = []
-  if (prod > 0) parts.push(`全产出 +${prod}%`)
-  if (combat > 0) parts.push(`攻防 +${combat}%`)
-  if (explore > 0) parts.push(`探索 +${explore}%`)
-  if (offline > 0) parts.push(`离线 +${offline}%`)
-  if (prestige > 0) parts.push(`负熵 +${prestige}%`)
-  return parts.length > 0 ? parts.join(' · ') : '尚未获得加成'
+  if (prod > 0) parts.push(t('achievements.bonusProd', { prod: prod }))
+  if (combat > 0) parts.push(t('achievements.bonusCombat', { combat: combat }))
+  if (explore > 0) parts.push(t('achievements.bonusExplore', { explore: explore }))
+  if (offline > 0) parts.push(t('achievements.bonusOffline', { offline: offline }))
+  if (prestige > 0) parts.push(t('achievements.bonusPrestige', { prestige: prestige }))
+  return parts.length > 0 ? parts.join(' · ') : t('achievements.noBonus')
 })
 </script>
 
 <template>
   <div class="achievements-view">
-    <h2 class="page-title font-display">成就殿堂</h2>
-    <p class="page-sub">跨越轮回的里程碑，点亮永久加成</p>
+    <h2 class="page-title font-display">{{ t('achievements.title') }}</h2>
+    <p class="page-sub">{{ t('achievements.subtitle') }}</p>
 
     <!-- 汇总面板 -->
     <div class="summary-panel">
@@ -69,7 +70,7 @@ const bonusSummary = computed(() => {
         <span class="count-total font-mono">/ {{ ACHIEVEMENTS.length }}</span>
       </div>
       <div class="summary-bonus">
-        <div class="bonus-label">已获得加成</div>
+        <div class="bonus-label">{{ t('achievements.bonusActive') }}</div>
         <div class="bonus-value">{{ bonusSummary }}</div>
       </div>
     </div>
@@ -99,7 +100,7 @@ const bonusSummary = computed(() => {
             <p class="ach-desc">{{ def.desc }}</p>
             <!-- 已解锁：时间戳；进行中：进度条 -->
             <div v-if="ach.isUnlocked(def.id)" class="ach-done">
-              ✓ 已解锁 · {{ unlockedDate(def) }}
+              ✓ {{ t('achievements.unlocked') }} · {{ unlockedDate(def) }}
             </div>
             <template v-else>
               <div class="ach-progress">

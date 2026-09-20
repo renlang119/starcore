@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { TECHS, TECH_BRANCHES, adjustedTechCost, type TechBranch } from '@/data/tech'
@@ -27,8 +28,8 @@ const allCompleted = computed(
 // 空态文案按筛选口径分离（v0.97）：全量视图写全量结论，分支视图写分支结论
 const emptyText = computed(() =>
   activeBranch.value === 'all'
-    ? '所有已知科技已研究完成'
-    : `「${TECH_BRANCHES[activeBranch.value].name}」分支的科技已全部研究完成`
+    ? t('tech.allDone')
+    : t('tech.branchDone', { branch: TECH_BRANCHES[activeBranch.value].name })
 )
 
 // P3-3 onboarding
@@ -52,18 +53,18 @@ function tryResearch(id: string) {
 
 <template>
   <div class="tech-view">
-    <h2 class="page-title font-display">科技树</h2>
-    <p class="page-sub">研究新技术解锁建筑、兵种和系统</p>
-    <p v-if="game.autoResearch" class="auto-badge" title="研究协议已激活：自动研究买得起的可用科技">
-      ⚙ 研究协议进行中
+    <h2 class="page-title font-display">{{ t('tech.title') }}</h2>
+    <p class="page-sub">{{ t('tech.subtitle') }}</p>
+    <p v-if="game.autoResearch" class="auto-badge" :title="t('tech.protocolActive')">
+      ⚙ {{ t('tech.protocolOngoing') }}
     </p>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'tech-research'"
       class="onboard-tech"
-      title="科技树"
-      text="研究科技可解锁新建筑、兵种和系统。消耗数据流进行研发。"
+      :title="t('tech.title')"
+      :text="t('tech.onboarding')"
       @dismiss="dismiss"
       @skip="skipAll"
     />
@@ -75,7 +76,7 @@ function tryResearch(id: string) {
         :class="{ active: activeBranch === 'all' }"
         @click="activeBranch = 'all'"
       >
-        全部
+        {{ t('tech.all') }}
       </button>
       <button
         v-for="b in branches"
@@ -95,55 +96,57 @@ function tryResearch(id: string) {
       v-if="allCompleted"
       icon="i-nav-tech"
       :text="emptyText"
-      hint="探索新星域可能发现未知科技"
-      action="前往探索"
+      :hint="t('tech.emptyHint')"
+      :action="t('common.goExplore')"
       to="/map"
     />
 
     <!-- 科技列表 -->
-    <ul v-else class="tech-list" aria-label="科技列表">
-      <li v-for="t in techsToShow" :key="t.id" class="tech-card" :class="techStatus(t.id)">
+    <ul v-else class="tech-list" :aria-label="t('tech.listAria')">
+      <li v-for="tech in techsToShow" :key="tech.id" class="tech-card" :class="techStatus(tech.id)">
         <div class="t-head">
-          <div class="t-icon" :style="{ color: TECH_BRANCHES[t.branch].color }">
-            <Icon :name="t.icon" size="md" />
+          <div class="t-icon" :style="{ color: TECH_BRANCHES[tech.branch].color }">
+            <Icon :name="tech.icon" size="md" />
           </div>
           <div class="t-info">
-            <div class="t-name">{{ t.name }}</div>
-            <div class="t-branch" :style="{ color: TECH_BRANCHES[t.branch].color }">
-              {{ TECH_BRANCHES[t.branch].name }} · Tier {{ t.tier }}
+            <div class="t-name">{{ tech.name }}</div>
+            <div class="t-branch" :style="{ color: TECH_BRANCHES[tech.branch].color }">
+              {{ TECH_BRANCHES[tech.branch].name }} · Tier {{ tech.tier }}
             </div>
           </div>
           <div>
-            <span v-if="techStatus(t.id) === 'completed'" class="status-done">
+            <span v-if="techStatus(tech.id) === 'completed'" class="status-done">
               <Icon name="i-ui-check" size="md" />
             </span>
           </div>
         </div>
-        <p class="t-desc">{{ t.desc }}</p>
+        <p class="t-desc">{{ tech.desc }}</p>
 
         <!-- 效果 -->
         <div class="t-effects">
-          <span v-for="(e, i) in t.effects" :key="i" class="eff-tag">{{ e.label }}</span>
+          <span v-for="(e, i) in tech.effects" :key="i" class="eff-tag">{{ e.label }}</span>
         </div>
 
         <!-- 成本 -->
-        <div v-if="techStatus(t.id) !== 'completed'" class="t-cost">
-          <CostTag :cost="getAdjustedCost(t)" />
+        <div v-if="techStatus(tech.id) !== 'completed'" class="t-cost">
+          <CostTag :cost="getAdjustedCost(tech)" />
         </div>
 
         <!-- 前置 -->
-        <div v-if="t.requires && techStatus(t.id) === 'locked'" class="t-req">
-          需要：{{ t.requires.map((r) => TECHS.find((x) => x.id === r)?.name).join(', ') }}
+        <div v-if="tech.requires && techStatus(tech.id) === 'locked'" class="t-req">
+          {{ t('tech.needs') }}：{{
+            tech.requires.map((r) => TECHS.find((x) => x.id === r)?.name).join(', ')
+          }}
         </div>
 
         <button
-          v-if="techStatus(t.id) === 'available'"
+          v-if="techStatus(tech.id) === 'available'"
           class="btn-accent block"
           style="--accent: var(--color-plasma)"
-          :disabled="!game.resources.canAfford(getAdjustedCost(t))"
-          @click="tryResearch(t.id)"
+          :disabled="!game.resources.canAfford(getAdjustedCost(tech))"
+          @click="tryResearch(tech.id)"
         >
-          研究
+          {{ t('tech.research') }}
         </button>
       </li>
     </ul>

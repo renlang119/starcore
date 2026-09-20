@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { isInfiniteNode, nextCost } from '@/stores/transcend'
@@ -25,7 +26,7 @@ function totalBonusLabel(node: (typeof game.transcend.tree)[number]): string {
   if (!eff) return ''
   const total = Math.pow(eff.value, node.level)
   const pct = Math.round((total - 1) * 100)
-  return node.level > 0 ? `当前 +${pct}%` : '尚未激活'
+  return node.level > 0 ? t('prestige.currentBonus', { pct: pct }) : t('prestige.inactive')
 }
 
 function tryPurchase(nodeId: string, steps = 1) {
@@ -51,7 +52,10 @@ const infPreviews = computed(() => {
  * 一级都买不起时退回原文案（按钮同时处于禁用态，成本行另有「可买 0 级」）。
  */
 function purchaseLabel(node: { id: string; level: number }): string {
-  return bulkLabel(node.level === 0 ? '购买' : '升级', infPreviews.value[node.id]?.count ?? 0)
+  return bulkLabel(
+    node.level === 0 ? t('prestige.buy') : t('prestige.upgrade'),
+    infPreviews.value[node.id]?.count ?? 0
+  )
 }
 
 function tryTranscend() {
@@ -69,17 +73,17 @@ function cancelTranscend() {
 
 <template>
   <div class="prestige-view">
-    <h2 class="page-title font-display">奇点重启</h2>
-    <p class="page-sub">重置大部分进度，获得负熵永久强化</p>
+    <h2 class="page-title font-display">{{ t('prestige.title') }}</h2>
+    <p class="page-sub">{{ t('prestige.subtitle') }}</p>
 
     <!-- 负熵面板 -->
     <div class="neg-panel">
       <div>
-        <div class="neg-label">负熵（永久货币）</div>
+        <div class="neg-label">{{ t('prestige.negEntropyLabel') }}）</div>
         <div class="neg-value font-display">{{ fmt(game.transcend.negativeEntropy) }}</div>
       </div>
       <div>
-        <div class="preview-label">本次转生可获得</div>
+        <div class="preview-label">{{ t('prestige.available') }}</div>
         <div class="preview-value font-mono" :class="{ ready: canTranscend }">
           +{{ fmt(previewGain) }}
         </div>
@@ -89,14 +93,16 @@ function cancelTranscend() {
     <!-- 转生按钮 -->
     <button class="btn-transcend" :disabled="!canTranscend" @click="tryTranscend">
       <Icon name="i-nav-prestige" size="md" />
-      执行奇点重启
+      {{ t('prestige.doTranscend') }}
     </button>
-    <p v-if="!canTranscend" class="req-hint">需达到 300,000 总能量产出才能转生</p>
-    <p v-else class="ready-hint">已满足转生条件！</p>
+    <p v-if="!canTranscend" class="req-hint">
+      {{ t('prestige.needLead') }} 300,000 {{ t('prestige.needTail') }}
+    </p>
+    <p v-else class="ready-hint">{{ t('prestige.ready') }}！</p>
 
     <!-- 转生树 -->
     <div>
-      <h3 class="section-title">转生天赋树</h3>
+      <h3 class="section-title">{{ t('prestige.treeTitle') }}</h3>
       <div class="tree-grid">
         <div
           v-for="node in buyoutNodes"
@@ -109,7 +115,9 @@ function cancelTranscend() {
         >
           <div class="node-head">
             <span class="node-name">{{ node.name }}</span>
-            <span class="node-cost font-mono">{{ fmt(node.cost) }} 负熵</span>
+            <span class="node-cost font-mono"
+              >{{ fmt(node.cost) }} {{ t('resources.negEntropy') }}</span
+            >
           </div>
           <p class="node-desc">{{ node.desc }}</p>
           <div class="node-effects">
@@ -122,16 +130,16 @@ function cancelTranscend() {
             :disabled="game.transcend.negativeEntropy.lt(node.cost)"
             @click="tryPurchase(node.id)"
           >
-            购买
+            {{ t('prestige.buy') }}
           </button>
-          <div v-else class="purchased-tag">已激活</div>
+          <div v-else class="purchased-tag">{{ t('prestige.active') }}</div>
         </div>
       </div>
 
       <h3 class="section-title infinite-title">
-        无限天赋
+        {{ t('prestige.infiniteTitle') }}
         <span class="infinite-badge" aria-hidden="true">∞</span>
-        <span class="bulk-toggle" role="group" aria-label="单次购买级数">
+        <span class="bulk-toggle" role="group" :aria-label="t('prestige.bulkAria')">
           <button
             v-for="s in [1, 10, 100]"
             :key="s"
@@ -144,7 +152,7 @@ function cancelTranscend() {
           </button>
         </span>
       </h3>
-      <p class="infinite-sub">可重复购买，成本逐级递增，效果永久叠加</p>
+      <p class="infinite-sub">{{ t('prestige.infiniteDesc') }}</p>
       <div class="tree-grid">
         <div
           v-for="node in infiniteNodes"
@@ -162,10 +170,14 @@ function cancelTranscend() {
             </span>
             <span class="node-cost font-mono"
               ><template v-if="infBulk > 1 && infPreviews[node.id].count > 0"
-                >可买 {{ infPreviews[node.id].count }} 级 · 共
-                {{ fmt(infPreviews[node.id].cost) }} 负熵</template
-              ><template v-else-if="infBulk > 1">可买 0 级</template
-              ><template v-else>{{ fmt(nextCost(node)) }} 负熵</template></span
+                >{{ t('common.canBuy') }} {{ infPreviews[node.id].count }}
+                {{ t('common.unitLevel') }} · {{ t('common.totalLead') }}
+                {{ fmt(infPreviews[node.id].cost) }} {{ t('resources.negEntropy') }}</template
+              ><template v-else-if="infBulk > 1"
+                >{{ t('common.canBuy') }} 0 {{ t('common.unitLevel') }}</template
+              ><template v-else
+                >{{ fmt(nextCost(node)) }} {{ t('resources.negEntropy') }}</template
+              ></span
             >
           </div>
           <p class="node-desc">{{ node.desc }}</p>
@@ -190,32 +202,34 @@ function cancelTranscend() {
     <!-- 转生确认弹窗 -->
     <ConfirmModal
       :model-value="showConfirm"
-      aria-label="确认奇点重启"
-      confirm-text="确认重启"
+      :aria-label="t('prestige.confirmTitle')"
+      :confirm-text="t('prestige.confirm')"
       accent="var(--color-amber)"
       @cancel="cancelTranscend"
       @confirm="confirmTranscend"
     >
-      <h2 class="confirm-title font-display">确认奇点重启？</h2>
+      <h2 class="confirm-title font-display">{{ t('prestige.confirmTitle') }}？</h2>
       <div class="warning-box">
-        <p>⚠️ 将重置以下内容：</p>
+        <p>⚠️ {{ t('prestige.resetTitle') }}：</p>
         <ul>
-          <li>所有资源（暗物质部分保留）</li>
-          <li>所有建筑等级</li>
-          <li>所有科技进度</li>
-          <li>所有部队和编组</li>
-          <li>所有据点攻克记录与驻扎状态</li>
-          <li>所有探索进度</li>
+          <li>{{ t('prestige.resetResources') }}）</li>
+          <li>{{ t('prestige.resetBuildings') }}</li>
+          <li>{{ t('prestige.resetTech') }}</li>
+          <li>{{ t('prestige.resetArmy') }}</li>
+          <li>{{ t('prestige.resetStrongholds') }}</li>
+          <li>{{ t('prestige.resetExplore') }}</li>
         </ul>
-        <p>✅ 保留以下内容：</p>
+        <p>✅ {{ t('prestige.keepTitle') }}：</p>
         <ul>
-          <li>遗物与装备</li>
-          <li>负熵与转生树</li>
-          <li>转生次数</li>
-          <li>成就与终身计数</li>
+          <li>{{ t('prestige.keepRelics') }}</li>
+          <li>{{ t('prestige.keepNegEntropy') }}</li>
+          <li>{{ t('prestige.keepTranscends') }}</li>
+          <li>{{ t('prestige.keepAchievements') }}</li>
         </ul>
       </div>
-      <p class="gain-preview">获得 +{{ fmt(previewGain) }} 负熵</p>
+      <p class="gain-preview">
+        {{ t('prestige.gain') }} +{{ fmt(previewGain) }} {{ t('resources.negEntropy') }}
+      </p>
     </ConfirmModal>
   </div>
 </template>

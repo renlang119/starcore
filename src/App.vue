@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fallbackActive, resetFallback } from '@/lib/error-fallback'
@@ -8,15 +9,15 @@ const game = useGameStore()
 const loaded = ref(false)
 
 /** 兜底屏标题：存档读取失败或运行期异常 */
-const errorTitle = computed(() => (fallbackActive.value ? '星核运行异常' : '星核读取失败'))
+const errorTitle = computed(() =>
+  fallbackActive.value ? t('app.errorTitle') : t('app.readFailTitle')
+)
 /** 兜底屏提示文案：版本过新 / 存档损坏 / 读取失败 / 运行期异常四种口径 */
 const errorHint = computed(() => {
-  if (fallbackActive.value)
-    return '游戏运行遇到异常。建议先刷新页面重试；若问题反复出现，可清除存档重开。'
-  if (game.initError === 'too_new') return '存档来自更新版本的游戏，当前版本无法读取。'
-  if (game.initError === 'corrupt')
-    return '存档数据已损坏，无法读取。可先导出原始存档，再清除重开。'
-  return '存档数据异常，读取失败。'
+  if (fallbackActive.value) return t('app.crashHint')
+  if (game.initError === 'too_new') return t('app.saveTooNew')
+  if (game.initError === 'corrupt') return t('app.saveCorrupt')
+  return t('app.saveBroken')
 })
 /** 是否提供「导出原始存档」入口（仅损坏档：原始载荷还在时才有意义） */
 const canExportRaw = computed(() => game.initError === 'corrupt' && !!game.corruptRaw)
@@ -61,14 +62,14 @@ function downloadText(filename: string, text: string, mime: string) {
 function exportRawSave() {
   const raw = game.exportCorruptRaw()
   if (!raw) {
-    exitMsg.value = '未找到可导出的原始存档数据。'
+    exitMsg.value = t('save.rawNone')
     return
   }
   try {
     downloadText(`starcore-corrupt-save-${Date.now()}.json`, raw, 'application/json')
-    exitMsg.value = '已开始下载原始存档文件。'
+    exitMsg.value = t('save.rawDownloaded')
   } catch {
-    exitMsg.value = '导出失败，请刷新页面后重试。'
+    exitMsg.value = t('save.exportFailed')
   }
 }
 /** 兜底屏出口（运行期异常）：导出当前存档码，供玩家刷新或清档前自行留存 */
@@ -76,9 +77,9 @@ async function exportSaveFile() {
   try {
     const code = await game.doExport()
     downloadText(`starcore-save-${Date.now()}.txt`, code, 'text/plain')
-    exitMsg.value = '已开始下载存档文件。'
+    exitMsg.value = t('save.saveDownloaded')
   } catch {
-    exitMsg.value = '导出失败，请刷新页面后重试。'
+    exitMsg.value = t('save.exportFailed')
   }
 }
 /** 兜底屏出口（运行期异常）：整页刷新重试 */
@@ -96,7 +97,7 @@ async function clearAndRestart() {
     loaded.value = true
     window.addEventListener('beforeunload', handleUnload)
   } catch {
-    exitMsg.value = '清除存档失败，请刷新页面后重试。'
+    exitMsg.value = t('save.clearFailed')
   } finally {
     clearing.value = false
   }
@@ -109,11 +110,13 @@ async function clearAndRestart() {
     <p class="error-title">{{ errorTitle }}</p>
     <p class="error-hint">{{ errorHint }}</p>
     <button v-if="canExportRaw" class="btn btn-secondary" @click="exportRawSave">
-      导出原始存档
+      {{ t('save.exportRaw') }}
     </button>
-    <button v-if="fallbackActive" class="btn btn-accent" @click="reloadPage">刷新页面</button>
+    <button v-if="fallbackActive" class="btn btn-accent" @click="reloadPage">
+      {{ t('app.reload') }}
+    </button>
     <button v-if="fallbackActive" class="btn btn-secondary" @click="exportSaveFile">
-      导出存档
+      {{ t('save.export') }}
     </button>
     <button
       class="btn"
@@ -121,14 +124,14 @@ async function clearAndRestart() {
       :disabled="clearing"
       @click="clearAndRestart"
     >
-      清除存档重开
+      {{ t('app.clearSave') }}
     </button>
     <p v-if="exitMsg" class="error-msg">{{ exitMsg }}</p>
   </div>
   <AppShell v-else-if="loaded" />
   <div v-else class="loading-screen">
     <div class="loading-core"></div>
-    <p>正在初始化星核…</p>
+    <p>{{ t('app.initializing') }}…</p>
   </div>
 </template>
 

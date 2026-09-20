@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref, watchEffect } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
@@ -65,9 +66,9 @@ const { particles } = useResourceParticles(getPositiveRateResources)
 <template>
   <header class="top-bar">
     <div class="brand">
-      <span class="brand-name">星核纪元</span>
+      <span class="brand-name">{{ t('common.brand') }}</span>
     </div>
-    <ul class="res-strip" aria-label="资源">
+    <ul class="res-strip" :aria-label="t('nav.resourcesAria')">
       <li
         v-for="r in resourceList"
         :key="r.id"

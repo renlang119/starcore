@@ -16,6 +16,7 @@
  * - 纯前端单机存档：日期用本地时间即可，奖励量级小，无跨时区刷取收益
  * - 存档容缺：daily 为可选字段，旧档缺失视为未签到过、本周挑战待生成，从当天开始
  */
+import { t } from '@/i18n'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { DailySaveData } from '@/lib/storage'
@@ -58,35 +59,35 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     kind: 'battles',
     targets: [5, 8, 12],
     rewardDark: [3, 5, 8],
-    name: (t) => `累计攻克 ${t} 座据点`,
+    name: (n) => t('home.daily.ch.wkBattles', { n }),
   },
   {
     templateId: 'wk_explores',
     kind: 'explores',
     targets: [6, 10, 15],
     rewardDark: [3, 5, 8],
-    name: (t) => `累计完成 ${t} 次探索`,
+    name: (n) => t('home.daily.ch.wkExplores', { n }),
   },
   {
     templateId: 'wk_researches',
     kind: 'researches',
     targets: [3, 5, 8],
     rewardDark: [3, 5, 8],
-    name: (t) => `累计研究 ${t} 项科技`,
+    name: (n) => t('home.daily.ch.wkResearches', { n }),
   },
   {
     templateId: 'wk_upgrades',
     kind: 'upgrades',
     targets: [40, 70, 100],
     rewardDark: [3, 5, 8],
-    name: (t) => `累计升级建筑 ${t} 次`,
+    name: (n) => t('home.daily.ch.wkUpgrades', { n }),
   },
   {
     templateId: 'wk_transcends',
     kind: 'transcends',
     targets: [1, 2],
     rewardDark: [8, 12],
-    name: (t) => `完成 ${t} 次奇点重启`,
+    name: (n) => t('home.daily.ch.wkTranscends', { n }),
   },
 ]
 

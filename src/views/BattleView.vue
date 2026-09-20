@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
@@ -118,7 +119,7 @@ const {
 
 <template>
   <div v-if="stronghold" class="battle-view">
-    <button class="back-btn" @click="router.push('/map')">← 返回星图</button>
+    <button class="back-btn" @click="router.push('/map')">← {{ t('battle.backToMap') }}</button>
 
     <!-- 据点信息 -->
     <div class="stronghold-info" :style="{ '--c': STRONGHOLD_TYPES[stronghold.type].color }">
@@ -145,13 +146,13 @@ const {
 
     <!-- 敌方信息 -->
     <div>
-      <h3 class="section-title">敌方部署</h3>
+      <h3 class="section-title">{{ t('battle.enemyDeployment') }}</h3>
       <div class="enemy-list">
         <div v-for="(e, i) in stronghold.enemies" :key="i" class="enemy-card">
           <div class="e-name">{{ e.name }}</div>
           <div class="e-stats">
-            <span class="stat">攻 {{ fmt(e.attack) }}</span>
-            <span class="stat">防 {{ fmt(e.defense) }}</span>
+            <span class="stat">{{ t('common.statAttack') }} {{ fmt(e.attack) }}</span>
+            <span class="stat">{{ t('common.statDefense') }} {{ fmt(e.defense) }}</span>
             <span class="stat">HP {{ fmt(e.hp) }}</span>
             <span class="stat count">×{{ e.count }}</span>
           </div>
@@ -182,7 +183,7 @@ const {
         @click="startBattle"
       >
         <Icon name="i-ui-sword" size="md" />
-        出征
+        {{ t('battle.deploy') }}
       </button>
       <button
         v-if="!isEndless"
@@ -193,13 +194,13 @@ const {
         data-testid="battle-garrison"
         @click="toggleGarrison"
       >
-        {{ isGarrisoned ? '撤回驻扎' : '挂机驻扎' }}
+        {{ isGarrisoned ? t('battle.withdrawGarrison') : t('battle.garrison') }}
       </button>
     </div>
 
     <!-- 战斗日志 -->
     <div v-if="battleLog && !showResult" class="battle-log">
-      <h3 class="section-title">战斗日志</h3>
+      <h3 class="section-title">{{ t('battle.logTitle') }}</h3>
       <LogList class="log-list" :entries="battleLog" />
     </div>
 
@@ -224,9 +225,9 @@ const {
   <EmptyState
     v-else
     icon="i-nav-explore"
-    text="据点不存在"
-    hint="该据点可能已被移除，请返回星图重新选择"
-    action="返回星图"
+    :text="t('battle.noStronghold')"
+    :hint="t('battle.noStrongholdHint')"
+    :action="t('battle.backToMap')"
     to="/map"
   />
 </template>

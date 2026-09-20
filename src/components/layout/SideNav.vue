@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
@@ -52,7 +53,7 @@ function toggleCollapsed() {
   <nav class="side-nav" :class="{ collapsed }">
     <div class="brand">
       <div class="brand-mark"></div>
-      <span class="brand-name">星核纪元</span>
+      <span class="brand-name">{{ t('common.brand') }}</span>
     </div>
     <button
       v-for="n in navItems"
@@ -69,14 +70,14 @@ function toggleCollapsed() {
     </button>
     <div class="side-footer">
       <div class="stat">
-        <span class="label">负熵</span>
+        <span class="label">{{ t('resources.negEntropy') }}</span>
         <span class="val font-mono" style="color: var(--color-amber)">{{ negEntropy }}</span>
       </div>
     </div>
     <button
       class="collapse-toggle"
-      :aria-label="collapsed ? '展开侧栏' : '折叠侧栏'"
-      :title="collapsed ? '展开侧栏' : '折叠侧栏'"
+      :aria-label="collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')"
+      :title="collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')"
       @click="toggleCollapsed"
     >
       <svg

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import ModalOverlay from './ModalOverlay.vue'
 
 /**
@@ -30,7 +31,7 @@ withDefaults(
     modalClass?: string
   }>(),
   {
-    cancelText: '取消',
+    cancelText: t('common.cancel'),
     accent: 'var(--color-alert)',
     stretch: true,
     confirmFlex: 1,

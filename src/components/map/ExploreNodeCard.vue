@@ -5,6 +5,7 @@
  * 从 MapView 拆出：按状态渲染（进行中 / 待探索 / 已锁定 / 已完成）、
  * 进度条、成本与奖励预览。类名与文案保持不变。
  */
+import { t } from '@/i18n'
 import { useGameStore } from '@/stores/game'
 import { fmtTime } from '@/lib/format'
 import { EXPLORE_NODES } from '@/data/explore'
@@ -66,20 +67,20 @@ const game = useGameStore()
         :disabled="!game.resources.canAfford(node.cost)"
         @click="emit('explore', node.id)"
       >
-        探索
+        {{ t('map.explore') }}
       </button>
     </div>
 
     <!-- 锁定 -->
     <div v-else-if="locked" class="n-locked">
-      需先完成：{{
+      {{ t('map.needsPrereq') }}：{{
         (node.requires ?? []).map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name).join(', ')
       }}
     </div>
 
     <!-- 已完成奖励预览 -->
     <div v-if="completed" class="n-rewards">
-      <span class="rewards-label">已获得：</span>
+      <span class="rewards-label">{{ t('map.obtained') }}：</span>
       <span v-for="r in rewards" :key="r.name" class="reward-tag" :style="{ color: r.color }"
         >{{ r.name }} +{{ r.amount }}</span
       >

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { RARITY_INFO, relicRarityColor } from '@/data/relics'
 import type { RelicFusionApi } from '@/composables/useRelicFusion'
 import ModalOverlay from '@/components/ui/ModalOverlay.vue'
@@ -15,9 +16,9 @@ import Icon from '@/components/ui/Icon.vue'
 defineProps<{ fusion: RelicFusionApi }>()
 
 const NEXT_RARITY_NAME: Record<string, string> = {
-  common: '稀有',
-  rare: '史诗',
-  epic: '传说',
+  common: t('common.rarity.rare'),
+  rare: t('common.rarity.epic'),
+  epic: t('common.rarity.legend'),
 }
 
 const rarityColor = relicRarityColor
@@ -31,10 +32,8 @@ function closeResult(fusion: RelicFusionApi) {
   <div>
     <!-- 合成工坊（v0.61） -->
     <div class="fusion-section" data-testid="fusion-section">
-      <h3 class="section-title">合成工坊</h3>
-      <p class="fusion-hint">
-        点选 3 件同稀有度、未装备的遗物，合成 1 件高一档稀有度的随机遗物（传说为顶档，不可作材料）
-      </p>
+      <h3 class="section-title">{{ t('relics.fusionTitle') }}</h3>
+      <p class="fusion-hint">{{ t('relics.fusionHint') }}）</p>
       <div class="fusion-panel">
         <button
           class="btn-ghost sm select-mode-btn"
@@ -42,7 +41,7 @@ function closeResult(fusion: RelicFusionApi) {
           data-testid="select-mode-button"
           @click="fusion.toggleSelectMode"
         >
-          {{ fusion.selectMode.value ? '✓ 选材中：点击图鉴卡加入材料（再点取消）' : '选择材料' }}
+          {{ fusion.selectMode.value ? t('relics.fusionSelecting') : t('relics.fusionPick') }}
         </button>
         <div class="fusion-slots" data-testid="fusion-slots">
           <div
@@ -54,7 +53,7 @@ function closeResult(fusion: RelicFusionApi) {
             <template v-if="i <= fusion.selectedMaterials.value.length">
               {{ fusion.materialName(i) }}
             </template>
-            <template v-else>材料 {{ i }}</template>
+            <template v-else>{{ t('relics.fusionMaterials') }} {{ i }}</template>
           </div>
         </div>
         <div class="fusion-actions">
@@ -65,21 +64,22 @@ function closeResult(fusion: RelicFusionApi) {
             data-testid="fusion-button"
             @click="fusion.doSynthesize"
           >
-            合 成
+            {{ t('relics.fusionDo') }}
           </button>
           <button
             v-if="fusion.selectedMaterials.value.length > 0"
             class="btn-ghost sm"
             @click="fusion.clearSelection"
           >
-            清空
+            {{ t('relics.fusionClear') }}
           </button>
         </div>
         <p v-if="fusion.synthFailMsg.value" class="fusion-fail">{{ fusion.synthFailMsg.value }}</p>
         <p v-else-if="fusion.materialRarity.value" class="fusion-rarity">
-          材料稀有度：{{ RARITY_INFO[fusion.materialRarity.value].name }} → 产物：{{
-            NEXT_RARITY_NAME[fusion.materialRarity.value]
+          {{ t('relics.fusionMaterialRarity') }}：{{
+            RARITY_INFO[fusion.materialRarity.value].name
           }}
+          → {{ t('relics.fusionResult') }}：{{ NEXT_RARITY_NAME[fusion.materialRarity.value] }}
         </p>
       </div>
     </div>
@@ -88,12 +88,12 @@ function closeResult(fusion: RelicFusionApi) {
     <ModalOverlay
       :model-value="!!fusion.synthResult.value"
       modal-class="synth-modal"
-      aria-label="合成结果"
+      :aria-label="t('relics.fusionResultAria')"
       @overlay-click="closeResult(fusion)"
     >
       <template v-if="fusion.synthResult.value">
-        <h2 class="result-title font-display">合成成功</h2>
-        <p class="result-sub">材料已消耗，获得新遗物</p>
+        <h2 class="result-title font-display">{{ t('relics.fusionSuccessTitle') }}</h2>
+        <p class="result-sub">{{ t('relics.fusionSuccessDesc') }}</p>
         <div
           class="synth-product"
           :style="{ '--c': rarityColor(fusion.synthResult.value.rarity) }"
@@ -116,7 +116,9 @@ function closeResult(fusion: RelicFusionApi) {
           </div>
         </div>
         <div class="btn-group">
-          <button class="btn-primary" style="flex: 1" @click="closeResult(fusion)">确认</button>
+          <button class="btn-primary" style="flex: 1" @click="closeResult(fusion)">
+            {{ t('common.confirm') }}
+          </button>
         </div>
       </template>
     </ModalOverlay>

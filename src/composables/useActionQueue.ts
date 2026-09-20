@@ -7,6 +7,7 @@
  * 无训练任务时显示「训练部队」引导。
  * 可探索口径：availableNodes 已排除进行中节点（v0.81 收口），待探索数不重复计数。
  */
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { BUILDINGS } from '@/data/buildings'
@@ -30,8 +31,8 @@ export interface ActionItem {
 const fallbackActions: ActionItem[] = [
   {
     id: 'fallback-build',
-    label: '建造',
-    detail: '升级建筑提升产能',
+    label: t('home.actions.build'),
+    detail: t('home.actions.buildDetail'),
     path: '/build',
     color: 'var(--color-core)',
     icon: 'i-nav-build',
@@ -39,8 +40,8 @@ const fallbackActions: ActionItem[] = [
   },
   {
     id: 'fallback-tech',
-    label: '研究',
-    detail: '解锁新技术',
+    label: t('home.actions.research'),
+    detail: t('home.actions.unlockTech'),
     path: '/tech',
     color: 'var(--color-plasma)',
     icon: 'i-nav-tech',
@@ -68,8 +69,8 @@ export function useActionQueue() {
       const done = progress >= 1
       items.push({
         id: `explore-${nodeId}`,
-        label: `探索 ${node.name}`,
-        detail: done ? '已完成' : `${Math.floor(progress * 100)}%`,
+        label: t('home.actions.explore', { nodeName: node.name }),
+        detail: done ? t('home.actions.done') : `${Math.floor(progress * 100)}%`,
         path: '/map',
         color: 'var(--color-quantum)',
         icon: 'i-nav-explore',
@@ -85,7 +86,7 @@ export function useActionQueue() {
       const progress = 1 - task.remaining / task.totalTime
       items.push({
         id: `train-${task.id}`,
-        label: `训练 ${unitDef.name} ×${task.count}`,
+        label: t('home.actions.train', { unitDefName: unitDef.name, taskCount: task.count }),
         detail: `${Math.floor(progress * 100)}%`,
         path: '/army',
         color: 'var(--color-alert)',
@@ -108,8 +109,8 @@ export function useActionQueue() {
     if (upgradable > 0) {
       items.push({
         id: 'build-upgrade',
-        label: `${upgradable} 个建筑可升级`,
-        detail: '资源充足，立即升级',
+        label: t('home.actions.upgradable', { count: upgradable }),
+        detail: t('home.actions.upgradeNow'),
         path: '/build',
         color: 'var(--color-core)',
         icon: 'i-nav-build',
@@ -128,8 +129,8 @@ export function useActionQueue() {
     if (researchable > 0) {
       items.push({
         id: 'tech-research',
-        label: `${researchable} 项科技可研究`,
-        detail: '解锁新技术',
+        label: t('home.actions.researchable', { count: researchable }),
+        detail: t('home.actions.unlockTech'),
         path: '/tech',
         color: 'var(--color-plasma)',
         icon: 'i-nav-tech',
@@ -142,8 +143,8 @@ export function useActionQueue() {
     if (availableExplores.length > 0) {
       items.push({
         id: 'explore-available',
-        label: `${availableExplores.length} 个星域待探索`,
-        detail: '开拓新星域',
+        label: t('home.actions.explorable', { count: availableExplores.length }),
+        detail: t('home.actions.exploreNew'),
         path: '/map',
         color: 'var(--color-quantum)',
         icon: 'i-nav-explore',
@@ -159,8 +160,8 @@ export function useActionQueue() {
     ) {
       items.push({
         id: 'army-train',
-        label: '训练部队',
-        detail: '增强军事实力',
+        label: t('home.actions.trainArmy'),
+        detail: t('home.actions.trainArmyDetail'),
         path: '/army',
         color: 'var(--color-alert)',
         icon: 'i-nav-army',

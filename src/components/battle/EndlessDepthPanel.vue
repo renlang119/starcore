@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 /**
  * EndlessDepthPanel.vue — 无尽远征深度选择面板（从 BattleView 拆出）。
  *
@@ -17,32 +18,32 @@ const emit = defineEmits<{ step: [delta: number] }>()
 
 <template>
   <div class="endless-depth" data-testid="endless-depth-panel">
-    <h3 class="section-title">远征深度</h3>
+    <h3 class="section-title">{{ t('battle.depthTitle') }}</h3>
     <div class="depth-controls">
       <button
         class="depth-btn"
         :disabled="depth <= 1"
         data-testid="endless-depth-minus"
-        aria-label="降低深度"
+        :aria-label="t('battle.depthDown')"
         @click="emit('step', -1)"
       >
         −
       </button>
       <div class="depth-value font-mono" data-testid="endless-depth-value">
-        第 {{ depth }} 层
-        <span v-if="depth === maxDepth" class="depth-frontier">前沿</span>
+        {{ t('battle.depthLead') }} {{ depth }} {{ t('battle.depthUnit') }}
+        <span v-if="depth === maxDepth" class="depth-frontier">{{ t('battle.frontier') }}</span>
       </div>
       <button
         class="depth-btn"
         :disabled="depth >= maxDepth"
         data-testid="endless-depth-plus"
-        aria-label="提升深度"
+        :aria-label="t('battle.depthUp')"
         @click="emit('step', 1)"
       >
         ＋
       </button>
     </div>
-    <p class="depth-hint">攻克「前沿」深度即可推进历史纪录；已通过层数可反复挑战</p>
+    <p class="depth-hint">{{ t('battle.depthHint') }}</p>
   </div>
 </template>
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 /**
  * OnboardingBubble.vue — P3-3 新手引导气泡
  *
@@ -25,8 +26,10 @@ const emit = defineEmits<{
     <div v-if="title" class="onboard-title">{{ title }}</div>
     <p class="onboard-text">{{ text }}</p>
     <div class="onboard-actions">
-      <button class="onboard-skip" @click="emit('skip')">跳过引导</button>
-      <button class="onboard-ok btn-secondary sm" @click="emit('dismiss')">知道了</button>
+      <button class="onboard-skip" @click="emit('skip')">{{ t('ui.skipOnboarding') }}</button>
+      <button class="onboard-ok btn-secondary sm" @click="emit('dismiss')">
+        {{ t('ui.gotIt') }}
+      </button>
     </div>
     <!-- 尾巴指向目标元素 -->
     <span class="onboard-tail" aria-hidden="true"></span>
