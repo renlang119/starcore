@@ -72,14 +72,14 @@ starcore/
 │  ├─ composables/  13 composables (breakpoints, Toast, action queue, onboarding, particles, …)
 │  ├─ data/         11 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, navigation, story, background stars)
 │  ├─ i18n/         i18n facade (message lookup and locale detection)
-│  ├─ lib/          16 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
+│  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
 │  ├─ locales/      locale bundles (zh-CN baseline, split by domain)
 │  ├─ router/       route definitions
 │  ├─ stores/       11 Pinia stores (resources, buildings, research, military, combat,
 │  │                exploration, relics, rebirth, achievements, daily, game)
 │  ├─ styles/       8 style modules (tokens, base, fonts, buttons, Toast, animations, background, utilities)
 │  ├─ tests/        test harness (vitest setup and shared helpers)
-│  ├─ views/        9 views (home, build, tech, map, army, battle, relics, rebirth, achievements)
+│  ├─ views/        10 views (home, build, tech, map, army, battle, relics, rebirth, achievements, settings)
 │  └─ App.vue / main.ts / version.ts / style.css
 ├─ docs/            11 specification documents (in Chinese), see Documentation (plus archived history)
 ├─ public/          favicon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
@@ -91,8 +91,8 @@ starcore/
 
 ## Quality
 
-- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 35 test files,
-  500 cases
+- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 36 test files,
+  506 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document

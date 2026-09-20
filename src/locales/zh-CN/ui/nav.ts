@@ -15,5 +15,6 @@ export default {
   'nav.prestige': '奇点重启',
   'nav.relic': '遗物',
   'nav.resourcesAria': '资源',
+  'nav.settings': '设置',
   'nav.tech': '科技树',
 }

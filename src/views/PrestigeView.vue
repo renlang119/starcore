@@ -6,7 +6,6 @@ import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import Icon from '@/components/ui/Icon.vue'
-import SavePanel from '@/components/settings/SavePanel.vue'
 import { bulkLabel } from '@/composables/useBulkLabel'
 
 const game = useGameStore()
@@ -196,8 +195,6 @@ function cancelTranscend() {
         </div>
       </div>
     </div>
-
-    <SavePanel />
 
     <!-- 转生确认弹窗 -->
     <ConfirmModal

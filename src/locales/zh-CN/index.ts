@@ -23,6 +23,7 @@ import prestige from './ui/prestige.ts'
 import relics from './ui/relics.ts'
 import resources from './ui/resources.ts'
 import save from './ui/save.ts'
+import settings from './ui/settings.ts'
 import tech from './ui/tech.ts'
 import ui from './ui/ui.ts'
 
@@ -43,6 +44,7 @@ export default {
   ...relics,
   ...resources,
   ...save,
+  ...settings,
   ...tech,
   ...ui,
 }
