@@ -98,6 +98,9 @@ starcore/
 - **Count conservation**: `scripts/check-conservation.mjs` validates document
   counts, achievement text links and test hard assertions against real data
   (`corepack pnpm check:conservation`)
+- **Copy guard**: `scripts/check-locales.mjs` gates message-key closure (missing /
+  unused / non-literal calls) and zero hardcoded Chinese residuals; wired into
+  `corepack pnpm check`
 
 ## Documentation
 

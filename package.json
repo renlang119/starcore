@@ -18,7 +18,7 @@
     "check:locales": "node scripts/check-locales.mjs",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "check": "corepack pnpm build && corepack pnpm test && corepack pnpm check:conservation && corepack pnpm lint:check && corepack pnpm format:check"
+    "check": "corepack pnpm build && corepack pnpm test && corepack pnpm check:conservation && corepack pnpm check:locales --strict && corepack pnpm lint:check && corepack pnpm format:check"
   },
   "dependencies": {
     "@vue/devtools-api": "8.2.1",
