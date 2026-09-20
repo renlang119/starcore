@@ -34,4 +34,11 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/achievements',
     tier: 'secondary',
   },
+  {
+    id: 'settings',
+    label: t('nav.settings'),
+    icon: 'i-nav-settings',
+    path: '/settings',
+    tier: 'secondary',
+  },
 ]

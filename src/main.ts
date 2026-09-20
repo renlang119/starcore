@@ -1,10 +1,13 @@
-import { t } from '@/i18n'
+import { getLocale, t } from '@/i18n'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { activateFallback } from './lib/error-fallback'
 import './style.css'
+
+// 语言标签同步（v1.13）：<html lang> 反映实际生效语言（多语言扩展前置）
+document.documentElement.lang = getLocale()
 
 const app = createApp(App)
 app.use(createPinia())

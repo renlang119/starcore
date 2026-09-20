@@ -47,6 +47,7 @@ export function t(key: string, params?: I18nParams): string {
 export {
   AVAILABLE_LOCALES,
   DEFAULT_LOCALE,
+  LOCALE_STORAGE_KEY,
   clearLocale,
   getLocale,
   isSupportedLocale,
