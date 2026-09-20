@@ -10,6 +10,7 @@
  * - prestige_mult 仅「欧米伽传承」（集齐 20 种遗物）1 个成就给 +10%，封顶无失控风险
  */
 
+import { t } from '@/i18n'
 import type { EffectTypeBase } from '@/lib/effect-types'
 
 /** 成就奖励效果（与转生树/科技/遗物效果同构，走 EffectSystem 聚合） */
@@ -50,15 +51,15 @@ export interface AchievementDef {
 
 export const ACHIEVEMENT_CATEGORIES: Record<AchievementCategory, { label: string; icon: string }> =
   {
-    energy: { label: '能量里程碑', icon: 'i-res-energy' },
-    dark: { label: '暗物质里程碑', icon: 'i-res-dark' },
-    build: { label: '建造里程碑', icon: 'i-nav-build' },
-    tech: { label: '研究里程碑', icon: 'i-nav-tech' },
-    explore: { label: '探索里程碑', icon: 'i-nav-explore' },
-    battle: { label: '战斗里程碑', icon: 'i-ui-sword' },
-    relic: { label: '遗物收藏', icon: 'i-nav-relic' },
-    transcend: { label: '奇点轮回', icon: 'i-nav-prestige' },
-    time: { label: '游玩时长', icon: 'i-ui-more' },
+    energy: { label: t('content.achievements.cat.energy.label'), icon: 'i-res-energy' },
+    dark: { label: t('content.achievements.cat.dark.label'), icon: 'i-res-dark' },
+    build: { label: t('content.achievements.cat.build.label'), icon: 'i-nav-build' },
+    tech: { label: t('content.achievements.cat.tech.label'), icon: 'i-nav-tech' },
+    explore: { label: t('content.achievements.cat.explore.label'), icon: 'i-nav-explore' },
+    battle: { label: t('content.achievements.cat.battle.label'), icon: 'i-ui-sword' },
+    relic: { label: t('content.achievements.cat.relic.label'), icon: 'i-nav-relic' },
+    transcend: { label: t('content.achievements.cat.transcend.label'), icon: 'i-nav-prestige' },
+    time: { label: t('content.achievements.cat.time.label'), icon: 'i-ui-more' },
   }
 
 function prod(pct: number): AchievementEffect[] {
@@ -67,15 +68,25 @@ function prod(pct: number): AchievementEffect[] {
       type: 'production_mult',
       target: 'all',
       value: 1 + pct / 100,
-      label: `全产出 +${pct}%`,
+      label: t('content.achievements.prodLabel', { pct }),
     },
   ]
 }
 /** 攻防成对给（与转生树 t_combat_1 同构：attack/defense 各一条） */
 function combat(pct: number): AchievementEffect[] {
   return [
-    { type: 'combat_mult', target: 'attack', value: 1 + pct / 100, label: `攻击 +${pct}%` },
-    { type: 'combat_mult', target: 'defense', value: 1 + pct / 100, label: `防御 +${pct}%` },
+    {
+      type: 'combat_mult',
+      target: 'attack',
+      value: 1 + pct / 100,
+      label: t('content.achievements.combatAttackLabel', { pct }),
+    },
+    {
+      type: 'combat_mult',
+      target: 'defense',
+      value: 1 + pct / 100,
+      label: t('content.achievements.combatDefenseLabel', { pct }),
+    },
   ]
 }
 
@@ -83,8 +94,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 能量（终身累计产出）——
   {
     id: 'ach_energy_1',
-    name: '星火初燃',
-    desc: '累计产出 100,000 能量',
+    name: t('content.achievements.ach_energy_1.name'),
+    desc: t('content.achievements.ach_energy_1.desc'),
     category: 'energy',
     metric: 'energy',
     threshold: 1e5,
@@ -92,8 +103,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_energy_2',
-    name: '能量狂潮',
-    desc: '累计产出 10,000,000 能量',
+    name: t('content.achievements.ach_energy_2.name'),
+    desc: t('content.achievements.ach_energy_2.desc'),
     category: 'energy',
     metric: 'energy',
     threshold: 1e7,
@@ -101,8 +112,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_energy_3',
-    name: '恒星之海',
-    desc: '累计产出 1,000,000,000 能量',
+    name: t('content.achievements.ach_energy_3.name'),
+    desc: t('content.achievements.ach_energy_3.desc'),
     category: 'energy',
     metric: 'energy',
     threshold: 1e9,
@@ -110,8 +121,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_energy_4',
-    name: '银河熔炉',
-    desc: '累计产出 1,000,000,000,000 能量',
+    name: t('content.achievements.ach_energy_4.name'),
+    desc: t('content.achievements.ach_energy_4.desc'),
     category: 'energy',
     metric: 'energy',
     threshold: 1e12,
@@ -120,8 +131,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 暗物质（终身累计产出）——
   {
     id: 'ach_dark_1',
-    name: '暗流涌动',
-    desc: '累计产出 1,000 暗物质',
+    name: t('content.achievements.ach_dark_1.name'),
+    desc: t('content.achievements.ach_dark_1.desc'),
     category: 'dark',
     metric: 'dark',
     threshold: 1e3,
@@ -129,8 +140,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_dark_2',
-    name: '暗潮澎湃',
-    desc: '累计产出 100,000 暗物质',
+    name: t('content.achievements.ach_dark_2.name'),
+    desc: t('content.achievements.ach_dark_2.desc'),
     category: 'dark',
     metric: 'dark',
     threshold: 1e5,
@@ -138,8 +149,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_dark_3',
-    name: '暗渊之主',
-    desc: '累计产出 10,000,000 暗物质',
+    name: t('content.achievements.ach_dark_3.name'),
+    desc: t('content.achievements.ach_dark_3.desc'),
     category: 'dark',
     metric: 'dark',
     threshold: 1e7,
@@ -148,8 +159,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 建造 ——
   {
     id: 'ach_build_1',
-    name: '奠基者',
-    desc: '累计升级建筑 50 次',
+    name: t('content.achievements.ach_build_1.name'),
+    desc: t('content.achievements.ach_build_1.desc'),
     category: 'build',
     metric: 'upgrades',
     threshold: 50,
@@ -157,8 +168,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_build_2',
-    name: '百塔耸立',
-    desc: '累计升级建筑 200 次',
+    name: t('content.achievements.ach_build_2.name'),
+    desc: t('content.achievements.ach_build_2.desc'),
     category: 'build',
     metric: 'upgrades',
     threshold: 200,
@@ -166,8 +177,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_build_3',
-    name: '千机互联',
-    desc: '累计升级建筑 500 次',
+    name: t('content.achievements.ach_build_3.name'),
+    desc: t('content.achievements.ach_build_3.desc'),
     category: 'build',
     metric: 'upgrades',
     threshold: 500,
@@ -175,8 +186,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_build_4',
-    name: '建筑宗师',
-    desc: '任意单座建筑达到 50 级',
+    name: t('content.achievements.ach_build_4.name'),
+    desc: t('content.achievements.ach_build_4.desc'),
     category: 'build',
     metric: 'maxBuildingLevel',
     threshold: 50,
@@ -185,8 +196,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 研究 ——
   {
     id: 'ach_tech_1',
-    name: '科学起步',
-    desc: '累计完成 10 项研究',
+    name: t('content.achievements.ach_tech_1.name'),
+    desc: t('content.achievements.ach_tech_1.desc'),
     category: 'tech',
     metric: 'researches',
     threshold: 10,
@@ -194,8 +205,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_tech_2',
-    name: '学术传承',
-    desc: '累计完成 25 项研究',
+    name: t('content.achievements.ach_tech_2.name'),
+    desc: t('content.achievements.ach_tech_2.desc'),
     category: 'tech',
     metric: 'researches',
     threshold: 25,
@@ -203,8 +214,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_tech_3',
-    name: '智慧之巅',
-    desc: '累计完成 59 项研究',
+    name: t('content.achievements.ach_tech_3.name'),
+    desc: t('content.achievements.ach_tech_3.desc'),
     category: 'tech',
     metric: 'researches',
     threshold: 59,
@@ -213,72 +224,114 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 探索 ——
   {
     id: 'ach_explore_1',
-    name: '突破轨道',
-    desc: '累计完成 4 次探索',
+    name: t('content.achievements.ach_explore_1.name'),
+    desc: t('content.achievements.ach_explore_1.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 4,
-    effects: [{ type: 'explore_mult', value: 1.1, label: '探索效率 +10%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.1,
+        label: t('content.achievements.ach_explore_1.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_explore_2',
-    name: '深空拓者',
-    desc: '累计完成 12 次探索',
+    name: t('content.achievements.ach_explore_2.name'),
+    desc: t('content.achievements.ach_explore_2.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 12,
-    effects: [{ type: 'explore_mult', value: 1.1, label: '探索效率 +10%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.1,
+        label: t('content.achievements.ach_explore_2.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_explore_3',
-    name: '星海航行者',
-    desc: '累计完成 40 次探索',
+    name: t('content.achievements.ach_explore_3.name'),
+    desc: t('content.achievements.ach_explore_3.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 40,
-    effects: [{ type: 'explore_mult', value: 1.15, label: '探索效率 +15%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.15,
+        label: t('content.achievements.ach_explore_3.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_explore_4',
-    name: '星团旅者',
-    desc: '累计完成 60 次探索',
+    name: t('content.achievements.ach_explore_4.name'),
+    desc: t('content.achievements.ach_explore_4.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 60,
-    effects: [{ type: 'explore_mult', value: 1.05, label: '探索效率 +5%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.05,
+        label: t('content.achievements.ach_explore_4.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_explore_5',
-    name: '臂航远征',
-    desc: '累计完成 80 次探索',
+    name: t('content.achievements.ach_explore_5.name'),
+    desc: t('content.achievements.ach_explore_5.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 80,
-    effects: [{ type: 'explore_mult', value: 1.05, label: '探索效率 +5%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.05,
+        label: t('content.achievements.ach_explore_5.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_explore_6',
-    name: '银河巡礼',
-    desc: '累计完成 100 次探索',
+    name: t('content.achievements.ach_explore_6.name'),
+    desc: t('content.achievements.ach_explore_6.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 100,
-    effects: [{ type: 'explore_mult', value: 1.05, label: '探索效率 +5%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.05,
+        label: t('content.achievements.ach_explore_6.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_explore_7',
-    name: '深空巡礼',
-    desc: '累计完成 120 次探索',
+    name: t('content.achievements.ach_explore_7.name'),
+    desc: t('content.achievements.ach_explore_7.desc'),
     category: 'explore',
     metric: 'explores',
     threshold: 120,
-    effects: [{ type: 'explore_mult', value: 1.05, label: '探索效率 +5%' }],
+    effects: [
+      {
+        type: 'explore_mult',
+        value: 1.05,
+        label: t('content.achievements.ach_explore_7.effect.0.label'),
+      },
+    ],
   },
   // —— 战斗 ——
   {
     id: 'ach_battle_1',
-    name: '首战告捷',
-    desc: '累计攻克 8 个据点',
+    name: t('content.achievements.ach_battle_1.name'),
+    desc: t('content.achievements.ach_battle_1.desc'),
     category: 'battle',
     metric: 'battles',
     threshold: 8,
@@ -286,8 +339,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_battle_2',
-    name: '沙场老兵',
-    desc: '累计攻克 24 个据点',
+    name: t('content.achievements.ach_battle_2.name'),
+    desc: t('content.achievements.ach_battle_2.desc'),
     category: 'battle',
     metric: 'battles',
     threshold: 24,
@@ -295,8 +348,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_battle_3',
-    name: '战争主宰',
-    desc: '累计攻克 80 个据点',
+    name: t('content.achievements.ach_battle_3.name'),
+    desc: t('content.achievements.ach_battle_3.desc'),
     category: 'battle',
     metric: 'battles',
     threshold: 80,
@@ -305,8 +358,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 远征深度（读外部现值 expeditionBest，跨转生保留，v0.69）——
   {
     id: 'ach_battle_4',
-    name: '深渊开拓者',
-    desc: '无尽远征推进至 10 层',
+    name: t('content.achievements.ach_battle_4.name'),
+    desc: t('content.achievements.ach_battle_4.desc'),
     category: 'battle',
     metric: 'expeditionBest',
     threshold: 10,
@@ -314,8 +367,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_battle_5',
-    name: '虚境征服者',
-    desc: '无尽远征推进至 20 层',
+    name: t('content.achievements.ach_battle_5.name'),
+    desc: t('content.achievements.ach_battle_5.desc'),
     category: 'battle',
     metric: 'expeditionBest',
     threshold: 20,
@@ -324,8 +377,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 遗物收藏（按当前持有数，遗物跨转生保留）——
   {
     id: 'ach_relic_1',
-    name: '收藏新手',
-    desc: '持有 5 件遗物',
+    name: t('content.achievements.ach_relic_1.name'),
+    desc: t('content.achievements.ach_relic_1.desc'),
     category: 'relic',
     metric: 'relicsOwned',
     threshold: 5,
@@ -333,17 +386,23 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_relic_2',
-    name: '宝库主人',
-    desc: '持有 10 件遗物',
+    name: t('content.achievements.ach_relic_2.name'),
+    desc: t('content.achievements.ach_relic_2.desc'),
     category: 'relic',
     metric: 'relicsOwned',
     threshold: 10,
-    effects: [{ type: 'offline_bonus', value: 1.1, label: '离线收益 +10%' }],
+    effects: [
+      {
+        type: 'offline_bonus',
+        value: 1.1,
+        label: t('content.achievements.ach_relic_2.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_relic_3',
-    name: '遗物学大家',
-    desc: '持有 15 件遗物',
+    name: t('content.achievements.ach_relic_3.name'),
+    desc: t('content.achievements.ach_relic_3.desc'),
     category: 'relic',
     metric: 'relicsOwned',
     threshold: 15,
@@ -351,27 +410,39 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_relic_4',
-    name: '欧米茄传承',
-    desc: '集齐全部 20 种遗物',
+    name: t('content.achievements.ach_relic_4.name'),
+    desc: t('content.achievements.ach_relic_4.desc'),
     category: 'relic',
     metric: 'relicKinds',
     threshold: 20,
-    effects: [{ type: 'prestige_mult', value: 1.1, label: '负熵 +10%' }],
+    effects: [
+      {
+        type: 'prestige_mult',
+        value: 1.1,
+        label: t('content.achievements.ach_relic_4.effect.0.label'),
+      },
+    ],
   },
   // —— 转生 ——
   {
     id: 'ach_transcend_1',
-    name: '初次奇点',
-    desc: '完成 1 次奇点重启',
+    name: t('content.achievements.ach_transcend_1.name'),
+    desc: t('content.achievements.ach_transcend_1.desc'),
     category: 'transcend',
     metric: 'transcends',
     threshold: 1,
-    effects: [{ type: 'offline_bonus', value: 1.1, label: '离线收益 +10%' }],
+    effects: [
+      {
+        type: 'offline_bonus',
+        value: 1.1,
+        label: t('content.achievements.ach_transcend_1.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_transcend_2',
-    name: '轮回旅人',
-    desc: '完成 3 次奇点重启',
+    name: t('content.achievements.ach_transcend_2.name'),
+    desc: t('content.achievements.ach_transcend_2.desc'),
     category: 'transcend',
     metric: 'transcends',
     threshold: 3,
@@ -379,17 +450,23 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_transcend_3',
-    name: '超越大师',
-    desc: '完成 5 次奇点重启',
+    name: t('content.achievements.ach_transcend_3.name'),
+    desc: t('content.achievements.ach_transcend_3.desc'),
     category: 'transcend',
     metric: 'transcends',
     threshold: 5,
-    effects: [{ type: 'offline_bonus', value: 1.1, label: '离线收益 +10%' }],
+    effects: [
+      {
+        type: 'offline_bonus',
+        value: 1.1,
+        label: t('content.achievements.ach_transcend_3.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_transcend_4',
-    name: '永恒文明',
-    desc: '完成 10 次奇点重启',
+    name: t('content.achievements.ach_transcend_4.name'),
+    desc: t('content.achievements.ach_transcend_4.desc'),
     category: 'transcend',
     metric: 'transcends',
     threshold: 10,
@@ -398,8 +475,8 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   // —— 游玩时长（终身在线秒数，离线挂机时间不计）——
   {
     id: 'ach_time_1',
-    name: '初来乍到',
-    desc: '累计在线 1 小时',
+    name: t('content.achievements.ach_time_1.name'),
+    desc: t('content.achievements.ach_time_1.desc'),
     category: 'time',
     metric: 'playtime',
     threshold: 3600,
@@ -407,17 +484,23 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   },
   {
     id: 'ach_time_2',
-    name: '十小时熔炼',
-    desc: '累计在线 10 小时',
+    name: t('content.achievements.ach_time_2.name'),
+    desc: t('content.achievements.ach_time_2.desc'),
     category: 'time',
     metric: 'playtime',
     threshold: 36000,
-    effects: [{ type: 'offline_bonus', value: 1.1, label: '离线收益 +10%' }],
+    effects: [
+      {
+        type: 'offline_bonus',
+        value: 1.1,
+        label: t('content.achievements.ach_time_2.effect.0.label'),
+      },
+    ],
   },
   {
     id: 'ach_time_3',
-    name: '五十小时丰碑',
-    desc: '累计在线 50 小时',
+    name: t('content.achievements.ach_time_3.name'),
+    desc: t('content.achievements.ach_time_3.desc'),
     category: 'time',
     metric: 'playtime',
     threshold: 180000,

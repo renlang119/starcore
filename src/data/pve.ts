@@ -4,6 +4,7 @@
  * 每类有多个难度层级，难度越高奖励越好
  */
 
+import { t } from '@/i18n'
 import type { UnitId } from './units'
 
 type StrongholdType = 'raider' | 'beast' | 'ruin' | 'silencer'
@@ -57,15 +58,25 @@ export const STRONGHOLD_TYPES: Record<
 > = {
   raider: {
     id: 'raider',
-    name: '掠夺者营地',
+    name: t('content.pve.type.raider.name'),
     color: 'var(--color-alert)',
     icon: 'i-stronghold-raider',
   },
-  beast: { id: 'beast', name: '异星巨兽', color: 'var(--color-amber)', icon: 'i-stronghold-beast' },
-  ruin: { id: 'ruin', name: '古代遗迹', color: 'var(--color-plasma)', icon: 'i-stronghold-ruin' },
+  beast: {
+    id: 'beast',
+    name: t('content.pve.type.beast.name'),
+    color: 'var(--color-amber)',
+    icon: 'i-stronghold-beast',
+  },
+  ruin: {
+    id: 'ruin',
+    name: t('content.pve.type.ruin.name'),
+    color: 'var(--color-plasma)',
+    icon: 'i-stronghold-ruin',
+  },
   silencer: {
     id: 'silencer',
-    name: '沉默者前哨',
+    name: t('content.pve.type.silencer.name'),
     color: 'var(--color-silencer)',
     icon: 'i-stronghold-silencer',
   },
@@ -75,14 +86,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 掠夺者营地 ——
   {
     id: 'raider_1',
-    name: '小型掠夺者营地',
+    name: t('content.pve.raider_1.name'),
     type: 'raider',
     tier: 1,
-    desc: '盘踞在轨道残骸带的零散掠夺者，适合新兵练手',
+    desc: t('content.pve.raider_1.desc'),
     enemies: [
       {
         unitId: 'raider_grunt',
-        name: '掠夺者步兵',
+        name: t('content.pve.raider_1.enemy.0.name'),
         attack: 6,
         defense: 3,
         hp: 40,
@@ -96,14 +107,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_2',
-    name: '掠夺者据点',
+    name: t('content.pve.raider_2.name'),
     type: 'raider',
     tier: 2,
-    desc: '有组织的掠夺者据点，火力较强',
+    desc: t('content.pve.raider_2.desc'),
     enemies: [
       {
         unitId: 'raider_grunt',
-        name: '掠夺者步兵',
+        name: t('content.pve.raider_2.enemy.0.name'),
         attack: 10,
         defense: 5,
         hp: 60,
@@ -112,7 +123,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_gun',
-        name: '掠夺者机枪手',
+        name: t('content.pve.raider_2.enemy.1.name'),
         attack: 15,
         defense: 4,
         hp: 50,
@@ -126,14 +137,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_3',
-    name: '掠夺者要塞',
+    name: t('content.pve.raider_3.name'),
     type: 'raider',
     tier: 3,
-    desc: '掠夺者的大型要塞，重兵把守',
+    desc: t('content.pve.raider_3.desc'),
     enemies: [
       {
         unitId: 'raider_gun',
-        name: '掠夺者机枪手',
+        name: t('content.pve.raider_3.enemy.0.name'),
         attack: 25,
         defense: 8,
         hp: 100,
@@ -142,7 +153,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_tank',
-        name: '掠夺者坦克',
+        name: t('content.pve.raider_3.enemy.1.name'),
         attack: 40,
         defense: 20,
         hp: 300,
@@ -165,14 +176,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 异星巨兽 ——
   {
     id: 'beast_1',
-    name: '晶体蛛群',
+    name: t('content.pve.beast_1.name'),
     type: 'beast',
     tier: 1,
-    desc: '栖息在晶体矿脉中的群体生物，防御较低但数量多',
+    desc: t('content.pve.beast_1.desc'),
     enemies: [
       {
         unitId: 'crystal_spider',
-        name: '晶体蛛',
+        name: t('content.pve.beast_1.enemy.0.name'),
         attack: 8,
         defense: 2,
         hp: 30,
@@ -186,14 +197,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_2',
-    name: '虚空巨兽',
+    name: t('content.pve.beast_2.name'),
     type: 'beast',
     tier: 3,
-    desc: '游荡于深空的巨型生物，单体极强',
+    desc: t('content.pve.beast_2.desc'),
     enemies: [
       {
         unitId: 'void_beast',
-        name: '虚空巨兽',
+        name: t('content.pve.beast_2.enemy.0.name'),
         attack: 80,
         defense: 30,
         hp: 5000,
@@ -216,14 +227,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 古代遗迹 ——
   {
     id: 'ruin_1',
-    name: '先驱者遗迹',
+    name: t('content.pve.ruin_1.name'),
     type: 'ruin',
     tier: 2,
-    desc: '先驱文明留下的自动防御设施，内含珍贵数据',
+    desc: t('content.pve.ruin_1.desc'),
     enemies: [
       {
         unitId: 'ancient_drone',
-        name: '古代无人机',
+        name: t('content.pve.ruin_1.enemy.0.name'),
         attack: 18,
         defense: 10,
         hp: 80,
@@ -237,14 +248,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_2',
-    name: '奇点圣殿',
+    name: t('content.pve.ruin_2.name'),
     type: 'ruin',
     tier: 4,
-    desc: '传说中储存奇点知识的圣殿，守护者极其强大',
+    desc: t('content.pve.ruin_2.desc'),
     enemies: [
       {
         unitId: 'temple_guardian',
-        name: '圣殿守护者',
+        name: t('content.pve.ruin_2.enemy.0.name'),
         attack: 120,
         defense: 80,
         hp: 8000,
@@ -253,7 +264,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'ancient_drone',
-        name: '古代无人机',
+        name: t('content.pve.ruin_2.enemy.1.name'),
         attack: 40,
         defense: 20,
         hp: 200,
@@ -276,14 +287,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 沉默者前哨 ——
   {
     id: 'silencer_1',
-    name: '沉默者前哨站',
+    name: t('content.pve.silencer_1.name'),
     type: 'silencer',
     tier: 4,
-    desc: '神秘的沉默者种族建立的前哨，终局挑战',
+    desc: t('content.pve.silencer_1.desc'),
     enemies: [
       {
         unitId: 'silencer_scout',
-        name: '沉默者侦察兵',
+        name: t('content.pve.silencer_1.enemy.0.name'),
         attack: 100,
         defense: 50,
         hp: 1500,
@@ -292,7 +303,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_elite',
-        name: '沉默者精英',
+        name: t('content.pve.silencer_1.enemy.1.name'),
         attack: 200,
         defense: 100,
         hp: 4000,
@@ -315,14 +326,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 恒星系层据点 ——
   {
     id: 'raider_4',
-    name: '掠夺者星际舰队',
+    name: t('content.pve.raider_4.name'),
     type: 'raider',
     tier: 5,
-    desc: '越过虫洞的掠夺者主力舰队，在门户星系劫掠往来的殖民船',
+    desc: t('content.pve.raider_4.desc'),
     enemies: [
       {
         unitId: 'raider_gun',
-        name: '掠夺者机枪手',
+        name: t('content.pve.raider_4.enemy.0.name'),
         attack: 50,
         defense: 16,
         hp: 200,
@@ -331,7 +342,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_tank',
-        name: '掠夺者坦克',
+        name: t('content.pve.raider_4.enemy.1.name'),
         attack: 80,
         defense: 40,
         hp: 600,
@@ -352,14 +363,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_3',
-    name: '晶背巨兽群',
+    name: t('content.pve.beast_3.name'),
     type: 'beast',
     tier: 4,
-    desc: '以晶脉为食的巨型生物群落，晶化背甲坚不可摧',
+    desc: t('content.pve.beast_3.desc'),
     enemies: [
       {
         unitId: 'crystal_back_beast',
-        name: '晶背巨兽',
+        name: t('content.pve.beast_3.enemy.0.name'),
         attack: 40,
         defense: 12,
         hp: 300,
@@ -373,14 +384,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_3',
-    name: '先驱星系档案馆',
+    name: t('content.pve.ruin_3.name'),
     type: 'ruin',
     tier: 4,
-    desc: '先驱文明设在年轻星系的资料库，封存着远航年代的星图',
+    desc: t('content.pve.ruin_3.desc'),
     enemies: [
       {
         unitId: 'ancient_drone',
-        name: '古代无人机',
+        name: t('content.pve.ruin_3.enemy.0.name'),
         attack: 36,
         defense: 20,
         hp: 160,
@@ -394,14 +405,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'silencer_2',
-    name: '沉默者殖民舰',
+    name: t('content.pve.silencer_2.name'),
     type: 'silencer',
     tier: 4,
-    desc: '静静悬浮在死寂星系中的殖民舰队，没有战斗痕迹，也没有生还者',
+    desc: t('content.pve.silencer_2.desc'),
     enemies: [
       {
         unitId: 'silencer_scout',
-        name: '沉默者侦察兵',
+        name: t('content.pve.silencer_2.enemy.0.name'),
         attack: 200,
         defense: 100,
         hp: 3000,
@@ -410,7 +421,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_elite',
-        name: '沉默者精英',
+        name: t('content.pve.silencer_2.enemy.1.name'),
         attack: 400,
         defense: 200,
         hp: 8000,
@@ -430,14 +441,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_5',
-    name: '掠夺者母巢',
+    name: t('content.pve.raider_5.name'),
     type: 'raider',
     tier: 5,
-    desc: '围绕中子星建立的掠夺者母巢，所有星际劫掠舰队的源头',
+    desc: t('content.pve.raider_5.desc'),
     enemies: [
       {
         unitId: 'raider_grunt',
-        name: '掠夺者步兵',
+        name: t('content.pve.raider_5.enemy.0.name'),
         attack: 60,
         defense: 30,
         hp: 400,
@@ -446,7 +457,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_tank',
-        name: '掠夺者坦克',
+        name: t('content.pve.raider_5.enemy.1.name'),
         attack: 120,
         defense: 60,
         hp: 1000,
@@ -460,14 +471,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_4',
-    name: '虚空巨兽母体',
+    name: t('content.pve.beast_4.name'),
     type: 'beast',
     tier: 5,
-    desc: '在中子星引力摇篮中产卵的虚空巨兽母体，幼兽环绕',
+    desc: t('content.pve.beast_4.desc'),
     enemies: [
       {
         unitId: 'void_matriarch',
-        name: '虚空巨兽母体',
+        name: t('content.pve.beast_4.enemy.0.name'),
         attack: 500,
         defense: 150,
         hp: 20000,
@@ -476,7 +487,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_hatchling',
-        name: '虚空幼兽',
+        name: t('content.pve.beast_4.enemy.1.name'),
         attack: 90,
         defense: 30,
         hp: 500,
@@ -496,14 +507,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_4',
-    name: '奇点方舟',
+    name: t('content.pve.ruin_4.name'),
     type: 'ruin',
     tier: 5,
-    desc: '先驱文明的最后方舟，载着奇点知识停泊在悬臂边缘',
+    desc: t('content.pve.ruin_4.desc'),
     enemies: [
       {
         unitId: 'temple_guardian',
-        name: '圣殿守护者',
+        name: t('content.pve.ruin_4.enemy.0.name'),
         attack: 300,
         defense: 200,
         hp: 16000,
@@ -512,7 +523,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'ancient_drone',
-        name: '古代无人机',
+        name: t('content.pve.ruin_4.enemy.1.name'),
         attack: 80,
         defense: 40,
         hp: 400,
@@ -532,14 +543,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'silencer_3',
-    name: '沉默者旗舰',
+    name: t('content.pve.silencer_3.name'),
     type: 'silencer',
     tier: 5,
-    desc: '沉默者舰队的旗舰残骸，黑匣子里藏着来自星团深处的回应',
+    desc: t('content.pve.silencer_3.desc'),
     enemies: [
       {
         unitId: 'silencer_flagship',
-        name: '沉默者旗舰',
+        name: t('content.pve.silencer_3.enemy.0.name'),
         attack: 1200,
         defense: 400,
         hp: 50000,
@@ -548,7 +559,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_elite',
-        name: '沉默者精英',
+        name: t('content.pve.silencer_3.enemy.1.name'),
         attack: 500,
         defense: 250,
         hp: 10000,
@@ -571,14 +582,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 星团层（v0.71，敌人编成经离线战斗模拟脚本三档验证）——
   {
     id: 'raider_6',
-    name: '星团劫掠舰队',
+    name: t('content.pve.raider_6.name'),
     type: 'raider',
     tier: 6,
-    desc: '抢先闯入星团的掠夺者舰队，正在打捞环状结构外散的残骸',
+    desc: t('content.pve.raider_6.desc'),
     enemies: [
       {
         unitId: 'raider_pirate',
-        name: '劫掠快艇',
+        name: t('content.pve.raider_6.enemy.0.name'),
         attack: 120,
         defense: 60,
         hp: 800,
@@ -587,7 +598,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_marauder',
-        name: '重掠巡洋舰',
+        name: t('content.pve.raider_6.enemy.1.name'),
         attack: 240,
         defense: 120,
         hp: 2400,
@@ -596,7 +607,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_warden',
-        name: '掠夺护航舰',
+        name: t('content.pve.raider_6.enemy.2.name'),
         attack: 300,
         defense: 180,
         hp: 8000,
@@ -610,14 +621,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_5',
-    name: '晶云织网兽',
+    name: t('content.pve.beast_5.name'),
     type: 'beast',
     tier: 6,
-    desc: '在晶尘云中以静止殖民舰为巢的织网兽群，晶丝横贯整片云带',
+    desc: t('content.pve.beast_5.desc'),
     enemies: [
       {
         unitId: 'crystal_matriarch',
-        name: '晶云母兽',
+        name: t('content.pve.beast_5.enemy.0.name'),
         attack: 1000,
         defense: 350,
         hp: 80000,
@@ -626,7 +637,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_weaver',
-        name: '织网兽',
+        name: t('content.pve.beast_5.enemy.1.name'),
         attack: 250,
         defense: 100,
         hp: 3000,
@@ -635,7 +646,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_spawn',
-        name: '晶雾幼兽',
+        name: t('content.pve.beast_5.enemy.2.name'),
         attack: 150,
         defense: 60,
         hp: 1500,
@@ -644,7 +655,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_lurker',
-        name: '云中潜伏者',
+        name: t('content.pve.beast_5.enemy.3.name'),
         attack: 200,
         defense: 90,
         hp: 2500,
@@ -664,14 +675,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_5',
-    name: '先驱者信标',
+    name: t('content.pve.ruin_5.name'),
     type: 'ruin',
     tier: 6,
-    desc: '先驱者留下的观测信标，仍在向环状结构重复播送同一段询问',
+    desc: t('content.pve.ruin_5.desc'),
     enemies: [
       {
         unitId: 'archon_core',
-        name: '信标核心',
+        name: t('content.pve.ruin_5.enemy.0.name'),
         attack: 900,
         defense: 600,
         hp: 120000,
@@ -680,7 +691,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'beacon_sentinel',
-        name: '信标守卫',
+        name: t('content.pve.ruin_5.enemy.1.name'),
         attack: 450,
         defense: 320,
         hp: 30000,
@@ -689,7 +700,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'precursor_warden',
-        name: '先驱守灵',
+        name: t('content.pve.ruin_5.enemy.2.name'),
         attack: 300,
         defense: 180,
         hp: 9000,
@@ -698,7 +709,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'ruin_drone',
-        name: '遗迹无人机',
+        name: t('content.pve.ruin_5.enemy.3.name'),
         attack: 150,
         defense: 80,
         hp: 1500,
@@ -718,14 +729,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_7',
-    name: '母巢星团舰群',
+    name: t('content.pve.raider_7.name'),
     type: 'raider',
     tier: 6,
-    desc: '围绕环状结构建立的掠夺者母巢舰群，暴君旗舰坐镇核心',
+    desc: t('content.pve.raider_7.desc'),
     enemies: [
       {
         unitId: 'hive_tyrant',
-        name: '母巢暴君',
+        name: t('content.pve.raider_7.enemy.0.name'),
         attack: 1500,
         defense: 900,
         hp: 180000,
@@ -734,7 +745,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'brood_carrier',
-        name: '育群航母',
+        name: t('content.pve.raider_7.enemy.1.name'),
         attack: 700,
         defense: 450,
         hp: 60000,
@@ -743,7 +754,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_elite_flt',
-        name: '精锐舰群',
+        name: t('content.pve.raider_7.enemy.2.name'),
         attack: 350,
         defense: 200,
         hp: 2500,
@@ -752,7 +763,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'hive_scout',
-        name: '巢群侦察艇',
+        name: t('content.pve.raider_7.enemy.3.name'),
         attack: 180,
         defense: 90,
         hp: 1000,
@@ -766,14 +777,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'silencer_4',
-    name: '沉默者母港',
+    name: t('content.pve.silencer_4.name'),
     type: 'silencer',
     tier: 6,
-    desc: '守门者的本体，冻结之门前的最后港湾，一切信号的起点',
+    desc: t('content.pve.silencer_4.desc'),
     enemies: [
       {
         unitId: 'motherport_bastion',
-        name: '母港壁垒',
+        name: t('content.pve.silencer_4.enemy.0.name'),
         attack: 2000,
         defense: 700,
         hp: 300000,
@@ -782,7 +793,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_sentinel',
-        name: '守门哨卫',
+        name: t('content.pve.silencer_4.enemy.1.name'),
         attack: 800,
         defense: 400,
         hp: 40000,
@@ -791,7 +802,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_warden',
-        name: '沉默守望者',
+        name: t('content.pve.silencer_4.enemy.2.name'),
         attack: 500,
         defense: 300,
         hp: 20000,
@@ -814,14 +825,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 星臂层（v0.90，敌人编成经战斗模拟脚本三档验证）——
   {
     id: 'raider_8',
-    name: '臂缘劫掠王庭',
+    name: t('content.pve.raider_8.name'),
     type: 'raider',
     tier: 7,
-    desc: '抢先穿过冻结之门的掠夺者王庭，把古代航道当成了私产',
+    desc: t('content.pve.raider_8.desc'),
     enemies: [
       {
         unitId: 'raider_pirate',
-        name: '劫掠快艇',
+        name: t('content.pve.raider_8.enemy.0.name'),
         attack: 120,
         defense: 60,
         hp: 800,
@@ -830,7 +841,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_marauder',
-        name: '重掠巡洋舰',
+        name: t('content.pve.raider_8.enemy.1.name'),
         attack: 240,
         defense: 120,
         hp: 2400,
@@ -839,7 +850,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_warden',
-        name: '掠夺护航舰',
+        name: t('content.pve.raider_8.enemy.2.name'),
         attack: 300,
         defense: 180,
         hp: 8000,
@@ -848,7 +859,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_dreadnought',
-        name: '劫掠无畏舰',
+        name: t('content.pve.raider_8.enemy.3.name'),
         attack: 2400,
         defense: 1400,
         hp: 60000,
@@ -862,14 +873,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_6',
-    name: '摇篮噬星兽',
+    name: t('content.pve.beast_6.name'),
     type: 'beast',
     tier: 7,
-    desc: '在原生星区的尘埃茧中沉睡的噬星巨兽，苏醒时以恒星胚胎为食',
+    desc: t('content.pve.beast_6.desc'),
     enemies: [
       {
         unitId: 'crystal_matriarch',
-        name: '晶云母兽',
+        name: t('content.pve.beast_6.enemy.0.name'),
         attack: 1000,
         defense: 350,
         hp: 80000,
@@ -878,7 +889,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_weaver',
-        name: '织网兽',
+        name: t('content.pve.beast_6.enemy.1.name'),
         attack: 250,
         defense: 100,
         hp: 3000,
@@ -887,7 +898,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_spawn',
-        name: '晶雾幼兽',
+        name: t('content.pve.beast_6.enemy.2.name'),
         attack: 150,
         defense: 60,
         hp: 1500,
@@ -896,7 +907,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_leviathan',
-        name: '噬星利维坦',
+        name: t('content.pve.beast_6.enemy.3.name'),
         attack: 2500,
         defense: 900,
         hp: 400000,
@@ -916,14 +927,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_6',
-    name: '先驱者长堤',
+    name: t('content.pve.ruin_6.name'),
     type: 'ruin',
     tier: 7,
-    desc: '整支先驱者远征舰队的长眠之地，长堤核心仍在执行最后的护航指令',
+    desc: t('content.pve.ruin_6.desc'),
     enemies: [
       {
         unitId: 'archon_core',
-        name: '长堤核心',
+        name: t('content.pve.ruin_6.enemy.0.name'),
         attack: 900,
         defense: 600,
         hp: 120000,
@@ -932,7 +943,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'beacon_sentinel',
-        name: '长堤守卫',
+        name: t('content.pve.ruin_6.enemy.1.name'),
         attack: 450,
         defense: 320,
         hp: 30000,
@@ -941,7 +952,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'precursor_warden',
-        name: '先驱守灵',
+        name: t('content.pve.ruin_6.enemy.2.name'),
         attack: 300,
         defense: 180,
         hp: 9000,
@@ -950,7 +961,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'ruin_drone',
-        name: '遗迹无人机',
+        name: t('content.pve.ruin_6.enemy.3.name'),
         attack: 150,
         defense: 80,
         hp: 1500,
@@ -970,14 +981,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_9',
-    name: '王庭舰队本队',
+    name: t('content.pve.raider_9.name'),
     type: 'raider',
     tier: 7,
-    desc: '盘踞臂脊航道枢纽的掠夺者王庭主力，暴君旗舰统领全部舰群',
+    desc: t('content.pve.raider_9.desc'),
     enemies: [
       {
         unitId: 'hive_tyrant',
-        name: '母巢暴君',
+        name: t('content.pve.raider_9.enemy.0.name'),
         attack: 1500,
         defense: 900,
         hp: 180000,
@@ -986,7 +997,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'brood_carrier',
-        name: '育群航母',
+        name: t('content.pve.raider_9.enemy.1.name'),
         attack: 700,
         defense: 450,
         hp: 60000,
@@ -995,7 +1006,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_elite_flt',
-        name: '精锐舰群',
+        name: t('content.pve.raider_9.enemy.2.name'),
         attack: 350,
         defense: 200,
         hp: 2500,
@@ -1004,7 +1015,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'hive_scout',
-        name: '巢群侦察艇',
+        name: t('content.pve.raider_9.enemy.3.name'),
         attack: 180,
         defense: 90,
         hp: 1000,
@@ -1013,7 +1024,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_warden',
-        name: '掠夺护航舰',
+        name: t('content.pve.raider_9.enemy.4.name'),
         attack: 300,
         defense: 180,
         hp: 8000,
@@ -1027,14 +1038,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'silencer_5',
-    name: '沉默者王座',
+    name: t('content.pve.silencer_5.name'),
     type: 'silencer',
     tier: 7,
-    desc: '坐镇门扉回廊的沉默者君王本体，冻结之门真正的守门中枢',
+    desc: t('content.pve.silencer_5.desc'),
     enemies: [
       {
         unitId: 'silencer_sovereign',
-        name: '沉默者君王',
+        name: t('content.pve.silencer_5.enemy.0.name'),
         attack: 3500,
         defense: 1200,
         hp: 3000000,
@@ -1043,7 +1054,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'motherport_bastion',
-        name: '母港壁垒',
+        name: t('content.pve.silencer_5.enemy.1.name'),
         attack: 2000,
         defense: 700,
         hp: 300000,
@@ -1052,7 +1063,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_sentinel',
-        name: '守门哨卫',
+        name: t('content.pve.silencer_5.enemy.2.name'),
         attack: 800,
         defense: 400,
         hp: 40000,
@@ -1061,7 +1072,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_warden',
-        name: '沉默守望者',
+        name: t('content.pve.silencer_5.enemy.3.name'),
         attack: 500,
         defense: 300,
         hp: 20000,
@@ -1084,14 +1095,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 星系层（v0.91，敌人编成经战斗模拟脚本三档验证）——
   {
     id: 'raider_10',
-    name: '银河帝庭',
+    name: t('content.pve.raider_10.name'),
     type: 'raider',
     tier: 8,
-    desc: '越过门扉的掠夺者建立的终极王庭，银河尺度的劫掠由此开始',
+    desc: t('content.pve.raider_10.desc'),
     enemies: [
       {
         unitId: 'raider_pirate',
-        name: '劫掠快艇',
+        name: t('content.pve.raider_10.enemy.0.name'),
         attack: 120,
         defense: 60,
         hp: 800,
@@ -1100,7 +1111,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_marauder',
-        name: '重掠巡洋舰',
+        name: t('content.pve.raider_10.enemy.1.name'),
         attack: 240,
         defense: 120,
         hp: 2400,
@@ -1109,7 +1120,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_warden',
-        name: '掠夺护航舰',
+        name: t('content.pve.raider_10.enemy.2.name'),
         attack: 300,
         defense: 180,
         hp: 8000,
@@ -1118,7 +1129,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_dreadnought',
-        name: '劫掠无畏舰',
+        name: t('content.pve.raider_10.enemy.3.name'),
         attack: 2400,
         defense: 1400,
         hp: 60000,
@@ -1127,7 +1138,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'hive_tyrant',
-        name: '母巢暴君',
+        name: t('content.pve.raider_10.enemy.4.name'),
         attack: 1500,
         defense: 900,
         hp: 180000,
@@ -1141,14 +1152,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_7',
-    name: '噬星鲲群',
+    name: t('content.pve.beast_7.name'),
     type: 'beast',
     tier: 8,
-    desc: '在银河盘面放牧星尘的鲲群，迁徙路线像在听从某种驱赶',
+    desc: t('content.pve.beast_7.desc'),
     enemies: [
       {
         unitId: 'crystal_matriarch',
-        name: '晶云母兽',
+        name: t('content.pve.beast_7.enemy.0.name'),
         attack: 1000,
         defense: 350,
         hp: 80000,
@@ -1157,7 +1168,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_weaver',
-        name: '织网兽',
+        name: t('content.pve.beast_7.enemy.1.name'),
         attack: 250,
         defense: 100,
         hp: 3000,
@@ -1166,7 +1177,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'crystal_spawn',
-        name: '晶雾幼兽',
+        name: t('content.pve.beast_7.enemy.2.name'),
         attack: 150,
         defense: 60,
         hp: 1500,
@@ -1175,7 +1186,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_leviathan',
-        name: '噬星利维坦',
+        name: t('content.pve.beast_7.enemy.3.name'),
         attack: 2500,
         defense: 900,
         hp: 400000,
@@ -1184,7 +1195,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'star_whale_king',
-        name: '噬星鲲王',
+        name: t('content.pve.beast_7.enemy.4.name'),
         attack: 3200,
         defense: 1200,
         hp: 700000,
@@ -1204,14 +1215,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_7',
-    name: '先驱者万神殿',
+    name: t('content.pve.ruin_7.name'),
     type: 'ruin',
     tier: 8,
-    desc: '先驱者文明的银河级万神殿，核心仍在等待一支永不返航的舰队',
+    desc: t('content.pve.ruin_7.desc'),
     enemies: [
       {
         unitId: 'pantheon_core',
-        name: '万神殿核心',
+        name: t('content.pve.ruin_7.enemy.0.name'),
         attack: 1200,
         defense: 800,
         hp: 250000,
@@ -1220,7 +1231,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'archon_core',
-        name: '圣殿核心',
+        name: t('content.pve.ruin_7.enemy.1.name'),
         attack: 900,
         defense: 600,
         hp: 120000,
@@ -1229,7 +1240,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'beacon_sentinel',
-        name: '圣殿守卫',
+        name: t('content.pve.ruin_7.enemy.2.name'),
         attack: 450,
         defense: 320,
         hp: 30000,
@@ -1238,7 +1249,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'precursor_warden',
-        name: '先驱守灵',
+        name: t('content.pve.ruin_7.enemy.3.name'),
         attack: 300,
         defense: 180,
         hp: 9000,
@@ -1247,7 +1258,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'ruin_drone',
-        name: '遗迹无人机',
+        name: t('content.pve.ruin_7.enemy.4.name'),
         attack: 150,
         defense: 80,
         hp: 1500,
@@ -1267,14 +1278,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_11',
-    name: '帝庭裁决舰队',
+    name: t('content.pve.raider_11.name'),
     type: 'raider',
     tier: 8,
-    desc: '帝庭的裁决舰队，所有王庭进贡的终点，目标是银心「永不熄灭的炉」',
+    desc: t('content.pve.raider_11.desc'),
     enemies: [
       {
         unitId: 'raider_emperor',
-        name: '帝庭主宰',
+        name: t('content.pve.raider_11.enemy.0.name'),
         attack: 2200,
         defense: 1300,
         hp: 350000,
@@ -1283,7 +1294,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'hive_tyrant',
-        name: '母巢暴君',
+        name: t('content.pve.raider_11.enemy.1.name'),
         attack: 1500,
         defense: 900,
         hp: 180000,
@@ -1292,7 +1303,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'brood_carrier',
-        name: '育群航母',
+        name: t('content.pve.raider_11.enemy.2.name'),
         attack: 700,
         defense: 450,
         hp: 60000,
@@ -1301,7 +1312,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_elite_flt',
-        name: '精锐舰群',
+        name: t('content.pve.raider_11.enemy.3.name'),
         attack: 350,
         defense: 200,
         hp: 2500,
@@ -1310,7 +1321,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_dreadnought',
-        name: '劫掠无畏舰',
+        name: t('content.pve.raider_11.enemy.4.name'),
         attack: 2400,
         defense: 1400,
         hp: 60000,
@@ -1324,14 +1335,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'silencer_6',
-    name: '沉默者主脑',
+    name: t('content.pve.silencer_6.name'),
     type: 'silencer',
     tier: 8,
-    desc: '所有守门者的指挥中枢，应答源的实体，坐镇银河之心',
+    desc: t('content.pve.silencer_6.desc'),
     enemies: [
       {
         unitId: 'silencer_mainbrain',
-        name: '沉默者主脑',
+        name: t('content.pve.silencer_6.enemy.0.name'),
         attack: 4500,
         defense: 1600,
         hp: 7000000,
@@ -1340,7 +1351,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_sovereign',
-        name: '沉默者君王',
+        name: t('content.pve.silencer_6.enemy.1.name'),
         attack: 3500,
         defense: 1200,
         hp: 3000000,
@@ -1349,7 +1360,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'motherport_bastion',
-        name: '母港壁垒',
+        name: t('content.pve.silencer_6.enemy.2.name'),
         attack: 2000,
         defense: 700,
         hp: 300000,
@@ -1358,7 +1369,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_sentinel',
-        name: '守门哨卫',
+        name: t('content.pve.silencer_6.enemy.3.name'),
         attack: 800,
         defense: 400,
         hp: 40000,
@@ -1367,7 +1378,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_warden',
-        name: '沉默守望者',
+        name: t('content.pve.silencer_6.enemy.4.name'),
         attack: 500,
         defense: 300,
         hp: 20000,
@@ -1390,14 +1401,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   // —— 深空层（v0.92，敌人编成经战斗模拟脚本三档验证）——
   {
     id: 'raider_12',
-    name: '虚空掠夺者旗舰',
+    name: t('content.pve.raider_12.name'),
     type: 'raider',
     tier: 9,
-    desc: '穿出银河的掠夺者残部，把先驱者的虚空航标当成了猎场',
+    desc: t('content.pve.raider_12.desc'),
     enemies: [
       {
         unitId: 'raider_phantom',
-        name: '虚空快艇',
+        name: t('content.pve.raider_12.enemy.0.name'),
         attack: 299,
         defense: 149,
         hp: 2176,
@@ -1406,7 +1417,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_cruiser',
-        name: '虚空巡洋舰',
+        name: t('content.pve.raider_12.enemy.1.name'),
         attack: 612,
         defense: 299,
         hp: 6528,
@@ -1415,7 +1426,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_sentinel',
-        name: '虚空哨舰',
+        name: t('content.pve.raider_12.enemy.2.name'),
         attack: 762,
         defense: 462,
         hp: 21760,
@@ -1424,7 +1435,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_dreadnought',
-        name: '劫掠无畏舰',
+        name: t('content.pve.raider_12.enemy.3.name'),
         attack: 3264,
         defense: 1904,
         hp: 81600,
@@ -1433,7 +1444,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'hive_tyrant',
-        name: '母巢暴君',
+        name: t('content.pve.raider_12.enemy.4.name'),
         attack: 2040,
         defense: 1224,
         hp: 244800,
@@ -1453,14 +1464,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'beast_8',
-    name: '虚空白鲸群',
+    name: t('content.pve.beast_8.name'),
     type: 'beast',
     tier: 9,
-    desc: '游弋在虚空航标周围的巨兽种群，以航标灯语为迁徙号令',
+    desc: t('content.pve.beast_8.desc'),
     enemies: [
       {
         unitId: 'void_matriarch',
-        name: '虚空白鲸母兽',
+        name: t('content.pve.beast_8.enemy.0.name'),
         attack: 1900,
         defense: 700,
         hp: 150000,
@@ -1469,7 +1480,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_weaver',
-        name: '虚空织网兽',
+        name: t('content.pve.beast_8.enemy.1.name'),
         attack: 480,
         defense: 190,
         hp: 5800,
@@ -1478,7 +1489,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_spawn',
-        name: '虚空幼鲸',
+        name: t('content.pve.beast_8.enemy.2.name'),
         attack: 280,
         defense: 110,
         hp: 2900,
@@ -1487,7 +1498,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_leviathan',
-        name: '噬星利维坦',
+        name: t('content.pve.beast_8.enemy.3.name'),
         attack: 2500,
         defense: 900,
         hp: 400000,
@@ -1496,7 +1507,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'star_whale_king',
-        name: '虚空白鲸王',
+        name: t('content.pve.beast_8.enemy.4.name'),
         attack: 6000,
         defense: 2300,
         hp: 1350000,
@@ -1516,14 +1527,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'ruin_8',
-    name: '先驱者归航港',
+    name: t('content.pve.ruin_8.name'),
     type: 'ruin',
     tier: 9,
-    desc: '先驱者望台改成的归航港，核心仍在等待一支穿门而入的舰队',
+    desc: t('content.pve.ruin_8.desc'),
     enemies: [
       {
         unitId: 'pantheon_core',
-        name: '万神殿核心',
+        name: t('content.pve.ruin_8.enemy.0.name'),
         attack: 2300,
         defense: 1550,
         hp: 480000,
@@ -1532,7 +1543,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'archon_core',
-        name: '归航港核心',
+        name: t('content.pve.ruin_8.enemy.1.name'),
         attack: 1750,
         defense: 1150,
         hp: 230000,
@@ -1541,7 +1552,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'beacon_sentinel',
-        name: '港卫哨卫',
+        name: t('content.pve.ruin_8.enemy.2.name'),
         attack: 870,
         defense: 620,
         hp: 58000,
@@ -1550,7 +1561,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'precursor_warden',
-        name: '先驱守灵',
+        name: t('content.pve.ruin_8.enemy.3.name'),
         attack: 580,
         defense: 350,
         hp: 17500,
@@ -1559,7 +1570,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'ruin_drone',
-        name: '遗迹无人机',
+        name: t('content.pve.ruin_8.enemy.4.name'),
         attack: 290,
         defense: 155,
         hp: 2900,
@@ -1568,7 +1579,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_drone_king',
-        name: '虚空白蚁后',
+        name: t('content.pve.ruin_8.enemy.5.name'),
         attack: 3100,
         defense: 1500,
         hp: 420000,
@@ -1588,14 +1599,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'raider_13',
-    name: '深空裁决军团',
+    name: t('content.pve.raider_13.name'),
     type: 'raider',
     tier: 9,
-    desc: '掠夺者在星幕枢纽竖碑称王的裁决军团，越界而不自知',
+    desc: t('content.pve.raider_13.desc'),
     enemies: [
       {
         unitId: 'raider_emperor',
-        name: '深空主宰',
+        name: t('content.pve.raider_13.enemy.0.name'),
         attack: 4400,
         defense: 2600,
         hp: 680000,
@@ -1604,7 +1615,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'hive_tyrant',
-        name: '母巢暴君',
+        name: t('content.pve.raider_13.enemy.1.name'),
         attack: 1500,
         defense: 900,
         hp: 180000,
@@ -1613,7 +1624,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'brood_carrier',
-        name: '育群航母',
+        name: t('content.pve.raider_13.enemy.2.name'),
         attack: 700,
         defense: 450,
         hp: 60000,
@@ -1622,7 +1633,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_elite_flt',
-        name: '精锐舰群',
+        name: t('content.pve.raider_13.enemy.3.name'),
         attack: 350,
         defense: 200,
         hp: 2500,
@@ -1631,7 +1642,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'raider_dreadnought',
-        name: '劫掠无畏舰',
+        name: t('content.pve.raider_13.enemy.4.name'),
         attack: 2400,
         defense: 1400,
         hp: 60000,
@@ -1651,14 +1662,14 @@ export const STRONGHOLDS: StrongholdDef[] = [
   },
   {
     id: 'silencer_7',
-    name: '沉默者回响',
+    name: t('content.pve.silencer_7.name'),
     type: 'silencer',
     tier: 9,
-    desc: '一切信号的源头：门后的沉默者回响，世代守门的接收者',
+    desc: t('content.pve.silencer_7.desc'),
     enemies: [
       {
         unitId: 'silencer_echo',
-        name: '沉默者回响',
+        name: t('content.pve.silencer_7.enemy.0.name'),
         attack: 9000,
         defense: 3100,
         hp: 23000000,
@@ -1667,7 +1678,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_warden_lord',
-        name: '回响君王',
+        name: t('content.pve.silencer_7.enemy.1.name'),
         attack: 6500,
         defense: 2300,
         hp: 7500000,
@@ -1676,7 +1687,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'void_bastion',
-        name: '虚空壁垒',
+        name: t('content.pve.silencer_7.enemy.2.name'),
         attack: 3700,
         defense: 1400,
         hp: 580000,
@@ -1685,7 +1696,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_sentinel',
-        name: '守门哨卫',
+        name: t('content.pve.silencer_7.enemy.3.name'),
         attack: 1550,
         defense: 770,
         hp: 77000,
@@ -1694,7 +1705,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
       },
       {
         unitId: 'silencer_warden',
-        name: '沉默守望者',
+        name: t('content.pve.silencer_7.enemy.4.name'),
         attack: 970,
         defense: 580,
         hp: 38500,

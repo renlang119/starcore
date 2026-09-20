@@ -5,6 +5,8 @@
  *   灵能独立线：灵能者 vs 重装兵（额外克制）
  */
 
+import { t } from '@/i18n'
+
 export type UnitId = 'assault' | 'guard' | 'heavy' | 'psionic'
 
 export interface UnitDef {
@@ -32,8 +34,8 @@ export interface UnitDef {
 export const UNITS: UnitDef[] = [
   {
     id: 'assault',
-    name: '突击兵',
-    desc: '高机动远程单位，克制护卫兵与灵能者',
+    name: t('content.units.assault.name'),
+    desc: t('content.units.assault.desc'),
     icon: 'i-unit-assault',
     attack: 12,
     defense: 5,
@@ -47,8 +49,8 @@ export const UNITS: UnitDef[] = [
   },
   {
     id: 'guard',
-    name: '护卫兵',
-    desc: '坚固防御单位，克制重装兵',
+    name: t('content.units.guard.name'),
+    desc: t('content.units.guard.desc'),
     icon: 'i-unit-guard',
     attack: 8,
     defense: 12,
@@ -62,8 +64,8 @@ export const UNITS: UnitDef[] = [
   },
   {
     id: 'heavy',
-    name: '重装兵',
-    desc: '高攻厚甲单位，克制突击兵',
+    name: t('content.units.heavy.name'),
+    desc: t('content.units.heavy.desc'),
     icon: 'i-unit-heavy',
     attack: 20,
     defense: 12,
@@ -77,8 +79,8 @@ export const UNITS: UnitDef[] = [
   },
   {
     id: 'psionic',
-    name: '灵能者',
-    desc: '操纵暗能量的精英单位，克制重装兵，被突击兵克制',
+    name: t('content.units.psionic.name'),
+    desc: t('content.units.psionic.desc'),
     icon: 'i-unit-psionic',
     attack: 35,
     defense: 8,
@@ -95,9 +97,21 @@ export const UNITS: UnitDef[] = [
 /** 默认编队骨架工厂：初始/重置/存档自愈三处共用（每次返回新副本，v1.03 收敛） */
 export function defaultFormations(): { id: string; name: string; units: Record<UnitId, number> }[] {
   return [
-    { id: 'f1', name: '先锋编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-    { id: 'f2', name: '第二编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
-    { id: 'f3', name: '第三编队', units: { assault: 0, guard: 0, heavy: 0, psionic: 0 } },
+    {
+      id: 'f1',
+      name: t('content.units.formation.f1.name'),
+      units: { assault: 0, guard: 0, heavy: 0, psionic: 0 },
+    },
+    {
+      id: 'f2',
+      name: t('content.units.formation.f2.name'),
+      units: { assault: 0, guard: 0, heavy: 0, psionic: 0 },
+    },
+    {
+      id: 'f3',
+      name: t('content.units.formation.f3.name'),
+      units: { assault: 0, guard: 0, heavy: 0, psionic: 0 },
+    },
   ]
 }
 

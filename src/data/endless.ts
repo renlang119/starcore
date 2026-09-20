@@ -14,6 +14,7 @@
  *   软墙本身就是无限缩放的地狱门，无需额外硬门槛。
  */
 
+import { t } from '@/i18n'
 import type { EnemyUnit, StrongholdDef } from './pve'
 import { STRONGHOLDS } from './pve'
 
@@ -104,7 +105,7 @@ export function endlessEnemies(depth: number): EnemyUnit[] {
     throw new Error(`endless: template stronghold missing: ${templateId}`)
   }
   const scale = endlessScale(d) * normalize
-  const prefix = `深渊·第${d}层`
+  const prefix = t('content.endless.prefix', { d })
   return scaleEnemies(template.enemies, scale, prefix)
 }
 
@@ -121,10 +122,10 @@ export function endlessStronghold(depth: number): StrongholdDef {
     v === undefined ? undefined : Math.round(v * rs)
   return {
     id: ENDLESS_STRONGHOLD_ID,
-    name: `无尽深渊·第${d}层`,
+    name: t('content.endless.name', { d }),
     type: 'silencer',
     tier: ENDLESS_TIER_PLACEHOLDER,
-    desc: '来自星团深处的未知威胁，越深入，敌影越强，收获也越丰',
+    desc: t('content.endless.desc'),
     enemies: endlessEnemies(d),
     rewards: {
       energy: scaleReward(base.rewards.energy),
