@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // HeroCore — 星核核心视觉（v0.54 从 HomeView 拆出）
 // 核心能量值 + 产出率 + 三层状态环 + 点击跳转建造页
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTimeout } from '@/composables/useTimeout'
@@ -104,13 +105,13 @@ const allExplored = computed(
 
 <template>
   <!-- 星核核心视觉 — 核心能量值 + 产出率（P1-1） -->
-  <section class="hero" aria-label="星核核心">
+  <section class="hero" :aria-label="t('home.hero.aria')">
     <!-- P3-3 onboarding: 核心引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-core'"
       class="ob-core"
-      title="星核核心"
-      text="这是你的星核能量值，点击核心可快速进入建造页面。"
+      :title="t('home.hero.aria')"
+      :text="t('home.hero.onboarding')"
       @dismiss="emit('dismiss')"
       @skip="emit('skip')"
     />
@@ -119,7 +120,7 @@ const allExplored = computed(
       :class="{ 'core-clicked': coreClicked }"
       role="button"
       tabindex="0"
-      aria-label="星核核心，点击进入建造页面"
+      :aria-label="t('home.hero.buttonAria')"
       @click="onCoreClick"
       @keydown.enter="onCoreClick"
       @keydown.space.prevent="onCoreClick"
@@ -133,15 +134,13 @@ const allExplored = computed(
       ></div>
       <div class="core-center">
         <div class="core-value font-display">{{ fmt(game.resources.getAmount('energy')) }}</div>
-        <div class="core-label">星核能量</div>
+        <div class="core-label">{{ t('home.hero.coreLabel') }}</div>
       </div>
     </div>
     <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">
       {{ rateDisplay }}
     </div>
-    <p v-if="allExplored" class="final-salute">
-      先驱者的航路已走到尽头，星核文明接过守门者的位置。全宇宙已探索完毕。
-    </p>
+    <p v-if="allExplored" class="final-salute">{{ t('home.hero.finalSalute') }}。</p>
     <!-- P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 -->
     <div class="hero-flow" aria-hidden="true"></div>
   </section>

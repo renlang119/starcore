@@ -5,6 +5,7 @@
  * shiftToast 取下一条（连续解锁排队展示）。
  * 挂载于 AppShell，所有路由下可见。
  */
+import { t } from '@/i18n'
 import { ref, watch } from 'vue'
 import { useAchievementsStore } from '@/stores/achievements'
 import { ACHIEVEMENTS } from '@/data/achievements'
@@ -40,7 +41,7 @@ watch(() => ach.toastQueue.length, showNext, { immediate: true })
     <div v-if="current" class="ach-toast" role="status" aria-live="polite">
       <Icon class="toast-icon" name="i-ui-check" />
       <div class="toast-body">
-        <div class="toast-title">成就解锁</div>
+        <div class="toast-title">{{ t('achievements.toastTitle') }}</div>
         <div class="toast-name">{{ current.name }}</div>
         <div class="toast-reward">{{ current.effects[0]?.label }}</div>
       </div>

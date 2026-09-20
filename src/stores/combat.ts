@@ -2,6 +2,7 @@
  * combat.ts — PVE 战斗系统 store
  * 4 类据点、自动战斗结算、挂机驻扎
  */
+import { t } from '@/i18n'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Decimal } from '@/lib/decimal'
@@ -145,7 +146,7 @@ export const useCombatStore = defineStore('combat', () => {
     if (playerUnits.length === 0) {
       return {
         victory: false,
-        log: [{ round: 0, msg: '编队为空，无法出战', side: 'system' }],
+        log: [{ round: 0, msg: t('battle.noFormation'), side: 'system' }],
         rewards: {},
         losses: {},
         rounds: 0,
@@ -157,14 +158,18 @@ export const useCombatStore = defineStore('combat', () => {
     if (enemyUnits.length === 0) {
       return {
         victory: false,
-        log: [{ round: 0, msg: '敌方编成缺失，战斗无法进行', side: 'system' }],
+        log: [{ round: 0, msg: t('battle.noEnemy'), side: 'system' }],
         rewards: {},
         losses: {},
         rounds: 0,
       }
     }
 
-    log.push({ round: 0, msg: `遭遇 ${stronghold.name} 守军`, side: 'system' })
+    log.push({
+      round: 0,
+      msg: t('battle.logEncounter', { strongholdName: stronghold.name }),
+      side: 'system',
+    })
 
     const rng = mulberry32(_battleSeed(formation, stronghold.id))
     let round = 0
@@ -201,7 +206,11 @@ export const useCombatStore = defineStore('combat', () => {
         const remaining = totalHp - dmgDealt
         if (remaining <= 0) {
           tgt.count = 0
-          log.push({ round, msg: `${p.name} 消灭了 ${tgt.name}`, side: 'player' })
+          log.push({
+            round,
+            msg: t('battle.logKill', { attacker: p.name, target: tgt.name }),
+            side: 'player',
+          })
         } else {
           const newCount = Math.ceil(remaining / tgt.maxHp)
           tgt.count = newCount
@@ -210,7 +219,7 @@ export const useCombatStore = defineStore('combat', () => {
       }
       // 检查胜利
       if (enemyUnits.every((e) => e.count <= 0)) {
-        log.push({ round, msg: '胜利！守军已被全歼', side: 'system' })
+        log.push({ round, msg: t('battle.logVictory'), side: 'system' })
         return buildResult(true, log, stronghold, losses, round, rng)
       }
       // 敌方攻击
@@ -230,13 +239,21 @@ export const useCombatStore = defineStore('combat', () => {
         if (remaining <= 0) {
           losses[tgt.unitId] = (losses[tgt.unitId] || 0) + tgt.count
           tgt.count = 0
-          log.push({ round, msg: `${e.name} 消灭了 ${tgt.name}`, side: 'enemy' })
+          log.push({
+            round,
+            msg: t('battle.logKill', { attacker: e.name, target: tgt.name }),
+            side: 'enemy',
+          })
         } else {
           const newCount = Math.ceil(remaining / tgt.maxHp)
           const lost = tgt.count - newCount
           if (lost > 0) {
             losses[tgt.unitId] = (losses[tgt.unitId] || 0) + lost
-            log.push({ round, msg: `${e.name} 对 ${tgt.name} 造成 ${lost} 损失`, side: 'enemy' })
+            log.push({
+              round,
+              msg: t('battle.logDamage', { attacker: e.name, target: tgt.name, lost: lost }),
+              side: 'enemy',
+            })
           }
           tgt.count = newCount
           tgt.hp = remaining % tgt.maxHp || tgt.maxHp
@@ -244,11 +261,11 @@ export const useCombatStore = defineStore('combat', () => {
       }
       // 检查失败
       if (playerUnits.every((p) => p.count <= 0)) {
-        log.push({ round, msg: '全军覆没……', side: 'system' })
+        log.push({ round, msg: t('battle.logWipeAll'), side: 'system' })
         return buildResult(false, log, stronghold, losses, round, rng)
       }
     }
-    log.push({ round, msg: '战斗超时，双方撤退', side: 'system' })
+    log.push({ round, msg: t('battle.logTimeout'), side: 'system' })
     return buildResult(false, log, stronghold, losses, round, rng)
   }
 
@@ -276,7 +293,11 @@ export const useCombatStore = defineStore('combat', () => {
       // 遗物掉落
       if (r.relicChance && rng() < r.relicChance) {
         relic = rollRelic(r.relicRarityBias ?? 0, rng)
-        trimmedLog.push({ round: rounds, msg: `发现遗物：${relic.name}！`, side: 'system' })
+        trimmedLog.push({
+          round: rounds,
+          msg: t('battle.logRelicFound', { relicName: relic.name }),
+          side: 'system',
+        })
       }
       // 远征合成据点（id='endless'，不在 STRONGHOLDS 白名单内）不入正式通关集：
       // 其进度由 expeditionBest 独立承担，误入会导致存档校验整档失败

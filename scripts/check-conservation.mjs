@@ -19,6 +19,7 @@ import {
   mkdtempSync,
   writeFileSync,
   rmSync,
+  statSync,
 } from 'node:fs'
 import { join, dirname, resolve, basename } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -57,7 +58,12 @@ function mirrorTs(abs) {
     if (spec.startsWith('@/')) target = join(ROOT, 'src', spec.slice(2))
     else if (spec.startsWith('./') || spec.startsWith('../')) target = resolve(dirname(abs), spec)
     if (!target) return whole
-    if (!target.endsWith('.ts')) target += '.ts'
+    if (!target.endsWith('.ts')) {
+      if (existsSync(target) && statSync(target).isDirectory()) target = join(target, 'index.ts')
+      else if (!existsSync(target + '.ts') && existsSync(join(target, 'index.ts')))
+        target = join(target, 'index.ts')
+      else target += '.ts'
+    }
     return `from './${basename(mirrorTs(target))}'`
   })
   writeFileSync(out, src)

@@ -8,6 +8,7 @@
  * 的_owned_数据做选材校验（v0.81 注记勘误：原注释「选材状态内聚于本文件」与
  * 实现不符——选材点击在图鉴卡，状态确实在本文件，但 owned 数据流经视图层）。
  */
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { RelicRarity } from '@/data/relics'
@@ -44,7 +45,7 @@ export function useRelicFusion(options: { notify?: (msg: string) => void } = {})
     }
     // 选中组内稀有度须一致（先选什么稀有度，后续只能加同档）
     if (selectedMaterials.value.length > 0 && materialRarity.value !== r.rarity) {
-      notify('材料稀有度须一致')
+      notify(t('relics.fusionMismatch'))
       return
     }
     if (selectedMaterials.value.length < 3) selectedMaterials.value.push(r.instanceId)
@@ -82,7 +83,7 @@ export function useRelicFusion(options: { notify?: (msg: string) => void } = {})
       synthResult.value = result
       selectedMaterials.value = []
     } else {
-      synthFailMsg.value = '合成失败：需 3 件未装备的同稀有度遗物'
+      synthFailMsg.value = t('relics.fusionFailed')
     }
   }
 

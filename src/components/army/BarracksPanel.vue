@@ -6,6 +6,7 @@
  * 与训练队列进度。类名与文案保持不变；训练反馈经 feedback 事件交回视图
  * 层轻提示（提示挂载在视图根部，随视图加载卸载）。
  */
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmtTime } from '@/lib/format'
@@ -52,9 +53,9 @@ const slotsFull = computed(
 const slotHint = computed(() => {
   if (!slotsFull.value) return ''
   const max = game.military.maxTrainingSlots
-  if (max >= 3) return '训练槽已满'
-  const nextTech = max < 2 ? '集群操练 I' : '集群操练 II'
-  return `训练槽已满 · 研究「${nextTech}」可扩展至 ${max + 1} 槽`
+  if (max >= 3) return t('army.slotsFull')
+  const nextTech = max < 2 ? t('army.trainingTech1') : t('army.trainingTech2')
+  return t('army.slotsFullHint', { nextTech: nextTech, slots: max + 1 })
 })
 
 function tryTrain(unitId: UnitId) {
@@ -67,8 +68,12 @@ function tryTrain(unitId: UnitId) {
     (c) => game.resources.spendCost(c)
   )
   // 长周期操作「开始」反馈（v0.77 反馈口径）；失败路径明示原因（连点竞态等边缘场景）
-  if (ok) emit('feedback', `开始训练：${getUnit(unitId)?.name ?? unitId} ×${count}`)
-  else emit('feedback', slotsFull.value ? '训练槽已满' : '资源不足')
+  if (ok)
+    emit(
+      'feedback',
+      t('army.trainStarted', { unitName: getUnit(unitId)?.name ?? unitId, count: count })
+    )
+  else emit('feedback', slotsFull.value ? t('army.slotsFull') : t('common.insufficient'))
 }
 
 function getUnitCost(unitId: UnitId, count: number) {
@@ -112,9 +117,9 @@ const unitRows = computed(() =>
   <EmptyState
     v-if="!armyUnlocked"
     icon="i-nav-army"
-    text="尚未组建部队"
-    hint="研究「军事基础」科技后可训练部队"
-    action="前往科技"
+    :text="t('army.emptyTitle')"
+    :hint="t('army.emptyHint')"
+    :action="t('common.goTech')"
     to="/tech"
   />
   <!-- 已解锁但尚无部队：轻提示（单位卡片本身即训练入口，空态不遮挡卡片） -->
@@ -122,8 +127,8 @@ const unitRows = computed(() =>
     <EmptyState
       v-if="!hasAnyUnits"
       icon="i-nav-army"
-      text="部队尚未组建"
-      hint="训练你的第一支星际防卫军"
+      :text="t('army.unitsEmptyTitle')"
+      :hint="t('army.unitsEmptyHint')"
     />
     <div
       v-for="row in unitRows"
@@ -143,24 +148,27 @@ const unitRows = computed(() =>
         <div>
           <div class="u-name">
             {{ row.def.name }}
-            <span v-if="row.def.rarity === 'rare'" class="rare-tag">稀有</span>
+            <span v-if="row.def.rarity === 'rare'" class="rare-tag">{{
+              t('common.rarity.rare')
+            }}</span>
           </div>
-          <div class="u-count font-mono">已拥有：{{ row.owned }}</div>
+          <div class="u-count font-mono">{{ t('army.owned') }}：{{ row.owned }}</div>
         </div>
       </div>
       <p class="u-desc">{{ row.def.desc }}</p>
 
       <div class="u-stats">
-        <span class="stat">攻 {{ row.power.atk }}</span>
-        <span class="stat">防 {{ row.power.def }}</span>
+        <span class="stat">{{ t('common.statAttack') }} {{ row.power.atk }}</span>
+        <span class="stat">{{ t('common.statDefense') }} {{ row.power.def }}</span>
         <span class="stat">HP {{ row.power.hp }}</span>
         <span class="stat counter"
-          >克制 {{ row.def.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
+          >{{ t('army.counter') }}
+          {{ row.def.counters.map((c) => getUnit(c)?.name ?? c).join('/') }}</span
         >
       </div>
 
       <div v-if="!row.unlocked" class="u-locked">
-        需要科技：{{ getTech(row.def.requires)?.name ?? row.def.requires }}
+        {{ t('common.needsTech') }}：{{ getTech(row.def.requires)?.name ?? row.def.requires }}
       </div>
       <template v-else>
         <!-- 训练数量 -->
@@ -194,7 +202,9 @@ const unitRows = computed(() =>
           :disabled="slotsFull || row.count === 0 || !row.canAfford"
           @click="tryTrain(row.def.id)"
         >
-          <span aria-live="polite">{{ slotsFull ? `训练中…剩 ${trainingEta}` : '训练' }}</span>
+          <span aria-live="polite">{{
+            slotsFull ? t('army.trainingEta', { trainingEta: trainingEta }) : t('army.train')
+          }}</span>
         </button>
       </template>
     </div>
@@ -202,7 +212,9 @@ const unitRows = computed(() =>
     <!-- 训练队列 -->
     <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
       <h3 class="section-title">
-        训练中（{{ game.military.trainingQueue.length }}/{{ game.military.maxTrainingSlots }}）
+        {{ t('army.training') }}（{{ game.military.trainingQueue.length }}/{{
+          game.military.maxTrainingSlots
+        }}）
       </h3>
       <p v-if="slotHint" class="slot-hint">{{ slotHint }}</p>
       <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">

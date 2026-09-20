@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { RARITY_INFO, getSetByRelic, relicRarityColor } from '@/data/relics'
@@ -28,7 +29,11 @@ const slotRows = computed(() =>
       idx,
       relic,
       color: relic ? relicRarityColor(relic.rarity) : '',
-      label: !id ? `空槽位 ${idx + 1}` : relic ? `卸下 ${relic.name}` : '卸下该槽位遗物',
+      label: !id
+        ? t('relics.emptySlotN', { n: idx + 1 })
+        : relic
+          ? t('relics.unequip', { relicName: relic.name })
+          : t('relics.unequipAria'),
     }
   })
 )
@@ -52,7 +57,7 @@ function onSlotActivate(idx: number) {
 function equip(relic: OwnedRelic, slot: number) {
   // 槽位全满时 findIndex 返回 -1，需明确提示玩家
   if (slot < 0) {
-    toast.show('装备槽位已满，请先卸下一个遗物')
+    toast.show(t('relics.slotsFull'))
     return
   }
   if (game.relics.equipped[slot] === relic.instanceId) {
@@ -100,8 +105,10 @@ function onEnhanceFail(msg: string) {
 
 <template>
   <div class="relic-view">
-    <h2 class="page-title font-display">遗物</h2>
-    <p class="page-sub">装备遗物获得永久增益（{{ game.relics.maxSlots }} 个槽位）</p>
+    <h2 class="page-title font-display">{{ t('relics.title') }}</h2>
+    <p class="page-sub">
+      {{ t('relics.subtitle') }}（{{ game.relics.maxSlots }} {{ t('relics.slotsUnit') }}）
+    </p>
 
     <!-- 装备槽 -->
     <div class="slots-grid">
@@ -121,7 +128,7 @@ function onEnhanceFail(msg: string) {
           <span class="slot-name">{{ row.relic.name }}</span>
         </div>
         <div v-else class="slot-empty">
-          <span>空槽位 {{ row.idx + 1 }}</span>
+          <span>{{ t('relics.emptySlot') }} {{ row.idx + 1 }}</span>
         </div>
       </div>
     </div>
@@ -131,7 +138,7 @@ function onEnhanceFail(msg: string) {
 
     <!-- 套装（v0.61） -->
     <div data-testid="sets-section">
-      <h3 class="section-title">套装</h3>
+      <h3 class="section-title">{{ t('relics.sets') }}</h3>
       <div class="sets-list">
         <div
           v-for="row in game.relics.setProgress"
@@ -149,7 +156,8 @@ function onEnhanceFail(msg: string) {
               row.set.partial.label
             }}</span>
             <span v-else class="set-bonus-off"
-              >2 件：{{ row.set.partial.short }} · 3 件：{{ row.set.full.short }}</span
+              >2 {{ t('common.unitPieces') }}：{{ row.set.partial.short }} · 3
+              {{ t('common.unitPieces') }}：{{ row.set.full.short }}</span
             >
           </div>
         </div>
@@ -158,7 +166,7 @@ function onEnhanceFail(msg: string) {
 
     <!-- 已装备效果 -->
     <div v-if="game.relics.equippedRelics.length > 0" class="active-effects">
-      <h3 class="section-title">当前效果</h3>
+      <h3 class="section-title">{{ t('relics.currentEffect') }}</h3>
       <div class="effect-list">
         <span v-for="(eff, i) in game.relics.equippedEffects" :key="i" class="eff-tag">{{
           eff.label
@@ -169,14 +177,15 @@ function onEnhanceFail(msg: string) {
     <!-- 遗物图鉴 -->
     <div class="inventory">
       <h3 class="section-title">
-        遗物收藏（{{ game.relics.owned.length }} 件 / {{ game.relics.ownedKinds }} 种）
+        {{ t('relics.collection') }}（{{ game.relics.owned.length }} {{ t('common.unitPieces') }} /
+        {{ game.relics.ownedKinds }} {{ t('common.unitKinds') }}）
       </h3>
       <div v-if="game.relics.owned.length === 0" class="empty-inv">
         <EmptyState
           icon="i-nav-relic"
-          text="尚未发现遗物"
-          hint="探索深层星域有机会获得遗物"
-          action="前往探索"
+          :text="t('relics.emptyTitle')"
+          :hint="t('relics.emptyHint')"
+          :action="t('common.goExplore')"
           to="/map"
         />
       </div>
@@ -214,13 +223,15 @@ function onEnhanceFail(msg: string) {
           <div v-if="r.level > 0" class="level-badge" data-testid="relic-level-badge">
             Lv{{ r.level }}
           </div>
-          <div v-if="game.relics.isEquipped(r.instanceId)" class="equipped-tag">已装备</div>
+          <div v-if="game.relics.isEquipped(r.instanceId)" class="equipped-tag">
+            {{ t('relics.equipped') }}
+          </div>
           <div
             v-if="fusion.isMaterialSelected(r)"
             class="material-tag"
             :style="{ background: getRarityColor(r.rarity) }"
           >
-            已选为材料
+            {{ t('relics.selectedAsMaterial') }}
           </div>
           <div class="card-actions">
             <button
@@ -230,7 +241,9 @@ function onEnhanceFail(msg: string) {
               :disabled="!fusion.selectable(r) && !fusion.isMaterialSelected(r)"
               @click.stop="fusion.toggleMaterial(r)"
             >
-              {{ fusion.isMaterialSelected(r) ? '取消选材' : '选为材料' }}
+              {{
+                fusion.isMaterialSelected(r) ? t('relics.unselect') : t('relics.selectAsMaterial')
+              }}
             </button>
             <button
               v-else
@@ -239,28 +252,28 @@ function onEnhanceFail(msg: string) {
               :disabled="game.relics.isEquipped(r.instanceId)"
               @click.stop="equipFromCard(r)"
             >
-              {{ game.relics.isEquipped(r.instanceId) ? '已装备' : '装备' }}
+              {{ game.relics.isEquipped(r.instanceId) ? t('relics.equipped') : t('relics.equip') }}
             </button>
             <button
               class="btn-ghost sm enhance-btn"
               data-testid="enhance-button"
               @click.stop="openEnhance(r)"
             >
-              强化
+              {{ t('relics.enhance') }}
             </button>
             <button
               class="btn-ghost sm discard-btn"
               :class="{ pending: pendingDiscardId === r.instanceId }"
               :disabled="game.relics.isEquipped(r.instanceId)"
-              :title="game.relics.isEquipped(r.instanceId) ? '请先卸下遗物' : ''"
+              :title="game.relics.isEquipped(r.instanceId) ? t('relics.unequipFirst') : ''"
               @click="handleDiscard($event, r)"
             >
               {{
                 game.relics.isEquipped(r.instanceId)
-                  ? '请先卸下'
+                  ? t('relics.unequipFirstShort')
                   : pendingDiscardId === r.instanceId
-                    ? '确认丢弃？'
-                    : '丢弃'
+                    ? t('relics.confirmDiscard')
+                    : t('relics.discard')
               }}
             </button>
           </div>

@@ -5,6 +5,7 @@
  * 编队页签（名称 + 战力）与编队明细行；选中下标由父层持有并回传，
  * 空编队与据点未解锁的提示沿用原文案。类名保持不变。
  */
+import { t } from '@/i18n'
 import { useGameStore } from '@/stores/game'
 import { fmt } from '@/lib/format'
 
@@ -28,7 +29,7 @@ const game = useGameStore()
 
 <template>
   <div>
-    <h3 class="section-title">选择编队</h3>
+    <h3 class="section-title">{{ t('battle.pickFormation') }}</h3>
     <div class="formation-tabs">
       <button
         v-for="(f, idx) in game.military.formations"
@@ -45,8 +46,10 @@ const game = useGameStore()
         <span>{{ r.name }}</span>
         <span class="font-mono">×{{ r.count }}</span>
       </div>
-      <div v-if="empty" class="empty-msg">编队为空，请先在部队页面分配兵力</div>
-      <div v-else-if="!unlocked && !isEndless" class="empty-msg">据点尚未解锁，无法出征</div>
+      <div v-if="empty" class="empty-msg">{{ t('battle.formationEmpty') }}</div>
+      <div v-else-if="!unlocked && !isEndless" class="empty-msg">
+        {{ t('battle.strongholdLocked') }}
+      </div>
     </div>
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 // QuickActions — 首页快速操作入口（v0.54 从 HomeView 拆出）
+import { t } from '@/i18n'
 import { useRouter } from 'vue-router'
 import { NAV_ITEMS } from '@/data/navigation'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
@@ -20,7 +21,7 @@ const router = useRouter()
 const QUICK_ENTRIES: { id: string; color: string; label?: string }[] = [
   { id: 'build', color: 'var(--color-core)' },
   // 「科技树」在首页入口沿用既有「科技」文案（v0.54 起口径，避免可见文案变化）
-  { id: 'tech', color: 'var(--color-plasma)', label: '科技' },
+  { id: 'tech', color: 'var(--color-plasma)', label: t('home.quick.tech') },
   { id: 'map', color: 'var(--color-quantum)' },
   { id: 'army', color: 'var(--color-alert)' },
 ]
@@ -32,13 +33,13 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
 
 <template>
   <!-- P3-2 快速操作入口 — Hero 下方一行 4 个等宽紧凑按钮 -->
-  <section class="quick-actions" aria-label="快速操作">
+  <section class="quick-actions" :aria-label="t('home.quick.aria')">
     <!-- P3-3 onboarding: 快速操作引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-quick'"
       class="ob-quick"
-      title="快速操作"
-      text="点击下方按钮可快速进入建造、科技、探索、部队页面。"
+      :title="t('home.quick.aria')"
+      :text="t('home.quick.onboarding')"
       @dismiss="emit('dismiss')"
       @skip="emit('skip')"
     />

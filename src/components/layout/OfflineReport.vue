@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmtTime } from '@/lib/format'
@@ -20,7 +21,7 @@ const groups = computed(() => {
   return [
     {
       key: 'gains',
-      title: '建筑产出',
+      title: t('offline.gainBuildings'),
       titleClass: 'section-title sub',
       color: '',
       titleInList: true,
@@ -28,7 +29,7 @@ const groups = computed(() => {
     },
     {
       key: 'garrison',
-      title: '据点驻扎收益',
+      title: t('offline.gainGarrison'),
       titleClass: 'gain-title',
       color: 'var(--color-plasma)',
       titleInList: false,
@@ -36,7 +37,7 @@ const groups = computed(() => {
     },
     {
       key: 'event',
-      title: '深空事件',
+      title: t('offline.gainDeepSpace'),
       titleClass: 'gain-title',
       color: 'var(--color-core)',
       titleInList: false,
@@ -44,7 +45,7 @@ const groups = computed(() => {
     },
     {
       key: 'trained',
-      title: '部队训练完成',
+      title: t('offline.gainTraining'),
       titleClass: 'gain-title',
       color: 'var(--color-alert)',
       titleInList: false,
@@ -63,9 +64,9 @@ function dismiss() {
 </script>
 
 <template>
-  <ModalOverlay :model-value="visible" aria-label="离线收益报告" @overlay-click="dismiss">
-    <h2 class="title font-display">离线收益报告</h2>
-    <p class="subtitle">你离开了 {{ fmtTime(game.offlineReport?.duration ?? 0) }}</p>
+  <ModalOverlay :model-value="visible" :aria-label="t('offline.title')" @overlay-click="dismiss">
+    <h2 class="title font-display">{{ t('offline.title') }}</h2>
+    <p class="subtitle">{{ t('offline.gone') }} {{ fmtTime(game.offlineReport?.duration ?? 0) }}</p>
     <div
       v-for="g in groups"
       :key="g.key"
@@ -83,8 +84,8 @@ function dismiss() {
         </div>
       </div>
     </div>
-    <p v-if="groups.length === 0" class="empty">离线期间没有产出（建造更多建筑以获得离线收益）</p>
-    <button class="btn-primary block" @click="dismiss">继续</button>
+    <p v-if="groups.length === 0" class="empty">{{ t('offline.emptyNote') }}）</p>
+    <button class="btn-primary block" @click="dismiss">{{ t('common.continue') }}</button>
   </ModalOverlay>
 </template>
 

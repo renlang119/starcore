@@ -2,6 +2,7 @@
  * resources.ts — 资源 store
  * 5 种资源：energy(能量)、crystal(晶体)、alloy(合金)、data(数据流)、dark(暗物质)
  */
+import { t } from '@/i18n'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { Decimal, D, add, ser, deser, gte } from '@/lib/decimal'
@@ -24,11 +25,31 @@ export interface ResourceMeta {
 }
 
 const RES_META: Record<ResourceType, ResourceMeta> = {
-  energy: { id: 'energy', name: '能量', icon: 'i-res-energy', color: 'var(--color-core)' },
-  crystal: { id: 'crystal', name: '晶体', icon: 'i-res-crystal', color: 'var(--color-quantum)' },
-  alloy: { id: 'alloy', name: '合金', icon: 'i-res-alloy', color: 'var(--color-amber)' },
-  data: { id: 'data', name: '数据流', icon: 'i-res-data', color: 'var(--color-plasma)' },
-  dark: { id: 'dark', name: '暗物质', icon: 'i-res-dark', color: 'var(--color-silencer)' },
+  energy: {
+    id: 'energy',
+    name: t('resources.energy'),
+    icon: 'i-res-energy',
+    color: 'var(--color-core)',
+  },
+  crystal: {
+    id: 'crystal',
+    name: t('resources.crystal'),
+    icon: 'i-res-crystal',
+    color: 'var(--color-quantum)',
+  },
+  alloy: {
+    id: 'alloy',
+    name: t('resources.alloy'),
+    icon: 'i-res-alloy',
+    color: 'var(--color-amber)',
+  },
+  data: { id: 'data', name: t('resources.data'), icon: 'i-res-data', color: 'var(--color-plasma)' },
+  dark: {
+    id: 'dark',
+    name: t('resources.dark'),
+    icon: 'i-res-dark',
+    color: 'var(--color-silencer)',
+  },
 }
 
 export const useResourcesStore = defineStore('resources', () => {

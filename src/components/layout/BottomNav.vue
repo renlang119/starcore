@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { NAV_ITEMS } from '@/data/navigation'
@@ -67,15 +68,15 @@ onUnmounted(() => {
   <nav ref="rootEl" class="bottom-nav">
     <!-- 主导航项 -->
     <button
-      v-for="t in primaryTabs"
-      :key="t.id"
+      v-for="tab in primaryTabs"
+      :key="tab.id"
       class="tab"
-      :class="{ active: activeId === t.id }"
-      :aria-current="activeId === t.id ? 'page' : undefined"
-      @click="nav(t.path)"
+      :class="{ active: activeId === tab.id }"
+      :aria-current="activeId === tab.id ? 'page' : undefined"
+      @click="nav(tab.path)"
     >
-      <Icon class="icon" :name="t.icon" size="lg" />
-      <span class="label">{{ t.label }}</span>
+      <Icon class="icon" :name="tab.icon" size="lg" />
+      <span class="label">{{ tab.label }}</span>
     </button>
 
     <!-- 更多按钮 -->
@@ -89,22 +90,22 @@ onUnmounted(() => {
       @click="toggleMore"
     >
       <Icon class="icon" :class="{ popped: moreOpen }" name="i-ui-more" size="lg" />
-      <span class="label">更多</span>
+      <span class="label">{{ t('nav.more') }}</span>
     </button>
 
     <!-- 更多面板（向上展开） -->
     <transition name="more-pop">
       <div v-if="moreOpen" id="bottom-nav-more" class="more-panel">
         <button
-          v-for="t in secondaryTabs"
-          :key="t.id"
+          v-for="tab in secondaryTabs"
+          :key="tab.id"
           class="more-item"
-          :class="{ active: activeId === t.id }"
-          :aria-current="activeId === t.id ? 'page' : undefined"
-          @click="navSecondary(t.path)"
+          :class="{ active: activeId === tab.id }"
+          :aria-current="activeId === tab.id ? 'page' : undefined"
+          @click="navSecondary(tab.path)"
         >
-          <Icon class="icon" :name="t.icon" size="md" />
-          <span>{{ t.label }}</span>
+          <Icon class="icon" :name="tab.icon" size="md" />
+          <span>{{ tab.label }}</span>
         </button>
       </div>
     </transition>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBreakpoint } from '@/composables/useBreakpoint'
@@ -25,7 +26,7 @@ const toast = useToast()
 watch(
   () => game.saveFailed,
   (failed) => {
-    if (failed) toast.show('存储空间不足，进度尚未保存', 3000)
+    if (failed) toast.show(t('save.storageFull'), 3000)
   }
 )
 
@@ -111,7 +112,7 @@ watch(
 
     <!-- 战斗页返回按钮——仅移动端 -->
     <div v-if="showBattleBack && !isDesktop" class="extra-nav">
-      <button @click="router.push('/')">返回</button>
+      <button @click="router.push('/')">{{ t('common.back') }}</button>
     </div>
   </div>
 </template>

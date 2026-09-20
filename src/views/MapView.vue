@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { resourceRows } from '@/lib/resource-rows'
@@ -67,7 +68,7 @@ function tryExplore(nodeId: string) {
     (c) => game.resources.spendCost(c)
   )
   if (ok) {
-    toast.show('探索已开始')
+    toast.show(t('map.exploreStarted'))
   }
 }
 
@@ -81,25 +82,25 @@ const endlessUnlockedNow = computed(() => game.combat.isEndlessUnlocked())
 /** 前沿深度 = 历史最深 + 1（攻克即推进） */
 const endlessFrontier = computed(() => game.combat.expeditionBest + 1)
 const endlessSection = {
-  title: '无尽远征',
-  desc: '来自星团深处的未知威胁，越深入越危险，收获也越丰',
+  title: t('map.endless'),
+  desc: t('map.endlessDesc'),
 }
 </script>
 
 <template>
   <div class="map-view">
-    <h2 class="page-title font-display">探索星图</h2>
-    <p class="page-sub">探索未知星域，解锁据点与资源</p>
-    <p v-if="game.autoExplore" class="auto-badge" title="探索协议已激活：自动开始可探索的星域节点">
-      ⚙ 探索协议进行中
+    <h2 class="page-title font-display">{{ t('map.title') }}</h2>
+    <p class="page-sub">{{ t('map.subtitle') }}</p>
+    <p v-if="game.autoExplore" class="auto-badge" :title="t('map.protocolActive')">
+      ⚙ {{ t('map.protocolOngoing') }}
     </p>
 
     <!-- P3-3 onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'map-explore'"
       class="onboard-map"
-      title="探索星图"
-      text="选择星域发起探索，完成后获得资源与据点奖励。"
+      :title="t('map.title')"
+      :text="t('map.onboarding')"
       @dismiss="dismiss"
       @skip="skipAll"
     />
@@ -108,9 +109,9 @@ const endlessSection = {
     <EmptyState
       v-if="allNodesCompleted"
       icon="i-nav-explore"
-      text="全宇宙已探索完毕"
-      hint="先驱者的航路与信号就此走完，星核文明接过了守门者的位置"
-      action="前往科技"
+      :text="t('map.allDoneTitle')"
+      :hint="t('map.allDoneHint')"
+      :action="t('common.goTech')"
       to="/tech"
     />
 
@@ -141,7 +142,7 @@ const endlessSection = {
 
     <!-- 已解锁据点 -->
     <div v-if="availableStrongholds.length > 0" class="stronghold-section">
-      <h3 class="section-title alert">已解锁据点</h3>
+      <h3 class="section-title alert">{{ t('map.unlockedStrongholds') }}</h3>
       <div class="stronghold-list">
         <button
           v-for="s in availableStrongholds"
@@ -184,13 +185,14 @@ const endlessSection = {
         </div>
         <div class="s-info">
           <div class="s-name">
-            {{ endlessUnlockedNow ? `深渊·第 ${endlessFrontier} 层` : '？？？' }}
+            {{ endlessUnlockedNow ? t('map.abyssDepth', { depth: endlessFrontier }) : '？？？' }}
           </div>
           <div class="s-type font-mono">
             <template v-if="endlessUnlockedNow"
-              >历史最深 第 {{ game.combat.expeditionBest }} 层</template
+              >{{ t('map.deepest') }} {{ t('map.depthLead') }} {{ game.combat.expeditionBest }}
+              {{ t('map.depthUnit') }}</template
             >
-            <template v-else>攻克「沉默者旗舰」后开放</template>
+            <template v-else>{{ t('map.lockedHint') }}</template>
           </div>
         </div>
         <Icon v-if="endlessUnlockedNow" class="s-arrow" name="i-ui-arrow-right" size="md" />

@@ -3,6 +3,8 @@
  * SideNav 和 BottomNav 共用此数据源，通过 tier 字段筛选
  */
 
+import { t } from '@/i18n'
+
 interface NavItem {
   id: string
   label: string
@@ -12,22 +14,22 @@ interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { id: 'home', label: '主界面', icon: 'i-nav-home', path: '/', tier: 'primary' },
-  { id: 'build', label: '建造', icon: 'i-nav-build', path: '/build', tier: 'primary' },
-  { id: 'tech', label: '科技树', icon: 'i-nav-tech', path: '/tech', tier: 'primary' },
-  { id: 'map', label: '探索', icon: 'i-nav-explore', path: '/map', tier: 'primary' },
-  { id: 'army', label: '部队', icon: 'i-nav-army', path: '/army', tier: 'primary' },
-  { id: 'relic', label: '遗物', icon: 'i-nav-relic', path: '/relic', tier: 'secondary' },
+  { id: 'home', label: t('nav.home'), icon: 'i-nav-home', path: '/', tier: 'primary' },
+  { id: 'build', label: t('nav.build'), icon: 'i-nav-build', path: '/build', tier: 'primary' },
+  { id: 'tech', label: t('nav.tech'), icon: 'i-nav-tech', path: '/tech', tier: 'primary' },
+  { id: 'map', label: t('nav.map'), icon: 'i-nav-explore', path: '/map', tier: 'primary' },
+  { id: 'army', label: t('nav.army'), icon: 'i-nav-army', path: '/army', tier: 'primary' },
+  { id: 'relic', label: t('nav.relic'), icon: 'i-nav-relic', path: '/relic', tier: 'secondary' },
   {
     id: 'prestige',
-    label: '奇点重启',
+    label: t('nav.prestige'),
     icon: 'i-nav-prestige',
     path: '/prestige',
     tier: 'secondary',
   },
   {
     id: 'achievements',
-    label: '成就',
+    label: t('nav.achievements'),
     icon: 'i-ui-check',
     path: '/achievements',
     tier: 'secondary',
