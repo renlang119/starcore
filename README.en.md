@@ -31,7 +31,7 @@ growing on through "Singularity Restart" rebirth cycles.
   bonuses
 - **Daily Check-in**: streak-cycle rewards plus 3 weekly challenges
 - **Bilingual UI**: Simplified Chinese and English; follows your browser by
-  default, switchable in Settings
+  default (other languages display in English), switchable in Settings
 
 ## Quick Start
 
@@ -94,7 +94,7 @@ starcore/
 ## Quality
 
 - **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 38 test files,
-  521 cases
+  525 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document
