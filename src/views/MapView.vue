@@ -185,7 +185,11 @@ const endlessSection = {
         </div>
         <div class="s-info">
           <div class="s-name">
-            {{ endlessUnlockedNow ? t('map.abyssDepth', { depth: endlessFrontier }) : '？？？' }}
+            {{
+              endlessUnlockedNow
+                ? t('map.abyssDepth', { depth: endlessFrontier })
+                : t('map.abyssLocked')
+            }}
           </div>
           <div class="s-type font-mono">
             <template v-if="endlessUnlockedNow"

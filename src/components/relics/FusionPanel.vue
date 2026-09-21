@@ -33,7 +33,7 @@ function closeResult(fusion: RelicFusionApi) {
     <!-- 合成工坊（v0.61） -->
     <div class="fusion-section" data-testid="fusion-section">
       <h3 class="section-title">{{ t('relics.fusionTitle') }}</h3>
-      <p class="fusion-hint">{{ t('relics.fusionHint') }}）</p>
+      <p class="fusion-hint">{{ t('relics.fusionHint') }}</p>
       <div class="fusion-panel">
         <button
           class="btn-ghost sm select-mode-btn"
@@ -76,10 +76,9 @@ function closeResult(fusion: RelicFusionApi) {
         </div>
         <p v-if="fusion.synthFailMsg.value" class="fusion-fail">{{ fusion.synthFailMsg.value }}</p>
         <p v-else-if="fusion.materialRarity.value" class="fusion-rarity">
-          {{ t('relics.fusionMaterialRarity') }}：{{
-            RARITY_INFO[fusion.materialRarity.value].name
-          }}
-          → {{ t('relics.fusionResult') }}：{{ NEXT_RARITY_NAME[fusion.materialRarity.value] }}
+          {{ t('relics.fusionMaterialRarity')
+          }}{{ RARITY_INFO[fusion.materialRarity.value].name }} → {{ t('relics.fusionResult')
+          }}{{ NEXT_RARITY_NAME[fusion.materialRarity.value] }}
         </p>
       </div>
     </div>

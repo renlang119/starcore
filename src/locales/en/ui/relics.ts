@@ -2,7 +2,7 @@
  * relics — English locale messages (translated from the zh-CN baseline)
  */
 export default {
-  'relics.collection': 'Relic Collection',
+  'relics.collection': 'Relic Collection ({owned} pcs / {kinds} types)',
   'relics.confirmDiscard': 'Discard this relic?',
   'relics.currentEffect': 'Current Effect',
   'relics.discard': 'Discard',
@@ -19,12 +19,12 @@ export default {
   'relics.fusionDo': 'Fuse',
   'relics.fusionFailed': 'Fusion failed: 3 unequipped relics of the same rarity required',
   'relics.fusionHint':
-    'Pick 3 unequipped relics of the same rarity to fuse into 1 random relic of the next tier (Legendary is the top tier and cannot be used as material',
-  'relics.fusionMaterialRarity': 'Material rarity',
+    'Pick 3 unequipped relics of the same rarity to fuse into 1 random relic of the next tier (Legendary is the top tier and cannot be used as material)',
+  'relics.fusionMaterialRarity': 'Material rarity: ',
   'relics.fusionMaterials': 'Materials',
   'relics.fusionMismatch': 'Materials must share the same rarity',
   'relics.fusionPick': 'Select Materials',
-  'relics.fusionResult': 'Result',
+  'relics.fusionResult': 'Result: ',
   'relics.fusionResultAria': 'Fusion result',
   'relics.fusionSelecting':
     '✓ Selecting: click a collection card to add it as material (click again to cancel)',
@@ -33,13 +33,13 @@ export default {
   'relics.fusionTitle': 'Fusion Workshop',
   'relics.insufficientEnergy': 'Insufficient Energy',
   'relics.maxed': 'At maximum',
-  'relics.nextCost': 'Next level cost',
+  'relics.nextCost': 'Next level cost: ',
   'relics.selectAsMaterial': 'Select as material',
   'relics.selectedAsMaterial': 'Selected as material',
+  'relics.setBonusLine': '2 pcs: {partial} · 3 pcs: {full}',
   'relics.sets': 'Sets',
   'relics.slotsFull': 'All equipment slots are full; unequip a relic first',
-  'relics.slotsUnit': 'slots',
-  'relics.subtitle': 'Equip relics for permanent bonuses',
+  'relics.subtitle': 'Equip relics for permanent bonuses ({slots} slots)',
   'relics.title': 'Relics',
   'relics.unequip': 'Unequip {relicName}',
   'relics.unequipAria': 'Unequip the relic in this slot',

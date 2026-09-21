@@ -7,7 +7,7 @@ export default {
   'tech.branchDone': 'All technologies in the "{branch}" branch are complete',
   'tech.emptyHint': 'Exploring new star regions may reveal unknown technologies',
   'tech.listAria': 'Technology list',
-  'tech.needs': 'Requires',
+  'tech.needs': 'Requires: ',
   'tech.onboarding':
     'Research technologies to unlock new buildings, units and systems. Research consumes Data Stream.',
   'tech.protocolActive':

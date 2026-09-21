@@ -3,6 +3,7 @@
  */
 export default {
   'map.abyssDepth': 'Abyss · Layer {depth}',
+  'map.abyssLocked': '???',
   'map.allDoneHint':
     'The Forerunners’ road and signal end here; the StarCore civilization takes up the Gatekeepers’ watch',
   'map.allDoneTitle': 'The Entire Universe Has Been Explored',
@@ -15,8 +16,8 @@ export default {
   'map.explore': 'Explore',
   'map.exploreStarted': 'Exploration started',
   'map.lockedHint': 'Unlocks after conquering the "Flagship of the Silent Ones"',
-  'map.needsPrereq': 'Requires',
-  'map.obtained': 'Obtained',
+  'map.needsPrereq': 'Requires: ',
+  'map.obtained': 'Obtained: ',
   'map.onboarding':
     'Select a star region to explore; completing one grants resources and stronghold rewards.',
   'map.protocolActive': 'Explore Protocol active: automatically starts available exploration nodes',

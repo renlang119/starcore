@@ -73,14 +73,15 @@ const game = useGameStore()
 
     <!-- 锁定 -->
     <div v-else-if="locked" class="n-locked">
-      {{ t('map.needsPrereq') }}：{{
+      {{ t('map.needsPrereq')
+      }}{{
         (node.requires ?? []).map((r) => EXPLORE_NODES.find((x) => x.id === r)?.name).join(', ')
       }}
     </div>
 
     <!-- 已完成奖励预览 -->
     <div v-if="completed" class="n-rewards">
-      <span class="rewards-label">{{ t('map.obtained') }}：</span>
+      <span class="rewards-label">{{ t('map.obtained') }}</span>
       <span v-for="r in rewards" :key="r.name" class="reward-tag" :style="{ color: r.color }"
         >{{ r.name }} +{{ r.amount }}</span
       >

@@ -152,7 +152,7 @@ const unitRows = computed(() =>
               t('common.rarity.rare')
             }}</span>
           </div>
-          <div class="u-count font-mono">{{ t('army.owned') }}：{{ row.owned }}</div>
+          <div class="u-count font-mono">{{ t('army.owned') }}{{ row.owned }}</div>
         </div>
       </div>
       <p class="u-desc">{{ row.def.desc }}</p>
@@ -168,7 +168,7 @@ const unitRows = computed(() =>
       </div>
 
       <div v-if="!row.unlocked" class="u-locked">
-        {{ t('common.needsTech') }}：{{ getTech(row.def.requires)?.name ?? row.def.requires }}
+        {{ t('common.needsTech') }}{{ getTech(row.def.requires)?.name ?? row.def.requires }}
       </div>
       <template v-else>
         <!-- 训练数量 -->
@@ -212,9 +212,12 @@ const unitRows = computed(() =>
     <!-- 训练队列 -->
     <div v-if="game.military.trainingQueue.length > 0" class="train-queue">
       <h3 class="section-title">
-        {{ t('army.training') }}（{{ game.military.trainingQueue.length }}/{{
-          game.military.maxTrainingSlots
-        }}）
+        {{
+          t('army.training', {
+            doing: game.military.trainingQueue.length,
+            total: game.military.maxTrainingSlots,
+          })
+        }}
       </h3>
       <p v-if="slotHint" class="slot-hint">{{ slotHint }}</p>
       <div v-for="task in game.military.trainingQueue" :key="task.id" class="queue-item">

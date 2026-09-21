@@ -156,7 +156,7 @@ function cancelHardReset() {
     @confirm="confirmImport"
   >
     <h2 class="confirm-title font-display" style="color: var(--color-alert)">
-      {{ t('save.importConfirmTitle') }}？
+      {{ t('save.importConfirmTitle') }}
     </h2>
     <div class="warning-box">
       <p>
@@ -175,12 +175,12 @@ function cancelHardReset() {
     @confirm="confirmHardReset"
   >
     <h2 class="confirm-title font-display" style="color: var(--color-alert)">
-      {{ t('save.clearConfirmTitle') }}？
+      {{ t('save.clearConfirmTitle') }}
     </h2>
     <div class="warning-box">
       <p>
         ⚠️ {{ t('save.clearWarnLead') }}<strong>{{ t('save.clearWarnStrong') }}</strong
-        >{{ t('save.clearWarnTail') }}：
+        >{{ t('save.clearWarnTail') }}
       </p>
       <ul>
         <li>{{ t('save.clearListA') }}</li>

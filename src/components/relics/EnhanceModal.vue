@@ -99,7 +99,7 @@ const rarityColor = relicRarityColor
         </div>
         <div class="r-name">{{ relic.name }}</div>
         <div class="enhance-level" data-testid="enhance-level">
-          {{ t('common.level') }}：{{ relic.level }} / {{ MAX_RELIC_LEVEL }}
+          {{ t('common.level') }}{{ relic.level }} / {{ MAX_RELIC_LEVEL }}
         </div>
         <div class="r-effects">
           <span v-for="(e, i) in currentEffects" :key="i" class="eff-mini">{{ e.label }}</span>
@@ -113,7 +113,7 @@ const rarityColor = relicRarityColor
         </div>
         <div v-if="isMax" class="enhance-max">{{ t('relics.maxed') }}</div>
         <div v-else class="enhance-cost-row" data-testid="enhance-cost">
-          {{ t('relics.nextCost') }}：<span class="font-mono">{{ fmt(nextCost ?? 0) }}</span>
+          {{ t('relics.nextCost') }}<span class="font-mono">{{ fmt(nextCost ?? 0) }}</span>
           {{ t('resources.energy') }}
         </div>
       </div>

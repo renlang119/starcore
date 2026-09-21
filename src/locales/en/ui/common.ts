@@ -12,8 +12,8 @@ export default {
   'common.goExplore': 'Go Explore',
   'common.goTech': 'Go to Tech',
   'common.insufficient': 'Insufficient resources',
-  'common.level': 'Level',
-  'common.needsTech': 'Requires Tech',
+  'common.level': 'Level: ',
+  'common.needsTech': 'Requires Tech: ',
   'common.rarity.epic': 'Epic',
   'common.rarity.legend': 'Legendary',
   'common.rarity.rare': 'Rare',
@@ -21,7 +21,5 @@ export default {
   'common.statDefense': 'DEF',
   'common.statPower': 'PWR',
   'common.totalLead': 'Total',
-  'common.unitKinds': 'types',
   'common.unitLevel': 'levels',
-  'common.unitPieces': 'pcs',
 }

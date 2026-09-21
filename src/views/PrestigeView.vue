@@ -78,7 +78,7 @@ function cancelTranscend() {
     <!-- 负熵面板 -->
     <div class="neg-panel">
       <div>
-        <div class="neg-label">{{ t('prestige.negEntropyLabel') }}）</div>
+        <div class="neg-label">{{ t('prestige.negEntropyLabel') }}</div>
         <div class="neg-value font-display">{{ fmt(game.transcend.negativeEntropy) }}</div>
       </div>
       <div>
@@ -97,7 +97,7 @@ function cancelTranscend() {
     <p v-if="!canTranscend" class="req-hint">
       {{ t('prestige.needLead') }} 300,000 {{ t('prestige.needTail') }}
     </p>
-    <p v-else class="ready-hint">{{ t('prestige.ready') }}！</p>
+    <p v-else class="ready-hint">{{ t('prestige.ready') }}</p>
 
     <!-- 转生树 -->
     <div>
@@ -205,18 +205,18 @@ function cancelTranscend() {
       @cancel="cancelTranscend"
       @confirm="confirmTranscend"
     >
-      <h2 class="confirm-title font-display">{{ t('prestige.confirmTitle') }}？</h2>
+      <h2 class="confirm-title font-display">{{ t('prestige.confirmTitle') }}</h2>
       <div class="warning-box">
-        <p>⚠️ {{ t('prestige.resetTitle') }}：</p>
+        <p>⚠️ {{ t('prestige.resetTitle') }}</p>
         <ul>
-          <li>{{ t('prestige.resetResources') }}）</li>
+          <li>{{ t('prestige.resetResources') }}</li>
           <li>{{ t('prestige.resetBuildings') }}</li>
           <li>{{ t('prestige.resetTech') }}</li>
           <li>{{ t('prestige.resetArmy') }}</li>
           <li>{{ t('prestige.resetStrongholds') }}</li>
           <li>{{ t('prestige.resetExplore') }}</li>
         </ul>
-        <p>✅ {{ t('prestige.keepTitle') }}：</p>
+        <p>✅ {{ t('prestige.keepTitle') }}</p>
         <ul>
           <li>{{ t('prestige.keepRelics') }}</li>
           <li>{{ t('prestige.keepNegEntropy') }}</li>

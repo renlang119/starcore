@@ -107,7 +107,7 @@ function onEnhanceFail(msg: string) {
   <div class="relic-view">
     <h2 class="page-title font-display">{{ t('relics.title') }}</h2>
     <p class="page-sub">
-      {{ t('relics.subtitle') }}（{{ game.relics.maxSlots }} {{ t('relics.slotsUnit') }}）
+      {{ t('relics.subtitle', { slots: game.relics.maxSlots }) }}
     </p>
 
     <!-- 装备槽 -->
@@ -155,10 +155,12 @@ function onEnhanceFail(msg: string) {
             <span v-else-if="row.mode === 'partial'" class="set-bonus-on">{{
               row.set.partial.label
             }}</span>
-            <span v-else class="set-bonus-off"
-              >2 {{ t('common.unitPieces') }}：{{ row.set.partial.short }} · 3
-              {{ t('common.unitPieces') }}：{{ row.set.full.short }}</span
-            >
+            <span v-else class="set-bonus-off">{{
+              t('relics.setBonusLine', {
+                partial: row.set.partial.short ?? '',
+                full: row.set.full.short ?? '',
+              })
+            }}</span>
           </div>
         </div>
       </div>
@@ -177,8 +179,9 @@ function onEnhanceFail(msg: string) {
     <!-- 遗物图鉴 -->
     <div class="inventory">
       <h3 class="section-title">
-        {{ t('relics.collection') }}（{{ game.relics.owned.length }} {{ t('common.unitPieces') }} /
-        {{ game.relics.ownedKinds }} {{ t('common.unitKinds') }}）
+        {{
+          t('relics.collection', { owned: game.relics.owned.length, kinds: game.relics.ownedKinds })
+        }}
       </h3>
       <div v-if="game.relics.owned.length === 0" class="empty-inv">
         <EmptyState

@@ -69,9 +69,13 @@ const hasNoLoss = computed(
       </div>
       <div v-if="result.relic" class="relic-drop">
         <span class="rarity-tag" :style="{ color: relicRarityColor(result.relic.rarity) }">
-          🎁 {{ t('battle.relicGained') }}：{{ result.relic.name }}（{{
-            RARITY_INFO[result.relic.rarity].name
-          }}）
+          🎁
+          {{
+            t('battle.relicGainedLine', {
+              name: result.relic.name,
+              rarity: RARITY_INFO[result.relic.rarity].name,
+            })
+          }}
         </span>
       </div>
     </div>
