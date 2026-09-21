@@ -6,8 +6,8 @@
  * 现均归 zh-CN；未来加入繁中后凭精确标签优先自动分流）。
  *
  * 环境安全：不裸引用 window / localStorage / navigator（全程 typeof 守卫 +
- * try/catch），可被纯 Node 工具链直接导入（守卫脚本、测试等）；无浏览器
- * 环境一律回退默认语言。
+ * try/catch），可被纯 Node 工具链直接导入（守卫脚本等）；无浏览器
+ * 环境（含 Node 21+ 自带 navigator 全局的 CLI）一律回退默认语言。
  *
  * 切换语义：整页刷新生效。解析在模块加载时求值一次（一次会话内不变），
  * 显式选择写持久化后由调用方负责刷新。
@@ -19,7 +19,10 @@ export interface LocaleInfo {
 }
 
 /** 已支持语言注册表（新增语言：加一项 + 补 src/locales/<code>/ 目录） */
-export const AVAILABLE_LOCALES: LocaleInfo[] = [{ code: 'zh-CN', label: '简体中文' }]
+export const AVAILABLE_LOCALES: LocaleInfo[] = [
+  { code: 'zh-CN', label: '简体中文' },
+  { code: 'en', label: 'English' },
+]
 
 /** 默认语言（无显式选择且浏览器无可匹配语言时） */
 export const DEFAULT_LOCALE = 'zh-CN'
@@ -60,6 +63,9 @@ function readStoredLocale(): string | null {
 /** 读取浏览器偏好语言列表（缺失时退回单值；全无返回空数组） */
 function readBrowserLocales(): string[] {
   try {
+    // 仅在真实浏览器/类 DOM 环境采信 navigator：Node 21+ 的 CLI 也带
+    // navigator 全局（随系统 locale），守卫脚本等纯 Node 工具链须回退默认语言
+    if (typeof document === 'undefined') return []
     if (typeof navigator === 'undefined') return []
     const list = navigator.languages
     if (Array.isArray(list) && list.length > 0) return [...list]

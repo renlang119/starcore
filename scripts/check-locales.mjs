@@ -7,10 +7,11 @@
  *   · 源码字面量调用 t('key')（.ts / .vue；排除测试与语言包、门面自身）
  * 另扫硬编码中文：源码（语言包、门面、测试与 src/tests/ 除外）在掩码注释后
  * 不得出现任何 CJK 字符（.vue 额外掩码 HTML 注释；模板文本与属性值同查）。
+ * 多语言键面一致性：注册表内每种非默认语言与默认语言键集、{参数} 占位符一致。
  *
  * 用法：node scripts/check-locales.mjs [--strict]
- *   --strict：缺键 / 未使用键 / 非字面量调用 / 硬编码中文残留，任一非零退出 1
- *   （已挂入 `corepack pnpm check` 门禁链）；默认报告模式恒退出 0。
+ *   --strict：缺键 / 未使用键 / 非字面量调用 / 硬编码中文残留 / 键面一致性，
+ *   任一非零退出 1（已挂入 `corepack pnpm check` 门禁链）；默认报告模式恒退出 0。
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
@@ -70,6 +71,34 @@ for (const f of files) {
 const missing = [...used.keys()].filter((k) => !keys.has(k)).sort()
 const unused = [...keys].filter((k) => !used.has(k)).sort()
 
+// —— 多语言键面一致性：注册表内每种非默认语言与默认语言键集、占位符逐项一致 ——
+const { AVAILABLE_LOCALES, DEFAULT_LOCALE } = await import(
+  pathToFileURL(join(ROOT, 'src', 'i18n', 'locale.ts')).href
+)
+const PLACEHOLDER = /\{(\w+)\}/g
+const paramSig = (s) =>
+  [...s.matchAll(PLACEHOLDER)]
+    .map((m) => m[1])
+    .sort()
+    .join(',')
+const parityProblems = []
+for (const loc of AVAILABLE_LOCALES) {
+  if (loc.code === DEFAULT_LOCALE) continue
+  const other = (
+    await import(pathToFileURL(join(ROOT, 'src', 'locales', loc.code, 'index.ts')).href)
+  ).default
+  const okeys = new Set(Object.keys(other))
+  for (const k of [...keys].filter((k) => !okeys.has(k)))
+    parityProblems.push(`${loc.code} 缺键: ${k}`)
+  for (const k of [...okeys].filter((k) => !keys.has(k)))
+    parityProblems.push(`${loc.code} 多键: ${k}`)
+  for (const k of keys) {
+    if (!okeys.has(k)) continue
+    if (paramSig(bundle[k]) !== paramSig(other[k]))
+      parityProblems.push(`${loc.code} 占位符不一致: ${k}`)
+  }
+}
+
 // —— 硬编码中文零残留扫描（注释掩码后任何 CJK 即违规）——
 const CJK = /[一-鿿]+/g
 function maskComments(src, isVue) {
@@ -87,7 +116,10 @@ for (const f of files) {
   let m
   while ((m = CJK.exec(ms)) !== null) {
     const line = ms.slice(0, m.index).split('\n').length
-    const snippet = ms.slice(Math.max(0, m.index - 20), m.index + 20).replace(/\n/g, '⏎').trim()
+    const snippet = ms
+      .slice(Math.max(0, m.index - 20), m.index + 20)
+      .replace(/\n/g, '⏎')
+      .trim()
     residual.push(`${rel}:${line}  ${snippet}`)
     if (residual.length >= 40) break
   }
@@ -103,6 +135,8 @@ console.log(`非字面量调用（无法静态核验）: ${nonLiteral.length}`)
 for (const s of nonLiteral.slice(0, 40)) console.log(`  ! ${s}`)
 console.log(`硬编码中文残留（语言包与测试外源码）: ${residual.length}`)
 for (const s of residual.slice(0, 40)) console.log(`  ✗ ${s}`)
+console.log(`多语言键面一致性（非默认语言 vs 默认语言）: ${parityProblems.length}`)
+for (const s of parityProblems.slice(0, 40)) console.log(`  ✗ ${s}`)
 
 if (strict) {
   const bad = []
@@ -110,6 +144,7 @@ if (strict) {
   if (unused.length > 0) bad.push(`未使用键 ${unused.length}`)
   if (nonLiteral.length > 0) bad.push(`非字面量调用 ${nonLiteral.length}`)
   if (residual.length > 0) bad.push(`硬编码中文残留 ${residual.length}`)
+  if (parityProblems.length > 0) bad.push(`键面一致性 ${parityProblems.length}`)
   if (bad.length > 0) {
     console.error(`\n[strict] 文案守卫未过：${bad.join('、')}，退出码 1`)
     process.exit(1)

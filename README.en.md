@@ -30,6 +30,8 @@ growing on through "Singularity Restart" rebirth cycles.
 - **Achievements**: 37 milestones tracked across rebirths, granting permanent
   bonuses
 - **Daily Check-in**: streak-cycle rewards plus 3 weekly challenges
+- **Bilingual UI**: Simplified Chinese and English; follows your browser by
+  default, switchable in Settings
 
 ## Quick Start
 
@@ -73,7 +75,7 @@ starcore/
 │  ├─ data/         11 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, navigation, story, background stars)
 │  ├─ i18n/         i18n facade (message lookup and locale detection)
 │  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
-│  ├─ locales/      locale bundles (zh-CN baseline, split by domain under ui/ and content/)
+│  ├─ locales/      locale bundles (zh-CN baseline + en English, split by domain under ui/ and content/)
 │  ├─ router/       route definitions
 │  ├─ stores/       11 Pinia stores (resources, buildings, research, military, combat,
 │  │                exploration, relics, rebirth, achievements, daily, game)
@@ -91,16 +93,16 @@ starcore/
 
 ## Quality
 
-- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 37 test files,
-  517 cases
+- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 38 test files,
+  521 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document
   counts, achievement text links and test hard assertions against real data
   (`corepack pnpm check:conservation`)
 - **Copy guard**: `scripts/check-locales.mjs` gates message-key closure (missing /
-  unused / non-literal calls) and zero hardcoded Chinese residuals; wired into
-  `corepack pnpm check`
+  unused / non-literal calls), zero hardcoded Chinese residuals and
+  cross-locale key parity; wired into `corepack pnpm check`
 
 ## Documentation
 

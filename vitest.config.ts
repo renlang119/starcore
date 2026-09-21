@@ -14,7 +14,7 @@ export default mergeConfig(
       // 由 setupFiles 的 src/tests/reset-providers.ts 每文件前置重置兜底
       // （v0.93 起集中式，此前靠各测试文件散落的手工重置，存在盲点）。
       isolate: false,
-      setupFiles: ['src/tests/reset-providers.ts'],
+      setupFiles: ['src/tests/force-zh-locale.ts', 'src/tests/reset-providers.ts'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html'],
