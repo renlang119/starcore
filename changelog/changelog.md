@@ -3,11 +3,51 @@
 > 项目：星核纪元（StarCore）— 科幻放置/挂机网页游戏
 > 技术栈：Vue 3.5 + Vite 8 + Pinia 4 + TypeScript 6 + decimal.js 10 + localforage 1.10
 > 版本号规则：以修复发版为粒度，初始 v0.01，每次 +0.01
-> 当前版本：v1.14
+> 当前版本：v1.15
 >
 > 本文件为活跃档（v1.01 起），新条目置顶；更早条目见
 > [changelog-v0.51-v1.00.md](changelog-v0.51-v1.00.md)（v0.51-v1.00）与
 > [changelog-v0.01-v0.50.md](changelog-v0.01-v0.50.md)（v0.01-v0.50）。
+
+---
+
+## v1.15 — 功能: 英文语言包与多语言键面守护
+
+**变更性质：功能（新增英文语言包，界面与内容文案全量英译）**
+
+**开发时间：2026-09-21**
+
+### 概述
+
+游戏界面新增 English 语言：语言包新增 en 目录（ui 19 域加 content 10
+域），与简体中文基线 1172 键逐键对齐；默认跟随浏览器语言自动匹配，
+设置页可手动固定，切换后整页刷新生效。简体中文仍为默认语言与内容
+基线，中文玩家零感知，存档格式不变。
+
+### 变更明细
+
+- 语言包：新增 src/locales/en/ 共 30 个模块（index 聚合加 ui 19 域、
+  content 10 域），1172 键全量英译；术语统一（奇点重启 Singularity
+  Restart、负熵 Negative Entropy、先驱者 the Forerunners、沉默者 the
+  Silent Ones 等）
+- 门面：AVAILABLE_LOCALES 注册 en 并挂入 BUNDLES；浏览器语言识别新增
+  仅类 DOM 环境采信 navigator 的守卫（Node 21 起 CLI 自带 navigator
+  全局且随系统 locale，守卫脚本等纯 Node 场景会被误导向英文）
+- 测试环境：新增 force-zh-locale setup 把 jsdom 的 en-US 默认语言钉回
+  zh-CN（否则英文前缀匹配使命名插值外的中文断言全灭）；新增英文语言包
+  键面守护 3 用例（键集一致、占位符逐键一致、英文值无 CJK 与全角标点）；
+  设置页语言区块测试适配三选项并新增英文选择用例
+- 守卫：check-locales 新增多语言键面一致性检查（注册表内每种非默认语言
+  与默认语言键集、占位符逐项一致），已并入 check 门禁
+- 文档：README 双语补多语言条目与守卫口径，架构文档第六章同步
+
+### 验证
+
+- check 全绿：构建加类型检查、38 个测试文件 521 个用例、计数守恒含
+  Playwright 段、文案守卫四类加键面一致性零问题、lint 与 format 零输出
+- Playwright 套件 28 脚本全过（含新增英文语言专项：中文环境默认渲染、
+  英文浏览器自动匹配、手动切换持久化与 html lang 联动、显式选择优先于
+  浏览器识别）
 
 ---
 
