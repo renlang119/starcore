@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_LOCALE,
+  FALLBACK_LOCALE,
   LOCALE_STORAGE_KEY,
   clearLocale,
   getLocale,
@@ -33,6 +34,10 @@ describe('matchLocale — 匹配算法（mock 注册表）', () => {
 
   it('语言前缀回退：zh-TW 现归 zh-CN', () => {
     expect(matchLocale(['zh-TW'], ['zh-CN'])).toBe('zh-CN')
+  })
+
+  it('繁体变体前缀回退（zh-Hant-TW）', () => {
+    expect(matchLocale(['zh-Hant-TW'], ['zh-CN', 'en'])).toBe('zh-CN')
   })
 
   it('按偏好顺序取首个命中', () => {
@@ -71,12 +76,29 @@ describe('resolveLocale — 生效顺序（显式选择 > 浏览器 > 默认）'
     )
   })
 
-  it('无匹配回退默认中文', () => {
-    expect(resolveLocale({ browser: ['fr-FR'] })).toBe(DEFAULT_LOCALE)
+  it('浏览器无匹配统一回退英文', () => {
+    expect(resolveLocale({ browser: ['fr-FR'] })).toBe(FALLBACK_LOCALE)
   })
 
-  it('无浏览器信息回退默认中文', () => {
-    expect(resolveLocale({ browser: [] })).toBe(DEFAULT_LOCALE)
+  it('浏览器偏好为空回退英文', () => {
+    expect(resolveLocale({ browser: [] })).toBe(FALLBACK_LOCALE)
+  })
+
+  it('混合列表按顺序取首个可匹配（含英文后备）', () => {
+    expect(resolveLocale({ browser: ['fr-FR', 'en-GB'] })).toBe('en')
+  })
+
+  it('混合列表按顺序取首个可匹配（繁体归简体）', () => {
+    expect(resolveLocale({ browser: ['ja-JP', 'zh-TW'] })).toBe('zh-CN')
+  })
+
+  it('非浏览器环境（Node 工具链）回退基线 zh-CN', () => {
+    vi.stubGlobal('document', undefined)
+    try {
+      expect(resolveLocale()).toBe(DEFAULT_LOCALE)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })
 
@@ -113,7 +135,7 @@ describe('setLocale / clearLocale — 持久化', () => {
 })
 
 describe('当前语言与支持面', () => {
-  it('测试环境（无浏览器信息）回退默认中文', () => {
+  it('测试环境由 setup 钉为基线 zh-CN', () => {
     expect(getLocale()).toBe(DEFAULT_LOCALE)
   })
 
