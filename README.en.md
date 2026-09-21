@@ -17,7 +17,7 @@ growing on through "Singularity Restart" rebirth cycles.
 - **Tech Tree**: 8 branches, 59 technologies driving production, combat,
   exploration and rebirth
 - **Exploration**: 34 nodes across the StarCore, Stellar, Star Cluster,
-  Star Arm and Galaxy layers; timed runs grant rewards
+  Star Arm, Galaxy and Void layers; timed runs grant rewards
 - **Units**: 4 unit types in a double counter-triangle; parallel training
   slots 1→3 via tech
 - **PVE Strongholds**: 36 strongholds in 4 categories; garrison conquered
