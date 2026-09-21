@@ -95,7 +95,7 @@ describe('setLocale / clearLocale — 持久化', () => {
   it('未支持的语言拒绝', () => {
     const { api } = fakeStorage()
     vi.stubGlobal('localStorage', api)
-    expect(setLocale('en')).toBe(false)
+    expect(setLocale('fr')).toBe(false)
   })
 
   it('存储不可用时返回 false 不抛', () => {
@@ -119,6 +119,7 @@ describe('当前语言与支持面', () => {
 
   it('isSupportedLocale 判定', () => {
     expect(isSupportedLocale('zh-CN')).toBe(true)
-    expect(isSupportedLocale('en')).toBe(false)
+    expect(isSupportedLocale('en')).toBe(true)
+    expect(isSupportedLocale('fr')).toBe(false)
   })
 })

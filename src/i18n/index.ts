@@ -11,12 +11,13 @@
  * 切换语义：整页刷新生效（locale 模块加载时解析一次）。
  */
 import zhCN from '../locales/zh-CN/index.ts'
+import en from '../locales/en/index.ts'
 import { DEFAULT_LOCALE, getLocale } from './locale.ts'
 
 export type I18nParams = Record<string, string | number>
 type Bundle = Record<string, string>
 
-const BUNDLES: Record<string, Bundle> = { 'zh-CN': zhCN }
+const BUNDLES: Record<string, Bundle> = { 'zh-CN': zhCN, en }
 const warned = new Set<string>()
 
 /** 取词：支持 {param} 命名插值；缺参保留占位符，缺键返回键名 */

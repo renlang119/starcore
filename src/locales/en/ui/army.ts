@@ -1,0 +1,36 @@
+/**
+ * army — English locale messages (translated from the zh-CN baseline)
+ */
+export default {
+  'army.aboutTo': 'About to',
+  'army.allIn': 'All In',
+  'army.allOut': 'All Out',
+  'army.assign': 'Assign',
+  'army.barracks': 'Barracks',
+  'army.confirmAllIn': 'Confirm All In',
+  'army.confirmAllOut': 'Confirm All Out',
+  'army.counter': 'Counters',
+  'army.emptyHint': 'Research the "Military Fundamentals" technology to train units',
+  'army.emptyTitle': 'No Units Yet',
+  'army.formation': 'Formation',
+  'army.onboarding':
+    'Train units in the Barracks, set your formations on the Formation page, then march on strongholds.',
+  'army.owned': 'Owned',
+  'army.slotsFull': 'Training slots full',
+  'army.slotsFullHint': 'Training slots full · Research "{nextTech}" to expand to {slots} slots',
+  'army.soldiersUnit': 'soldiers',
+  'army.stock': 'Stock',
+  'army.title': 'Units',
+  'army.totalAttack': 'Total Attack',
+  'army.totalDefense': 'Total Defense',
+  'army.totalTroops': 'Total Troops',
+  'army.train': 'Train',
+  'army.trainStarted': 'Training started: {unitName} ×{count}',
+  'army.training': 'Training',
+  'army.trainingEta': 'Training… {trainingEta} left',
+  'army.trainingTech1': 'Mass Drills I',
+  'army.trainingTech2': 'Mass Drills II',
+  'army.unitsEmptyHint': 'Train your first interstellar defense force',
+  'army.unitsEmptyTitle': 'No Units Yet',
+  'army.withdraw': 'Withdraw',
+}

@@ -1,0 +1,38 @@
+/**
+ * prestige — English locale messages (translated from the zh-CN baseline)
+ */
+export default {
+  'prestige.active': 'Active',
+  'prestige.available': 'Available from this rebirth',
+  'prestige.bulkAria': 'Levels per purchase',
+  'prestige.buy': 'Buy',
+  'prestige.confirm': 'Confirm Restart',
+  'prestige.confirmTitle': 'Confirm Singularity Restart',
+  'prestige.currentBonus': 'Current +{pct}%',
+  'prestige.doTranscend': 'Execute Singularity Restart',
+  'prestige.gain': 'Gain',
+  'prestige.inactive': 'Not yet active',
+  'prestige.infiniteDesc':
+    'Repeatable purchases; cost grows per level and effects stack permanently',
+  'prestige.infiniteTitle': 'Infinite Talents',
+  'prestige.keepAchievements': 'Achievements and lifetime counters',
+  'prestige.keepNegEntropy': 'Negative Entropy and the Rebirth Tree',
+  'prestige.keepRelics': 'Relics and equipment',
+  'prestige.keepTitle': 'You keep',
+  'prestige.keepTranscends': 'Rebirth count',
+  'prestige.needLead': 'Requires',
+  'prestige.needTail': 'total Energy production to rebirth',
+  'prestige.negEntropyLabel': 'Negative Entropy (permanent currency',
+  'prestige.ready': 'Rebirth requirements met',
+  'prestige.resetArmy': 'All units and formations',
+  'prestige.resetBuildings': 'All building levels',
+  'prestige.resetExplore': 'All exploration progress',
+  'prestige.resetResources': 'All resources (Dark Matter partially retained',
+  'prestige.resetStrongholds': 'All stronghold conquest records and garrison states',
+  'prestige.resetTech': 'All research progress',
+  'prestige.resetTitle': 'Will reset',
+  'prestige.subtitle': 'Reset most progress to gain permanent Negative Entropy boosts',
+  'prestige.title': 'Singularity Restart',
+  'prestige.treeTitle': 'Rebirth Talent Tree',
+  'prestige.upgrade': 'Upgrade',
+}

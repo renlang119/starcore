@@ -43,8 +43,10 @@ describe('SettingsView — 语言区块', () => {
     const wrapper = mountView(SettingsView)
     const items = wrapper.findAll('.lang-item')
 
-    expect(items.length).toBe(2)
+    expect(items.length).toBe(3)
     expect(items[0].text()).toContain('自动')
+    expect(items[1].text()).toContain('简体中文')
+    expect(items[2].text()).toContain('English')
     expect(items[0].attributes('aria-checked')).toBe('true')
     expect(localStorage.getItem('starcore_locale')).toBeNull()
   })
@@ -56,6 +58,17 @@ describe('SettingsView — 语言区块', () => {
     const items = wrapper.findAll('.lang-item')
     expect(localStorage.getItem('starcore_locale')).toBe('zh-CN')
     expect(items[1].attributes('aria-checked')).toBe('true')
+    expect(items[0].attributes('aria-checked')).toBe('false')
+    expect(vi.mocked(reloadPage)).toHaveBeenCalledTimes(1)
+  })
+
+  it('选择「English」持久化 en 并刷新', async () => {
+    const wrapper = mountView(SettingsView)
+
+    await wrapper.findAll('.lang-item')[2].trigger('click')
+    const items = wrapper.findAll('.lang-item')
+    expect(localStorage.getItem('starcore_locale')).toBe('en')
+    expect(items[2].attributes('aria-checked')).toBe('true')
     expect(items[0].attributes('aria-checked')).toBe('false')
     expect(vi.mocked(reloadPage)).toHaveBeenCalledTimes(1)
   })
