@@ -14,8 +14,8 @@ export default {
   'common.goExplore': '前往探索',
   'common.goTech': '前往科技',
   'common.insufficient': '资源不足',
-  'common.level': '等级',
-  'common.needsTech': '需要科技',
+  'common.level': '等级：',
+  'common.needsTech': '需要科技：',
   'common.rarity.epic': '史诗',
   'common.rarity.legend': '传说',
   'common.rarity.rare': '稀有',
@@ -23,7 +23,5 @@ export default {
   'common.statDefense': '防',
   'common.statPower': '战力',
   'common.totalLead': '共',
-  'common.unitKinds': '种',
   'common.unitLevel': '级',
-  'common.unitPieces': '件',
 }

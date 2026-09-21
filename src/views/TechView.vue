@@ -134,9 +134,8 @@ function tryResearch(id: string) {
 
         <!-- 前置 -->
         <div v-if="tech.requires && techStatus(tech.id) === 'locked'" class="t-req">
-          {{ t('tech.needs') }}：{{
-            tech.requires.map((r) => TECHS.find((x) => x.id === r)?.name).join(', ')
-          }}
+          {{ t('tech.needs')
+          }}{{ tech.requires.map((r) => TECHS.find((x) => x.id === r)?.name).join(', ') }}
         </div>
 
         <button

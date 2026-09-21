@@ -15,7 +15,7 @@ export default {
   'army.formation': 'Formation',
   'army.onboarding':
     'Train units in the Barracks, set your formations on the Formation page, then march on strongholds.',
-  'army.owned': 'Owned',
+  'army.owned': 'Owned: ',
   'army.slotsFull': 'Training slots full',
   'army.slotsFullHint': 'Training slots full · Research "{nextTech}" to expand to {slots} slots',
   'army.soldiersUnit': 'soldiers',
@@ -26,7 +26,7 @@ export default {
   'army.totalTroops': 'Total Troops',
   'army.train': 'Train',
   'army.trainStarted': 'Training started: {unitName} ×{count}',
-  'army.training': 'Training',
+  'army.training': 'Training ({doing}/{total})',
   'army.trainingEta': 'Training… {trainingEta} left',
   'army.trainingTech1': 'Mass Drills I',
   'army.trainingTech2': 'Mass Drills II',
