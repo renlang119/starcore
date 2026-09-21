@@ -33,7 +33,7 @@ const emit = defineEmits<{ cancel: []; confirm: [] }>()
   >
     <h2 class="result-title font-display">{{ t('battle.garrison') }}</h2>
     <p class="result-sub">
-      {{ t('battle.garrisonAt') }}「{{ strongholdName }}」{{ t('battle.garrisonDesc') }}
+      {{ t('battle.garrisonAt') }}{{ strongholdName }}{{ t('battle.garrisonDesc') }}
     </p>
     <div class="garrison-rewards">
       <h4>{{ t('battle.garrisonGains') }}</h4>
@@ -41,7 +41,7 @@ const emit = defineEmits<{ cancel: []; confirm: [] }>()
         <span class="g-reward-name" :style="{ color: r.color }">{{ r.name }}</span>
         <span class="g-reward-rates font-mono">
           <span class="rate-sec">+{{ r.perSec }}/s</span>
-          <span class="rate-hour">（{{ r.perHour }}/h）</span>
+          <span class="rate-hour">{{ t('battle.garrisonPerHour', { rate: r.perHour }) }}</span>
         </span>
       </div>
       <p class="garrison-hint">{{ t('battle.garrisonNote') }}</p>

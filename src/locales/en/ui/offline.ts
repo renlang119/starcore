@@ -2,7 +2,7 @@
  * offline — English locale messages (translated from the zh-CN baseline)
  */
 export default {
-  'offline.emptyNote': 'No production while offline (build more buildings to earn offline gains',
+  'offline.emptyNote': 'No production while offline (build more buildings to earn offline gains)',
   'offline.eventAlloy': 'Meteorites brought a small amount of Alloy',
   'offline.eventData': 'Captured drifting data fragments',
   'offline.eventEnergy': 'Deep-space probes detected an energy surge; extra Energy gained',

@@ -16,15 +16,16 @@ export default {
   'battle.frontier': 'Frontier',
   'battle.garrison': 'Idle Garrison',
   'battle.garrisonAria': 'Idle garrison confirmation',
-  'battle.garrisonAt': 'Garrison at',
+  'battle.garrisonAt': 'Garrison at "',
   'battle.garrisonBlocked':
     'Cannot garrison now: the stronghold is not conquered or the formation is unavailable',
   'battle.garrisonConfirm': 'Confirm Garrison',
-  'battle.garrisonDesc': 'station the formation to steadily earn the following gains',
+  'battle.garrisonDesc': '": station the formation to steadily earn the following gains',
   'battle.garrisonGains': 'Expected Gains',
   'battle.garrisonNote':
     'Gains are added to resource production automatically and are settled while offline',
   'battle.garrisonOccupied': 'A formation is already garrisoned at this stronghold',
+  'battle.garrisonPerHour': '({rate}/h)',
   'battle.logDamage': '{attacker} inflicts {lost} losses on {target}',
   'battle.logEncounter': 'Encountered the garrison of {strongholdName}',
   'battle.logKill': '{attacker} destroyed {target}',
@@ -44,7 +45,7 @@ export default {
   'battle.noStrongholdHint':
     'This stronghold may have been removed; return to the Star Map and choose another',
   'battle.pickFormation': 'Select Formation',
-  'battle.relicGained': 'Relic Gained',
+  'battle.relicGainedLine': 'Relic Gained: {name} ({rarity})',
   'battle.repelled': 'Your units were repelled…',
   'battle.report': 'Battle Report',
   'battle.resultLoss': 'Defeat',

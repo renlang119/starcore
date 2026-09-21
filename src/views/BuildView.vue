@@ -159,9 +159,8 @@ function tryUpgrade(id: string) {
         <!-- 成本与升级 -->
         <div v-if="!row.unlocked" class="b-locked">
           <span class="lock-msg"
-            >{{ t('common.needsTech') }}：{{
-              getTech(row.b.requires ?? '')?.name ?? row.b.requires
-            }}</span
+            >{{ t('common.needsTech')
+            }}{{ getTech(row.b.requires ?? '')?.name ?? row.b.requires }}</span
           >
         </div>
         <div v-else-if="row.maxed" class="b-maxed">

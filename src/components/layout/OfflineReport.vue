@@ -84,7 +84,7 @@ function dismiss() {
         </div>
       </div>
     </div>
-    <p v-if="groups.length === 0" class="empty">{{ t('offline.emptyNote') }}）</p>
+    <p v-if="groups.length === 0" class="empty">{{ t('offline.emptyNote') }}</p>
     <button class="btn-primary block" @click="dismiss">{{ t('common.continue') }}</button>
   </ModalOverlay>
 </template>

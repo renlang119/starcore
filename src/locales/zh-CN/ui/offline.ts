@@ -4,7 +4,7 @@
  * 简体中文为基线语言；新增文案直接在此维护，并跑缺键扫描守卫。
  */
 export default {
-  'offline.emptyNote': '离线期间没有产出（建造更多建筑以获得离线收益',
+  'offline.emptyNote': '离线期间没有产出（建造更多建筑以获得离线收益）',
   'offline.eventAlloy': '陨石带来少量合金',
   'offline.eventData': '捕获漂流的数据碎片',
   'offline.eventEnergy': '深空探测到能量波动，获得额外能量',
