@@ -47,7 +47,7 @@ export default {
   'content.story.node_outer':
     'Ancient ruins found on a moon of the gas giant. Deep within them, a voice whispers: "They have come."',
   'content.story.node_stellar_core':
-    'The neutron star’s gravity claws at the hull. In this cradle of death a void beast has laid its eggs — and the Raider fleet has built its brood-nest around her.',
+    'The neutron star’s gravity claws at the hull. In this cradle of death a Void Behemoth has laid its eggs — and the Raider fleet has built its broodnest around her.',
   'content.story.node_stellar_dead':
     'In the dying light of a white dwarf, the wreck of a colonial fleet hangs still. There is no sign they ever fought — they simply, quietly, stopped.',
   'content.story.node_stellar_edge':
