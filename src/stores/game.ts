@@ -18,6 +18,7 @@ import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
 import { useAchievementsStore } from './achievements'
 import { useDailyStore } from './daily'
+import { useArchiveStore } from './archive'
 import { createGameEffects, wireGameProviders } from './game-effects'
 import { createGamePersistence } from './game-persistence'
 import { TECHS, adjustedTechCost } from '@/data/tech'
@@ -43,6 +44,7 @@ export const useGameStore = defineStore('game', () => {
   const transcend = useTranscendStore()
   const achievements = useAchievementsStore()
   const daily = useDailyStore()
+  const archive = useArchiveStore()
 
   // —— game meta state ——
   const lastSaveTime = ref(Date.now())
@@ -141,6 +143,7 @@ export const useGameStore = defineStore('game', () => {
     transcend,
     achievements,
     daily,
+    archive,
     totalProduction,
     offlineMult,
     lastSaveTime,
@@ -454,6 +457,7 @@ export const useGameStore = defineStore('game', () => {
     transcend,
     achievements,
     daily,
+    archive,
     claimChallenge,
     // meta
     lastSaveTime,

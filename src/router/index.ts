@@ -18,6 +18,7 @@ const routes = [
     name: 'achievements',
     component: () => import('@/views/AchievementsView.vue'),
   },
+  { path: '/archive', name: 'archive', component: () => import('@/views/ArchiveView.vue') },
   { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
   { path: '/battle/:id', name: 'battle', component: () => import('@/views/BattleView.vue') },
   // 未知路径兜底：重定向首页（防空白页无出口，v0.77）

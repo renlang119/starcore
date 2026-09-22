@@ -147,4 +147,19 @@
     <circle cx="12" cy="12" r="2" />
     <circle cx="19" cy="12" r="2" />
   </symbol>
+  <symbol
+    id="i-nav-archive"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <!-- 档案馆：摊开的书卷 + 层叠档案页，导航级线稿（与其他 i-nav-* 同笔画宽度） -->
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    <path d="M9 7h7" />
+    <path d="M9 11h7" />
+  </symbol>
 </template>
