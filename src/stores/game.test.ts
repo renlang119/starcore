@@ -15,8 +15,10 @@ import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
 import { BUILDINGS, buildingCost } from '@/data/buildings'
+import { STRONGHOLDS } from '@/data/pve'
 import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
+import { useArchiveStore } from './archive'
 import { useResearchStore } from './research'
 import { useCombatStore } from './combat'
 import { D } from '@/lib/decimal'
@@ -150,6 +152,45 @@ describe('game store — transcend reset', () => {
     expect(relics.ownedCount).toBe(1)
     // 转生次数应增加
     expect(transcend.totalTranscends).toBeGreaterThan(0)
+  })
+})
+
+describe('game store — archive lifecycle', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    // 重置模块级 slotProvider，防止跨测试污染
+    setRelicSlotProvider(() => 0)
+  })
+
+  it('doTranscend keeps archive records', () => {
+    const game = useGameStore()
+    const archive = useArchiveStore()
+    const resources = useResourcesStore()
+
+    archive.recordEncounter(STRONGHOLDS[0].id, STRONGHOLDS[0].enemies)
+    archive.recordEncounter(STRONGHOLDS[10].id, STRONGHOLDS[10].enemies)
+    const before = archive.seenCount
+    expect(before).toBeGreaterThan(0)
+
+    resources.setAmount('energy', 1e9)
+    resources.gain('energy', 1e9)
+    expect(game.canTranscend()).toBe(true)
+    expect(game.doTranscend()).toBe(true)
+    // 终身数据：转生保留（与 achievements 同口径）
+    expect(archive.seenCount).toBe(before)
+  })
+
+  it('hardReset clears archive records', async () => {
+    await clearAllSaves()
+    const game = useGameStore()
+    const archive = useArchiveStore()
+
+    archive.recordEncounter(STRONGHOLDS[0].id, STRONGHOLDS[0].enemies)
+    expect(archive.seenCount).toBeGreaterThan(0)
+
+    await game.hardReset()
+    expect(archive.seenCount).toBe(0)
+    game.stop()
   })
 })
 

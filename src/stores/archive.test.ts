@@ -5,7 +5,7 @@
  * 1. 图鉴键全集完整性（正式据点全条目 116 键、远征不在其中）
  * 2. 交战遭遇记录（胜负口径一致由调用方保证，此处验记录行为与幂等）
  * 3. serialize/hydrate 往返 + 旧档（undefined）兼容 + 未知键剥离
- * 4. reset（清档用）清空；转生不调 reset（保留面在 game store 集成测试覆盖）
+ * 4. reset（清档用）清空；转生不调 reset（保留面由 game store 集成用例覆盖）
  * 5. 校验层：validateAndRepair 剥离未知图鉴键、结构非法拒绝
  */
 import { describe, it, expect, beforeEach } from 'vitest'
