@@ -9,6 +9,7 @@
  */
 import achievements from './ui/achievements.ts'
 import app from './ui/app.ts'
+import archive from './ui/archive.ts'
 import army from './ui/army.ts'
 import battle from './ui/battle.ts'
 import build from './ui/build.ts'
@@ -41,6 +42,7 @@ import unitsContent from './content/units.ts'
 export default {
   ...achievements,
   ...app,
+  ...archive,
   ...army,
   ...battle,
   ...build,

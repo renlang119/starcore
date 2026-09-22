@@ -19,6 +19,7 @@ export type {
   PlayerSaveData,
   AchievementsSaveData,
   DailySaveData,
+  ArchiveSaveData,
   SaveData,
 } from './save/schema'
 export { writeSave, writeSaveSync, readSave, clearSave, clearAllSaves } from './save/io'
