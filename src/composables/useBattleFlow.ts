@@ -70,6 +70,8 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     battleResult.value = result
     showResult.value = true
     applyBattleLosses(result)
+    // 敌方图鉴：交战即记录遭遇条目（胜负都算；远征合成编成在 store 内排除）
+    game.archive.recordEncounter(deps.stronghold.value.id, deps.stronghold.value.enemies)
     // 无尽远征：攻克当前前沿 → 推进历史最深深度（随奖励即时发放，见 grantRewards）
     // 成就终身计数：据点攻克（胜利）次数（远征战果同样计入战斗里程碑）
     if (result.victory) {

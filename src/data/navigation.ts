@@ -35,6 +35,13 @@ export const NAV_ITEMS: NavItem[] = [
     tier: 'secondary',
   },
   {
+    id: 'archive',
+    label: t('nav.archive'),
+    icon: 'i-nav-archive',
+    path: '/archive',
+    tier: 'secondary',
+  },
+  {
     id: 'settings',
     label: t('nav.settings'),
     icon: 'i-nav-settings',

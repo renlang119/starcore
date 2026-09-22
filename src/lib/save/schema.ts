@@ -33,6 +33,13 @@ export interface CombatSaveData {
   /** 无尽远征历史最深层数（v0.60，跨转生保留；旧档缺失默认 0） */
   expeditionBest?: number
 }
+/**
+ * 档案馆存档（v1.18 可选字段：旧档缺失视为空图鉴，向前收集）。
+ * enemies = 已遭遇敌方图鉴条目键（`据点id#序号`，语言无关，跨转生保留）。
+ */
+export interface ArchiveSaveData {
+  enemies: string[]
+}
 export interface ExplorationSaveData {
   progress: Record<
     string,
@@ -124,4 +131,6 @@ export interface SaveData {
   achievements?: AchievementsSaveData
   /** 每日签到/周期挑战（v0.62 可选字段，旧档缺失从容处理） */
   daily?: DailySaveData
+  /** 档案馆（v1.18 可选字段，旧档缺失视为空图鉴） */
+  archive?: ArchiveSaveData
 }

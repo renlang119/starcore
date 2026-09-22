@@ -12,6 +12,7 @@ import { EXPLORE_NODES } from '@/data/explore'
 import { STRONGHOLDS } from '@/data/pve'
 import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
 import { INFINITE_NODE_IDS, MAX_INFINITE_NODE_LEVEL } from '@/stores/transcend'
+import { ARCHIVE_ENEMY_KEYS } from '@/stores/archive'
 
 // —— 有效 ID 集合（用于 validateSaveData 内容范围校验）——
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
@@ -87,6 +88,13 @@ export function validateAndRepair(data: unknown): data is SaveData {
           return e
         })
       }
+    }
+    // archive.enemies：剥离未知图鉴条目键（口径同 combat.completed 的条目级剥离）
+    const arc = data.archive
+    if (_isObject(arc) && Array.isArray(arc.enemies)) {
+      arc.enemies = arc.enemies.filter(
+        (k: unknown) => typeof k === 'string' && ARCHIVE_ENEMY_KEYS.has(k)
+      )
     }
   }
   return validateSaveData(data)
@@ -268,6 +276,13 @@ function validateSaveData(data: unknown): data is SaveData {
       if (!_isNonNegFinite(c.tier)) return false
       if (!_isBool(c.claimed)) return false
     }
+  }
+  // archive（可选字段）：存在则校验结构；未知键已在 _validateAndRepair 剥离
+  if (d.archive !== undefined) {
+    if (!_isObject(d.archive)) return false
+    const arc = d.archive as Record<string, unknown>
+    if (!Array.isArray(arc.enemies)) return false
+    if (!arc.enemies.every((k: unknown) => typeof k === 'string')) return false
   }
   return true
 }

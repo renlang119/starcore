@@ -30,6 +30,7 @@ import type { useRelicsStore } from './relics'
 import type { useTranscendStore } from './transcend'
 import type { useAchievementsStore } from './achievements'
 import type { useDailyStore } from './daily'
+import type { useArchiveStore } from './archive'
 
 type ResourcesStore = ReturnType<typeof useResourcesStore>
 type BuildingsStore = ReturnType<typeof useBuildingsStore>
@@ -41,6 +42,7 @@ type RelicsStore = ReturnType<typeof useRelicsStore>
 type TranscendStore = ReturnType<typeof useTranscendStore>
 type AchievementsStore = ReturnType<typeof useAchievementsStore>
 type DailyStore = ReturnType<typeof useDailyStore>
+type ArchiveStore = ReturnType<typeof useArchiveStore>
 
 export function createGamePersistence(deps: {
   resources: ResourcesStore
@@ -53,6 +55,7 @@ export function createGamePersistence(deps: {
   transcend: TranscendStore
   achievements: AchievementsStore
   daily: DailyStore
+  archive: ArchiveStore
   totalProduction: ComputedRef<Record<string, Decimal>>
   offlineMult: ComputedRef<Decimal>
   lastSaveTime: Ref<number>
@@ -79,6 +82,7 @@ export function createGamePersistence(deps: {
     transcend,
     achievements,
     daily,
+    archive,
     totalProduction,
     offlineMult,
     lastSaveTime,
@@ -107,6 +111,7 @@ export function createGamePersistence(deps: {
       transcend: transcend.serialize(),
       achievements: achievements.serialize(),
       daily: daily.serialize(),
+      archive: archive.serialize(),
     }
   }
 
@@ -186,6 +191,7 @@ export function createGamePersistence(deps: {
     relics.hydrate(data.relics)
     achievements.hydrate(data.achievements)
     daily.hydrate(data.daily)
+    archive.hydrate(data.archive)
     // 终身计数快照对齐已恢复的 totals——否则首个 tick 会把整轮历史产量
     // 当作增量重复计入终身计数
     deps.alignLifetimeSnapshot()
@@ -235,6 +241,7 @@ export function createGamePersistence(deps: {
     transcend.reset(true)
     achievements.reset()
     daily.reset()
+    archive.reset()
   }
 
   async function doImport(code: string): Promise<{ success: boolean; message?: string }> {

@@ -77,11 +77,11 @@ starcore/
 │  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
 │  ├─ locales/      locale bundles (zh-CN baseline + en English, split by domain under ui/ and content/)
 │  ├─ router/       route definitions
-│  ├─ stores/       11 Pinia stores (resources, buildings, research, military, combat,
-│  │                exploration, relics, rebirth, achievements, daily, game)
+│  ├─ stores/       12 Pinia stores (resources, buildings, research, military, combat,
+│  │                exploration, relics, rebirth, achievements, daily, archive, game)
 │  ├─ styles/       8 style modules (tokens, base, fonts, buttons, Toast, animations, background, utilities)
 │  ├─ tests/        test harness (vitest setup and shared helpers)
-│  ├─ views/        10 views (home, build, tech, map, army, battle, relics, rebirth, achievements, settings)
+│  ├─ views/        11 views (home, build, tech, map, army, battle, relics, rebirth, achievements, archive, settings)
 │  └─ App.vue / main.ts / version.ts / style.css
 ├─ docs/            11 specification documents (in Chinese), see Documentation (plus archived history)
 ├─ public/          favicon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
@@ -93,8 +93,8 @@ starcore/
 
 ## Quality
 
-- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 38 test files,
-  525 cases
+- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 40 test files,
+  548 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document
