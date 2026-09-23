@@ -377,9 +377,6 @@ function claimMilestone() {
 .milestone-bar .m-rewards {
   font-size: var(--text-xs);
   color: var(--color-t-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .milestone-bar .m-claim {
   flex-shrink: 0;
