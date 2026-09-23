@@ -230,18 +230,16 @@ function claimMilestone() {
       <div v-if="milestoneReadyTier > 0" class="milestone-bar" data-testid="milestone-ready">
         <div class="m-info">
           <span class="m-title">{{ t('map.milestoneReady') }}</span>
-          <span class="m-tier font-mono">{{ t('map.milestoneTier', { depth: milestoneDepth }) }}</span>
+          <span class="m-tier font-mono">{{
+            t('map.milestoneTier', { depth: milestoneDepth })
+          }}</span>
           <span class="m-rewards font-mono">
             <template v-for="(row, i) in milestonePreview" :key="row.id">
               <span v-if="i > 0"> · </span>{{ row.name }} +{{ row.amount }}
             </template>
           </span>
         </div>
-        <button
-          class="m-claim btn-accent"
-          data-testid="milestone-claim"
-          @click="claimMilestone"
-        >
+        <button class="m-claim btn-accent" data-testid="milestone-claim" @click="claimMilestone">
           {{ t('map.milestoneClaim') }}
         </button>
       </div>
