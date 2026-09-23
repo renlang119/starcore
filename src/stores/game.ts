@@ -97,6 +97,8 @@ export const useGameStore = defineStore('game', () => {
     exploration,
     totalPlayTime,
     daily,
+    achievements,
+    archive,
   })
 
   /**

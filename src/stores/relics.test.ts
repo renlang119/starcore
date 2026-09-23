@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useRelicsStore } from './relics'
-import { setRelicEnhanceSpendProvider } from './relics'
+import { setRelicEnhanceSpendProvider, setRelicEnhanceDoneProvider } from './relics'
 import {
   RELIC_POOL,
   RELIC_SETS,
@@ -193,6 +193,21 @@ describe('relics — 套装加成', () => {
     expect(store.ownedCount).toBe(4)
     expect(store.ownedKinds).toBe(2)
   })
+
+  it('activeFullSets：满套数计数，卸下即减（v1.22 成就指标）', () => {
+    expect(store.activeFullSets).toBe(0)
+    // 激活沉默者满套
+    const ids = [
+      ...inject(store, 'r_dark_1'),
+      ...inject(store, 'r_dark_2'),
+      ...inject(store, 'r_dark_3'),
+    ]
+    ids.forEach((id, i) => store.equip(id, i))
+    expect(store.activeFullSets).toBe(1)
+    // 卸下一件 → 失活
+    store.unequip(2)
+    expect(store.activeFullSets).toBe(0)
+  })
 })
 
 describe('relics — 存档兼容', () => {
@@ -267,6 +282,19 @@ describe('relics — 强化（v0.70）', () => {
     expect(store.enhance(inst)).toBe(true)
     expect(store.owned[0].level).toBe(2)
     expect(spent).toEqual([1e6, 1.5e6])
+  })
+
+  it('强化完成回调：成功逐级通知，失败零通知（v1.22 成就计数通道）', () => {
+    const done: number[] = []
+    setRelicEnhanceDoneProvider((n) => done.push(n))
+    setRelicEnhanceSpendProvider(() => false) // 余额不足
+    const inst = inject(store, 'r_energy_1')[0]
+    expect(store.enhance(inst)).toBe(false)
+    expect(done).toEqual([]) // 失败零通知
+    setRelicEnhanceSpendProvider(() => true)
+    expect(store.enhance(inst)).toBe(true)
+    expect(store.enhance(inst)).toBe(true)
+    expect(done).toEqual([1, 1]) // 逐级 +1
   })
 
   it('enhance：余额不足（spend 返回 false）零副作用', () => {

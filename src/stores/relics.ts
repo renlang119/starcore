@@ -44,6 +44,14 @@ export function setRelicEnhanceSpendProvider(p: RelicEnhanceSpendProvider) {
   enhanceSpend.value = p
 }
 
+/** 强化完成回调（v1.22 成就扩展：由 game-effects 注入，n = 实际完成级数） */
+export type RelicEnhanceDoneProvider = (levels: number) => void
+
+const enhanceDone = shallowRef<RelicEnhanceDoneProvider>(() => {})
+export function setRelicEnhanceDoneProvider(p: RelicEnhanceDoneProvider) {
+  enhanceDone.value = p
+}
+
 /** 合成计数通道（v1.21 周挑战扩类：由 game-effects 注入 daily.bump，同注入先例） */
 export type RelicSynthCountProvider = () => void
 
@@ -173,6 +181,9 @@ export const useRelicsStore = defineStore('relics', () => {
   /** 遗物图鉴种类数（distinct id，不计重复件）——ach_relic_4 用 */
   const ownedKinds = computed(() => new Set(owned.value.map((r) => r.id)).size)
 
+  /** 已激活完整套装数（3 件同套全装备；v1.22 成就指标） */
+  const activeFullSets = computed(() => setProgress.value.filter((r) => r.mode === 'full').length)
+
   // —— 合成（v0.61）：3 件同稀有度未装备遗物 → 高一档随机产物 ——
   /** 稀有度升阶链（legendary 为顶档，不可作为材料） */
   const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'] as const
@@ -229,6 +240,8 @@ export const useRelicsStore = defineStore('relics', () => {
     const cost = enhanceCost(relic.rarity, relic.level + 1)
     if (!enhanceSpend.value(cost)) return false
     relic.level += 1
+    // 强化完成回调（v1.22 成就计数；失败零调用）
+    enhanceDone.value(1)
     return true
   }
 
@@ -302,6 +315,7 @@ export const useRelicsStore = defineStore('relics', () => {
     equipped,
     ownedCount,
     ownedKinds,
+    activeFullSets,
     equippedRelics,
     equippedEffects,
     setProgress,

@@ -13,6 +13,7 @@ import { setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
 import {
   setRelicSlotProvider,
   setRelicEnhanceSpendProvider,
+  setRelicEnhanceDoneProvider,
   setRelicSynthCountProvider,
 } from './relics'
 import { setAchievementExternalProviders } from './achievements'
@@ -121,6 +122,10 @@ export function wireGameProviders(deps: {
   totalPlayTime: Ref<number>
   /** v1.21 周挑战扩类：合成计数通道注入（daily.bump） */
   daily?: ReturnType<typeof import('./daily').useDailyStore>
+  /** v1.22 成就扩展：合成/强化终身计数通道注入 */
+  achievements?: AchievementsStore
+  /** v1.22 成就扩展：敌方图鉴 store（已收录种数现值） */
+  archive?: ReturnType<typeof import('./archive').useArchiveStore>
 }): void {
   const { effectSystem, resources, relics, transcend, combat, military, exploration } = deps
 
@@ -128,15 +133,29 @@ export function wireGameProviders(deps: {
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
   // 强化能量支出通道：接入 resources.spend 原子扣费
   setRelicEnhanceSpendProvider((cost) => resources.spend('energy', cost))
-  // 合成计数通道（v1.21 周挑战扩类）：合成成功计入周挑战（可选注入，测试环境缺省无操作）
+  // 合成计数通道（v1.21 周挑战 + v1.22 成就终身计数）：按需串联，可选注入
+  // （测试环境缺省无操作）；强化完成回调同理
+  const synthNotify: (() => void)[] = []
   if (deps.daily) {
     const daily = deps.daily
-    setRelicSynthCountProvider(() => daily.bump('synths'))
+    synthNotify.push(() => daily.bump('synths'))
+  }
+  if (deps.achievements) {
+    const achievements = deps.achievements
+    synthNotify.push(() => achievements.recordSynth())
+    setRelicEnhanceDoneProvider((n) => achievements.recordEnhanceLevels(n))
+  }
+  if (synthNotify.length > 0) {
+    setRelicSynthCountProvider(() => {
+      for (const fn of synthNotify) fn()
+    })
   }
   // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
   setAchievementExternalProviders({
     relicsOwned: () => relics.ownedCount,
     relicKinds: () => relics.ownedKinds,
+    enemyKinds: () => deps.archive?.seenKinds ?? 0,
+    activeFullSets: () => relics.activeFullSets,
     transcends: () => transcend.totalTranscends,
     playtime: () => deps.totalPlayTime.value,
     expeditionBest: () => combat.expeditionBest,

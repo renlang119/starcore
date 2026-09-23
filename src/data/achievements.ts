@@ -1,10 +1,11 @@
 /**
- * achievements.ts — 成就/里程碑定义（v0.57 玩法扩展方案 2）
+ * achievements.ts — 成就/里程碑定义（v0.57 玩法扩展方案 2；v1.22 成就扩展扩至 49 条）
  *
  * 设计口径：
  * - 成就统计基于「终身计数」：转生会重置单轮进度（totals/科技/据点等），
  *   终身计数由 achievements store 在事件钩子处累计，转生不清、hardReset 才清
- * - 遗物/转生次数两类指标读外部现值（遗物与转生进度本身跨转生保留）
+ * - 遗物/转生次数/远征深度/套装数/图鉴种数等指标读外部现值（对应进度本身
+ *   跨转生保留）
  * - 奖励 = 小额永久加成，走 EffectSystem 既有通道；
  *   全拿满的乘数总量刻意压在无限树单个节点几级的量级内（顺路的糖，非第二权力轴）
  * - prestige_mult 仅「欧米伽传承」（集齐 20 种遗物）1 个成就给 +10%，封顶无失控风险
@@ -12,6 +13,8 @@
 
 import { t } from '@/i18n'
 import type { EffectTypeBase } from '@/lib/effect-types'
+import { RELIC_SETS } from '@/data/relics'
+import { ENEMY_KIND_TOTAL } from '@/stores/archive'
 
 /** 成就奖励效果（与转生树/科技/遗物效果同构，走 EffectSystem 聚合） */
 export interface AchievementEffect {
@@ -30,9 +33,13 @@ export type AchievementMetric =
   | 'researches' // 终身科技研究次数
   | 'explores' // 终身探索完成次数
   | 'battles' // 终身据点攻克次数
+  | 'synths' // 终身遗物合成次数（v1.22）
+  | 'enhanceLevels' // 终身遗物强化总级数（v1.22）
   | 'expeditionBest' // 远征历史最深层数（跨转生保留，读现值）
   | 'relicsOwned' // 当前遗物持有数（跨转生保留，读现值）
   | 'relicKinds' // 遗物图鉴种类数（distinct id，不计重复件，读现值）
+  | 'enemyKinds' // 敌方图鉴已收录种数（按显示名聚合，读现值，v1.22）
+  | 'activeFullSets' // 已激活完整套装数（读现值，v1.22）
   | 'transcends' // 转生次数（跨转生保留，读现值）
   | 'playtime' // 终身在线秒数
 
@@ -374,6 +381,43 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 20,
     effects: combat(8),
   },
+  {
+    id: 'ach_battle_6',
+    name: t('content.achievements.ach_battle_6.name'),
+    desc: t('content.achievements.ach_battle_6.desc'),
+    category: 'battle',
+    metric: 'expeditionBest',
+    threshold: 30,
+    effects: combat(5),
+  },
+  {
+    id: 'ach_battle_7',
+    name: t('content.achievements.ach_battle_7.name'),
+    desc: t('content.achievements.ach_battle_7.desc'),
+    category: 'battle',
+    metric: 'expeditionBest',
+    threshold: 40,
+    effects: combat(8),
+  },
+  // —— 敌方图鉴（已收录种数，读现值，v1.22）——
+  {
+    id: 'ach_battle_8',
+    name: t('content.achievements.ach_battle_8.name'),
+    desc: t('content.achievements.ach_battle_8.desc'),
+    category: 'battle',
+    metric: 'enemyKinds',
+    threshold: 20,
+    effects: combat(2),
+  },
+  {
+    id: 'ach_battle_9',
+    name: t('content.achievements.ach_battle_9.name'),
+    desc: t('content.achievements.ach_battle_9.desc'),
+    category: 'battle',
+    metric: 'enemyKinds',
+    threshold: ENEMY_KIND_TOTAL,
+    effects: combat(3),
+  },
   // —— 遗物收藏（按当前持有数，遗物跨转生保留）——
   {
     id: 'ach_relic_1',
@@ -422,6 +466,87 @@ export const ACHIEVEMENTS: AchievementDef[] = [
         label: t('content.achievements.ach_relic_4.effect.0.label'),
       },
     ],
+  },
+  // —— 遗物合成（终身合成次数，v1.22）——
+  {
+    id: 'ach_relic_5',
+    name: t('content.achievements.ach_relic_5.name'),
+    desc: t('content.achievements.ach_relic_5.desc'),
+    category: 'relic',
+    metric: 'synths',
+    threshold: 1,
+    effects: prod(1),
+  },
+  {
+    id: 'ach_relic_6',
+    name: t('content.achievements.ach_relic_6.name'),
+    desc: t('content.achievements.ach_relic_6.desc'),
+    category: 'relic',
+    metric: 'synths',
+    threshold: 5,
+    effects: prod(2),
+  },
+  {
+    id: 'ach_relic_7',
+    name: t('content.achievements.ach_relic_7.name'),
+    desc: t('content.achievements.ach_relic_7.desc'),
+    category: 'relic',
+    metric: 'synths',
+    threshold: 15,
+    effects: prod(3),
+  },
+  // —— 遗物强化（终身强化总级数，v1.22）——
+  {
+    id: 'ach_relic_8',
+    name: t('content.achievements.ach_relic_8.name'),
+    desc: t('content.achievements.ach_relic_8.desc'),
+    category: 'relic',
+    metric: 'enhanceLevels',
+    threshold: 10,
+    effects: prod(1),
+  },
+  {
+    id: 'ach_relic_9',
+    name: t('content.achievements.ach_relic_9.name'),
+    desc: t('content.achievements.ach_relic_9.desc'),
+    category: 'relic',
+    metric: 'enhanceLevels',
+    threshold: 50,
+    effects: prod(2),
+  },
+  {
+    id: 'ach_relic_10',
+    name: t('content.achievements.ach_relic_10.name'),
+    desc: t('content.achievements.ach_relic_10.desc'),
+    category: 'relic',
+    metric: 'enhanceLevels',
+    threshold: 150,
+    effects: prod(3),
+  },
+  // —— 套装收集（已激活完整套装数，读现值，v1.22）——
+  {
+    id: 'ach_relic_11',
+    name: t('content.achievements.ach_relic_11.name'),
+    desc: t('content.achievements.ach_relic_11.desc'),
+    category: 'relic',
+    metric: 'activeFullSets',
+    threshold: 1,
+    effects: [
+      {
+        type: 'offline_bonus',
+        value: 1.1,
+        label: t('content.achievements.ach_relic_11.effect.0.label'),
+      },
+    ],
+  },
+  {
+    id: 'ach_relic_12',
+    name: t('content.achievements.ach_relic_12.name'),
+    desc: t('content.achievements.ach_relic_12.desc'),
+    category: 'relic',
+    metric: 'activeFullSets',
+    threshold: RELIC_SETS.length,
+    effects: prod(3),
   },
   // —— 转生 ——
   {
