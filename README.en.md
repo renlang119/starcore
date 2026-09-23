@@ -31,7 +31,9 @@ growing on through "Singularity Restart" rebirth cycles.
   infinite talents stack, and automation protocols play for you
 - **Achievements**: 37 milestones tracked across rebirths, granting permanent
   bonuses
-- **Daily Check-in**: streak-cycle rewards plus 3 weekly challenges
+- **Daily Check-in**: streak-cycle rewards plus 3 weekly challenges drawn
+  from 9 templates (combat, exploration, research, building, rebirth,
+  expedition, synthesis, enhancement, garrison)
 - **Bilingual UI**: Simplified Chinese and English; follows your browser by
   default (other languages display in English), switchable in Settings
 
