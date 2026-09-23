@@ -32,6 +32,8 @@ export interface CombatSaveData {
   completed: string[]
   /** 无尽远征历史最深层数（v0.60，跨转生保留；旧档缺失默认 0） */
   expeditionBest?: number
+  /** 已领取的远征里程碑档位（v1.20 可选字段，终身数据与 expeditionBest 同语义；旧档缺失默认空，零迁移） */
+  milestonesClaimed?: number[]
 }
 /**
  * 档案馆存档（v1.18 可选字段：旧档缺失视为空图鉴，向前收集）。

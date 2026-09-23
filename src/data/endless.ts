@@ -17,6 +17,7 @@
 import { t } from '@/i18n'
 import type { EnemyUnit, StrongholdDef } from './pve'
 import { STRONGHOLDS } from './pve'
+import type { ResourceType } from './buildings'
 
 /**
  * 解锁锚点：本轮攻克沉默者旗舰 silencer_3 后开放远征。
@@ -138,4 +139,53 @@ export function endlessStronghold(depth: number): StrongholdDef {
     },
     idle: {},
   }
+}
+
+// —— 里程碑奖励（v1.20 可玩内容扩展方案 2）——
+
+/** 里程碑档位步长：每攻克 10 层一档（导出供测试与视图文案直测/直读） */
+export const MILESTONE_STEP = 10
+
+/** 里程碑奖励对象：资源键 → 数值（Round 后整数） */
+export type MilestoneReward = Partial<Record<ResourceType, number>>
+
+/**
+ * 深度到档位的换算：向下取整（best=25 → 2 档，best=9 → 0 档）。
+ * 小数/负数输入钳制为非负整数（防御性，与 endlessScale 同口径）。
+ */
+export function endlessMilestoneTier(depth: number): number {
+  if (!Number.isFinite(depth)) return 0
+  return Math.max(0, Math.floor(Math.floor(depth) / MILESTONE_STEP))
+}
+
+/**
+ * 档位奖励 = 深度 10×tier 的合成据点资源奖励（endlessStronghold 同源公式）。
+ * 校准依据（v092 战斗模拟分档实测）：档 A 刚通关深空约可推至 D15，
+ * 档 B 至 D25，档 C 至 D35 附近，D40 触软墙——每 10 层一档与进度带对齐；
+ * 奖励与该深度单场战斗同量级（约为前一整档段累计战斗收入的 27%，
+ * 1/(1.35^10-1)），随深度自缩放、档位不封顶。非法档位返回空对象。
+ */
+export function endlessMilestoneReward(tier: number): Partial<Record<ResourceType, number>> {
+  const tierInt = Math.floor(tier)
+  if (tierInt < 1 || tierInt !== tier) return {}
+  const base = STRONGHOLDS.find((s) => s.id === ENDLESS_UNLOCK_STRONGHOLD)
+  if (!base) throw new Error('endless: reward base stronghold missing')
+  const rs = endlessRewardScale(tierInt * MILESTONE_STEP)
+  const scaleReward = (v: number | undefined): number | undefined =>
+    v === undefined ? undefined : Math.round(v * rs)
+  const r: Partial<Record<ResourceType, number>> = {}
+  for (const key of ['energy', 'crystal', 'alloy', 'data', 'dark'] as const) {
+    const v = scaleReward(base.rewards[key])
+    if (v !== undefined) r[key] = v
+  }
+  return r
+}
+
+/**
+ * 档位是否可领取：深度达标且未在已领清单（补领语义——
+ * 更早的未领档位在深度达标后仍可领取，与领取顺序无关）。
+ */
+export function milestoneClaimable(tier: number, depth: number, claimed: number[]): boolean {
+  if (claimed.includes(tier)) return false
+  return endlessMilestoneTier(depth) >= tier
 }

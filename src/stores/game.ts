@@ -24,6 +24,7 @@ import { createGamePersistence } from './game-persistence'
 import { TECHS, adjustedTechCost } from '@/data/tech'
 import { BUILDINGS, buildingCost } from '@/data/buildings'
 import { enhanceCost, MAX_RELIC_LEVEL } from '@/data/relics'
+import type { MilestoneReward } from '@/data/endless'
 import type { ResourceType } from '@/data/buildings'
 import type { OfflineReport } from '@/lib/offline-gains'
 
@@ -165,6 +166,17 @@ export const useGameStore = defineStore('game', () => {
     if (!result) return null
     resources.gain('dark', result.dark)
     return result
+  }
+
+  // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
+  /** 里程碑奖励发放（MapView 领取按钮回调）：combat 记账成功后按奖励对象逐资源发放 */
+  function claimMilestone(tier: number): MilestoneReward | null {
+    const reward = combat.claimMilestone(tier)
+    if (!reward) return null
+    for (const [key, value] of Object.entries(reward)) {
+      resources.gain(key as ResourceType, value as number)
+    }
+    return reward
   }
 
   // —— 主 tick ——
@@ -459,6 +471,7 @@ export const useGameStore = defineStore('game', () => {
     daily,
     archive,
     claimChallenge,
+    claimMilestone,
     // meta
     lastSaveTime,
     lastTickTime, // 上次 tick 时间戳（测试用于模拟时间推进）
