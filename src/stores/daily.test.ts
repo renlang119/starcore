@@ -15,6 +15,7 @@ import {
 } from './daily'
 import { minimalSaveData } from '@/tests/fixtures'
 import { validateAndRepair } from '@/lib/save/validate'
+import type { DailySaveData } from '@/lib/storage'
 
 /** 周挑战条目工厂（v1.04 收敛 10 份字面量；默认 wk_battles 形态，按字段覆盖） */
 function ch(templateId: string, over: Partial<WeeklyChallenge> = {}): WeeklyChallenge {
@@ -452,11 +453,7 @@ describe('daily — 周挑战扩类（v1.21 可玩内容扩展方案 3）', () =
         researches: 0,
         upgrades: 0,
         transcends: 0,
-        expedition: 0,
-        synths: 0,
-        enhances: 0,
-        garrisonHours: 0,
-      },
+      } as unknown as DailySaveData['weeklyCounters'],
       challengeWeek: weekStr(),
       weekChallenges: [ch('wk_battles'), ch('wk_explores', { kind: 'explores', target: 6 })],
     })
@@ -482,11 +479,7 @@ describe('daily — 周挑战扩类（v1.21 可玩内容扩展方案 3）', () =
             researches: 0,
             upgrades: 0,
             transcends: 0,
-            expedition: 0,
-            synths: 0,
-            enhances: 0,
-            garrisonHours: 0,
-          },
+          } as unknown as DailySaveData['weeklyCounters'],
         },
       })
     )
