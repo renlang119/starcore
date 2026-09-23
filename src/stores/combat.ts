@@ -19,6 +19,7 @@ import {
 } from '@/data/endless'
 import { getUnit, type UnitId } from '@/data/units'
 import type { Formation } from './military'
+import { getTrait, type TraitId } from '@/data/traits'
 import { rollRelic, type RelicDef } from '@/data/relics'
 import type { CombatSaveData } from '@/lib/storage'
 import { fnv1a, mulberry32 } from '@/lib/random'
@@ -79,6 +80,20 @@ export function resetGarrisonGuard() {
   garrisonGuard = null
 }
 
+/**
+ * 编队特性查询注入（v1.23 方案 7）：combat 不直接引用 military，
+ * 由 game store setup 阶段注入闭包（formationId → 特性 id），同 garrisonGuard 模式。
+ * 特性乘区生效点：resolveBattle 玩家单位构建（攻/血/克制）与 garrisonIdleReward（驻扎产出）。
+ */
+let formationTraitProvider: (formationId: string) => TraitId | undefined = () => undefined
+export function setFormationTraitProvider(fn: (formationId: string) => TraitId | undefined) {
+  formationTraitProvider = fn
+}
+/** 清空特性注入，恢复未注入默认（仅测试重置用） */
+export function resetFormationTraitProvider() {
+  formationTraitProvider = () => undefined
+}
+
 export const useCombatStore = defineStore('combat', () => {
   const garrisoned = ref<Record<string, GarrisonState>>({}) // strongholdId → state
   const completedStrongholds = ref<Set<string>>(new Set())
@@ -117,6 +132,9 @@ export const useCombatStore = defineStore('combat', () => {
     defMult: Decimal
   ): BattleResult {
     const log: BattleLogEntry[] = []
+    // 编队特性（v1.23 方案 7）：id 相同的编队特性一致（编队 id 是稳定标识），
+    // 经 provider 查询而非直接读 military（跨 store 注入惯例）
+    const trait = getTrait(formationTraitProvider(formation.id))
     // 构建战斗单位列表
     const playerUnits: CombatUnit[] = []
     for (const [uid, count] of Object.entries(formation.units)) {
@@ -126,10 +144,10 @@ export const useCombatStore = defineStore('combat', () => {
       playerUnits.push({
         unitId: uid,
         name: def.name,
-        attack: def.attack * atkMult.toNumber(),
+        attack: def.attack * atkMult.toNumber() * trait.atkMult,
         defense: def.defense * defMult.toNumber(),
-        hp: def.hp,
-        maxHp: def.hp,
+        hp: def.hp * trait.hpMult,
+        maxHp: def.hp * trait.hpMult,
         count,
         isEnemy: false,
         defRef: uid as UnitId,
@@ -194,9 +212,10 @@ export const useCombatStore = defineStore('combat', () => {
         const tgt = target[Math.floor(rng() * target.length)]
         const defRef = getUnit(p.defRef!)
         let dmg = p.attack * p.count
-        // 克制判断：敌方 unitId 上挂载 counteredBy 列表，检查当前玩家兵种是否在其中
+        // 克制判断：敌方 unitId 上挂载 counteredBy 列表，检查当前玩家兵种是否在其中；
+        // 破敌学说（v1.23）在克制命中时追加倍率增量，未命中零影响
         if (defRef && tgt.counteredBy?.includes(p.defRef!)) {
-          dmg *= defRef.counterMult
+          dmg *= defRef.counterMult + trait.counterBonus
         }
         // 单位组总血不变量：(存活数-1)×单兵上限血 + 残兵血。
         // 受击后 hp 只记残兵血量，直接 hp×count 会把血池腰斩，
@@ -379,11 +398,18 @@ export const useCombatStore = defineStore('combat', () => {
   function ungarrison(strongholdId: string) {
     delete garrisoned.value[strongholdId]
   }
-  /** 获取驻扎挂机收益（每秒） */
+  /** 获取驻扎挂机收益（每秒）——按所驻编队特性乘区（v1.23 方案 7）；
+   *  在线 tick / 离线补算 / 战斗页预览三条消费路径全部经此单点 */
   function garrisonIdleReward(strongholdId: string): Record<string, number> {
     const s = getStronghold(strongholdId)
     if (!s) return {}
-    return { ...s.idle }
+    // 乘区读所驻编队的特性（garrisoned 状态在本 store，编队 id → 特性经 provider）
+    const g = garrisoned.value[strongholdId]
+    const mult = g ? getTrait(formationTraitProvider(g.formationId)).garrisonMult : 1
+    if (mult === 1) return { ...s.idle }
+    const out: Record<string, number> = {}
+    for (const [res, v] of Object.entries(s.idle)) out[res] = v * mult
+    return out
   }
 
   /**

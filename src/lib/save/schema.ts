@@ -24,8 +24,9 @@ export interface MilitarySaveData {
   /** 兵力：允许缺键（旧档可能没有全部兵种，hydrate 缺省补零），键限兵种白名单 */
   owned: Partial<Record<UnitId, number>>
   training: { id: string; unitId: UnitId; count: number; remaining: number; totalTime: number }[]
-  /** 编队兵力：同样允许缺键（v0.75 hydrate 缺键补零防 NaN） */
-  formations: { id: string; name: string; units: Partial<Record<UnitId, number>> }[]
+  /** 编队兵力：同样允许缺键（v0.75 hydrate 缺键补零防 NaN）；
+   *  trait 可选（v1.23 方案 7，旧档缺失视为均衡，零迁移） */
+  formations: { id: string; name: string; trait?: string; units: Partial<Record<UnitId, number>> }[]
 }
 export interface CombatSaveData {
   garrisoned: Record<string, { strongholdId: string; formationId: string; startTime: number }>

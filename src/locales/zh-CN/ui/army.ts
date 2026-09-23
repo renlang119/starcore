@@ -22,6 +22,7 @@ export default {
   'army.soldiersUnit': '名士兵',
   'army.stock': '库存',
   'army.title': '部队',
+  'army.trait': '特性',
   'army.totalAttack': '总攻击',
   'army.totalDefense': '总防御',
   'army.totalTroops': '总兵力',
