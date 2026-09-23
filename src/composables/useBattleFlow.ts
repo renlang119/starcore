@@ -46,9 +46,10 @@ export function useBattleFlow(deps: BattleFlowDeps) {
 
   const isGarrisoned = computed(() => !!game.combat.garrisoned[deps.strongholdId.value])
 
-  // 驻扎收益预览（每秒 + 每小时）
+  // 驻扎收益预览（每秒 + 每小时）：传入当前选中编队 id（驻扎前预览也吃特性乘区）
   const garrisonPreview = computed(() => {
-    const idle = game.combat.garrisonIdleReward(deps.strongholdId.value)
+    const fid = deps.formation.value?.id
+    const idle = game.combat.garrisonIdleReward(deps.strongholdId.value, fid)
     return resourceRows(idle, game.resources.allMeta, { positiveOnly: true }).map((r) => ({
       id: r.id,
       name: r.name,

@@ -398,14 +398,16 @@ export const useCombatStore = defineStore('combat', () => {
   function ungarrison(strongholdId: string) {
     delete garrisoned.value[strongholdId]
   }
-  /** 获取驻扎挂机收益（每秒）——按所驻编队特性乘区（v1.23 方案 7）；
-   *  在线 tick / 离线补算 / 战斗页预览三条消费路径全部经此单点 */
-  function garrisonIdleReward(strongholdId: string): Record<string, number> {
+  /** 获取驻扎挂机收益（每秒）——按编队特性乘区（v1.23 方案 7）；
+   *  在线 tick / 离线补算走已驻记录；战斗页预览发生在驻扎前，
+   *  由调用方传入将要驻扎的编队 id（缺省回退已驻记录） */
+  function garrisonIdleReward(strongholdId: string, formationId?: string): Record<string, number> {
     const s = getStronghold(strongholdId)
     if (!s) return {}
-    // 乘区读所驻编队的特性（garrisoned 状态在本 store，编队 id → 特性经 provider）
+    // 乘区编队 id：显式传入优先（预览路径），否则用已驻记录
     const g = garrisoned.value[strongholdId]
-    const mult = g ? getTrait(formationTraitProvider(g.formationId)).garrisonMult : 1
+    const fid = formationId ?? g?.formationId
+    const mult = fid ? getTrait(formationTraitProvider(fid)).garrisonMult : 1
     if (mult === 1) return { ...s.idle }
     const out: Record<string, number> = {}
     for (const [res, v] of Object.entries(s.idle)) out[res] = v * mult
