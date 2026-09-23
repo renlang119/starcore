@@ -4,7 +4,7 @@
 import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { localDateStr } from '@/stores/daily'
+import { localDateStr, CHALLENGE_TEMPLATES } from '@/stores/daily'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
 
 const game = useGameStore()
@@ -12,16 +12,14 @@ const checkedInToday = computed(() => game.daily.lastCheckIn === localDateStr())
 /** 连击在 7 天循环内的节点位置（1~7） */
 const cycleDay = computed(() => ((game.daily.streak - 1) % 7) + 1)
 
-/** 挑战显示名 */
-const CHALLENGE_NAMES: Record<string, (n: number) => string> = {
-  wk_battles: (n) => t('home.daily.ch.wkBattles', { n }),
-  wk_explores: (n) => t('home.daily.ch.wkExplores', { n }),
-  wk_researches: (n) => t('home.daily.ch.wkResearches', { n }),
-  wk_upgrades: (n) => t('home.daily.ch.wkUpgrades', { n }),
-  wk_transcends: (n) => t('home.daily.ch.wkTranscends', { n }),
-}
+/**
+ * 挑战显示名：直接取模板池 name 函数（单一来源，v1.21 消重——
+ * 此前组件内维护一份硬编码映射，池扩类时须双份同步）。
+ */
 function challengeName(c: { templateId: string; target: number }): string {
-  return CHALLENGE_NAMES[c.templateId]?.(c.target) ?? c.templateId
+  return (
+    CHALLENGE_TEMPLATES.find((t) => t.templateId === c.templateId)?.name(c.target) ?? c.templateId
+  )
 }
 
 const claimable = (c: (typeof game.daily.weekChallenges)[0]) => game.daily.claimable(c)
