@@ -8,6 +8,8 @@ import { D } from '@/lib/decimal'
 import { STRONGHOLDS } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
 import type { Formation } from './military'
+import { minimalSaveData } from '@/tests/fixtures'
+import { validateAndRepair } from '@/lib/save/validate'
 
 function makeFormation(id: string, units: Record<string, number>): Formation {
   return { id, name: `编队-${id}`, units: units as any }
@@ -267,5 +269,104 @@ describe('combat store', () => {
     expect(combat.garrison('raider_1', 'fGhost')).toBe(false)
     expect(combat.garrison('raider_1', 'f1')).toBe(true)
     setGarrisonGuard(() => true) // 还原守卫，防跨文件状态泄漏（isolate:false）
+  })
+
+  // —— v1.20：远征里程碑奖励 ——
+
+  it('里程碑领取：未达标拒、达标返回奖励并记账、重复领取拒', () => {
+    const combat = useCombatStore()
+    // 未达标：无档可领，领取拒绝
+    expect(combat.nextMilestoneTier).toBe(0)
+    expect(combat.claimMilestone(1)).toBeNull()
+    // 推进到 D10：档 1 可领
+    for (let d = 1; d <= 10; d++) combat.recordExpedition(d, true)
+    expect(combat.nextMilestoneTier).toBe(1)
+    const reward = combat.claimMilestone(1)
+    expect(reward).not.toBeNull()
+    expect(reward!.dark).toBe(Math.round(100 * Math.pow(1.35, 9)))
+    expect(reward!.energy).toBeGreaterThan(0)
+    // 已领：清单记账、无可领档、重复领取拒绝
+    expect(combat.milestonesClaimed).toEqual([1])
+    expect(combat.nextMilestoneTier).toBe(0)
+    expect(combat.claimMilestone(1)).toBeNull()
+  })
+
+  it('里程碑补领：跳档推进后更早档位仍可依次领取', () => {
+    const combat = useCombatStore()
+    for (let d = 1; d <= 25; d++) combat.recordExpedition(d, true)
+    expect(combat.nextMilestoneTier).toBe(1)
+    expect(combat.claimMilestone(1)).not.toBeNull()
+    expect(combat.nextMilestoneTier).toBe(2)
+    expect(combat.claimMilestone(2)).not.toBeNull()
+    expect(combat.nextMilestoneTier).toBe(0)
+    // 未达标档位（D30）拒绝
+    expect(combat.claimMilestone(3)).toBeNull()
+  })
+
+  it('里程碑转生保留、hardReset 清零（与 expeditionBest 同语义）', () => {
+    const combat = useCombatStore()
+    for (let d = 1; d <= 10; d++) combat.recordExpedition(d, true)
+    combat.claimMilestone(1)
+    // 转生：清本轮面，里程碑与远征深度保留
+    combat.reset()
+    expect(combat.milestonesClaimed).toEqual([1])
+    expect(combat.expeditionBest).toBe(10)
+    // hardReset：全清
+    combat.reset(true)
+    expect(combat.milestonesClaimed).toEqual([])
+    expect(combat.expeditionBest).toBe(0)
+  })
+
+  it('serialize/hydrate 往返含里程碑；旧档缺失默认空', () => {
+    const combat = useCombatStore()
+    for (let d = 1; d <= 20; d++) combat.recordExpedition(d, true)
+    combat.claimMilestone(1)
+    const data = combat.serialize()
+    expect(data.milestonesClaimed).toEqual([1])
+    const restored = useCombatStore()
+    restored.hydrate(data)
+    expect(restored.milestonesClaimed).toEqual([1])
+    // 旧档缺失：不载入保持空（零迁移；新 pinia 隔离实例）
+    setActivePinia(createPinia())
+    const legacy = useCombatStore()
+    legacy.hydrate({ garrisoned: {}, completed: [] })
+    expect(legacy.milestonesClaimed).toEqual([])
+  })
+
+  it('hydrate 防御：伪领/非法档位剥离（超现有深度档、负数、小数、重复）', () => {
+    const combat = useCombatStore()
+    combat.hydrate({
+      garrisoned: {},
+      completed: [],
+      expeditionBest: 25,
+      milestonesClaimed: [2, 1, 3, 2, -1, 1.5],
+    })
+    // D25 → 达标档 1、2；档 3 超深剥离；负数与小数剥离；去重后升序
+    expect(combat.milestonesClaimed).toEqual([1, 2])
+  })
+
+  it('校验层：validateAndRepair 剥离伪领与非法档位后整档通过', () => {
+    const data = minimalSaveData({
+      combat: {
+        garrisoned: {},
+        completed: [],
+        expeditionBest: 25,
+        milestonesClaimed: [3, 2, 1, 2, -1, 1.5],
+      },
+    })
+    expect(validateAndRepair(data)).toBe(true)
+    expect(data.combat?.milestonesClaimed).toEqual([1, 2])
+  })
+
+  it('校验层：milestonesClaimed 非数组（无法自愈的结构）整档拒绝', () => {
+    const data = minimalSaveData({
+      combat: {
+        garrisoned: {},
+        completed: [],
+        expeditionBest: 25,
+        milestonesClaimed: 'x' as unknown as number[],
+      },
+    })
+    expect(validateAndRepair(data)).toBe(false)
   })
 })

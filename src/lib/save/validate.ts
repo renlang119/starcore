@@ -10,6 +10,7 @@ import { TECHS } from '@/data/tech'
 import { UNITS, defaultFormations } from '@/data/units'
 import { EXPLORE_NODES } from '@/data/explore'
 import { STRONGHOLDS } from '@/data/pve'
+import { MILESTONE_STEP } from '@/data/endless'
 import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
 import { INFINITE_NODE_IDS, MAX_INFINITE_NODE_LEVEL } from '@/stores/transcend'
 import { ARCHIVE_ENEMY_KEYS } from '@/stores/archive'
@@ -48,6 +49,20 @@ export function validateAndRepair(data: unknown): data is SaveData {
     const cb = data.combat
     if (_isObject(cb) && Array.isArray(cb.completed)) {
       cb.completed = cb.completed.filter((id) => typeof id === 'string' && STRONGHOLD_IDS.has(id))
+    }
+    // combat.milestonesClaimed：剥离伪领（超 expeditionBest 达标档）与非法条目，
+    // 去重升序（v1.20；口径同 combat store hydrate 侧自愈，两层防御同先例）
+    if (_isObject(cb) && Array.isArray(cb.milestonesClaimed)) {
+      const bestRaw = (cb as { expeditionBest?: unknown }).expeditionBest
+      const best =
+        typeof bestRaw === 'number' && isFinite(bestRaw) ? Math.max(0, Math.floor(bestRaw)) : 0
+      const maxTier = Math.max(0, Math.floor(best / MILESTONE_STEP))
+      const seen = new Set<number>()
+      for (const t of cb.milestonesClaimed) {
+        if (typeof t !== 'number' || !Number.isInteger(t) || t < 1 || t > maxTier) continue
+        seen.add(t)
+      }
+      cb.milestonesClaimed = [...seen].sort((a, b) => a - b)
     }
     const mil = data.military
     if (_isObject(mil) && Array.isArray(mil.formations) && mil.formations.length === 0) {
@@ -187,6 +202,9 @@ function validateSaveData(data: unknown): data is SaveData {
     }
   }
   if (!_isValidStrArray(cb.completed, STRONGHOLD_IDS)) return false
+  // milestonesClaimed（v1.20 可选）：结构须为数组——条目级净化在 validateAndRepair
+  // 完成（伪领/非法条目剥离），非数组无法自愈，整档拒绝（与 completed 同口径）
+  if (cb.milestonesClaimed !== undefined && !Array.isArray(cb.milestonesClaimed)) return false
 
   // exploration: progress 条目须结构合法且时间戳有限；未知节点条目丢弃（hydrate 只取已知节点）
   if (!_isObject(d.exploration)) return false

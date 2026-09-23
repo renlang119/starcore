@@ -10,6 +10,10 @@ import {
   endlessUnlocked,
   endlessEnemies,
   endlessStronghold,
+  endlessMilestoneReward,
+  endlessMilestoneTier,
+  milestoneClaimable,
+  MILESTONE_STEP,
   ENEMY_GROWTH,
   REWARD_GROWTH,
 } from './endless'
@@ -129,5 +133,51 @@ describe('endless 合成据点', () => {
       expect(e.count).toBeGreaterThan(0)
       expect(e.counteredBy).toBeDefined()
     }
+  })
+})
+
+describe('endless 里程碑奖励（v1.20 可玩内容扩展方案 2）', () => {
+  it('MILESTONE_STEP = 10；深度到档位换算向下取整', () => {
+    expect(MILESTONE_STEP).toBe(10)
+    expect(endlessMilestoneTier(0)).toBe(0)
+    expect(endlessMilestoneTier(9)).toBe(0)
+    expect(endlessMilestoneTier(10)).toBe(1)
+    expect(endlessMilestoneTier(25)).toBe(2)
+    expect(endlessMilestoneTier(30.9)).toBe(3)
+  })
+
+  it('档位奖励 = 深度 10×tier 合成据点的资源奖励（同源公式）', () => {
+    const r10 = endlessMilestoneReward(1)
+    expect(r10.energy).toBe(Math.round(20000000 * Math.pow(REWARD_GROWTH, 9)))
+    expect(r10.dark).toBe(Math.round(100 * Math.pow(REWARD_GROWTH, 9)))
+    const r30 = endlessMilestoneReward(3)
+    expect(r30.energy).toBe(Math.round(20000000 * Math.pow(REWARD_GROWTH, 29)))
+    expect(r30.dark).toBe(Math.round(100 * Math.pow(REWARD_GROWTH, 29)))
+  })
+
+  it('档位奖励严格递增且不封顶（公式延展）', () => {
+    for (let tier = 1; tier < 8; tier++) {
+      expect(endlessMilestoneReward(tier + 1).dark!).toBeGreaterThan(
+        endlessMilestoneReward(tier).dark!
+      )
+      expect(endlessMilestoneReward(tier + 1).energy!).toBeGreaterThan(
+        endlessMilestoneReward(tier).energy!
+      )
+    }
+  })
+
+  it('非法档位（0/负数/小数）返回空对象', () => {
+    expect(endlessMilestoneReward(0)).toEqual({})
+    expect(endlessMilestoneReward(-1)).toEqual({})
+    expect(endlessMilestoneReward(1.5)).toEqual({})
+  })
+
+  it('milestoneClaimable：达标且未领取；已领/未达标为否（补领取最小未领档）', () => {
+    expect(milestoneClaimable(1, 10, [])).toBe(true)
+    expect(milestoneClaimable(1, 9, [])).toBe(false)
+    expect(milestoneClaimable(1, 10, [1])).toBe(false)
+    expect(milestoneClaimable(2, 20, [1])).toBe(true)
+    // 补领语义：best=25 只领了 D20 档，更早的 D10 档仍可补领
+    expect(milestoneClaimable(1, 25, [2])).toBe(true)
   })
 })

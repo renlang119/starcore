@@ -12,6 +12,10 @@ import {
   ENDLESS_STRONGHOLD_ID,
   endlessStronghold,
   endlessUnlocked,
+  endlessMilestoneTier,
+  endlessMilestoneReward,
+  milestoneClaimable,
+  type MilestoneReward,
 } from '@/data/endless'
 import { getUnit, type UnitId } from '@/data/units'
 import type { Formation } from './military'
@@ -344,6 +348,33 @@ export const useCombatStore = defineStore('combat', () => {
     expeditionBest.value = d
     return true
   }
+
+  // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
+
+  /** 已领取的里程碑档位清单（终身数据：转生保留、hardReset 清零，与 expeditionBest 同语义） */
+  const milestonesClaimed = ref<number[]>([])
+
+  /** 最小的未领取且深度已达标的档位（0 = 无可领档）；补领语义 = 逐档清账 */
+  const nextMilestoneTier = computed<number>(() => {
+    const maxTier = endlessMilestoneTier(expeditionBest.value)
+    for (let tier = 1; tier <= maxTier; tier++) {
+      if (milestoneClaimable(tier, expeditionBest.value, milestonesClaimed.value)) return tier
+    }
+    return 0
+  })
+
+  /**
+   * 领取里程碑奖励（纯逻辑，不发放资源——由 game store 包装走 resources.gain，
+   * 同 claimChallenge 先例）：档位达标且未领取才记账，返回奖励对象。
+   * @returns 奖励对象；未达标/已领/非法档位返回 null
+   */
+  function claimMilestone(tier: number): MilestoneReward | null {
+    if (!milestoneClaimable(tier, expeditionBest.value, milestonesClaimed.value)) return null
+    const reward = endlessMilestoneReward(tier)
+    if (Object.keys(reward).length === 0) return null
+    milestonesClaimed.value = [...milestonesClaimed.value, tier].sort((a, b) => a - b)
+    return reward
+  }
   /** 撤回驻扎 */
   function ungarrison(strongholdId: string) {
     delete garrisoned.value[strongholdId]
@@ -375,8 +406,9 @@ export const useCombatStore = defineStore('combat', () => {
     garrisoned.value = {}
     completedStrongholds.value = new Set()
     if (fullReset) {
-      // 远征深度为终身进度：仅 hardReset（fullReset）清零，转生保留
+      // 远征深度与里程碑领取记录均为终身进度：仅 hardReset（fullReset）清零，转生保留
       expeditionBest.value = 0
+      milestonesClaimed.value = []
     }
   }
 
@@ -386,6 +418,7 @@ export const useCombatStore = defineStore('combat', () => {
       // 双保险：白名单过滤（buildResult 已排除远征合成据点，此处兜底任何来源的非法 id）
       completed: Array.from(completedStrongholds.value).filter((id) => STRONGHOLD_ID_SET.has(id)),
       expeditionBest: expeditionBest.value,
+      milestonesClaimed: [...milestonesClaimed.value],
     }
   }
   function hydrate(data: CombatSaveData | undefined) {
@@ -398,6 +431,18 @@ export const useCombatStore = defineStore('combat', () => {
     // 远征深度：旧档缺失保持 0；防御性钳制非负整数
     if (typeof data.expeditionBest === 'number' && isFinite(data.expeditionBest)) {
       expeditionBest.value = Math.max(0, Math.floor(data.expeditionBest))
+    }
+    // 里程碑领取记录：旧档缺失保持空（零迁移）；条目级自愈——只留「深度达标内、
+    // 正整数、未重复」的档位，伪领（超现有深度档）与非法条目静默剥离
+    if (Array.isArray(data.milestonesClaimed)) {
+      const maxTier = endlessMilestoneTier(expeditionBest.value)
+      const seen = new Set<number>()
+      for (const t of data.milestonesClaimed) {
+        if (typeof t !== 'number' || !Number.isInteger(t) || t < 1 || t > maxTier) continue
+        if (seen.has(t)) continue
+        seen.add(t)
+      }
+      milestonesClaimed.value = [...seen].sort((a, b) => a - b)
     }
   }
 
@@ -412,6 +457,9 @@ export const useCombatStore = defineStore('combat', () => {
     isEndlessUnlocked,
     getEndlessStronghold,
     recordExpedition,
+    milestonesClaimed,
+    nextMilestoneTier,
+    claimMilestone,
     ungarrison,
     garrisonIdleReward,
     reset,
