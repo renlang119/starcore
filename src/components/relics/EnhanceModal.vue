@@ -55,7 +55,12 @@ const nextEffects = computed<{ label: string; next: string }[]>(() => {
 function doEnhance() {
   if (!props.relic) return
   const done = game.relics.enhanceSteps(props.relic.instanceId, bulkSteps.value)
-  if (!done) emit('fail', t('relics.insufficientEnergy'))
+  if (!done) {
+    emit('fail', t('relics.insufficientEnergy'))
+    return
+  }
+  // 周挑战扩类（v1.21）：按实际强化级数计入本周计数（批量一次计多级）
+  game.daily.bump('enhances', done)
 }
 
 // v0.86 批量强化段位（默认 ×1 与既有行为一致；封顶 20 级，×100 可一键拉满）
