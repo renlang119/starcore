@@ -45,7 +45,16 @@ export function weekStr(d = new Date()): string {
 /** 挑战模板池：kind 对应 weeklyCounters 键 */
 interface ChallengeTemplate {
   templateId: string
-  kind: 'battles' | 'explores' | 'researches' | 'upgrades' | 'transcends'
+  kind:
+    | 'battles'
+    | 'explores'
+    | 'researches'
+    | 'upgrades'
+    | 'transcends'
+    | 'expedition'
+    | 'synths'
+    | 'enhances'
+    | 'garrisonHours'
   /** 档位阈值（从低到高） */
   targets: number[]
   /** 完成奖励：暗物质 + 签到连击加成天数 */
@@ -89,6 +98,35 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     rewardDark: [8, 12],
     name: (n) => t('home.daily.ch.wkTranscends', { n }),
   },
+  // —— 扩类（v1.21 可玩内容扩展方案 3）：池 5→9，消除每周同质 ——
+  {
+    templateId: 'wk_expedition',
+    kind: 'expedition',
+    targets: [2, 3, 5],
+    rewardDark: [3, 5, 8],
+    name: (n) => t('home.daily.ch.wkExpedition', { n }),
+  },
+  {
+    templateId: 'wk_synths',
+    kind: 'synths',
+    targets: [2, 4, 6],
+    rewardDark: [3, 5, 8],
+    name: (n) => t('home.daily.ch.wkSynths', { n }),
+  },
+  {
+    templateId: 'wk_enhances',
+    kind: 'enhances',
+    targets: [10, 20, 35],
+    rewardDark: [3, 5, 8],
+    name: (n) => t('home.daily.ch.wkEnhances', { n }),
+  },
+  {
+    templateId: 'wk_garrison',
+    kind: 'garrisonHours',
+    targets: [20, 35, 50],
+    rewardDark: [3, 5, 8],
+    name: (n) => t('home.daily.ch.wkGarrison', { n }),
+  },
 ]
 
 export interface WeeklyChallenge {
@@ -118,9 +156,19 @@ export function streakReward(day: number): { energy: number; dark: number } | nu
 /** 断签回归补偿包 */
 export const RETURN_GIFT = { energy: 5e4, dark: 2 }
 
-/** 周计数零值表（初始化/换周清零/重置共用，v1.03 收敛） */
+/** 周计数零值表（初始化/换周清零/重置共用，v1.03 收敛；v1.21 扩四键） */
 function emptyCounters() {
-  return { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 }
+  return {
+    battles: 0,
+    explores: 0,
+    researches: 0,
+    upgrades: 0,
+    transcends: 0,
+    expedition: 0,
+    synths: 0,
+    enhances: 0,
+    garrisonHours: 0,
+  }
 }
 
 export const useDailyStore = defineStore('daily', () => {
@@ -195,9 +243,11 @@ export const useDailyStore = defineStore('daily', () => {
     })
   }
 
-  /** 终身计数钩子转发（game store 各 record 处调用） */
-  function bump(kind: keyof typeof weeklyCounters.value): void {
-    if (weeklyCounters.value[kind] !== undefined) weeklyCounters.value[kind]++
+  /** 终身计数钩子转发（game store 各 record 处调用；step 供批量操作按实际量计，v1.21） */
+  function bump(kind: keyof typeof weeklyCounters.value, step = 1): void {
+    if (weeklyCounters.value[kind] !== undefined && step > 0) {
+      weeklyCounters.value[kind] += Math.floor(step)
+    }
   }
 
   /** 挑战进度（0~1） */
@@ -244,8 +294,9 @@ export const useDailyStore = defineStore('daily', () => {
     }
     if (data.weeklyCounters && typeof data.weeklyCounters === 'object') {
       const wc = data.weeklyCounters
-      for (const k of ['battles', 'explores', 'researches', 'upgrades', 'transcends'] as const) {
-        const v = wc[k]
+      // 逐键容缺：键缺失（v1.19 旧档无 v1.21 新四键）保持 0，非法值跳过
+      for (const k of Object.keys(weeklyCounters.value) as (keyof typeof weeklyCounters.value)[]) {
+        const v = (wc as Record<string, unknown>)[k]
         if (typeof v === 'number' && isFinite(v) && v >= 0) weeklyCounters.value[k] = Math.floor(v)
       }
     }

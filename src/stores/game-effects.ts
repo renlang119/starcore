@@ -10,7 +10,11 @@ import type { ComputedRef, Ref } from 'vue'
 import { Decimal } from '@/lib/decimal'
 import { EffectSystem, type EffectSource } from '@/lib/effect-system'
 import { setTrainingSlotProvider, MAX_TRAINING_SLOTS } from './military'
-import { setRelicSlotProvider, setRelicEnhanceSpendProvider } from './relics'
+import {
+  setRelicSlotProvider,
+  setRelicEnhanceSpendProvider,
+  setRelicSynthCountProvider,
+} from './relics'
 import { setAchievementExternalProviders } from './achievements'
 import { setGarrisonGuard } from './combat'
 import { getStronghold } from '@/data/pve'
@@ -115,6 +119,8 @@ export function wireGameProviders(deps: {
   military: MilitaryStore
   exploration: ExplorationStore
   totalPlayTime: Ref<number>
+  /** v1.21 周挑战扩类：合成计数通道注入（daily.bump） */
+  daily?: ReturnType<typeof import('./daily').useDailyStore>
 }): void {
   const { effectSystem, resources, relics, transcend, combat, military, exploration } = deps
 
@@ -122,6 +128,11 @@ export function wireGameProviders(deps: {
   setRelicSlotProvider(() => transcend.getValue('relic_slot'))
   // 强化能量支出通道：接入 resources.spend 原子扣费
   setRelicEnhanceSpendProvider((cost) => resources.spend('energy', cost))
+  // 合成计数通道（v1.21 周挑战扩类）：合成成功计入周挑战（可选注入，测试环境缺省无操作）
+  if (deps.daily) {
+    const daily = deps.daily
+    setRelicSynthCountProvider(() => daily.bump('synths'))
+  }
   // 成就的外部现值指标（遗物/转生数本身跨转生保留，无需终身计数）
   setAchievementExternalProviders({
     relicsOwned: () => relics.ownedCount,

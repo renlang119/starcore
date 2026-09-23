@@ -117,9 +117,11 @@ export function useBattleFlow(deps: BattleFlowDeps) {
       if (v) game.resources.gain(k as ResourceType, v as number)
     }
     if (result.relic) game.relics.obtain(result.relic)
-    // 远征：奖励落袋的同时记录战果（攻克当前前沿才推进，重打不推进）
+    // 远征：奖励落袋的同时记录战果（攻克当前前沿才推进，重打不推进）；
+    // 推进计入周挑战远征类计数（重打不计，与推进口径一致）
     if (deps.isEndless.value) {
-      game.combat.recordExpedition(deps.endlessDepth.value, true)
+      const advanced = game.combat.recordExpedition(deps.endlessDepth.value, true)
+      if (advanced) game.daily.bump('expedition')
     }
   }
 

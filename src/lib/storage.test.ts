@@ -377,7 +377,17 @@ describe('storage — 存档加固（v0.75）', () => {
     const base: DailySaveData = {
       lastCheckIn: '2026-09-07',
       streak: 1,
-      weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
       challengeWeek: '2026-W37',
       weekChallenges: [],
     }

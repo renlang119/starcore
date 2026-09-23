@@ -96,6 +96,7 @@ export const useGameStore = defineStore('game', () => {
     military,
     exploration,
     totalPlayTime,
+    daily,
   })
 
   /**
@@ -168,6 +169,9 @@ export const useGameStore = defineStore('game', () => {
     return result
   }
 
+  /** 驻扎小时累计进位（v1.21 周挑战：内存小数累加，满 1 小时 bump；不入档） */
+  const garrisonHourCarry = ref(0)
+
   // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
   /** 里程碑奖励发放（MapView 领取按钮回调）：combat 记账成功后按奖励对象逐资源发放 */
   function claimMilestone(tier: number): MilestoneReward | null {
@@ -211,6 +215,17 @@ export const useGameStore = defineStore('game', () => {
         res as ResourceType,
         add(resources.getRate(res as ResourceType), D(v))
       )
+    }
+    // 周挑战驻扎时长（v1.21）：在线 tick 按驻扎据点数累计小时，
+    // 满 1 小时 bump 一次（离线补算不计——时长口径与收益口径解耦）
+    const garrisonCount = Object.keys(combat.garrisoned).length
+    if (garrisonCount > 0) {
+      garrisonHourCarry.value += (garrisonCount * dt) / 3600
+      const hours = Math.floor(garrisonHourCarry.value)
+      if (hours >= 1) {
+        garrisonHourCarry.value -= hours
+        daily.bump('garrisonHours', hours)
+      }
     }
     // 2. 资源增长
     resources.applyTick(dt)
