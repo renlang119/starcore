@@ -21,7 +21,9 @@ growing on through "Singularity Restart" rebirth cycles.
 - **Units**: 4 unit types in a double counter-triangle; parallel training
   slots 1→3 via tech
 - **PVE Strongholds**: 36 strongholds in 4 categories; garrison conquered
-  ones for idle output, plus an endless expedition with rising depth
+  ones for idle output, plus an endless expedition with rising depth —
+  every 10 layers conquered unlocks a one-time milestone reward
+  (lifetime progress; missed tiers can be claimed later)
 - **Relics**: 20 kinds drawn from rarity pools; 3 of the same rarity fuse
   into 1 of the next tier; 4 set bonuses; each relic can be enhanced up to
   level 20 with energy
