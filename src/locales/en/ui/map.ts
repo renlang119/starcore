@@ -13,6 +13,10 @@ export default {
   'map.endless': 'Endless Expedition',
   'map.endlessDesc':
     'An unknown threat from the depths of the cluster: the deeper you go, the deadlier it grows, and the richer the rewards',
+  'map.milestoneReady': 'Expedition milestone reached',
+  'map.milestoneTier': 'Layer {depth} milestone',
+  'map.milestoneClaim': 'Claim reward',
+  'map.milestoneClaimed': 'Layer {depth} milestone reward claimed',
   'map.explore': 'Explore',
   'map.exploreStarted': 'Exploration started',
   'map.lockedHint': 'Unlocks after conquering the "Flagship of the Silent Ones"',

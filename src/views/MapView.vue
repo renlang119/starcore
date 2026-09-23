@@ -3,6 +3,7 @@ import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { resourceRows } from '@/lib/resource-rows'
+import { MILESTONE_STEP, endlessMilestoneReward } from '@/data/endless'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLD_TYPES } from '@/data/pve'
 import ExploreNodeCard from '@/components/map/ExploreNodeCard.vue'
@@ -84,6 +85,28 @@ const endlessFrontier = computed(() => game.combat.expeditionBest + 1)
 const endlessSection = {
   title: t('map.endless'),
   desc: t('map.endlessDesc'),
+}
+
+// —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
+/** 最小可领档位（0 = 无）；达标时卡下方显示领取条（并置结构，卡本体仍走跳转） */
+const milestoneReadyTier = computed(() => game.combat.nextMilestoneTier)
+/** 领取条文案：档位对应深度 = 档位 × 步长 */
+const milestoneDepth = computed(() =>
+  milestoneReadyTier.value > 0 ? milestoneReadyTier.value * MILESTONE_STEP : 0
+)
+/** 奖励预览行：资源名 + 数值（fmt 缩写，按 resources 键序渲染） */
+const milestonePreview = computed(() => {
+  if (milestoneReadyTier.value === 0) return []
+  const reward = endlessMilestoneReward(milestoneReadyTier.value)
+  return resourceRows(reward, game.resources.allMeta, { positiveOnly: true })
+})
+
+/** 领取：走 game store 发放包装（资源入账），成功 toast 回执 */
+function claimMilestone() {
+  if (milestoneReadyTier.value === 0) return
+  const tier = milestoneReadyTier.value
+  const reward = game.claimMilestone(tier)
+  if (reward) toast.show(t('map.milestoneClaimed', { depth: tier * MILESTONE_STEP }))
 }
 </script>
 
@@ -201,6 +224,27 @@ const endlessSection = {
         </div>
         <Icon v-if="endlessUnlockedNow" class="s-arrow" name="i-ui-arrow-right" size="md" />
       </button>
+
+      <!-- 里程碑领取条（v1.20）：并置于卡下方；里程碑为终身数据，
+           不挂本轮解锁态（转生后重克旗舰前仍可领取已达标档位） -->
+      <div v-if="milestoneReadyTier > 0" class="milestone-bar" data-testid="milestone-ready">
+        <div class="m-info">
+          <span class="m-title">{{ t('map.milestoneReady') }}</span>
+          <span class="m-tier font-mono">{{ t('map.milestoneTier', { depth: milestoneDepth }) }}</span>
+          <span class="m-rewards font-mono">
+            <template v-for="(row, i) in milestonePreview" :key="row.id">
+              <span v-if="i > 0"> · </span>{{ row.name }} +{{ row.amount }}
+            </template>
+          </span>
+        </div>
+        <button
+          class="m-claim btn-accent"
+          data-testid="milestone-claim"
+          @click="claimMilestone"
+        >
+          {{ t('map.milestoneClaim') }}
+        </button>
+      </div>
     </div>
 
     <!-- 点击反馈 toast -->
@@ -303,6 +347,46 @@ const endlessSection = {
 }
 .endless-card .s-icon {
   color: var(--c);
+}
+
+/* —— 里程碑领取条（v1.20）：并置于远征卡下方 —— */
+.milestone-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-2);
+  background: color-mix(in srgb, var(--color-amber) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-amber) 45%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.milestone-bar .m-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.milestone-bar .m-title {
+  font-size: var(--text-xs);
+  color: var(--color-amber);
+}
+.milestone-bar .m-tier {
+  font-size: var(--text-sm);
+  color: var(--color-t-primary);
+}
+.milestone-bar .m-rewards {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.milestone-bar .m-claim {
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-3);
 }
 
 /* P3-3 onboarding */

@@ -13,6 +13,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { mountView, useViewTestHooks, vueRouterMock, focusTrapMock } from '@/tests/view-mount'
 import MapView from './MapView.vue'
 import { useGameStore } from '@/stores/game'
+import { useResourcesStore } from '@/stores/resources'
 import { EXPLORE_NODES, LAYER_INFO } from '@/data/explore'
 import { STRONGHOLDS } from '@/data/pve'
 
@@ -150,6 +151,42 @@ describe('MapView — 探索流程', () => {
 
     await wrapper.find('.stronghold-card').trigger('click')
     expect(mockPush).toHaveBeenCalledWith('/battle/raider_1')
+  })
+})
+
+describe('MapView — 远征里程碑（v1.20）', () => {
+  useViewTestHooks()
+
+  it('无可领档位时不显示领取条', () => {
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
+    expect(wrapper.find('[data-testid="milestone-ready"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="milestone-claim"]').exists()).toBe(false)
+  })
+
+  it('达标显示领取条与奖励预览，点击领取入账后消失', async () => {
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
+    const game = useGameStore()
+    // 直写终身深度（同远征解锁用例先例）：best=10 → 档 1 可领
+    game.combat.expeditionBest = 10
+    await wrapper.vm.$nextTick()
+
+    const bar = wrapper.find('[data-testid="milestone-ready"]')
+    expect(bar.exists()).toBe(true)
+    expect(bar.text()).toContain('第 10 层')
+    // 奖励预览含资源名与暗物质字样
+    expect(bar.text()).toContain('暗物质')
+
+    const resources = useResourcesStore()
+    const before = Number(resources.amounts.dark)
+    await wrapper.find('[data-testid="milestone-claim"]').trigger('click')
+    expect(Number(resources.amounts.dark)).toBeGreaterThan(before)
+    // 领取后无可领档，领取条消失
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-testid="milestone-ready"]').exists()).toBe(false)
   })
 })
 
