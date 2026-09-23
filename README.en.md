@@ -19,7 +19,8 @@ growing on through "Singularity Restart" rebirth cycles.
 - **Exploration**: 34 nodes across the StarCore, Stellar, Star Cluster,
   Star Arm, Galaxy and Void layers; timed runs grant rewards
 - **Units**: 4 unit types in a double counter-triangle; parallel training
-  slots 1→3 via tech
+  slots 1→3 via tech; 3 formations each pick one doctrine
+  (Assault / Bastion / Counter / Logistics) for combat and garrison roles
 - **PVE Strongholds**: 36 strongholds in 4 categories; garrison conquered
   ones for idle output, plus an endless expedition with rising depth —
   every 10 layers conquered unlocks a one-time milestone reward
@@ -77,7 +78,7 @@ starcore/
 ├─ src/
 │  ├─ components/   40 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
 │  ├─ composables/  13 composables (breakpoints, Toast, action queue, onboarding, particles, …)
-│  ├─ data/         11 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, navigation, story, background stars)
+│  ├─ data/         12 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, formation doctrines, navigation, story, background stars)
 │  ├─ i18n/         i18n facade (message lookup and locale detection)
 │  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
 │  ├─ locales/      locale bundles (zh-CN baseline + en English, split by domain under ui/ and content/)
