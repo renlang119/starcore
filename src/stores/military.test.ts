@@ -153,3 +153,62 @@ describe('military store · 全量口径（v0.95）', () => {
     expect(p.hp).toBeGreaterThan(assault.hp * 10)
   })
 })
+
+// —— v1.23 方案 7：编队特性 ——
+describe('military store · 编队特性（v1.23）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('setFormationTrait：切换入库，切回均衡删字段保持旧档同构', () => {
+    const m = useMilitaryStore()
+    expect(m.setFormationTrait('f1', 'assault_doctrine')).toBe(true)
+    expect(m.formations[0].trait).toBe('assault_doctrine')
+    expect(m.setFormationTrait('f1', 'balanced')).toBe(true)
+    expect(m.formations[0].trait).toBeUndefined()
+    // 序列化面：均衡编队不携带 trait 键
+    expect(m.serialize().formations[0]).not.toHaveProperty('trait')
+  })
+
+  it('setFormationTrait：未知 id 拒绝，编队不存在拒绝', () => {
+    const m = useMilitaryStore()
+    expect(m.setFormationTrait('f1', 'unknown_trait' as never)).toBe(false)
+    expect(m.setFormationTrait('f9', 'assault_doctrine')).toBe(false)
+    expect(m.formations[0].trait).toBeUndefined()
+  })
+
+  it('三支编队特性互相独立', () => {
+    const m = useMilitaryStore()
+    m.setFormationTrait('f1', 'assault_doctrine')
+    m.setFormationTrait('f2', 'logistics_doctrine')
+    expect(m.formations[0].trait).toBe('assault_doctrine')
+    expect(m.formations[1].trait).toBe('logistics_doctrine')
+    expect(m.formations[2].trait).toBeUndefined()
+  })
+
+  it('hydrate：带 trait 旧档往返，未知 id 自愈回落均衡（真缺键载荷）', () => {
+    const m = useMilitaryStore()
+    m.hydrate({
+      owned: {},
+      training: [],
+      formations: [
+        { id: 'f1', name: 'A', trait: 'bastion_doctrine', units: {} },
+        { id: 'f2', name: 'B', trait: 'legacy_gone', units: {} },
+        { id: 'f3', name: 'C', units: {} },
+      ],
+    } as never)
+    expect(m.formations[0].trait).toBe('bastion_doctrine')
+    expect(m.formations[1].trait).toBeUndefined()
+    expect(m.formations[2].trait).toBeUndefined()
+  })
+
+  it('serialize → hydrate 往返保真', () => {
+    const m = useMilitaryStore()
+    m.setFormationTrait('f2', 'counter_doctrine')
+    const data = m.serialize()
+    const m2 = useMilitaryStore()
+    m2.hydrate(JSON.parse(JSON.stringify(data)))
+    expect(m2.formations[1].trait).toBe('counter_doctrine')
+    expect(m2.formations[0].trait).toBeUndefined()
+  })
+})

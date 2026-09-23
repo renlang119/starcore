@@ -21,6 +21,7 @@ export default {
   'army.soldiersUnit': 'soldiers',
   'army.stock': 'Stock',
   'army.title': 'Units',
+  'army.trait': 'Doctrine',
   'army.totalAttack': 'Total Attack',
   'army.totalDefense': 'Total Defense',
   'army.totalTroops': 'Total Troops',

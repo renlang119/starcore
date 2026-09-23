@@ -24,7 +24,7 @@ import {
   setRelicEnhanceSpendProvider,
   setRelicEnhanceDoneProvider,
 } from '@/stores/relics'
-import { resetGarrisonGuard } from '@/stores/combat'
+import { resetGarrisonGuard, resetFormationTraitProvider } from '@/stores/combat'
 import { setAchievementExternalProviders } from '@/stores/achievements'
 
 /** 恢复全部模块级 provider 为各 store 声明处的默认值 */
@@ -34,6 +34,7 @@ export function resetProviderSingletons(): void {
   setRelicEnhanceSpendProvider(() => false)
   setRelicEnhanceDoneProvider(() => {})
   resetGarrisonGuard()
+  resetFormationTraitProvider()
   setAchievementExternalProviders({
     relicsOwned: () => 0,
     relicKinds: () => 0,

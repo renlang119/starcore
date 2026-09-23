@@ -7,12 +7,18 @@ import { ref, computed } from 'vue'
 import type { Decimal } from '@/lib/decimal'
 import { UNITS, getUnit, defaultFormations, type UnitId, type UnitDef } from '@/data/units'
 import { isUnlockedBy } from '@/lib/requires'
+import { DEFAULT_TRAIT_ID, TRAITS, type TraitId } from '@/data/traits'
 import type { MilitarySaveData } from '@/lib/storage'
+
+/** 特性 id 白名单集合（setFormationTrait 入库校验用） */
+const TRAIT_IDS_SET = new Set<string>(TRAITS.map((tr) => tr.id))
 
 export interface Formation {
   id: string
   name: string
   units: Record<UnitId, number> // 兵种 → 数量
+  /** 编队特性（v1.23 方案 7，可选字段：旧档缺失视为均衡；未知 id 由读取侧回落） */
+  trait?: TraitId
 }
 
 export interface TrainingTask {
@@ -170,6 +176,17 @@ export const useMilitaryStore = defineStore('military', () => {
     return true
   }
 
+  /** 切换编队特性（免费即时生效；未知 id 不入库，返回 false） */
+  function setFormationTrait(formationId: string, traitId: TraitId): boolean {
+    const f = formations.value.find((f) => f.id === formationId)
+    if (!f) return false
+    if (traitId !== DEFAULT_TRAIT_ID && !TRAIT_IDS_SET.has(traitId)) return false
+    // 均衡为缺省语义：切回均衡时删除字段，存档面保持与旧档同构
+    if (traitId === DEFAULT_TRAIT_ID) delete f.trait
+    else f.trait = traitId
+    return true
+  }
+
   /** 消耗编队中的兵（战斗损失） */
   function applyLosses(formation: Formation, losses: Record<UnitId, number>) {
     for (const [uid, loss] of Object.entries(losses)) {
@@ -211,9 +228,11 @@ export const useMilitaryStore = defineStore('military', () => {
       }))
     }
     if (data.formations)
-      // units 缺键补零：防 f.units[id] += n 对缺键产 NaN
+      // units 缺键补零：防 f.units[id] += n 对缺键产 NaN；
+      // trait 自愈：不在白名单内的值（含非法形态）回落均衡（undefined = 均衡缺省）
       formations.value = data.formations.map((f) => ({
         ...f,
+        trait: f.trait && TRAIT_IDS_SET.has(f.trait) ? (f.trait as TraitId) : undefined,
         units: Object.assign({ assault: 0, guard: 0, heavy: 0, psionic: 0 }, f.units),
       }))
   }
@@ -233,6 +252,7 @@ export const useMilitaryStore = defineStore('military', () => {
     applyTick,
     assignToFormation,
     removeFromFormation,
+    setFormationTrait,
     applyLosses,
     reset,
     serialize,

@@ -172,12 +172,15 @@ function validateSaveData(data: unknown): data is SaveData {
     })
   )
     return false
-  // formations: 条目结构 + units 键白名单 + 值有限（防缺键加法产 NaN）
+  // formations: 条目结构 + units 键白名单 + 值有限（防缺键加法产 NaN）；
+  // trait 可选（v1.23）：存在则须为字符串（形态校验）；未知 id 不拒档，
+  // hydrate 读取侧回落均衡（装饰性字段不 brick 玩家存档）
   if (!Array.isArray(mil.formations)) return false
   if (
     !mil.formations.every((f: unknown) => {
       if (!_isObject(f)) return false
       if (typeof f.id !== 'string' || typeof f.name !== 'string') return false
+      if (f.trait !== undefined && typeof f.trait !== 'string') return false
       if (!_isObject(f.units)) return false
       for (const [uid, n] of Object.entries(f.units)) {
         if (!UNIT_IDS.has(uid)) return false
