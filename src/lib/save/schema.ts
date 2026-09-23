@@ -82,6 +82,10 @@ export interface AchievementsSaveData {
     explores: number
     /** 终身据点攻克次数 */
     battles: number
+    /** 终身遗物合成次数（v1.22 可选：旧档缺失视为 0） */
+    synths?: number
+    /** 终身遗物强化总级数（v1.22 可选：旧档缺失视为 0） */
+    enhanceLevels?: number
   }
   /** 已解锁成就：id → 解锁时间戳（ms） */
   unlocked: Record<string, number>

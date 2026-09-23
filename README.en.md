@@ -29,8 +29,9 @@ growing on through "Singularity Restart" rebirth cycles.
   level 20 with energy
 - **Rebirth**: Singularity Restart; negative entropy unlocks a talent tree,
   infinite talents stack, and automation protocols play for you
-- **Achievements**: 37 milestones tracked across rebirths, granting permanent
-  bonuses
+- **Achievements**: 49 milestones tracked across rebirths, granting permanent
+  bonuses (v1.22 adds synthesis, enhancement, set-collection and enemy-archive
+  long-term goals)
 - **Daily Check-in**: streak-cycle rewards plus 3 weekly challenges drawn
   from 9 templates (combat, exploration, research, building, rebirth,
   expedition, synthesis, enhancement, garrison)
@@ -98,7 +99,7 @@ starcore/
 ## Quality
 
 - **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 40 test files,
-  572 cases
+  580 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document

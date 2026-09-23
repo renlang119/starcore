@@ -1,10 +1,11 @@
 /**
- * achievements.test.ts — 成就/里程碑 store 测试（v0.57）
+ * achievements.test.ts — 成就/里程碑 store 测试（v0.57；v1.22 扩至 49 条）
  *
  * 覆盖：
- * 1. 定义表完整性（37 成就、id 唯一、类别合法、阈值正数）
- * 2. 终身计数累计与阈值解锁（含 toast 入队）
- * 3. 外部现值指标（relicsOwned/transcends/playtime 走 provider）
+ * 1. 定义表完整性（49 成就、id 唯一、类别合法、阈值正数）
+ * 2. 终身计数累计与阈值解锁（含 toast 入队；v1.22 合成/强化计数）
+ * 3. 外部现值指标（relicsOwned/relicKinds/enemyKinds/activeFullSets/
+ *    transcends/playtime/expeditionBest 走 provider）
  * 4. 效果聚合（getMult 连乘，EffectSource 语义）
  * 5. serialize/hydrate 往返 + 旧档（undefined）兼容 + 非法数据防御
  * 6. reset（hardReset 用）清空
@@ -30,9 +31,9 @@ beforeEach(() => {
 })
 
 describe('achievements — 定义表完整性', () => {
-  it('共 37 个成就，id 唯一', () => {
-    expect(ACHIEVEMENTS).toHaveLength(37)
-    expect(ACHIEVEMENT_IDS.size).toBe(37)
+  it('共 49 个成就，id 唯一', () => {
+    expect(ACHIEVEMENTS).toHaveLength(49)
+    expect(ACHIEVEMENT_IDS.size).toBe(49)
   })
 
   it('类别/指标/阈值/效果字段合法', () => {
@@ -102,6 +103,36 @@ describe('achievements — 终身计数与解锁', () => {
     expect(store.metricValue('battles')).toBe(1)
   })
 
+  it('合成/强化终身计数：逐次累计、批量按实际级数、非正数忽略（v1.22）', () => {
+    store.recordSynth()
+    store.recordSynth()
+    store.recordSynth()
+    expect(store.metricValue('synths')).toBe(3)
+    store.recordEnhanceLevels(1)
+    store.recordEnhanceLevels(5)
+    expect(store.metricValue('enhanceLevels')).toBe(6)
+    // 非正数零副作用（防御）
+    store.recordEnhanceLevels(0)
+    store.recordEnhanceLevels(-2)
+    expect(store.metricValue('enhanceLevels')).toBe(6)
+    // 跨阈值解锁：3 次合成 → ach_relic_5（阈值 1）
+    const fresh = store.checkAndUnlock()
+    expect(fresh.map((a) => a.id)).toContain('ach_relic_5')
+    expect(fresh.map((a) => a.id)).not.toContain('ach_relic_6') // 3 < 5
+  })
+
+  it('合成失败路径不经 recordSynth（synthesize 校验失败零计数，v1.22）', async () => {
+    // 直接构造 relics store：素材不足 3 件时 synthesize 返回 null，synthCount 通道不触发
+    setActivePinia(createPinia())
+    const { useRelicsStore } = await import('./relics')
+    const relics = useRelicsStore()
+    const gained = relics.synthesize(['ghost_a', 'ghost_b', 'ghost_c'])
+    expect(gained).toBeNull()
+    // 通道缺省为无操作，achievements 计数仍为 0
+    expect(store.metricValue('synths')).toBe(0)
+    expect(store.checkAndUnlock().map((a) => a.id)).not.toContain('ach_relic_5')
+  })
+
   it('progressOf 归一 0~1', () => {
     store.addEnergy(5e4)
     expect(store.progressOf('energy', 1e5)).toBeCloseTo(0.5)
@@ -154,6 +185,30 @@ describe('achievements — 外部现值指标', () => {
     expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(1.05 * 1.08, 10)
     expect(store.getMult('combat_mult', 'defense').toNumber()).toBeCloseTo(1.05 * 1.08, 10)
   })
+
+  it('敌方图鉴/套装/远征长线走 provider（v1.22）', () => {
+    // 20 种敌种 → ach_battle_8（+2% 攻防），56 未满
+    zeroAchievementProviders({ enemyKinds: () => 20 })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_8')
+    expect(store.isUnlocked('ach_battle_9')).toBe(false)
+    // 全收录 56 → ach_battle_9；攻防连乘含 1.02 × 1.03
+    zeroAchievementProviders({ enemyKinds: () => 56 })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_9')
+    expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(1.02 * 1.03, 10)
+    // 1 个完整套装 → ach_relic_11（离线 +10%）
+    zeroAchievementProviders({ activeFullSets: () => 1 })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_relic_11')
+    expect(store.isUnlocked('ach_relic_12')).toBe(false)
+    // 4 套全开 → ach_relic_12；此时链内离线成就仅 relic_11 → 1.1
+    zeroAchievementProviders({ activeFullSets: () => 4 })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_relic_12')
+    expect(store.getMult('offline_bonus').toNumber()).toBeCloseTo(1.1, 10)
+    // 远征 D30/D40 → ach_battle_6/7
+    zeroAchievementProviders({ expeditionBest: () => 30 })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_6')
+    zeroAchievementProviders({ expeditionBest: () => 40 })
+    expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_7')
+  })
 })
 
 describe('achievements — 效果聚合（EffectSource）', () => {
@@ -190,11 +245,15 @@ describe('achievements — serialize / hydrate', () => {
     store.addDark(789)
     store.recordUpgrade(12)
     store.recordResearch()
+    store.recordSynth()
+    store.recordEnhanceLevels(7)
     store.checkAndUnlock()
     const data = store.serialize()
     expect(data.lifetime.energy).toBe('123456')
     expect(data.lifetime.upgrades).toBe(1)
     expect(data.lifetime.maxBuildingLevel).toBe(12)
+    expect(data.lifetime.synths).toBe(1)
+    expect(data.lifetime.enhanceLevels).toBe(7)
     expect(data.unlocked['ach_energy_1']).toBeGreaterThan(0)
 
     setActivePinia(createPinia())
@@ -204,7 +263,31 @@ describe('achievements — serialize / hydrate', () => {
     expect(fresh.metricValue('dark')).toBe(789)
     expect(fresh.metricValue('upgrades')).toBe(1)
     expect(fresh.metricValue('maxBuildingLevel')).toBe(12)
+    expect(fresh.metricValue('synths')).toBe(1)
+    expect(fresh.metricValue('enhanceLevels')).toBe(7)
     expect(fresh.isUnlocked('ach_energy_1')).toBe(true)
+  })
+
+  it('旧档 lifetime 缺 v1.22 新两键 → 默认 0 不拒档（可选字段兼容）', () => {
+    // 七键字面量形态 = 升级前旧档真实载荷
+    store.hydrate({
+      lifetime: {
+        energy: '100',
+        dark: '5',
+        upgrades: 3,
+        maxBuildingLevel: 2,
+        researches: 1,
+        explores: 0,
+        battles: 0,
+      } as unknown as ReturnType<typeof store.serialize>['lifetime'],
+      unlocked: {},
+    })
+    expect(store.metricValue('synths')).toBe(0)
+    expect(store.metricValue('enhanceLevels')).toBe(0)
+    expect(store.metricValue('upgrades')).toBe(3)
+    // 缺键不误解锁合成/强化成就
+    expect(store.checkAndUnlock().map((a) => a.id)).not.toContain('ach_relic_5')
+    expect(store.checkAndUnlock().map((a) => a.id)).not.toContain('ach_relic_8')
   })
 
   it('旧档 undefined → 从零起算不崩', () => {

@@ -272,6 +272,11 @@ function validateSaveData(data: unknown): data is SaveData {
     for (const v of Object.values(ach.unlocked as Record<string, unknown>)) {
       if (!_isNonNegFinite(v)) return false
     }
+    // v1.22 新两键存在才验（旧档缺键视为 0，兼容不拒档；v1.21 周挑战同口径）
+    for (const k of ['synths', 'enhanceLevels']) {
+      const v = (lt as Record<string, unknown>)[k]
+      if (v !== undefined && !_isNonNegFinite(v)) return false
+    }
   }
 
   // daily（可选字段）：结构校验。挑战条目的 kind/target/rewardDark 不可信存档值，

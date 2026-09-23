@@ -12,6 +12,7 @@
 import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { ENEMY_KIND_BUCKETS } from '@/stores/archive'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLDS, STRONGHOLD_TYPES } from '@/data/pve'
 import { NODE_STORIES } from '@/data/story'
@@ -69,28 +70,23 @@ interface EnemyCard {
 const typeOrder: StrongholdType[] = ['raider', 'beast', 'ruin', 'silencer']
 
 const enemyCards = computed<EnemyCard[]>(() => {
-  // 名 → 聚合桶（同显示名多据点条目合并）
-  const byName = new Map<
-    string,
-    { type: StrongholdType; entries: { key: string; seen: boolean }[] }
-  >()
-  for (const s of STRONGHOLDS) {
-    s.enemies.forEach((e, i) => {
-      const bucket = byName.get(e.name) ?? { type: s.type, entries: [] }
-      bucket.entries.push({ key: `${s.id}#${i}`, seen: archive.hasSeen(`${s.id}#${i}`) })
-      byName.set(e.name, bucket)
-    })
-  }
+  // 名 → 聚合桶（同显示名多据点条目合并；聚合桶单一来源 = archive store 的
+  // ENEMY_KIND_BUCKETS，v1.22 下沉后视图只补进度态）
+  const byName = ENEMY_KIND_BUCKETS
   const cards: EnemyCard[] = []
   for (const [name, bucket] of byName) {
-    const seenEntry = bucket.entries.find((e) => e.seen)
+    const entries = bucket.entries.map((e) => ({
+      key: e.key,
+      seen: archive.hasSeen(e.key),
+    }))
+    const seenEntry = entries.find((e) => e.seen)
     cards.push({
       name,
       type: bucket.type,
-      seen: bucket.entries.some((e) => e.seen),
-      complete: bucket.entries.every((e) => e.seen),
-      representativeIndex: Number((seenEntry ?? bucket.entries[0]).key.split('#')[1]),
-      representativeStronghold: (seenEntry ?? bucket.entries[0]).key.split('#')[0],
+      seen: entries.some((e) => e.seen),
+      complete: entries.every((e) => e.seen),
+      representativeIndex: Number((seenEntry ?? entries[0]).key.split('#')[1]),
+      representativeStronghold: (seenEntry ?? entries[0]).key.split('#')[0],
     })
   }
   return cards
