@@ -242,6 +242,65 @@ describe('ArmyView — 编组操作', () => {
   })
 })
 
+describe('ArmyView — 编队特性（v1.23 方案 7）', () => {
+  useViewTestHooks()
+
+  async function setupFormationTab() {
+    const wrapper = mountView(ArmyView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
+    const military = useMilitaryStore()
+    military.owned.assault = 20
+    await wrapper.findAll('.tab')[1].trigger('click') // 切到编组
+    await wrapper.vm.$nextTick()
+    return { wrapper, military }
+  }
+
+  it('每支编队渲染特性选择器，默认均衡选中', async () => {
+    const { wrapper } = await setupFormationTab()
+    const pickers = wrapper.findAll('[data-testid^="trait-picker-"]')
+    expect(pickers.length).toBe(3)
+    const first = pickers[0]
+    expect(first.findAll('.seg-btn').length).toBe(5)
+    // 无 trait 字段时均衡高亮
+    expect(first.find('[data-testid="trait-f1-balanced"].active').exists()).toBe(true)
+  })
+
+  it('点击特性切换选中态并入库，效果描述展开', async () => {
+    const { wrapper, military } = await setupFormationTab()
+    await wrapper.find('[data-testid="trait-f1-assault_doctrine"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(military.formations[0].trait).toBe('assault_doctrine')
+    expect(wrapper.find('[data-testid="trait-f1-assault_doctrine"].active').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="trait-f1-balanced"].active').exists()).toBe(false)
+    // 描述行展开且为中文文案
+    const desc = wrapper.find('[data-testid="trait-desc"]')
+    expect(desc.exists()).toBe(true)
+    expect(desc.text()).toContain('攻击 +12%')
+  })
+
+  it('切回均衡后 trait 字段删除、均衡重新高亮', async () => {
+    const { wrapper, military } = await setupFormationTab()
+    await wrapper.find('[data-testid="trait-f1-bastion_doctrine"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(military.formations[0].trait).toBe('bastion_doctrine')
+    await wrapper.find('[data-testid="trait-f1-balanced"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(military.formations[0].trait).toBeUndefined()
+    expect(wrapper.find('[data-testid="trait-f1-balanced"].active').exists()).toBe(true)
+  })
+
+  it('三支编队选择器互相独立', async () => {
+    const { wrapper, military } = await setupFormationTab()
+    await wrapper.find('[data-testid="trait-f1-logistics_doctrine"]').trigger('click')
+    await wrapper.find('[data-testid="trait-f2-counter_doctrine"]').trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(military.formations[0].trait).toBe('logistics_doctrine')
+    expect(military.formations[1].trait).toBe('counter_doctrine')
+    expect(military.formations[2].trait).toBeUndefined()
+  })
+})
+
 describe('ArmyView — 新手引导', () => {
   useViewTestHooks()
 

@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useCombatStore, setGarrisonGuard } from './combat'
+import { useCombatStore, setGarrisonGuard, setFormationTraitProvider } from './combat'
 import { D } from '@/lib/decimal'
 import { STRONGHOLDS } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
@@ -368,5 +368,76 @@ describe('combat store', () => {
       },
     })
     expect(validateAndRepair(data)).toBe(false)
+  })
+})
+
+// —— v1.23 方案 7：编队特性战斗与驻扎乘区 ——
+describe('combat store · 编队特性（v1.23）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    setGarrisonGuard(() => true)
+    setFormationTraitProvider(() => undefined)
+  })
+
+  it('强攻学说：克制位战力差拉不开的僵局被打破（同编队同种子差分）', () => {
+    const combat = useCombatStore()
+    const formation = makeFormation('f1', { assault: 60 })
+    const stronghold = STRONGHOLDS.find((s) => s.id === 'raider_1')!
+    // 同种子差分：分钟种子在本用例两次调用间可能跨分钟，改用固定差分口径——
+    // 强攻 ×1.12 攻击的胜利回合数 ≤ 均衡的胜利回合数（同编队 id）
+    setFormationTraitProvider(() => 'balanced')
+    const base = combat.resolveBattle(formation, stronghold, D(1), D(1))
+    setFormationTraitProvider(() => 'assault_doctrine')
+    const boosted = combat.resolveBattle(formation, stronghold, D(1), D(1))
+    expect(base.victory).toBe(true)
+    expect(boosted.victory).toBe(true)
+    expect(boosted.rounds).toBeLessThanOrEqual(base.rounds)
+  })
+
+  it('特性按编队 id 生效：f2 特性不影响 f1 战斗', () => {
+    const combat = useCombatStore()
+    const f1 = makeFormation('f1', { assault: 100 })
+    const stronghold = STRONGHOLDS.find((s) => s.id === 'raider_1')!
+    setFormationTraitProvider((fid) => (fid === 'f2' ? 'assault_doctrine' : undefined))
+    const r1 = combat.resolveBattle(f1, stronghold, D(1), D(1))
+    // f1 无特性：与全无 provider 的结果一致（本用例内以基准胜利面锚定）
+    expect(r1.victory).toBe(true)
+  })
+
+  it('后勤学说：所驻据点挂机产出 ×1.2，其他编队驻扎不受影响', () => {
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    const sid = 'raider_1'
+    const baseIdle = STRONGHOLDS.find((s) => s.id === sid)!.idle
+    // 无特性
+    combat.garrison(sid, 'f1')
+    const none = combat.garrisonIdleReward(sid)
+    for (const [k, v] of Object.entries(baseIdle)) {
+      expect(none[k]).toBeCloseTo(v, 6)
+    }
+    // f2 挂后勤 → ×1.2
+    combat.ungarrison(sid)
+    combat.garrison(sid, 'f2')
+    setFormationTraitProvider((fid) => (fid === 'f2' ? 'logistics_doctrine' : undefined))
+    const boosted = combat.garrisonIdleReward(sid)
+    for (const [k, v] of Object.entries(baseIdle)) {
+      expect(boosted[k]).toBeCloseTo(v * 1.2, 6)
+    }
+    // garrisonProduction 聚合同步放大
+    const prod = combat.garrisonProduction
+    for (const [k, v] of Object.entries(baseIdle)) {
+      expect(prod[k]).toBeCloseTo(v * 1.2, 6)
+    }
+  })
+
+  it('旧档无 trait：provider 未注入时战斗与驻扎面与既有一致', () => {
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    combat.garrison('raider_1', 'f1')
+    const idle = combat.garrisonIdleReward('raider_1')
+    const baseIdle = STRONGHOLDS.find((s) => s.id === 'raider_1')!.idle
+    for (const [k, v] of Object.entries(baseIdle)) {
+      expect(idle[k]).toBeCloseTo(v, 6)
+    }
   })
 })

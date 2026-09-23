@@ -36,6 +36,7 @@ import pveContent from './content/pve.ts'
 import relicsContent from './content/relics.ts'
 import storyContent from './content/story.ts'
 import techContent from './content/tech.ts'
+import traitsContent from './content/traits.ts'
 import transcendContent from './content/transcend.ts'
 import unitsContent from './content/units.ts'
 
@@ -70,6 +71,7 @@ export default {
   ...relicsContent,
   ...storyContent,
   ...techContent,
+  ...traitsContent,
   ...transcendContent,
   ...unitsContent,
 }

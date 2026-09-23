@@ -9,10 +9,25 @@ import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { UNITS, type UnitId } from '@/data/units'
+import { TRAITS, getTrait } from '@/data/traits'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import Icon from '@/components/ui/Icon.vue'
 
 const game = useGameStore()
+
+/** 当前展开效果描述的编队 id（null = 全部收起） */
+const traitDescFor = ref<string | null>(null)
+
+function pickTrait(fid: string, traitId: string) {
+  const current = getTrait(game.military.formations.find((f) => f.id === fid)?.trait).id
+  if (current === traitId) {
+    // 再点当前项 = 展开/收起效果描述，不重复写状态
+    traitDescFor.value = traitDescFor.value === fid ? null : fid
+    return
+  }
+  game.military.setFormationTrait(fid, traitId as never)
+  traitDescFor.value = fid
+}
 
 // 全入/全撤确认（大数量操作需确认）
 const pendingBulkAction = ref<{
@@ -98,6 +113,27 @@ function removeAll(fid: string, uid: UnitId) {
     <div class="f-head">
       <span class="f-name">{{ row.f.name }}</span>
       <span class="f-power font-mono">{{ t('common.statPower') }} {{ row.power }}</span>
+    </div>
+    <!-- 编队特性选择器（v1.23 方案 7）：5 选 1，免费即时生效 -->
+    <div class="f-trait" :data-testid="`trait-picker-${row.f.id}`">
+      <span class="f-trait-label">{{ t('army.trait') }}</span>
+      <div class="f-trait-seg" role="radiogroup" :aria-label="t('army.trait')">
+        <button
+          v-for="tr in TRAITS"
+          :key="tr.id"
+          class="seg-btn"
+          :class="{ active: row.f.trait === tr.id || (!row.f.trait && tr.id === 'balanced') }"
+          role="radio"
+          :aria-checked="row.f.trait === tr.id || (!row.f.trait && tr.id === 'balanced')"
+          :data-testid="`trait-${row.f.id}-${tr.id}`"
+          @click.stop="pickTrait(row.f.id, tr.id)"
+        >
+          {{ tr.short }}
+        </button>
+      </div>
+      <div v-if="traitDescFor === row.f.id" class="f-trait-desc" data-testid="trait-desc">
+        {{ getTrait(row.f.trait).desc }}
+      </div>
     </div>
     <div>
       <div v-for="cell in row.units" :key="cell.def.id" class="f-unit-row">
@@ -196,6 +232,30 @@ function removeAll(fid: string, uid: UnitId) {
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-2);
+}
+/* 编队特性选择器（seg-btn 全局分段按钮 + 域内布局） */
+.f-trait {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.f-trait-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-tertiary);
+}
+.f-trait-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  flex: 1;
+}
+.f-trait-desc {
+  flex-basis: 100%;
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  padding: var(--space-1) 0;
 }
 .f-name {
   font-size: var(--text-sm);

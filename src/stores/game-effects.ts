@@ -17,7 +17,7 @@ import {
   setRelicSynthCountProvider,
 } from './relics'
 import { setAchievementExternalProviders } from './achievements'
-import { setGarrisonGuard } from './combat'
+import { setGarrisonGuard, setFormationTraitProvider } from './combat'
 import { getStronghold } from '@/data/pve'
 import type { useResourcesStore } from './resources'
 import type { useRelicsStore } from './relics'
@@ -177,4 +177,8 @@ export function wireGameProviders(deps: {
     }
     return true
   })
+  // 编队特性查询（v1.23 方案 7）：编队 id → 特性 id（战斗乘区与驻扎产出乘区共用）
+  setFormationTraitProvider(
+    (formationId) => military.formations.find((f) => f.id === formationId)?.trait
+  )
 }
