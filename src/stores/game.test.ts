@@ -194,6 +194,55 @@ describe('game store — archive lifecycle', () => {
   })
 })
 
+describe('game store — expedition milestone lifecycle（v1.20）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    // 重置模块级 slotProvider，防止跨测试污染
+    setRelicSlotProvider(() => 0)
+  })
+
+  /** 经 recordExpedition 把深度推进到 10（里程碑档 1 达标） */
+  function pushToDepth10(game: ReturnType<typeof useGameStore>) {
+    for (let d = 1; d <= 10; d++) game.combat.recordExpedition(d, true)
+  }
+
+  it('doTranscend keeps milestone claims', () => {
+    const game = useGameStore()
+    pushToDepth10(game)
+    const reward = game.claimMilestone(1)
+    expect(reward).not.toBeNull()
+    expect(game.combat.milestonesClaimed).toEqual([1])
+
+    // 转生：里程碑领取记录与远征深度保留（终身数据口径）
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 1e9)
+    resources.gain('energy', 1e9)
+    expect(game.canTranscend()).toBe(true)
+    expect(game.doTranscend()).toBe(true)
+    expect(game.combat.milestonesClaimed).toEqual([1])
+    expect(game.combat.expeditionBest).toBe(10)
+  })
+
+  it('hardReset clears milestone claims and grants resources on claim', async () => {
+    await clearAllSaves()
+    const game = useGameStore()
+    pushToDepth10(game)
+
+    // 领取发放：dark 按奖励表入账
+    const resources = useResourcesStore()
+    const before = Number(resources.amounts.dark)
+    const reward = game.claimMilestone(1)
+    expect(reward).not.toBeNull()
+    expect(reward!.dark).toBeGreaterThan(0)
+    expect(Number(resources.amounts.dark)).toBeGreaterThan(before)
+
+    await game.hardReset()
+    expect(game.combat.milestonesClaimed).toEqual([])
+    expect(game.combat.expeditionBest).toBe(0)
+    game.stop()
+  })
+})
+
 describe('game store — 自动化 QoL（v0.58）', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
