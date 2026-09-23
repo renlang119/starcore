@@ -1,5 +1,5 @@
 /**
- * achievements.ts — 成就/里程碑 store（v0.57 玩法扩展方案 2）
+ * achievements.ts — 成就/里程碑 store（v0.57 玩法扩展方案 2；v1.22 成就扩展扩至 49 条）
  *
  * 职责：
  * - 维护终身计数器（lifetime）：转生会重置单轮进度，本 store 的计数跨转生累计，
@@ -9,8 +9,10 @@
  *
  * 指标来源分两类：
  * - 终身计数（本 store 自持）：energy/dark（Decimal 防溢出）+
- *   upgrades/maxBuildingLevel/researches/explores/battles/playtime（number）
- * - 外部现值（provider 注入，指标本身跨转生保留）：relicsOwned/transcends
+ *   upgrades/maxBuildingLevel/researches/explores/battles/synths/enhanceLevels
+ *   （number）
+ * - 外部现值（provider 注入，指标本身跨转生保留）：relicsOwned/relicKinds/
+ *   enemyKinds/activeFullSets/transcends/playtime/expeditionBest
  *   —— 沿用跨 store 派生值的 provider 注入模式（同 setRelicSlotProvider）
  */
 import { defineStore } from 'pinia'
@@ -28,10 +30,23 @@ import {
 /** 终身计数中的大数指标（Decimal） */
 export type BigLifetimeKey = 'energy' | 'dark'
 /** 终身计数中的整数指标（number） */
-export type IntLifetimeKey = 'upgrades' | 'maxBuildingLevel' | 'researches' | 'explores' | 'battles'
+export type IntLifetimeKey =
+  | 'upgrades'
+  | 'maxBuildingLevel'
+  | 'researches'
+  | 'explores'
+  | 'battles'
+  | 'synths' // v1.22 遗物合成次数
+  | 'enhanceLevels' // v1.22 遗物强化总级数
 /** 读外部现值的指标（不自持计数；playtime = game store 的 totalPlayTime，已入档） */
 export type ExternalMetric =
-  'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime' | 'expeditionBest'
+  | 'relicsOwned'
+  | 'relicKinds'
+  | 'enemyKinds' // v1.22 敌方图鉴已收录种数
+  | 'activeFullSets' // v1.22 已激活完整套装数
+  | 'transcends'
+  | 'playtime'
+  | 'expeditionBest'
 
 const INT_KEYS: IntLifetimeKey[] = [
   'upgrades',
@@ -39,6 +54,8 @@ const INT_KEYS: IntLifetimeKey[] = [
   'researches',
   'explores',
   'battles',
+  'synths',
+  'enhanceLevels',
 ]
 
 /** 外部现值指标 provider，由 game store 注入 */
@@ -47,6 +64,8 @@ let externalProviders: Partial<Record<ExternalMetric, ExternalProvider>> = {}
 export function setAchievementExternalProviders(providers: {
   relicsOwned: ExternalProvider
   relicKinds: ExternalProvider
+  enemyKinds: ExternalProvider
+  activeFullSets: ExternalProvider
   transcends: ExternalProvider
   playtime: ExternalProvider
   expeditionBest: ExternalProvider
@@ -65,7 +84,15 @@ function emptyLifetimeBig(): Record<BigLifetimeKey, Decimal> {
   return { energy: D(0), dark: D(0) }
 }
 function emptyLifetimeInt(): Record<IntLifetimeKey, number> {
-  return { upgrades: 0, maxBuildingLevel: 0, researches: 0, explores: 0, battles: 0 }
+  return {
+    upgrades: 0,
+    maxBuildingLevel: 0,
+    researches: 0,
+    explores: 0,
+    battles: 0,
+    synths: 0,
+    enhanceLevels: 0,
+  }
 }
 
 export const useAchievementsStore = defineStore('achievements', () => {
@@ -83,6 +110,8 @@ export const useAchievementsStore = defineStore('achievements', () => {
   function metricValue(metric: AchievementMetric): number {
     if (metric === 'relicsOwned') return externalProviders.relicsOwned?.() ?? 0
     if (metric === 'relicKinds') return externalProviders.relicKinds?.() ?? 0
+    if (metric === 'enemyKinds') return externalProviders.enemyKinds?.() ?? 0
+    if (metric === 'activeFullSets') return externalProviders.activeFullSets?.() ?? 0
     if (metric === 'transcends') return externalProviders.transcends?.() ?? 0
     if (metric === 'playtime') return externalProviders.playtime?.() ?? 0
     if (metric === 'expeditionBest') return externalProviders.expeditionBest?.() ?? 0
@@ -122,9 +151,17 @@ export const useAchievementsStore = defineStore('achievements', () => {
   function recordBattle(): void {
     lifetimeInt.value.battles++
   }
+  /** 遗物合成成功 +1（v1.22；合成失败不经此） */
+  function recordSynth(): void {
+    lifetimeInt.value.synths++
+  }
+  /** 遗物强化累计 n 级（v1.22；逐级调用 n=1，批量按实际完成级数） */
+  function recordEnhanceLevels(n: number): void {
+    if (n > 0) lifetimeInt.value.enhanceLevels += n
+  }
 
   /**
-   * 全表扫描解锁判定（37 条，tick 尾部每秒一次，开销可忽略）。
+   * 全表扫描解锁判定（49 条，tick 尾部每秒一次，开销可忽略）。
    * 新解锁成就入 toast 队列并返回定义列表。
    */
   function checkAndUnlock(): typeof ACHIEVEMENTS {
@@ -221,6 +258,8 @@ export const useAchievementsStore = defineStore('achievements', () => {
     recordResearch,
     recordExplore,
     recordBattle,
+    recordSynth,
+    recordEnhanceLevels,
     checkAndUnlock,
     shiftToast,
     getMult,

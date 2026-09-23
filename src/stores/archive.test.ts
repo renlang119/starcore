@@ -10,7 +10,12 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useArchiveStore, ARCHIVE_ENEMY_KEYS } from './archive'
+import {
+  useArchiveStore,
+  ARCHIVE_ENEMY_KEYS,
+  ENEMY_KIND_BUCKETS,
+  ENEMY_KIND_TOTAL,
+} from './archive'
 import { STRONGHOLDS } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID, endlessStronghold } from '@/data/endless'
 import { validateAndRepair } from '@/lib/save/validate'
@@ -72,6 +77,31 @@ describe('archive — 遭遇记录', () => {
     store.reset()
     store.hydrate(saved)
     expect(store.seenCount).toBe(0)
+  })
+
+  it('聚合桶与种数：键数 116、桶数 = 显示名聚合种数（v1.22）', () => {
+    // 桶条目键全部在白名单内（同源派生）
+    for (const bucket of ENEMY_KIND_BUCKETS.values()) {
+      for (const e of bucket.entries) {
+        expect(ARCHIVE_ENEMY_KEYS.has(e.key)).toBe(true)
+      }
+    }
+    // 全部条目数守恒 = 桶条目数之和
+    const totalEntries = [...ENEMY_KIND_BUCKETS.values()].reduce((n, b) => n + b.entries.length, 0)
+    expect(totalEntries).toBe(ARCHIVE_ENEMY_KEYS.size)
+    expect(ENEMY_KIND_TOTAL).toBe(ENEMY_KIND_BUCKETS.size)
+  })
+
+  it('seenKinds：桶内任一条目已遭遇即该种已见；reset 归零（v1.22）', () => {
+    expect(store.seenKinds).toBe(0)
+    const s = STRONGHOLDS[0]
+    store.recordEncounter(s.id, s.enemies)
+    // 该据点各条目可能跨桶（同显示名合并），种数 = 涉及的不同名数
+    const distinctNames = new Set(s.enemies.map((e) => e.name)).size
+    expect(store.seenKinds).toBe(distinctNames)
+    expect(store.seenKinds).toBeLessThanOrEqual(ENEMY_KIND_TOTAL)
+    store.reset()
+    expect(store.seenKinds).toBe(0)
   })
 })
 

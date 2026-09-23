@@ -19,7 +19,11 @@
  * 显式清空（未注入时 garrison 本体门槛仍生效，是既有语义）。
  */
 import { setTrainingSlotProvider, BASE_TRAINING_SLOTS } from '@/stores/military'
-import { setRelicSlotProvider, setRelicEnhanceSpendProvider } from '@/stores/relics'
+import {
+  setRelicSlotProvider,
+  setRelicEnhanceSpendProvider,
+  setRelicEnhanceDoneProvider,
+} from '@/stores/relics'
 import { resetGarrisonGuard } from '@/stores/combat'
 import { setAchievementExternalProviders } from '@/stores/achievements'
 
@@ -28,10 +32,13 @@ export function resetProviderSingletons(): void {
   setTrainingSlotProvider(() => BASE_TRAINING_SLOTS)
   setRelicSlotProvider(() => 0)
   setRelicEnhanceSpendProvider(() => false)
+  setRelicEnhanceDoneProvider(() => {})
   resetGarrisonGuard()
   setAchievementExternalProviders({
     relicsOwned: () => 0,
     relicKinds: () => 0,
+    enemyKinds: () => 0,
+    activeFullSets: () => 0,
     transcends: () => 0,
     playtime: () => 0,
     expeditionBest: () => 0,
@@ -42,7 +49,13 @@ export function resetProviderSingletons(): void {
 export function zeroAchievementProviders(
   overrides?: Partial<
     Record<
-      'relicsOwned' | 'relicKinds' | 'transcends' | 'playtime' | 'expeditionBest',
+      | 'relicsOwned'
+      | 'relicKinds'
+      | 'enemyKinds'
+      | 'activeFullSets'
+      | 'transcends'
+      | 'playtime'
+      | 'expeditionBest',
       () => number
     >
   >
@@ -50,6 +63,8 @@ export function zeroAchievementProviders(
   setAchievementExternalProviders({
     relicsOwned: () => 0,
     relicKinds: () => 0,
+    enemyKinds: () => 0,
+    activeFullSets: () => 0,
     transcends: () => 0,
     playtime: () => 0,
     expeditionBest: () => 0,
