@@ -44,6 +44,14 @@ export function setRelicEnhanceSpendProvider(p: RelicEnhanceSpendProvider) {
   enhanceSpend.value = p
 }
 
+/** 合成计数通道（v1.21 周挑战扩类：由 game-effects 注入 daily.bump，同注入先例） */
+export type RelicSynthCountProvider = () => void
+
+const synthCount = shallowRef<RelicSynthCountProvider>(() => {})
+export function setRelicSynthCountProvider(p: RelicSynthCountProvider) {
+  synthCount.value = p
+}
+
 /** 强化后效果副本（视图展示与 equippedEffects 共用；0 级返回原始效果） */
 export function enhancedEffectsOf(relic: OwnedRelic): RelicEffect[] {
   if (relic.level <= 0) return relic.effects
@@ -192,6 +200,7 @@ export const useRelicsStore = defineStore('relics', () => {
     const product = pool[Math.floor(rng() * pool.length)]
     // 原子提交：先移除材料再入库产物
     for (const m of materials) discard(m.instanceId)
+    synthCount.value()
     return obtain(product)
   }
 

@@ -283,8 +283,12 @@ function validateSaveData(data: unknown): data is SaveData {
     if (!_isNonNegFinite(dl.streak)) return false
     if (!_isObject(dl.weeklyCounters)) return false
     const wc = dl.weeklyCounters as Record<string, unknown>
+    // 基础五键必验；v1.21 新四键存在才验（旧档缺键视为 0，兼容不拒档）
     for (const k of ['battles', 'explores', 'researches', 'upgrades', 'transcends']) {
       if (!_isNonNegFinite(wc[k])) return false
+    }
+    for (const k of ['expedition', 'synths', 'enhances', 'garrisonHours']) {
+      if (wc[k] !== undefined && !_isNonNegFinite(wc[k])) return false
     }
     if (typeof dl.challengeWeek !== 'string') return false
     if (!Array.isArray(dl.weekChallenges)) return false

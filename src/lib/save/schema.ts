@@ -93,20 +93,33 @@ export interface DailySaveData {
   lastCheckIn: string
   /** 连续签到天数 */
   streak: number
-  /** 本周挑战计数（换周清零） */
+  /** 本周挑战计数（换周清零；v1.21 扩四键，旧档缺新键视为 0） */
   weeklyCounters: {
     battles: number
     explores: number
     researches: number
     upgrades: number
     transcends: number
+    expedition: number
+    synths: number
+    enhances: number
+    garrisonHours: number
   }
   /** 挑战所属周标识（YYYY-Www） */
   challengeWeek: string
   /** 本周 3 项挑战 */
   weekChallenges: {
     templateId: string
-    kind: 'battles' | 'explores' | 'researches' | 'upgrades' | 'transcends'
+    kind:
+      | 'battles'
+      | 'explores'
+      | 'researches'
+      | 'upgrades'
+      | 'transcends'
+      | 'expedition'
+      | 'synths'
+      | 'enhances'
+      | 'garrisonHours'
     tier: number
     target: number
     rewardDark: number

@@ -13,6 +13,8 @@ import {
   CHALLENGE_TEMPLATES,
   type WeeklyChallenge,
 } from './daily'
+import { minimalSaveData } from '@/tests/fixtures'
+import { validateAndRepair } from '@/lib/save/validate'
 
 /** 周挑战条目工厂（v1.04 收敛 10 份字面量；默认 wk_battles 形态，按字段覆盖） */
 function ch(templateId: string, over: Partial<WeeklyChallenge> = {}): WeeklyChallenge {
@@ -188,7 +190,17 @@ describe('daily — 存档', () => {
     store.hydrate({
       lastCheckIn: '2020-01-01',
       streak: 9,
-      weeklyCounters: { battles: 99, explores: 99, researches: 99, upgrades: 99, transcends: 99 },
+      weeklyCounters: {
+        battles: 99,
+        explores: 99,
+        researches: 99,
+        upgrades: 99,
+        transcends: 99,
+        expedition: 99,
+        synths: 99,
+        enhances: 99,
+        garrisonHours: 99,
+      },
       challengeWeek: '2020-W01',
       weekChallenges: [
         ch('wk_battles'),
@@ -217,7 +229,17 @@ describe('daily — 存档', () => {
     store.hydrate({
       lastCheckIn: '2026-09-07',
       streak: 3,
-      weeklyCounters: { battles: 1, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      weeklyCounters: {
+        battles: 1,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
       challengeWeek: weekStr(),
       weekChallenges: [ch('wk_battles'), ch('wk_hacked', { target: 1, rewardDark: 999 })],
     })
@@ -238,7 +260,17 @@ describe('daily — 存档', () => {
     store.hydrate({
       lastCheckIn: '2026-09-07',
       streak: 1,
-      weeklyCounters: { battles: 0, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
       challengeWeek: weekStr(),
       weekChallenges: [
         ch('wk_battles', { kind: 'upgrades' as never, target: 0, rewardDark: 999999 }),
@@ -263,7 +295,17 @@ describe('daily — 存档', () => {
     store.hydrate({
       lastCheckIn: '2026-09-07',
       streak: 1,
-      weeklyCounters: { battles: 2, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      weeklyCounters: {
+        battles: 2,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
       challengeWeek: weekStr(),
       weekChallenges: [
         ch('wk_battles', { tier: 99, target: 1, rewardDark: 1 }),
@@ -286,7 +328,17 @@ describe('daily — 存档', () => {
     store.hydrate({
       lastCheckIn: '2026-09-07',
       streak: 1,
-      weeklyCounters: { battles: 3, explores: 0, researches: 0, upgrades: 0, transcends: 0 },
+      weeklyCounters: {
+        battles: 3,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
       challengeWeek: weekStr(),
       weekChallenges: [],
     })
@@ -309,11 +361,182 @@ describe('daily — 存档', () => {
 describe('daily — 模板池完整性', () => {
   it('模板 ≥5 组（3 选有变化空间），kind 与计数器键对齐', () => {
     expect(CHALLENGE_TEMPLATES.length).toBeGreaterThanOrEqual(5)
-    const kinds = ['battles', 'explores', 'researches', 'upgrades', 'transcends']
+    const kinds = [
+      'battles',
+      'explores',
+      'researches',
+      'upgrades',
+      'transcends',
+      'expedition',
+      'synths',
+      'enhances',
+      'garrisonHours',
+    ]
     for (const t of CHALLENGE_TEMPLATES) {
       expect(kinds).toContain(t.kind)
       expect(t.targets).toHaveLength(t.rewardDark.length)
       for (const target of t.targets) expect(target).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('daily — 周挑战扩类（v1.21 可玩内容扩展方案 3）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('模板池扩至 9：四类新模板 targets/dark 对齐且组合空间 ≥ 84', () => {
+    expect(CHALLENGE_TEMPLATES).toHaveLength(9)
+    const newKinds = ['expedition', 'synths', 'enhances', 'garrisonHours'] as const
+    for (const k of newKinds) {
+      const t = CHALLENGE_TEMPLATES.find((x) => x.kind === k)
+      expect(t, `缺 kind=${k} 模板`).toBeDefined()
+      expect(t!.targets).toHaveLength(t!.rewardDark.length)
+      for (const target of t!.targets) expect(target).toBeGreaterThan(0)
+      for (const dark of t!.rewardDark) expect(dark).toBeGreaterThan(0)
+    }
+    // 9 选 3 的组合数
+    const n = CHALLENGE_TEMPLATES.length
+    expect((n * (n - 1) * (n - 2)) / 6).toBeGreaterThanOrEqual(84)
+  })
+
+  it('新 kind 计数：bump 后进 weeklyCounters 且驱动领取', () => {
+    const store = useDailyStore()
+    store.ensureWeek()
+    // 直接构造含新 kind 的挑战（同 v1.04 工厂口径），验证计数与领取泛化
+    store.hydrate({
+      lastCheckIn: localDateStr(),
+      streak: 1,
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
+      challengeWeek: weekStr(),
+      weekChallenges: [
+        ch('wk_expedition', { kind: 'expedition', target: 2 }),
+        ch('wk_synths', { kind: 'synths', target: 2 }),
+        ch('wk_enhances', { kind: 'enhances', target: 10 }),
+      ],
+    })
+    const c = store.weekChallenges.find((x) => x.kind === 'expedition')!
+    store.bump('expedition')
+    store.bump('expedition')
+    expect(store.weeklyCounters.expedition).toBe(2)
+    expect(store.claimable(c)).toBe(true)
+    expect(store.claim(c.templateId)?.dark).toBe(3)
+  })
+
+  it('驻扎小时计数：bump 累加进 garrisonHours', () => {
+    const store = useDailyStore()
+    store.ensureWeek(dateOf(2026, 9, 7))
+    store.bump('garrisonHours')
+    store.bump('garrisonHours')
+    expect(store.weeklyCounters.garrisonHours).toBe(2)
+  })
+
+  it('旧档兼容：v1.19 五键 counters（缺新键）hydrate 后新键视为 0', () => {
+    const store = useDailyStore()
+    store.hydrate({
+      lastCheckIn: localDateStr(),
+      streak: 3,
+      weeklyCounters: {
+        battles: 5,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
+      challengeWeek: weekStr(),
+      weekChallenges: [ch('wk_battles'), ch('wk_explores', { kind: 'explores', target: 6 })],
+    })
+    expect(store.weeklyCounters.battles).toBe(5)
+    expect(store.weeklyCounters.expedition).toBe(0)
+    expect(store.weeklyCounters.garrisonHours).toBe(0)
+  })
+
+  it('存档校验层：五键旧档与新九键档 validateAndRepair 均通过', () => {
+    const base = {
+      lastCheckIn: localDateStr(),
+      streak: 1,
+      challengeWeek: weekStr(),
+      weekChallenges: [ch('wk_battles')],
+    }
+    const legacy = validateAndRepair(
+      minimalSaveData({
+        daily: {
+          ...base,
+          weeklyCounters: {
+            battles: 1,
+            explores: 0,
+            researches: 0,
+            upgrades: 0,
+            transcends: 0,
+            expedition: 0,
+            synths: 0,
+            enhances: 0,
+            garrisonHours: 0,
+          },
+        },
+      })
+    )
+    expect(legacy).toBe(true)
+    const modern = validateAndRepair(
+      minimalSaveData({
+        daily: {
+          ...base,
+          weeklyCounters: {
+            battles: 1,
+            explores: 0,
+            researches: 0,
+            upgrades: 0,
+            transcends: 0,
+            expedition: 0,
+            synths: 0,
+            enhances: 0,
+            garrisonHours: 0,
+          },
+        },
+      })
+    )
+    expect(modern).toBe(true)
+  })
+
+  it('存档校验层：weeklyCounters 新键出现非法值（负数/非数）整档拒绝', () => {
+    const base = {
+      lastCheckIn: localDateStr(),
+      streak: 1,
+      challengeWeek: weekStr(),
+      weekChallenges: [ch('wk_battles')],
+    }
+    const bad = validateAndRepair(
+      minimalSaveData({
+        daily: {
+          ...base,
+          weeklyCounters: {
+            battles: 1,
+            explores: 0,
+            researches: 0,
+            upgrades: 0,
+            transcends: 0,
+            expedition: -1,
+            synths: 0,
+            enhances: 0,
+            garrisonHours: 0,
+          },
+        },
+      })
+    )
+    expect(bad).toBe(false)
   })
 })
