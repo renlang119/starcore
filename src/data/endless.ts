@@ -163,7 +163,7 @@ export function endlessMilestoneTier(depth: number): number {
  * 校准依据（v092 战斗模拟分档实测）：档 A 刚通关深空约可推至 D15，
  * 档 B 至 D25，档 C 至 D35 附近，D40 触软墙——每 10 层一档与进度带对齐；
  * 奖励与该深度单场战斗同量级（约为前一整档段累计战斗收入的 27%，
- * 1/(1.35^10-1)），随深度自缩放、档位不封顶。非法档位返回空对象。
+ * 1/Σ(k=0..9)1.35^-k ≈ 1/3.67），随深度自缩放、档位不封顶。非法档位返回空对象。
  */
 export function endlessMilestoneReward(tier: number): Partial<Record<ResourceType, number>> {
   const tierInt = Math.floor(tier)
