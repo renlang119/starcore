@@ -5,7 +5,6 @@ import { useGameStore } from '@/stores/game'
 import { resourceRows } from '@/lib/resource-rows'
 import { MILESTONE_STEP, endlessMilestoneReward } from '@/data/endless'
 import { WEEKLY_BOSS_ID, weeklyBossTemplateId, weeklyBossStronghold } from '@/data/weekly-boss'
-import { weekStr } from '@/stores/daily'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLD_TYPES, STRONGHOLDS } from '@/data/pve'
 import ExploreNodeCard from '@/components/map/ExploreNodeCard.vue'
@@ -121,7 +120,7 @@ const weeklyBossDefeated = computed(() => game.daily.isWeeklyBossDefeated())
  *  不做「id → 键」拼接取词（check-locales --strict 门禁口径，v1.23 实踩） */
 const weeklyBossCard = computed(() => {
   if (!weeklyBossUnlocked.value) return null
-  const wk = weekStr()
+  const wk = game.daily.currentWeek // 响应式当前周（跨周自动重算）
   const def = weeklyBossStronghold(game.combat.expeditionBest, wk)
   const tid = weeklyBossTemplateId(wk)
   const templateName = STRONGHOLDS.find((s) => s.id === tid)?.name ?? ''

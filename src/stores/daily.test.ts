@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { computed } from 'vue'
 import {
   useDailyStore,
   localDateStr,
@@ -559,6 +560,20 @@ describe('daily — 每周强敌标记（v1.24 可玩内容扩展方案 5）', (
     expect(store.isWeeklyBossDefeated(wk2)).toBe(false)
     // 同周内任意日期仍判定已击败
     expect(store.isWeeklyBossDefeated(dateOf(2026, 9, 13))).toBe(true) // 周日
+  })
+
+  it('响应式当前周：跨周 tick 自动对齐，无参判定与缓存自动刷新（复核修正）', () => {
+    // 先把响应式当前周对齐到基准周（不依赖运行时的真实时间）
+    store.onTickCheckIn(dateOf(2026, 9, 23)) // W39 周三
+    store.claimWeeklyBoss(dateOf(2026, 9, 23))
+    expect(store.isWeeklyBossDefeated()).toBe(true)
+    const flag = computed(() => store.isWeeklyBossDefeated())
+    expect(flag.value).toBe(true)
+    // 跨到下一周一（W40）：tick 对齐响应式当前周 → 标记失效、缓存自动重算（免重挂载）
+    store.onTickCheckIn(dateOf(2026, 9, 28))
+    expect(store.currentWeek).toBe('2026-W40')
+    expect(store.isWeeklyBossDefeated()).toBe(false)
+    expect(flag.value).toBe(false)
   })
 
   it('reset 清空标记（转生/清档语义：转生当周可再打）', () => {

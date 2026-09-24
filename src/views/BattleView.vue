@@ -8,7 +8,6 @@ import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID, MAX_ENDLESS_DEPTH } from '@/data/endless'
 import { WEEKLY_BOSS_ID } from '@/data/weekly-boss'
-import { weekStr } from '@/stores/daily'
 import { getUnit } from '@/data/units'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -61,7 +60,7 @@ const stronghold = computed((): StrongholdDef | undefined => {
   // 周 Boss：按终身远征深度 + 本周标识合成（深度实时派生，未击败期间推进上移）
   if (isWeeklyBoss.value) {
     if (!game.combat.isEndlessUnlocked()) return undefined
-    return game.combat.getWeeklyBossStronghold(game.combat.expeditionBest, weekStr())
+    return game.combat.getWeeklyBossStronghold(game.combat.expeditionBest, game.daily.currentWeek)
   }
   return getStronghold(strongholdId.value)
 })
