@@ -306,6 +306,12 @@ function validateSaveData(data: unknown): data is SaveData {
       if (!_isNonNegFinite(c.tier)) return false
       if (!_isBool(c.claimed)) return false
     }
+    // weeklyBoss（v1.24 可选）：存在则须为对象且 claimedWeek 为字符串
+    // （「是否本周」由读取侧按当前周比较，存档值本身不判真伪）
+    if (dl.weeklyBoss !== undefined) {
+      if (!_isObject(dl.weeklyBoss)) return false
+      if (typeof (dl.weeklyBoss as Record<string, unknown>).claimedWeek !== 'string') return false
+    }
   }
   // archive（可选字段）：存在则校验结构；未知键已在 _validateAndRepair 剥离
   if (d.archive !== undefined) {

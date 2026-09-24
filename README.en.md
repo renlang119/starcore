@@ -24,7 +24,8 @@ growing on through "Singularity Restart" rebirth cycles.
 - **PVE Strongholds**: 36 strongholds in 4 categories; garrison conquered
   ones for idle output, plus an endless expedition with rising depth —
   every 10 layers conquered unlocks a one-time milestone reward
-  (lifetime progress; missed tiers can be claimed later)
+  (lifetime progress; missed tiers can be claimed later), with a weekly
+  boss scaled to the player's expedition frontier every Monday (v1.24)
 - **Relics**: 20 kinds drawn from rarity pools; 3 of the same rarity fuse
   into 1 of the next tier; 4 set bonuses; each relic can be enhanced up to
   level 20 with energy
@@ -78,7 +79,7 @@ starcore/
 ├─ src/
 │  ├─ components/   40 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
 │  ├─ composables/  13 composables (breakpoints, Toast, action queue, onboarding, particles, …)
-│  ├─ data/         12 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, units, formation doctrines, navigation, story, background stars)
+│  ├─ data/         13 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, weekly boss, units, formation doctrines, navigation, story, background stars)
 │  ├─ i18n/         i18n facade (message lookup and locale detection)
 │  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
 │  ├─ locales/      locale bundles (zh-CN baseline + en English, split by domain under ui/ and content/)
@@ -99,8 +100,8 @@ starcore/
 
 ## Quality
 
-- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 41 test files,
-  597 cases
+- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 42 test files,
+  617 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document

@@ -17,6 +17,7 @@ import {
   milestoneClaimable,
   type MilestoneReward,
 } from '@/data/endless'
+import { WEEKLY_BOSS_ID, weeklyBossStronghold } from '@/data/weekly-boss'
 import { getUnit, type UnitId } from '@/data/units'
 import type { Formation } from './military'
 import { getTrait, type TraitId } from '@/data/traits'
@@ -323,8 +324,10 @@ export const useCombatStore = defineStore('combat', () => {
         })
       }
       // 远征合成据点（id='endless'，不在 STRONGHOLDS 白名单内）不入正式通关集：
-      // 其进度由 expeditionBest 独立承担，误入会导致存档校验整档失败
-      if (stronghold.id !== ENDLESS_STRONGHOLD_ID) {
+      // 其进度由 expeditionBest 独立承担，误入会导致存档校验整档失败。
+      // 周 Boss 合成据点（id='weekly_boss'）同口径排除（v1.24）：
+      // 战果由 daily.weeklyBoss 标记承担，双保险兜底任何来源的误入
+      if (stronghold.id !== ENDLESS_STRONGHOLD_ID && stronghold.id !== WEEKLY_BOSS_ID) {
         completedStrongholds.value.add(stronghold.id)
       }
     }
@@ -352,6 +355,14 @@ export const useCombatStore = defineStore('combat', () => {
   /** 按深度取远征据点定义（合成，不入 STRONGHOLDS 表） */
   function getEndlessStronghold(depth: number): StrongholdDef {
     return endlessStronghold(depth)
+  }
+
+  // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
+
+  /** 本周 Boss 合成据点（不入 STRONGHOLDS 表；胜利严禁入 completedStrongholds，
+   *  buildResult 按 id 排除已天然覆盖，白名单双保险兜底） */
+  function getWeeklyBossStronghold(expeditionBest: number, weekKey: string): StrongholdDef {
+    return weeklyBossStronghold(expeditionBest, weekKey)
   }
 
   /**
@@ -484,6 +495,7 @@ export const useCombatStore = defineStore('combat', () => {
     garrison,
     isEndlessUnlocked,
     getEndlessStronghold,
+    getWeeklyBossStronghold,
     recordExpedition,
     milestonesClaimed,
     nextMilestoneTier,

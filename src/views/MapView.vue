@@ -4,8 +4,10 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { resourceRows } from '@/lib/resource-rows'
 import { MILESTONE_STEP, endlessMilestoneReward } from '@/data/endless'
+import { WEEKLY_BOSS_ID, weeklyBossTemplateId, weeklyBossStronghold } from '@/data/weekly-boss'
+import { weekStr } from '@/stores/daily'
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
-import { STRONGHOLD_TYPES } from '@/data/pve'
+import { STRONGHOLD_TYPES, STRONGHOLDS } from '@/data/pve'
 import ExploreNodeCard from '@/components/map/ExploreNodeCard.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -108,6 +110,30 @@ function claimMilestone() {
   const reward = game.claimMilestone(tier)
   if (reward) toast.show(t('map.milestoneClaimed', { depth: tier * MILESTONE_STEP }))
 }
+
+// —— 每周强敌（v1.24 可玩内容扩展方案 5）——
+/** 解锁口径与远征入口一致（本轮已克 silencer_3） */
+const weeklyBossUnlocked = computed(() => game.combat.isEndlessUnlocked())
+/** 本周是否已击败（跨周自动失效由 daily store 承担） */
+const weeklyBossDefeated = computed(() => game.daily.isWeeklyBossDefeated())
+/** 本周 Boss 卡展示（模板名/类型色系随周种子走；未解锁不预览编成）。
+ *  显示名走数据字段（STRONGHOLD_TYPES/STRONGHOLDS 的 name 已是取词后显示名），
+ *  不做「id → 键」拼接取词（check-locales --strict 门禁口径，v1.23 实踩） */
+const weeklyBossCard = computed(() => {
+  if (!weeklyBossUnlocked.value) return null
+  const wk = weekStr()
+  const def = weeklyBossStronghold(game.combat.expeditionBest, wk)
+  const tid = weeklyBossTemplateId(wk)
+  const templateName = STRONGHOLDS.find((s) => s.id === tid)?.name ?? ''
+  return {
+    id: WEEKLY_BOSS_ID,
+    name: def.name,
+    type: def.type,
+    typeName: STRONGHOLD_TYPES[def.type].name,
+    templateName,
+    rewards: resourceRows(def.rewards, game.resources.allMeta, { positiveOnly: true }),
+  }
+})
 </script>
 
 <template>
@@ -243,6 +269,49 @@ function claimMilestone() {
           {{ t('map.milestoneClaim') }}
         </button>
       </div>
+
+      <!-- 周强敌卡（v1.24）：随远征区块并置；解锁口径同远征，未解锁置灰可见 -->
+      <button
+        class="endless-card weekly-boss-card"
+        :class="{ unlocked: weeklyBossUnlocked, defeated: weeklyBossDefeated }"
+        :style="{ '--c': weeklyBossCard ? STRONGHOLD_TYPES[weeklyBossCard.type].color : '' }"
+        :disabled="!weeklyBossUnlocked"
+        :data-testid="
+          weeklyBossDefeated
+            ? 'weekly-boss-done'
+            : weeklyBossUnlocked
+              ? 'weekly-boss-open'
+              : 'weekly-boss-locked'
+        "
+        @click="router.push('/battle/weekly_boss')"
+      >
+        <div class="s-icon">
+          <Icon
+            :name="
+              weeklyBossCard
+                ? STRONGHOLD_TYPES[weeklyBossCard.type].icon
+                : STRONGHOLD_TYPES.silencer.icon
+            "
+            size="md"
+          />
+        </div>
+        <div class="s-info">
+          <div class="s-name">{{ t('map.weeklyBossTitle') }}</div>
+          <div class="s-type">
+            <template v-if="weeklyBossDefeated">{{ t('map.weeklyBossDone') }}</template>
+            <template v-else-if="weeklyBossCard">{{
+              t('map.weeklyBossReady', { name: weeklyBossCard.templateName })
+            }}</template>
+            <template v-else>{{ t('map.weeklyBossLocked') }}</template>
+          </div>
+          <div v-if="weeklyBossCard && !weeklyBossDefeated" class="s-type font-mono wb-rewards">
+            <template v-for="(row, i) in weeklyBossCard.rewards" :key="row.id">
+              <span v-if="i > 0"> · </span>{{ row.name }} +{{ row.amount }}
+            </template>
+          </div>
+        </div>
+        <Icon v-if="weeklyBossUnlocked" class="s-arrow" name="i-ui-arrow-right" size="md" />
+      </button>
     </div>
 
     <!-- 点击反馈 toast -->
@@ -358,6 +427,20 @@ function claimMilestone() {
   border: 1px solid color-mix(in srgb, var(--color-amber) 45%, transparent);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
+}
+
+/* —— 周强敌卡（v1.24）：复用远征卡骨架，实线边框区分 —— */
+.weekly-boss-card {
+  margin-top: var(--space-2);
+  border-style: solid;
+}
+.weekly-boss-card.defeated {
+  opacity: 0.6;
+}
+.weekly-boss-card .wb-rewards {
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
 }
 .milestone-bar .m-info {
   display: flex;

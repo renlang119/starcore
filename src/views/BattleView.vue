@@ -7,6 +7,8 @@ import { fmt } from '@/lib/format'
 import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID, MAX_ENDLESS_DEPTH } from '@/data/endless'
+import { WEEKLY_BOSS_ID } from '@/data/weekly-boss'
+import { weekStr } from '@/stores/daily'
 import { getUnit } from '@/data/units'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -25,6 +27,8 @@ const game = useGameStore()
 const strongholdId = computed(() => route.params.id as string)
 /** 是否无尽远征（/battle/endless） */
 const isEndless = computed(() => strongholdId.value === ENDLESS_STRONGHOLD_ID)
+/** 是否周 Boss（/battle/weekly_boss，v1.24 方案 5） */
+const isWeeklyBoss = computed(() => strongholdId.value === WEEKLY_BOSS_ID)
 
 // —— 无尽远征（v0.60）：深度选择 + 按深度合成据点 ——
 const endlessDepth = ref(1)
@@ -52,9 +56,15 @@ watch(
   { immediate: true }
 )
 
-const stronghold = computed((): StrongholdDef | undefined =>
-  isEndless.value ? endlessStrongholdDef.value : getStronghold(strongholdId.value)
-)
+const stronghold = computed((): StrongholdDef | undefined => {
+  if (isEndless.value) return endlessStrongholdDef.value
+  // 周 Boss：按终身远征深度 + 本周标识合成（深度实时派生，未击败期间推进上移）
+  if (isWeeklyBoss.value) {
+    if (!game.combat.isEndlessUnlocked()) return undefined
+    return game.combat.getWeeklyBossStronghold(game.combat.expeditionBest, weekStr())
+  }
+  return getStronghold(strongholdId.value)
+})
 
 const selectedFormation = ref(0)
 
@@ -64,14 +74,16 @@ const formation = computed(
   () => game.military.formations[selectedFormation.value] ?? game.military.formations[0]
 )
 
-// —— v0.82 驻扎/出征校验：据点须解锁且已攻克（远征分支除外）——
+// —— v0.82 驻扎/出征校验：据点须解锁且已攻克（远征/周 Boss 分支除外）——
 const strongholdUnlocked = computed(() => {
   if (isEndless.value) return game.combat.isEndlessUnlocked()
+  // 周 Boss：解锁口径与远征入口一致（本轮已克 silencer_3）
+  if (isWeeklyBoss.value) return game.combat.isEndlessUnlocked()
   const def = getStronghold(strongholdId.value)
   if (!def) return false
   return game.exploration.prereqMet(def.requires)
 })
-/** 已攻克：正式据点须在通关集内（未攻克可出战但不可驻扎） */
+/** 已攻克：正式据点须在通关集内（未攻克可出战但不可驻扎；合成据点无驻扎语义） */
 const strongholdConquered = computed(
   () => isEndless.value || game.combat.completedStrongholds.has(strongholdId.value)
 )
@@ -94,12 +106,25 @@ const formationRows = computed<FormationUnitRow[]>(() => {
 })
 const isFormationEmpty = computed(() => formationRows.value.length === 0)
 
-/** 出征禁用 = 编队空或据点未解锁 */
-const battleDisabled = computed(() => isFormationEmpty.value || !strongholdUnlocked.value)
+/** 出征禁用 = 编队空或据点未解锁；周 Boss 追加「本周已击败」禁用（防重复领取） */
+const battleDisabled = computed(
+  () =>
+    isFormationEmpty.value ||
+    !strongholdUnlocked.value ||
+    (isWeeklyBoss.value && bossFlow.isWeeklyBossDefeated.value)
+)
 /** 驻扎禁用 = 编队空或据点未攻克 */
 const garrisonDisabled = computed(() => isFormationEmpty.value || !strongholdConquered.value)
 
 // —— 战斗流程状态机：战斗执行 / 结果弹窗 / 驻扎（useBattleFlow）——
+const bossFlow = useBattleFlow({
+  strongholdId,
+  stronghold,
+  formation,
+  isEndless,
+  endlessDepth,
+  isWeeklyBoss,
+})
 const {
   battleLog,
   battleResult,
@@ -114,7 +139,7 @@ const {
   toggleGarrison,
   confirmGarrison,
   cancelGarrison,
-} = useBattleFlow({ strongholdId, stronghold, formation, isEndless, endlessDepth })
+} = bossFlow
 </script>
 
 <template>
@@ -136,7 +161,7 @@ const {
       </div>
     </div>
 
-    <!-- 无尽远征：深度选择（仅 /battle/endless） -->
+    <!-- 无尽远征：深度选择（仅 /battle/endless；周 Boss 深度锚定前沿不可手选） -->
     <EndlessDepthPanel
       v-if="isEndless"
       :depth="endlessDepth"
@@ -173,7 +198,7 @@ const {
     <!-- 点击反馈 toast（战损/驻扎提示） -->
     <Toast :toast="toast" />
 
-    <!-- 操作 -->
+    <!-- 操作：驻扎按钮仅正式据点（远征/周 Boss 合成据点无占领语义） -->
     <div class="actions">
       <button
         class="btn-accent"
@@ -183,10 +208,14 @@ const {
         @click="startBattle"
       >
         <Icon name="i-ui-sword" size="md" />
-        {{ t('battle.deploy') }}
+        {{
+          isWeeklyBoss && bossFlow.isWeeklyBossDefeated.value
+            ? t('battle.weeklyBossDefeated')
+            : t('battle.deploy')
+        }}
       </button>
       <button
-        v-if="!isEndless"
+        v-if="!isEndless && !isWeeklyBoss"
         class="btn-secondary"
         :class="{ 'garrison-active': isGarrisoned }"
         style="flex: 1"

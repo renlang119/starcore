@@ -177,6 +177,9 @@ export const useDailyStore = defineStore('daily', () => {
   const weeklyCounters = ref(emptyCounters())
   const challengeWeek = ref('')
   const weekChallenges = ref<WeeklyChallenge[]>([])
+  // 本周强敌已击败的周标识（v1.24 方案 5；空串 = 未击败。
+  // 语义：仅当值 === 当前周标识时视为已击败，跨周自动失效）
+  const weeklyBossClaimedWeek = ref('')
 
   /**
    * 每秒 tick 调用：换天自动签到（含断签补偿判定）+ 换周重掷。
@@ -268,12 +271,29 @@ export const useDailyStore = defineStore('daily', () => {
     return { dark: c.rewardDark, streakBonus: 1 }
   }
 
+  // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
+
+  /** 本周 Boss 是否已击败（跨周自动失效：标记周 ≠ 当前周即视为未击败） */
+  function isWeeklyBossDefeated(now = new Date()): boolean {
+    return weeklyBossClaimedWeek.value !== '' && weeklyBossClaimedWeek.value === weekStr(now)
+  }
+
+  /**
+   * 记账本周 Boss 已击败（useBattleFlow 胜利分支调用；重复记账幂等无副作用）。
+   * 纯记账不发放资源——奖励由战斗结算的 grantRewards 走据点 rewards 即时发放，
+   * 本函数只负责「本周已击败」标记（claimChallenge 先例：记账与发放分离）。
+   */
+  function claimWeeklyBoss(now = new Date()): void {
+    weeklyBossClaimedWeek.value = weekStr(now)
+  }
+
   function reset(): void {
     lastCheckIn.value = ''
     streak.value = 0
     weeklyCounters.value = emptyCounters()
     challengeWeek.value = ''
     weekChallenges.value = []
+    weeklyBossClaimedWeek.value = ''
   }
 
   function serialize(): DailySaveData {
@@ -283,6 +303,10 @@ export const useDailyStore = defineStore('daily', () => {
       weeklyCounters: { ...weeklyCounters.value },
       challengeWeek: challengeWeek.value,
       weekChallenges: weekChallenges.value.map((c) => ({ ...c })),
+      // 空串不写字段：保持与旧档同构（serialize 最小化，未击败档无 weeklyBoss 键）
+      ...(weeklyBossClaimedWeek.value
+        ? { weeklyBoss: { claimedWeek: weeklyBossClaimedWeek.value } }
+        : {}),
     }
   }
 
@@ -327,6 +351,12 @@ export const useDailyStore = defineStore('daily', () => {
         })
         .filter((c): c is WeeklyChallenge => c !== null)
     }
+    // 本周强敌标记（v1.24 可选字段）：旧档缺键保持空串（未击败）；
+    // 仅认字符串形态，内容真伪由读取侧按当前周比较兜底
+    const wb = (data as { weeklyBoss?: { claimedWeek?: unknown } }).weeklyBoss
+    if (wb && typeof wb.claimedWeek === 'string') {
+      weeklyBossClaimedWeek.value = wb.claimedWeek
+    }
     // 存档周标识落后于当前周（跨周回来）→ 立即重掷，等下一次 onTickCheckIn 也可
     ensureWeek()
   }
@@ -337,12 +367,15 @@ export const useDailyStore = defineStore('daily', () => {
     weeklyCounters,
     challengeWeek,
     weekChallenges,
+    weeklyBossClaimedWeek,
     onTickCheckIn,
     ensureWeek,
     bump,
     progressOf,
     claimable,
     claim,
+    isWeeklyBossDefeated,
+    claimWeeklyBoss,
     reset,
     serialize,
     hydrate,

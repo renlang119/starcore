@@ -4,6 +4,7 @@
 export default {
   'battle.backToMap': 'Back to Star Map',
   'battle.deploy': 'Deploy',
+  'battle.weeklyBossDefeated': 'Defeated this week',
   'battle.depthDown': 'Decrease Depth',
   'battle.depthHint':
     'Conquer the Frontier depth to push your record; cleared depths can be replayed',

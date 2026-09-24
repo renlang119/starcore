@@ -533,3 +533,147 @@ describe('daily — 周挑战扩类（v1.21 可玩内容扩展方案 3）', () =
     expect(bad).toBe(false)
   })
 })
+
+describe('daily — 每周强敌标记（v1.24 可玩内容扩展方案 5）', () => {
+  let store: ReturnType<typeof useDailyStore>
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    store = useDailyStore()
+  })
+
+  it('默认未击败；记账后本周已击败；重复记账幂等', () => {
+    const now = dateOf(2026, 9, 7) // 周一
+    expect(store.isWeeklyBossDefeated(now)).toBe(false)
+    store.claimWeeklyBoss(now)
+    expect(store.isWeeklyBossDefeated(now)).toBe(true)
+    store.claimWeeklyBoss(now) // 幂等：同周重复记账无副作用
+    expect(store.isWeeklyBossDefeated(now)).toBe(true)
+    expect(store.weeklyBossClaimedWeek).toBe(weekStr(now))
+  })
+
+  it('跨周自动失效：上周标记在本周不可见（无需显式清除）', () => {
+    const wk1 = dateOf(2026, 9, 7) // 周一
+    store.claimWeeklyBoss(wk1)
+    expect(store.isWeeklyBossDefeated(wk1)).toBe(true)
+    const wk2 = dateOf(2026, 9, 14) // 下周一
+    expect(store.isWeeklyBossDefeated(wk2)).toBe(false)
+    // 同周内任意日期仍判定已击败
+    expect(store.isWeeklyBossDefeated(dateOf(2026, 9, 13))).toBe(true) // 周日
+  })
+
+  it('reset 清空标记（转生/清档语义：转生当周可再打）', () => {
+    const now = dateOf(2026, 9, 7)
+    store.claimWeeklyBoss(now)
+    store.reset()
+    expect(store.isWeeklyBossDefeated(now)).toBe(false)
+    expect(store.weeklyBossClaimedWeek).toBe('')
+  })
+
+  it('serialize：已击败写出 weeklyBoss 键；未击败不写（与旧档同构）', () => {
+    const now = dateOf(2026, 9, 7)
+    expect(store.serialize().weeklyBoss).toBeUndefined()
+    store.claimWeeklyBoss(now)
+    expect(store.serialize().weeklyBoss).toEqual({ claimedWeek: weekStr(now) })
+  })
+
+  it('hydrate：旧档缺键 → 未击败；合法键 → 载入；跨周旧标记读取侧自动失效', () => {
+    const now = dateOf(2026, 9, 7)
+    store.hydrate({
+      lastCheckIn: '',
+      streak: 0,
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
+      challengeWeek: '',
+      weekChallenges: [],
+    })
+    expect(store.isWeeklyBossDefeated(now)).toBe(false)
+    store.hydrate({
+      lastCheckIn: '',
+      streak: 0,
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
+      challengeWeek: '',
+      weekChallenges: [],
+      weeklyBoss: { claimedWeek: weekStr(now) },
+    })
+    expect(store.isWeeklyBossDefeated(now)).toBe(true)
+    // 上周标记载入后读取侧按当前周比较自动失效
+    store.hydrate({
+      lastCheckIn: '',
+      streak: 0,
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
+      challengeWeek: '',
+      weekChallenges: [],
+      weeklyBoss: { claimedWeek: '2026-W36' }, // 早于 2026-W37
+    })
+    expect(store.isWeeklyBossDefeated(now)).toBe(false)
+  })
+
+  it('存档校验层：weeklyBoss 合法结构通过，非对象/缺 claimedWeek 拒档', () => {
+    const now = dateOf(2026, 9, 7)
+    const base = {
+      lastCheckIn: localDateStr(),
+      streak: 1,
+      challengeWeek: weekStr(),
+      weekChallenges: [ch('wk_battles')],
+      weeklyCounters: {
+        battles: 0,
+        explores: 0,
+        researches: 0,
+        upgrades: 0,
+        transcends: 0,
+        expedition: 0,
+        synths: 0,
+        enhances: 0,
+        garrisonHours: 0,
+      },
+    }
+    // 合法：完整对象
+    const ok = validateAndRepair(
+      minimalSaveData({ daily: { ...base, weeklyBoss: { claimedWeek: weekStr(now) } } })
+    )
+    expect(ok).toBe(true)
+    // 非对象 → 拒档（结构门，不做静默自愈）
+    const badShape = validateAndRepair(
+      minimalSaveData({
+        daily: { ...base, weeklyBoss: 'garbage' } as unknown as DailySaveData,
+      })
+    )
+    expect(badShape).toBe(false)
+    // 缺 claimedWeek → 拒档
+    const badField = validateAndRepair(
+      minimalSaveData({
+        daily: { ...base, weeklyBoss: {} } as unknown as DailySaveData,
+      })
+    )
+    expect(badField).toBe(false)
+  })
+})

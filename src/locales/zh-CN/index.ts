@@ -39,6 +39,7 @@ import techContent from './content/tech.ts'
 import traitsContent from './content/traits.ts'
 import transcendContent from './content/transcend.ts'
 import unitsContent from './content/units.ts'
+import weeklyBossContent from './content/weeklyBoss.ts'
 
 export default {
   ...achievements,
@@ -74,4 +75,5 @@ export default {
   ...traitsContent,
   ...transcendContent,
   ...unitsContent,
+  ...weeklyBossContent,
 }

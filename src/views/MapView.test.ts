@@ -154,6 +154,55 @@ describe('MapView — 探索流程', () => {
   })
 })
 
+describe('MapView — 每周强敌（v1.24）', () => {
+  useViewTestHooks()
+
+  it('未解锁远征时周 Boss 卡置灰可见，显示锁定文案', () => {
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
+    const card = wrapper.find('[data-testid="weekly-boss-locked"]')
+    expect(card.exists()).toBe(true)
+    expect(card.attributes('disabled')).toBeDefined()
+    expect(card.text()).toContain('攻克沉默者旗舰后开放')
+  })
+
+  it('解锁后显示本周模板名与奖励预览，点击跳转周 Boss 页', async () => {
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
+    const game = useGameStore()
+    game.combat.completedStrongholds.add('silencer_3')
+    game.combat.expeditionBest = 5
+    await wrapper.vm.$nextTick()
+
+    const card = wrapper.find('[data-testid="weekly-boss-open"]')
+    expect(card.exists()).toBe(true)
+    expect(card.text()).toContain('每周强敌')
+    expect(card.text()).toContain('本周考题：')
+    // 奖励预览含暗物质字样（奖励锚前沿 ×1.5 的展示面）
+    expect(card.text()).toContain('暗物质')
+    await card.trigger('click')
+    expect(mockPush).toHaveBeenCalledWith('/battle/weekly_boss')
+  })
+
+  it('本周已击败后显示已击败态（testid 切换 done）', async () => {
+    const wrapper = mountView(MapView, {
+      stubs: { Transition: { template: '<div><slot /></div>' } },
+    })
+    const game = useGameStore()
+    game.combat.completedStrongholds.add('silencer_3')
+    game.combat.expeditionBest = 5
+    game.daily.claimWeeklyBoss()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-testid="weekly-boss-open"]').exists()).toBe(false)
+    const done = wrapper.find('[data-testid="weekly-boss-done"]')
+    expect(done.exists()).toBe(true)
+    expect(done.text()).toContain('下周一刷新')
+  })
+})
+
 describe('MapView — 远征里程碑（v1.20）', () => {
   useViewTestHooks()
 
