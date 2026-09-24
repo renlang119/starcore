@@ -88,7 +88,7 @@ starcore/
 - **单元/组件测试**：Vitest + @vue/test-utils + jsdom，42 个测试文件 618 个用例
 - **类型与规范**：构建内置 vue-tsc 类型检查；ESLint 与 Prettier 全量检查零输出
 - **计数守恒**：`scripts/check-conservation.mjs` 校验文档计数、成就文案联动与
-  测试硬断言，防止数值漂移（`corepack pnpm check:conservation`）
+  测试硬性校验，防止数值漂移（`corepack pnpm check:conservation`）
 - **文案守卫**：`scripts/check-locales.mjs` 校验文案键闭合（缺键 / 未使用 /
   非字面量调用）、硬编码中文零残留与多语言键面一致性，已并入 `corepack pnpm check` 门禁
 
