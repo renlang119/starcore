@@ -30,6 +30,8 @@ export interface BattleFlowDeps {
   formation: ComputedRef<Formation | undefined>
   isEndless: ComputedRef<boolean>
   endlessDepth: Ref<number>
+  /** 是否周 Boss（v1.24 方案 5：/battle/weekly_boss；胜利走 daily 记账不入通关集） */
+  isWeeklyBoss?: ComputedRef<boolean>
 }
 
 export function useBattleFlow(deps: BattleFlowDeps) {
@@ -45,6 +47,10 @@ export function useBattleFlow(deps: BattleFlowDeps) {
   const showGarrisonConfirm = ref(false)
 
   const isGarrisoned = computed(() => !!game.combat.garrisoned[deps.strongholdId.value])
+  /** 本周 Boss 是否已击败（v1.24：出战按钮禁用依据，防重复领取奖励） */
+  const isWeeklyBossDefeated = computed(() =>
+    deps.isWeeklyBoss?.value ? game.daily.isWeeklyBossDefeated() : false
+  )
 
   // 驻扎收益预览（每秒 + 每小时）：传入当前选中编队 id（驻扎前预览也吃特性乘区）
   const garrisonPreview = computed(() => {
@@ -61,6 +67,8 @@ export function useBattleFlow(deps: BattleFlowDeps) {
 
   function startBattle() {
     if (!deps.stronghold.value || !deps.formation.value) return
+    // 周 Boss 已击败：按钮禁用兜底外的防御短路（不重复结算不重复发奖）
+    if (deps.isWeeklyBoss?.value && game.daily.isWeeklyBossDefeated()) return
     const result = game.combat.resolveBattle(
       deps.formation.value,
       deps.stronghold.value,
@@ -71,7 +79,7 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     battleResult.value = result
     showResult.value = true
     applyBattleLosses(result)
-    // 敌方图鉴：交战即记录遭遇条目（胜负都算；远征合成编成在 store 内排除）
+    // 敌方图鉴：交战即记录遭遇条目（胜负都算；远征/周 Boss 合成编成在 store 内排除）
     game.archive.recordEncounter(deps.stronghold.value.id, deps.stronghold.value.enemies)
     // 无尽远征：攻克当前前沿 → 推进历史最深深度（随奖励即时发放，见 grantRewards）
     // 成就终身计数：据点攻克（胜利）次数（远征战果同样计入战斗里程碑）
@@ -79,6 +87,11 @@ export function useBattleFlow(deps: BattleFlowDeps) {
       game.achievements.recordBattle()
       game.achievements.checkAndUnlock()
       game.daily.bump('battles')
+      // 周 Boss 胜利：记账「本周已击败」（奖励随下方 grantRewards 按据点
+      // rewards 即时发放；不入通关集、不入图鉴，见各 store 排除口径）
+      if (deps.isWeeklyBoss?.value) {
+        game.daily.claimWeeklyBoss()
+      }
       // 奖励即时发放（v0.94）：战斗结算即落袋，结果弹窗只做展示；
       // 修复弹窗打开期间离开页面导致资源、遗物与远征推进丢失的问题
       grantRewards(result)
@@ -171,6 +184,7 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     showResult,
     showGarrisonConfirm,
     isGarrisoned,
+    isWeeklyBossDefeated,
     garrisonPreview,
     toast,
     startBattle,

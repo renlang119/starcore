@@ -6,6 +6,7 @@
 export default {
   'battle.backToMap': '返回星图',
   'battle.deploy': '出征',
+  'battle.weeklyBossDefeated': '本周已击败',
   'battle.depthDown': '降低深度',
   'battle.depthHint': '攻克「前沿」深度即可推进历史纪录；已通过层数可反复挑战',
   'battle.depthLead': '第',

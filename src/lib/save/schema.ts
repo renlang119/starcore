@@ -130,6 +130,9 @@ export interface DailySaveData {
     rewardDark: number
     claimed: boolean
   }[]
+  /** 本周强敌已击败的周标识（v1.24 可选字段：旧档缺失视为未击败，零迁移）。
+   *  语义：仅当 claimedWeek === 当前周标识时视为「本周已击败」，跨周自动失效。 */
+  weeklyBoss?: { claimedWeek: string }
 }
 
 /** 全量存档接口 */
