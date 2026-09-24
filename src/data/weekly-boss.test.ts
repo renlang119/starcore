@@ -3,7 +3,7 @@
  *
  * 覆盖：模板轮换确定性（同周同模板、跨周可能换）、深度公式与门槛钳制、
  * 奖励公式（前沿锚 ×1.5 与模板解耦）、合成据点结构、校准锚点
- * （OFFSET 表与阶段0 定稿一致；归一化后总强度随深度单调）。
+ * （OFFSET 表与阶段1 定稿一致；归一化后总强度随深度单调）。
  */
 import { describe, it, expect } from 'vitest'
 import {
@@ -44,7 +44,7 @@ describe('weekly-boss 模板轮换', () => {
 })
 
 describe('weekly-boss 深度公式', () => {
-  it('OFFSET 表与阶段0 校准定稿一致（勿擅自改动，改前须重跑校准）', () => {
+  it('OFFSET 表与阶段1 校准定稿一致（勿擅自改动，改前须重跑校准）', () => {
     expect(WEEKLY_BOSS_OFFSET).toEqual({
       silencer_3: -1,
       raider_5: 1,
@@ -59,7 +59,7 @@ describe('weekly-boss 深度公式', () => {
     expect(weeklyBossDepth(33, 'silencer_3')).toBe(32)
     expect(weeklyBossDepth(33, 'beast_4')).toBe(31)
     expect(weeklyBossDepth(33, 'ruin_4')).toBe(35)
-    // 三档墙位附近深度均在合理窗内（[墙−4, 墙+3]，阶段0 扫描范围）
+    // 三档墙位附近深度均在合理窗内（[墙−4, 墙+3]，阶段1 扫描范围）
     for (const wall of Object.values(CALIB_WALLS)) {
       for (const tid of WEEKLY_BOSS_TEMPLATE_IDS) {
         const d = weeklyBossDepth(wall, tid)
