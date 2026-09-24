@@ -19,6 +19,7 @@ import { ref, computed } from 'vue'
 import type { ArchiveSaveData } from '@/lib/storage'
 import { STRONGHOLDS, STRONGHOLD_TYPES, type EnemyUnit } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
+import { WEEKLY_BOSS_ID } from '@/data/weekly-boss'
 
 /** 图鉴条目键：据点 id + 敌方编成序号 */
 function enemyKey(strongholdId: string, index: number): string {
@@ -62,6 +63,8 @@ export const ARCHIVE_ENEMY_KEYS: ReadonlySet<string> = new Set(
 function encounter(strongholdId: string, enemies: EnemyUnit[], seen: Set<string>): void {
   // 远征合成据点（id='endless'）：动态编成不入图鉴
   if (strongholdId === ENDLESS_STRONGHOLD_ID) return
+  // 周 Boss 合成据点（id='weekly_boss'，v1.24）：同口径排除防图鉴无限膨胀
+  if (strongholdId === WEEKLY_BOSS_ID) return
   for (let i = 0; i < enemies.length; i++) {
     seen.add(enemyKey(strongholdId, i))
   }
