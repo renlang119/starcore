@@ -562,7 +562,7 @@ describe('daily — 每周强敌标记（v1.24 可玩内容扩展方案 5）', (
     expect(store.isWeeklyBossDefeated(dateOf(2026, 9, 13))).toBe(true) // 周日
   })
 
-  it('响应式当前周：跨周 tick 自动对齐，无参判定与缓存自动刷新（复核修正）', () => {
+  it('响应式当前周：跨周 tick 自动对齐，无参判定与缓存自动刷新', () => {
     // 先把响应式当前周对齐到基准周（不依赖运行时的真实时间）
     store.onTickCheckIn(dateOf(2026, 9, 23)) // W39 周三
     store.claimWeeklyBoss(dateOf(2026, 9, 23))
