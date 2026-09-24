@@ -180,6 +180,9 @@ export const useDailyStore = defineStore('daily', () => {
   // 本周强敌已击败的周标识（v1.24 方案 5；空串 = 未击败。
   // 语义：仅当值 === 当前周标识时视为已击败，跨周自动失效）
   const weeklyBossClaimedWeek = ref('')
+  // 响应式「当前周」（v1.24 复核修正）：由 ensureWeek 随 tick 对齐、跨周自动更新，
+  // 驱动周 Boss 等周敏感消费侧（卡态 / 禁战 / 编成）自动刷新，免于重挂载才更新
+  const currentWeek = ref(weekStr())
 
   /**
    * 每秒 tick 调用：换天自动签到（含断签补偿判定）+ 换周重掷。
@@ -219,6 +222,8 @@ export const useDailyStore = defineStore('daily', () => {
    */
   function ensureWeek(now = new Date()): void {
     const wk = weekStr(now)
+    // 响应式当前周对齐（跨周驱动周 Boss 消费侧自动刷新；同值赋值无副作用）
+    if (currentWeek.value !== wk) currentWeek.value = wk
     // 同周且列表完整（3 项）才跳过；列表不完整时重掷补全
     if (challengeWeek.value === wk && weekChallenges.value.length === 3) return
     if (challengeWeek.value !== wk) {
@@ -273,9 +278,12 @@ export const useDailyStore = defineStore('daily', () => {
 
   // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
 
-  /** 本周 Boss 是否已击败（跨周自动失效：标记周 ≠ 当前周即视为未击败） */
-  function isWeeklyBossDefeated(now = new Date()): boolean {
-    return weeklyBossClaimedWeek.value !== '' && weeklyBossClaimedWeek.value === weekStr(now)
+  /** 本周 Boss 是否已击败（跨周自动失效：标记周 ≠ 当前周即视为未击败）。
+   *  now 缺省读响应式 currentWeek（tick 对齐，跨周时消费侧自动刷新）；
+   *  显式传参时按传入时间比较（测试与校准口径）。 */
+  function isWeeklyBossDefeated(now?: Date): boolean {
+    const wk = now ? weekStr(now) : currentWeek.value
+    return weeklyBossClaimedWeek.value !== '' && weeklyBossClaimedWeek.value === wk
   }
 
   /**
@@ -294,6 +302,7 @@ export const useDailyStore = defineStore('daily', () => {
     challengeWeek.value = ''
     weekChallenges.value = []
     weeklyBossClaimedWeek.value = ''
+    currentWeek.value = weekStr()
   }
 
   function serialize(): DailySaveData {
@@ -374,6 +383,7 @@ export const useDailyStore = defineStore('daily', () => {
     progressOf,
     claimable,
     claim,
+    currentWeek,
     isWeeklyBossDefeated,
     claimWeeklyBoss,
     reset,
