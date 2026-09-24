@@ -145,7 +145,7 @@ bundle），通过跨大版本升级根除；顺带将全部依赖升至锁定�
     ≥8.5.23（不完整修复）
 - 评估后暂缓：
   - typescript 7：typescript-eslint 8.69 peer 上限 <6.1.0，生态未跟进，待
-    其发版后升级
+    其发布后升级
 - 兼容性：
   - eslint 10 flat config 无需迁移，现有 eslint.config.js 直接兼容
   - vitest 5 配置格式无变化，8 文件 67 用例全部通过
@@ -234,7 +234,7 @@ bundle），通过跨大版本升级根除；顺带将全部依赖升至锁定�
   - 同步方式从覆盖复制升级为 `rsync --delete`：站点内已从产物移除的旧文件
     会被清除（本次即清除了 v0.44 已删但站点残留的 `icons.svg`），并排除
     `.well-known/` 防误删证书续期目录
-- favicon 未声明，控制台 404（发版回归发现）：`index.html` 未声明
+- favicon 未声明，控制台 404（发布回归发现）：`index.html` 未声明
   `<link rel="icon">`，浏览器回退请求 `/favicon.ico`。dev/preview 服务器无
   该文件返回 404 并产生控制台错误；线上 nginx SPA fallback 将其回退到
   index.html，返回 200 但内容并非图标（浏览器静默忽略）。`index.html` 补
@@ -339,9 +339,10 @@ v0.43，v0.42 的 6 项修复一并上线。
     - 涉及文件：`src/components/layout/SideNav.vue`、
       `src/components/layout/BottomNav.vue`
   - resources store allMeta 类型不精确：`resources` store 的 `allMeta` 类
-    型定义不精确，使用方被迫断言，类型安全链断裂，影响 `OfflineReport.vue`
-    和 `BattleView.vue`。导出 `ResourceMeta` 接口，`allMeta` 类型放宽为
-    `Record<string, ResourceMeta>`，根因修复，使用方无需再断言。
+    型定义不精确，使用方被迫做类型断言，类型安全链断裂，影响
+    `OfflineReport.vue` 和 `BattleView.vue`。导出 `ResourceMeta` 接口，
+    `allMeta` 类型放宽为 `Record<string, ResourceMeta>`，根因修复，
+    使用方无需再做类型断言。
     - 涉及文件：`src/stores/resources.ts`、
       `src/components/layout/OfflineReport.vue`、
       `src/views/BattleView.vue`
@@ -400,9 +401,9 @@ v0.43，v0.42 的 6 项修复一并上线。
     试覆盖率报告。添加 coverage 配置（v8 provider），`package.json` 添加
     `test:cov` script。
     - 涉及文件：`vitest.config.ts`、`package.json`
-  - game.test.ts 断言静默通过：`game.test.ts` 中
-    `if (game.canTranscend())` 包裹断言，条件不满足时断言被跳过，测试静默
-    通过而非失败。改为显式断言，条件不满足即报失败。
+  - game.test.ts 校验静默通过：`game.test.ts` 中
+    `if (game.canTranscend())` 包裹校验，条件不满足时校验被跳过，测试静默
+    通过而非失败。改为显式校验，条件不满足即报失败。
     - 涉及文件：`src/stores/game.test.ts`
   - vite.config.ts 构建优化：`vite.config.ts` 无 sourcemap 配置、无手动分
     包，`server.host` 设为 `true` 暴露到所有网络接口。添加
@@ -422,8 +423,8 @@ v0.43，v0.42 的 6 项修复一并上线。
   - `src/components/layout/SideNav.vue`：补 aria-current="page"
   - `src/components/layout/BottomNav.vue`：补 aria-current="page"
   - `src/stores/resources.ts`：导出 ResourceMeta 接口，allMeta 类型精确化
-  - `src/components/layout/OfflineReport.vue`：使用方无需断言；消除 2 处
-    as any
+  - `src/components/layout/OfflineReport.vue`：使用方无需做类型断言；
+    消除 2 处 as any
   - `src/components/layout/AppShell.vue`：6 个静态 span 改 v-for
   - `src/style.css`：移除 .s1~.s6 规则；注释更新为 useBreakpoint
   - `index.html`：补充 OG/Twitter meta 标签
@@ -435,7 +436,7 @@ v0.43，v0.42 的 6 项修复一并上线。
   - `src/lib/storage.ts`：writeSave {d,c} 格式 + readSave _parseStored；
     _parseBackup 补调 validateSaveData；validateSaveData 内容范围校验
   - `vitest.config.ts`：coverage 配置（v8 provider）
-  - `src/stores/game.test.ts`：显式断言替代 if 包裹
+  - `src/stores/game.test.ts`：显式校验替代 if 包裹
   - `vite.config.ts`：sourcemap + manualChunks + server.host 127.0.0.1
   - `start-dev.sh`：set -e + BASH_SOURCE + pnpm
 - 安全提醒：v0.42 已修复 `deploy.py` 中的凭据硬编码问题（改为环境变量
@@ -621,7 +622,7 @@ Elevation 三级系统、状态色语义、视觉动线引导等；补齐响应�
     Token，彻底消除 10px 以下过小字号，最小字号提升至 12px
   - 核心数值放大：核心能量值字号提升至 31px，大于页面标题（20px），成为全
     页绝对视觉焦点
-  - 图标尺寸 Token 化：6 种散落图标尺寸收敛为 4 级
+  - 图标尺寸 Token 化：6 种散落图标尺寸统一为 4 级
     （`--icon-xs/sm/md/lg`），全项目图标视觉比例统一
 - 核心区重构（8 项）：
   - Hero 核心区重构放大：
@@ -1472,7 +1473,7 @@ Icons.vue 进行 facade 工程重构，将单体大组件拆分为 7 个子组�
 
 ## v0.21-24 — 修复: 代码评审修复与 TypeScript 严格度提升
 
-**变更性质：修复（代码评审问题修复与严格模式收口）**
+**变更性质：修复（代码评审问题修复与严格模式收尾）**
 **开发时间：2026-07-12**
 
 ### 概述
@@ -1871,7 +1872,7 @@ v0.15 只改了倒计时主行的时间格式（`2h30m` → `2小时30分钟`）
 ### 概述
 
 对全部 42 个源码文件（5,730 行）进行只读评估，识别出四个优先级的精简项，本
-次执行前三个优先级：死导入/死代码清理、组件与样式收敛、导航数据提取与类型
+次执行前三个优先级：死导入/死代码清理、组件与样式整合、导航数据提取与类型
 修复。功能与内容未减少，仅代码更整洁。
 
 ### 变更明细
