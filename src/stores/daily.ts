@@ -180,7 +180,7 @@ export const useDailyStore = defineStore('daily', () => {
   // 本周强敌已击败的周标识（v1.24 方案 5；空串 = 未击败。
   // 语义：仅当值 === 当前周标识时视为已击败，跨周自动失效）
   const weeklyBossClaimedWeek = ref('')
-  // 响应式「当前周」（v1.24 复核修正）：由 ensureWeek 随 tick 对齐、跨周自动更新，
+  // 响应式「当前周」（v1.25）：由 ensureWeek 随 tick 对齐、跨周自动更新，
   // 驱动周 Boss 等周敏感消费侧（卡态 / 禁战 / 编成）自动刷新，免于重挂载才更新
   const currentWeek = ref(weekStr())
 
