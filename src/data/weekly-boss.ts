@@ -5,8 +5,8 @@
  * 编成 = 远征 4 模板之一（周种子洗牌取 1，克制考题每周变）
  *        × TEMPLATE_NORMALIZE 强度归一 × endlessScale(bossDepth)；
  * bossDepth = max(6, expeditionBest + OFFSET[模板])——锚玩家终身远征前沿，
- * 模板偏移把四类编成的 50% 墙位结构差对齐（校准见
- * ~/脚本/starcore-v124-boss-calib.py 六轮定稿，2026-09-24）。
+ * 模板偏移把四类编成的 50% 墙位结构差对齐（六轮战斗模拟校准定稿，
+ * 2026-09-24）。
  *
  * 难度曲线：推进中玩家（墙−4 及以前）Boss 全模板全胜（周津贴）；
  * 卡墙玩家（墙位）胜率落 [15%, 85%]（可过且非白给）；破墙后 Boss 随
@@ -72,7 +72,7 @@ const BASE_POWER = TEMPLATE_NORMALIZE.get('silencer_3')!
 
 /**
  * 本周 Boss 的模板 id：周标识种子洗牌取 1（同周确定，跨周必换题）。
- * weekKey 建议传 daily 的 weekStr() 输出（YYYY-Www）。
+ * weekKey 为 ISO 周标识（YYYY-Www，调用方传 daily 响应式当前周）。
  */
 export function weeklyBossTemplateId(weekKey: string): (typeof WEEKLY_BOSS_TEMPLATE_IDS)[number] {
   const rng = mulberry32(fnv1a('weekly_boss:' + weekKey))
