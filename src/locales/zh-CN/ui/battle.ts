@@ -20,6 +20,7 @@ export default {
   'battle.garrisonAria': '挂机驻扎确认',
   'battle.garrisonAt': '在「',
   'battle.garrisonBlocked': '当前无法驻扎：据点未攻克或编队不可用',
+  'battle.garrisonBlockedDispatch': '该编队派遣中，无法驻扎',
   'battle.garrisonConfirm': '确认驻扎',
   'battle.garrisonDesc': '」驻扎编队，持续获得以下收益',
   'battle.garrisonGains': '预期收益',

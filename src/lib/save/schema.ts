@@ -27,6 +27,9 @@ export interface MilitarySaveData {
   /** 编队兵力：同样允许缺键（v0.75 hydrate 缺键补零防 NaN）；
    *  trait 可选（v1.23 方案 7，旧档缺失视为均衡，零迁移） */
   formations: { id: string; name: string; trait?: string; units: Partial<Record<UnitId, number>> }[]
+  /** 在途派遣（v1.27 方案 6 可选字段：旧档缺失视为无在途，零迁移）。
+   *  键 = 编队 id（白名单校验在 validate，未知条目剥离不拒档） */
+  dispatches?: Record<string, { hours: number; startTime: number }>
 }
 export interface CombatSaveData {
   garrisoned: Record<string, { strongholdId: string; formationId: string; startTime: number }>

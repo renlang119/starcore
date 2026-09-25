@@ -8,6 +8,8 @@ import type { Decimal } from '@/lib/decimal'
 import { UNITS, getUnit, defaultFormations, type UnitId, type UnitDef } from '@/data/units'
 import { isUnlockedBy } from '@/lib/requires'
 import { DEFAULT_TRAIT_ID, TRAITS, type TraitId } from '@/data/traits'
+import { getDispatchTier, dispatchRecallReward } from '@/data/dispatch'
+import type { ResourceType } from '@/data/buildings'
 import type { MilitarySaveData } from '@/lib/storage'
 
 /** 特性 id 白名单集合（setFormationTrait 入库校验用） */
@@ -29,9 +31,30 @@ export interface TrainingTask {
   totalTime: number
 }
 
+/** 在途派遣（v1.27 方案 6）：编队 id 唯一；绝对时间戳完成制（离线照常结算） */
+export interface DispatchState {
+  formationId: string
+  /** 时长档位（小时，DISPATCH_TIERS 白名单值） */
+  hours: number
+  /** 派出时刻（ms）；结束时刻 = startTime + hours*3600e3（实时派生不冻结锚） */
+  startTime: number
+}
+
 /** 训练并行槽：基础 1 槽，上限 3 槽（科技「集群操练 I/II」各 +1） */
 export const BASE_TRAINING_SLOTS = 1
 export const MAX_TRAINING_SLOTS = 3
+
+/** 派遣结算锚（模块级注入，同 setTrainingSlotProvider 模式）：
+ *  返回当前远征前沿 expeditionBest（combat 终身数据，实时派生不冻结锚；
+ *  military 不直接引 combat 防循环依赖）。缺省 1（最低档，测试/未装配兜底）。 */
+let dispatchBestProvider: () => number = () => 1
+export function setDispatchBestProvider(fn: () => number): void {
+  dispatchBestProvider = fn
+}
+/** 测试与 reset-providers 用：恢复未注入缺省 */
+export function resetDispatchBestProvider(): void {
+  dispatchBestProvider = () => 1
+}
 
 // 并行槽上限由 game store 注入（依赖效果系统聚合科技加成），
 // 避免 military store 直接引用 research/effectSystem（同 setRelicSlotProvider 模式）
@@ -50,6 +73,8 @@ export const useMilitaryStore = defineStore('military', () => {
   })
   const trainingQueue = ref<TrainingTask[]>([])
   const formations = ref<Formation[]>(defaultFormations())
+  /** 在途派遣（v1.27 方案 6）：编队 id → 派遣态（每编队至多一路） */
+  const dispatches = ref<Record<string, DispatchState>>({})
 
   let taskId = 0
 
@@ -200,10 +225,99 @@ export const useMilitaryStore = defineStore('military', () => {
     }
   }
 
+  // —— 派遣远征（v1.27 方案 6）——
+
+  /** 派遣是否解锁：远征开放（本轮已攻克解锁锚点据点）后才可派遣 */
+  const dispatchUnlocked = ref(false)
+  function setDispatchUnlocked(v: boolean): void {
+    dispatchUnlocked.value = v
+  }
+
+  /** 编队是否在途派遣 */
+  function isDispatched(formationId: string): boolean {
+    return dispatches.value[formationId] !== undefined
+  }
+
+  /**
+   * 派出编队（决策点 4 锁定面的写入口）：仅解锁后、编队存在、
+   * 未在途、时长为合法档位时接受。编队为空也允许派出（奖励锚前沿不依赖战力）。
+   */
+  function startDispatch(formationId: string, hours: number, now: number): boolean {
+    if (!dispatchUnlocked.value) return false
+    if (!getDispatchTier(hours)) return false
+    if (dispatches.value[formationId]) return false
+    if (!formations.value.find((f) => f.id === formationId)) return false
+    dispatches.value[formationId] = { formationId, hours, startTime: now }
+    return true
+  }
+
+  /**
+   * 提前召回（决策点 3）：按已过时长占比结算 round(全额 × t/H)。
+   * 返回 { reward, completed }；未在途返回 null。发放由调用方做
+   * （在线路 = game tick；离线路 = offline-gains），store 只算账。
+   */
+  function recallDispatch(
+    formationId: string,
+    now: number
+  ): { reward: Record<ResourceType, number>; completed: boolean } | null {
+    const d = dispatches.value[formationId]
+    if (!d) return null
+    delete dispatches.value[formationId]
+    const elapsedHours = (now - d.startTime) / 3_600_000
+    const trait = formations.value.find((f) => f.id === formationId)?.trait
+    const reward = dispatchRecallReward(
+      dispatchBestProvider(),
+      d.hours,
+      getDispatchTier(d.hours)?.weight ?? 1,
+      elapsedHours,
+      trait
+    )
+    return { reward, completed: elapsedHours >= d.hours }
+  }
+
+  /**
+   * tick 到点结算：返回 { 编队 id → { reward, completed } }（发放由调用方统一做）。
+   * 绝对时间戳判定，无到期即空转（每秒 tick 开销可忽略）。
+   */
+  function collectCompletedDispatches(
+    now: number
+  ): Record<string, { reward: Record<ResourceType, number>; completed: boolean }> {
+    const results: Record<string, { reward: Record<ResourceType, number>; completed: boolean }> = {}
+    for (const d of Object.values(dispatches.value)) {
+      if (now >= d.startTime + d.hours * 3_600_000) {
+        const r = recallDispatch(d.formationId, now)
+        if (r) results[d.formationId] = r
+      }
+    }
+    return results
+  }
+
+  /** 离线期间的派遣补算：离线窗口 [from, to] 内到点的派遣按全额结算（返回并清除） */
+  function collectOfflineDispatches(
+    from: number,
+    to: number
+  ): Record<string, { reward: Record<ResourceType, number>; hours: number }> {
+    const results: Record<string, { reward: Record<ResourceType, number>; hours: number }> = {}
+    for (const d of Object.values(dispatches.value)) {
+      const end = d.startTime + d.hours * 3_600_000
+      if (end > from && end <= to) {
+        const r = recallDispatch(
+          d.formationId,
+          Math.max(d.startTime + d.hours * 3_600_000, d.startTime)
+        )
+        if (r) results[d.formationId] = { reward: r.reward, hours: d.hours }
+      }
+    }
+    return results
+  }
+
   function reset() {
     owned.value = { assault: 0, guard: 0, heavy: 0, psionic: 0 }
     trainingQueue.value = []
     formations.value = defaultFormations()
+    // 派遣随部队/编队一起清空（转生在途派遣即失，与驻扎转生清空同口径）
+    dispatches.value = {}
+    dispatchUnlocked.value = false
   }
 
   function serialize() {
@@ -211,6 +325,8 @@ export const useMilitaryStore = defineStore('military', () => {
       owned: { ...owned.value },
       training: trainingQueue.value.map((t) => ({ ...t })),
       formations: formations.value.map((f) => ({ ...f, units: { ...f.units } })),
+      // 无在途时不写字段（serialize 最小化，v1.26 遭遇同口径）
+      ...(Object.keys(dispatches.value).length > 0 ? { dispatches: { ...dispatches.value } } : {}),
     }
   }
   function hydrate(data: MilitarySaveData | undefined) {
@@ -241,12 +357,26 @@ export const useMilitaryStore = defineStore('military', () => {
         trait: f.trait && TRAIT_IDS_SET.has(f.trait) ? (f.trait as TraitId) : undefined,
         units: Object.assign({ assault: 0, guard: 0, heavy: 0, psionic: 0 }, f.units),
       }))
+    // 派遣（v1.27 可选字段）：仅收编队白名单内的条目，未知编队 id 条目级剥离
+    // 不拒档（validate 先剥，此处兜底直连 hydrate 的调用）；hours 再验档位表
+    if (data.dispatches) {
+      const next: Record<string, DispatchState> = {}
+      for (const [fid, d] of Object.entries(data.dispatches)) {
+        if (!formations.value.find((f) => f.id === fid)) continue
+        if (!d || !getDispatchTier(d.hours)) continue
+        if (typeof d.startTime !== 'number' || !isFinite(d.startTime) || d.startTime < 0) continue
+        next[fid] = { formationId: fid, hours: d.hours, startTime: d.startTime }
+      }
+      dispatches.value = next
+    }
   }
 
   return {
     owned,
     trainingQueue,
     formations,
+    dispatches,
+    dispatchUnlocked,
     getOwned,
     totalUnits,
     totalOwnedOf,
@@ -261,6 +391,12 @@ export const useMilitaryStore = defineStore('military', () => {
     removeFromFormation,
     setFormationTrait,
     applyLosses,
+    setDispatchUnlocked,
+    isDispatched,
+    startDispatch,
+    recallDispatch,
+    collectCompletedDispatches,
+    collectOfflineDispatches,
     reset,
     serialize,
     hydrate,
