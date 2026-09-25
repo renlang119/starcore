@@ -66,6 +66,27 @@ watch(
   }
 )
 
+// 派遣到点回执（v1.27 方案 6）：game store tick 结算发放后写 lastDispatchResolution
+// （{ 编队 id → 奖励 }），聚合为一条 toast（多支编队同秒归来合并提示）；置空不提示
+watch(
+  () => game.lastDispatchResolution,
+  (results) => {
+    if (!results || Object.keys(results).length === 0) return
+    const acc: Record<string, number> = {}
+    for (const reward of Object.values(results)) {
+      for (const [k, v] of Object.entries(reward)) {
+        if (v > 0) acc[k] = (acc[k] ?? 0) + v
+      }
+    }
+    const rows = resourceRows(acc, game.resources.allMeta)
+    const changes =
+      rows.length === 0
+        ? t('ui.encounter.nothing')
+        : rows.map((x) => `${x.amount} ${x.name}`).join(' + ')
+    toast.show(t('ui.encounter.resolved', { name: t('army.dispatchTitle'), changes }), 3200)
+  }
+)
+
 /** 宽版内容区：路由 meta.wide 控制（首页双列需要更宽的 max-width） */
 const isWideContent = computed(() => route.meta.wide === true)
 

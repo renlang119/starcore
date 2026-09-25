@@ -18,6 +18,7 @@ import {
 } from './relics'
 import { setAchievementExternalProviders } from './achievements'
 import { setGarrisonGuard, setFormationTraitProvider } from './combat'
+import { setDispatchBestProvider } from './military'
 import { getStronghold } from '@/data/pve'
 import type { useResourcesStore } from './resources'
 import type { useRelicsStore } from './relics'
@@ -164,6 +165,8 @@ export function wireGameProviders(deps: {
   setTrainingSlotProvider(() =>
     Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
   )
+  // 派遣结算锚（v1.27 方案 6）：远征前沿 expeditionBest 实时派生不冻结
+  setDispatchBestProvider(() => combat.expeditionBest)
   // 驻扎前置守卫：据点须解锁（探索前置完成）+ 编队存在且未被其他据点占用。
   // 据点已攻克门槛由 combat.garrison 本体校验（completedStrongholds 属 combat 自身状态）
   setGarrisonGuard((strongholdId, formationId) => {

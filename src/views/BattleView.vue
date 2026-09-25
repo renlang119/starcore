@@ -105,15 +105,23 @@ const formationRows = computed<FormationUnitRow[]>(() => {
 })
 const isFormationEmpty = computed(() => formationRows.value.length === 0)
 
-/** 出征禁用 = 编队空或据点未解锁；周 Boss 追加「本周已击败」禁用（防重复领取） */
+/** 选中编队是否在途派遣（v1.27 方案 6 锁定面：禁出战与驻扎） */
+const formationDispatched = computed(() =>
+  formation.value ? game.military.isDispatched(formation.value.id) : false
+)
+
+/** 出征禁用 = 编队空或据点未解锁或编队派遣中；周 Boss 追加「本周已击败」禁用（防重复领取） */
 const battleDisabled = computed(
   () =>
     isFormationEmpty.value ||
     !strongholdUnlocked.value ||
+    formationDispatched.value ||
     (isWeeklyBoss.value && bossFlow.isWeeklyBossDefeated.value)
 )
-/** 驻扎禁用 = 编队空或据点未攻克 */
-const garrisonDisabled = computed(() => isFormationEmpty.value || !strongholdConquered.value)
+/** 驻扎禁用 = 编队空或据点未攻克或编队派遣中 */
+const garrisonDisabled = computed(
+  () => isFormationEmpty.value || !strongholdConquered.value || formationDispatched.value
+)
 
 // —— 战斗流程状态机：战斗执行 / 结果弹窗 / 驻扎（useBattleFlow）——
 const bossFlow = useBattleFlow({
@@ -208,9 +216,11 @@ const {
       >
         <Icon name="i-ui-sword" size="md" />
         {{
-          isWeeklyBoss && bossFlow.isWeeklyBossDefeated.value
-            ? t('battle.weeklyBossDefeated')
-            : t('battle.deploy')
+          formationDispatched
+            ? t('battle.garrisonBlockedDispatch')
+            : isWeeklyBoss && bossFlow.isWeeklyBossDefeated.value
+              ? t('battle.weeklyBossDefeated')
+              : t('battle.deploy')
         }}
       </button>
       <button

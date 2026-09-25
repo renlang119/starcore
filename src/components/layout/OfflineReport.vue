@@ -44,6 +44,14 @@ const groups = computed(() => {
       rows: resourceRows(report.eventGains ?? {}, metaMap),
     },
     {
+      key: 'dispatch',
+      title: t('offline.dispatchTitle', { count: report.dispatchCount ?? 0 }),
+      titleClass: 'gain-title',
+      color: 'var(--color-quantum)',
+      titleInList: false,
+      rows: resourceRows(report.dispatchGains ?? {}, metaMap),
+    },
+    {
       key: 'trained',
       title: t('offline.gainTraining'),
       titleClass: 'gain-title',

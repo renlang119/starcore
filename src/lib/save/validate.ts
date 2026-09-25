@@ -120,6 +120,19 @@ export function validateAndRepair(data: unknown): data is SaveData {
         delete enc.pendingEventId
       }
     }
+    // military.dispatches：剥离未知编队 id 条目（v1.27；在途派遣丢失零损失，
+    // 与 encounters 同条目级剥离口径；编队白名单 = 存档内 formations 的 id 集）
+    const mil0 = data.military
+    if (_isObject(mil0) && _isObject(mil0.dispatches) && Array.isArray(mil0.formations)) {
+      const fids = new Set(
+        mil0.formations
+          .map((f: unknown) => (_isObject(f) && typeof f.id === 'string' ? f.id : null))
+          .filter((id): id is string => id !== null)
+      )
+      for (const fid of Object.keys(mil0.dispatches)) {
+        if (!fids.has(fid)) delete mil0.dispatches[fid]
+      }
+    }
   }
   return validateSaveData(data)
 }
@@ -199,6 +212,18 @@ function validateSaveData(data: unknown): data is SaveData {
     })
   )
     return false
+  // dispatches（v1.27 可选字段）：存在则校验结构。编队 id 白名单已在
+  // _validateAndRepair 剥离（未知条目只损失在途派遣，不拒整档）；
+  // hours 须为正数（读取侧再按档位表白名单过滤）；startTime 非负有限
+  if (mil.dispatches !== undefined) {
+    if (!_isObject(mil.dispatches)) return false
+    for (const d of Object.values(mil.dispatches)) {
+      if (!_isObject(d)) return false
+      const { hours, startTime } = d as { hours: unknown; startTime: unknown }
+      if (!_isNonNegFinite(hours) || !(hours > 0)) return false
+      if (!_isNonNegFinite(startTime)) return false
+    }
+  }
 
   // combat: completed 元素必须是有效据点 ID；garrisoned 键与条目须在据点白名单内
   if (!_isObject(d.combat)) return false

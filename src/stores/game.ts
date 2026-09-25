@@ -204,6 +204,32 @@ export const useGameStore = defineStore('game', () => {
     return result
   }
 
+  // —— 派遣远征（v1.27 可玩内容扩展方案 6）——
+  /** 派遣解锁同步（tick 每秒调用）：远征开放即解锁派遣（本轮已攻克解锁锚点据点） */
+  function syncDispatchUnlocked(): void {
+    military.setDispatchUnlocked(combat.isEndlessUnlocked())
+  }
+
+  /** 派遣奖励发放：逐资源 resources.gain（纯资源包，无负值无兵员） */
+  function grantDispatchReward(reward: Record<ResourceType, number>): void {
+    for (const [key, value] of Object.entries(reward)) {
+      if (value > 0) resources.gain(key as ResourceType, value)
+    }
+  }
+
+  /** 派遣到点结算（tick 每秒调用）：发放并记录最近结算供 AppShell 回执 toast */
+  const lastDispatchResolution = ref<Record<string, Record<ResourceType, number>> | null>(null)
+  function settleDispatches(): Record<string, Record<ResourceType, number>> {
+    const completed = military.collectCompletedDispatches(Date.now())
+    const results: Record<string, Record<ResourceType, number>> = {}
+    for (const [fid, r] of Object.entries(completed)) {
+      grantDispatchReward(r.reward)
+      results[fid] = r.reward
+    }
+    if (Object.keys(results).length > 0) lastDispatchResolution.value = results
+    return results
+  }
+
   // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
   /** 里程碑奖励发放（MapView 领取按钮回调）：combat 记账成功后按奖励对象逐资源发放 */
   function claimMilestone(tier: number): MilestoneReward | null {
@@ -271,6 +297,10 @@ export const useGameStore = defineStore('game', () => {
 
     // 3. 训练队列
     military.applyTick(dt)
+
+    // 3.5 派遣（v1.27 方案 6）：解锁面同步 + 到点结算发放（回执由 UI 层消费）
+    syncDispatchUnlocked()
+    settleDispatches()
 
     // 4. 探索进度
     const exploreResults = exploration.applyTick()
@@ -574,5 +604,8 @@ export const useGameStore = defineStore('game', () => {
     doTranscend,
     // encounters（v1.26）
     resolveEncounter,
+    syncDispatchUnlocked,
+    settleDispatches,
+    lastDispatchResolution,
   }
 })

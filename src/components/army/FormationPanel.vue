@@ -12,6 +12,7 @@ import { UNITS, type UnitId } from '@/data/units'
 import { TRAITS, getTrait } from '@/data/traits'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
 import Icon from '@/components/ui/Icon.vue'
+import DispatchPanel from '@/components/army/DispatchPanel.vue'
 
 const game = useGameStore()
 
@@ -54,6 +55,7 @@ const formationRows = computed(() =>
   game.military.formations.map((f) => ({
     f,
     power: game.military.formationPower(f, game.atkMult, game.defMult).atk,
+    dispatched: game.military.isDispatched(f.id),
     units: UNITS.map((u) => ({
       def: u,
       owned: game.military.getOwned(u.id),
@@ -150,42 +152,43 @@ function removeAll(fid: string, uid: UnitId) {
         <div class="fu-controls">
           <button
             class="fu-btn"
-            :disabled="cell.inFormation <= 0"
+            :disabled="cell.inFormation <= 0 || row.dispatched"
+            :data-testid="`f-out10-${row.f.id}-${cell.def.id}`"
             @click.stop="removeCount(row.f.id, cell.def.id, 10)"
           >
             -10
           </button>
           <button
             class="fu-btn"
-            :disabled="cell.inFormation <= 0"
+            :disabled="cell.inFormation <= 0 || row.dispatched"
             @click.stop="removeCount(row.f.id, cell.def.id, 1)"
           >
             -1
           </button>
           <button
             class="fu-btn"
-            :disabled="cell.owned <= 0"
+            :disabled="cell.owned <= 0 || row.dispatched"
             @click.stop="assignCount(row.f.id, cell.def.id, 1)"
           >
             +1
           </button>
           <button
             class="fu-btn"
-            :disabled="cell.owned <= 0"
+            :disabled="cell.owned <= 0 || row.dispatched"
             @click.stop="assignCount(row.f.id, cell.def.id, 10)"
           >
             +10
           </button>
           <button
             class="fu-btn fu-btn-wide"
-            :disabled="cell.owned <= 0"
+            :disabled="cell.owned <= 0 || row.dispatched"
             @click.stop="assignAll(row.f.id, cell.def.id)"
           >
             {{ t('army.allIn') }}
           </button>
           <button
             class="fu-btn fu-btn-wide fu-btn-remove"
-            :disabled="cell.inFormation <= 0"
+            :disabled="cell.inFormation <= 0 || row.dispatched"
             @click.stop="removeAll(row.f.id, cell.def.id)"
           >
             {{ t('army.allOut') }}
@@ -193,6 +196,8 @@ function removeAll(fid: string, uid: UnitId) {
         </div>
       </div>
     </div>
+    <!-- 派遣远征（v1.27 方案 6）：每编队一路，派遣中锁定本卡编入/撤出 -->
+    <DispatchPanel :formation-id="row.f.id" />
   </div>
 
   <!-- 批量操作确认弹窗 -->

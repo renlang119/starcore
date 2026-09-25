@@ -18,7 +18,11 @@
  * 按 0 判定，是 store 的既有语义）；garrisonGuard 走 resetGarrisonGuard
  * 显式清空（未注入时 garrison 本体门槛仍生效，是既有语义）。
  */
-import { setTrainingSlotProvider, BASE_TRAINING_SLOTS } from '@/stores/military'
+import {
+  setTrainingSlotProvider,
+  BASE_TRAINING_SLOTS,
+  resetDispatchBestProvider,
+} from '@/stores/military'
 import {
   setRelicSlotProvider,
   setRelicEnhanceSpendProvider,
@@ -36,6 +40,7 @@ export function resetProviderSingletons(): void {
   setRelicEnhanceDoneProvider(() => {})
   resetGarrisonGuard()
   resetFormationTraitProvider()
+  resetDispatchBestProvider()
   setEncounterRandomProvider(Math.random)
   setAchievementExternalProviders({
     relicsOwned: () => 0,

@@ -43,6 +43,7 @@ import transcendContent from './content/transcend.ts'
 import unitsContent from './content/units.ts'
 import weeklyBossContent from './content/weeklyBoss.ts'
 import encountersContent from './content/encounters.ts'
+import dispatchContent from './content/dispatch.ts'
 
 export default {
   ...achievements,
@@ -81,4 +82,5 @@ export default {
   ...unitsContent,
   ...weeklyBossContent,
   ...encountersContent,
+  ...dispatchContent,
 }
