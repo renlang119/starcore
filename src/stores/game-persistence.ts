@@ -219,6 +219,7 @@ export function createGamePersistence(deps: {
       garrisonIdleReward: combat.garrisonIdleReward.bind(combat),
       gainResource: (res, amount) => resources.gain(res, amount),
       advanceTraining: (duration) => military.applyTick(duration),
+      collectOfflineDispatches: (from, to) => military.collectOfflineDispatches(from, to),
     })
   }
 

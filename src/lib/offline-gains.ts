@@ -19,6 +19,10 @@ export interface OfflineReport {
   /** 离线随机事件收益（单列区块，不与建筑产出混计） */
   eventGains?: Record<string, string>
   trainedUnits?: Partial<Record<UnitId, number>>
+  /** 离线期间到点的派遣奖励（v1.27 方案 6 单列区块；绝对量，不吃 offlineMult） */
+  dispatchGains?: Record<string, string>
+  /** 离线期间到点的派遣路数（回执文案「N 支编队归来」） */
+  dispatchCount?: number
 }
 
 export interface OfflineGainsDeps {
@@ -34,6 +38,12 @@ export interface OfflineGainsDeps {
   gainResource: (res: ResourceType, amount: number | Decimal) => void
   /** 推进训练队列（返回完成的单位） */
   advanceTraining: (duration: number) => Partial<Record<UnitId, number>>
+  /** 离线派遣补算（v1.27 可选：缺省 = 无派遣）：[离线起点, 离线终点] 内到点的
+   *  派遣按全额结算，返回 { 编队 id → { 奖励, 档位小时 } } 并清除在途态 */
+  collectOfflineDispatches?: (
+    from: number,
+    to: number
+  ) => Record<string, { reward: Record<string, number>; hours: number }>
 }
 
 /**
@@ -55,6 +65,7 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
     garrisonIdleReward,
     gainResource,
     advanceTraining,
+    collectOfflineDispatches,
   } = deps
 
   // 建筑产出
@@ -87,6 +98,33 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
   // 训练队列补推进
   const trainedUnits = advanceTraining(duration)
 
+  // 派遣补算（v1.27 方案 6）：离线窗口内到点的派遣按全额结算。
+  // 绝对量奖励不吃 offlineMult（与驻扎/建筑的「每秒产出 × 时长」性质不同，
+  // 单列区块让玩家可分辨来源）；离线起点 = 当前时刻 - duration（钳 24h 后）。
+  let dispatchGains: Record<string, string> | undefined
+  let dispatchCount: number | undefined
+  if (collectOfflineDispatches) {
+    const completed = collectOfflineDispatches(Date.now() - duration * 1000, Date.now())
+    const count = Object.keys(completed).length
+    if (count > 0) {
+      const acc: Record<string, Decimal> = {}
+      for (const { reward } of Object.values(completed)) {
+        for (const [res, v] of Object.entries(reward)) {
+          if (v > 0) acc[res] = (acc[res] ?? D(0)).plus(v)
+        }
+      }
+      dispatchGains = {}
+      for (const [res, val] of Object.entries(acc)) {
+        if (val.gt(0)) {
+          gainResource(res as ResourceType, val)
+          dispatchGains[res] = ser(val)
+        }
+      }
+      if (Object.keys(dispatchGains).length === 0) dispatchGains = undefined
+      dispatchCount = count
+    }
+  }
+
   // 随机事件（20% 概率）
   const events = [
     { msg: t('offline.eventEnergy'), res: 'energy', mult: 60 },
@@ -116,11 +154,13 @@ export function computeOfflineGains(elapsed: number, deps: OfflineGainsDeps): Of
   const hasTrained = Object.keys(trainedUnits).length > 0
   const hasGarrison = Object.keys(garrisonGains).length > 0
   const hasEvent = Object.keys(eventGains).length > 0
+  const hasDispatch = dispatchGains !== undefined && dispatchCount !== undefined
   return {
     duration,
     gains,
     ...(hasGarrison ? { garrisonGains } : {}),
     ...(hasEvent ? { eventGains } : {}),
     ...(hasTrained ? { trainedUnits } : {}),
+    ...(hasDispatch ? { dispatchGains: dispatchGains!, dispatchCount: dispatchCount! } : {}),
   }
 }

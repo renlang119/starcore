@@ -7,6 +7,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import {
   useMilitaryStore,
   setTrainingSlotProvider,
+  setDispatchBestProvider,
+  resetDispatchBestProvider,
   BASE_TRAINING_SLOTS,
   MAX_TRAINING_SLOTS,
 } from './military'
@@ -210,5 +212,160 @@ describe('military store · 编队特性（v1.23）', () => {
     m2.hydrate(JSON.parse(JSON.stringify(data)))
     expect(m2.formations[1].trait).toBe('counter_doctrine')
     expect(m2.formations[0].trait).toBeUndefined()
+  })
+})
+
+describe('military store · 派遣远征（v1.27 方案 6）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    resetDispatchBestProvider()
+    setDispatchBestProvider(() => 10) // 测试锚 best=10
+  })
+
+  it('未解锁拒绝派遣；解锁后合法档位接受', () => {
+    const m = useMilitaryStore()
+    expect(m.startDispatch('f1', 4, 1_000_000)).toBe(false)
+    m.setDispatchUnlocked(true)
+    expect(m.startDispatch('f1', 4, 1_000_000)).toBe(true)
+    expect(m.isDispatched('f1')).toBe(true)
+    expect(m.startDispatch('f1', 8, 2_000_000)).toBe(false) // 已在途
+  })
+
+  it('非法时长与未知编队拒绝', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    expect(m.startDispatch('f1', 5, 1_000_000)).toBe(false)
+    expect(m.startDispatch('f9', 4, 1_000_000)).toBe(false)
+    expect(m.startDispatch('f1', 0, 1_000_000)).toBe(false)
+  })
+
+  it('三编队各自独立派遣', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    expect(m.startDispatch('f1', 4, 1_000_000)).toBe(true)
+    expect(m.startDispatch('f2', 24, 1_000_000)).toBe(true)
+    expect(m.startDispatch('f3', 12, 1_000_000)).toBe(true)
+    expect(Object.keys(m.dispatches).length).toBe(3)
+  })
+
+  it('到点结算：未到点不清状态，到点结算并清除（best 锚生效）', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    const t0 = 1_000_000_000
+    m.startDispatch('f1', 4, t0)
+    expect(Object.keys(m.collectCompletedDispatches(t0 + 3 * 3_600_000)).length).toBe(0)
+    expect(m.isDispatched('f1')).toBe(true)
+    const results = m.collectCompletedDispatches(t0 + 4 * 3_600_000)
+    expect(Object.keys(results)).toEqual(['f1'])
+    expect(results.f1.completed).toBe(true)
+    // best=10 锚：energy = round(2e7 × 1.35^9 × 1.0)（endless 同源缩放）
+    expect(results.f1.reward.energy).toBe(Math.round(20_000_000 * Math.pow(1.35, 9)))
+    expect(m.isDispatched('f1')).toBe(false)
+  })
+
+  it('提前召回按比例结算，t=0 零奖励（completed=false）', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    const t0 = 1_000_000_000
+    m.startDispatch('f2', 8, t0)
+    const zero = m.recallDispatch('f2', t0)
+    expect(zero?.completed).toBe(false)
+    expect(Object.values(zero!.reward).every((v) => v === 0)).toBe(true)
+    // 半程
+    m.startDispatch('f2', 8, t0)
+    const full = m.recallDispatch('f2', t0 + 8 * 3_600_000)!
+    expect(full.completed).toBe(true)
+    // 未在途召回返回 null
+    expect(m.recallDispatch('f2', t0)).toBeNull()
+  })
+
+  it('后勤特性作用派遣结算（×1.2）', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    m.setFormationTrait('f1', 'logistics_doctrine')
+    const t0 = 1_000_000_000
+    m.startDispatch('f1', 4, t0)
+    const r = m.collectCompletedDispatches(t0 + 4 * 3_600_000).f1!
+    const plain = Math.round(20_000_000 * Math.pow(1.35, 9))
+    expect(r.reward.energy).toBe(Math.round(plain * 1.2))
+  })
+
+  it('serialize：无在途不写 dispatches 键；有在途往返保真', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    expect(m.serialize()).not.toHaveProperty('dispatches')
+    const t0 = 1_000_000_000
+    m.startDispatch('f1', 12, t0)
+    const data = m.serialize()
+    expect(data.dispatches).toBeDefined()
+    const m2 = useMilitaryStore()
+    m2.hydrate(JSON.parse(JSON.stringify(data)))
+    expect(m2.isDispatched('f1')).toBe(true)
+    expect(m2.dispatches.f1).toEqual({ formationId: 'f1', hours: 12, startTime: t0 })
+  })
+
+  it('hydrate 兜底：未知编队 id / 非法档位 / 非法时间戳条目级剥离不拒档', () => {
+    const m = useMilitaryStore()
+    m.hydrate({
+      owned: {},
+      training: [],
+      formations: [
+        { id: 'f1', name: 'A', units: {} },
+        { id: 'f2', name: 'B', units: {} },
+      ],
+      dispatches: {
+        f1: { hours: 8, startTime: 1_000_000_000 },
+        fX: { hours: 4, startTime: 1_000_000_000 }, // 未知编队
+        f2: { hours: 5, startTime: 1_000_000_000 }, // 非法档位
+      } as never,
+    } as never)
+    expect(m.isDispatched('f1')).toBe(true)
+    expect(m.isDispatched('f2')).toBe(false)
+  })
+
+  it('hydrate 兜底：非法时间戳条目级剥离（-1 与 NaN 形态）', () => {
+    const m = useMilitaryStore()
+    m.hydrate({
+      owned: {},
+      training: [],
+      formations: [{ id: 'f1', name: 'A', units: {} }],
+      dispatches: {
+        f1: { hours: 4, startTime: -1 }, // 负时间戳
+      } as never,
+    } as never)
+    expect(m.isDispatched('f1')).toBe(false)
+    const m2 = useMilitaryStore()
+    m2.hydrate({
+      owned: {},
+      training: [],
+      formations: [{ id: 'f1', name: 'A', units: {} }],
+      dispatches: {
+        f1: { hours: 4, startTime: Number.NaN }, // 非有限
+      } as never,
+    } as never)
+    expect(m2.isDispatched('f1')).toBe(false)
+  })
+
+  it('reset 清派遣与解锁面（转生随部队/编队一起清）', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    m.startDispatch('f1', 4, 1_000_000)
+    m.reset()
+    expect(Object.keys(m.dispatches).length).toBe(0)
+    expect(m.dispatchUnlocked).toBe(false)
+  })
+
+  it('离线补算：离线窗口内到点全额结算并清除，未到点保留', () => {
+    const m = useMilitaryStore()
+    m.setDispatchUnlocked(true)
+    const t0 = 1_000_000_000_000 // ms
+    m.startDispatch('f1', 4, t0) // t0+4h 到点
+    m.startDispatch('f2', 24, t0 + 23 * 3_600_000) // 离线窗外
+    const done = m.collectOfflineDispatches(t0 + 1_000, t0 + 10 * 3_600_000)
+    expect(Object.keys(done)).toEqual(['f1'])
+    expect(done.f1.hours).toBe(4)
+    expect(done.f1.reward.energy).toBe(Math.round(20_000_000 * Math.pow(1.35, 9)))
+    expect(m.isDispatched('f1')).toBe(false)
+    expect(m.isDispatched('f2')).toBe(true)
   })
 })
