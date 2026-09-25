@@ -317,12 +317,21 @@ describe('game store — encounters lifecycle（v1.26）', () => {
     expect(r2).not.toBeNull()
     expect(military.getOwned('assault')).toBe(80)
 
-    // 损失分支（enc_core B 末支 -1300）：合金库存 100 → 至多扣空不为负
+    // 损失分支（enc_core B 末支 -1300）：余额充足照额扣减 2000 → 700
+    resources.setAmount('alloy', 2000)
     encounters.pendingEventId = 'enc_core'
     encounters.pendingAt = Date.now()
     setEncounterRandomProvider(() => 0.99)
     const r3 = game.resolveEncounter('B')
     expect(r3).toEqual({ encounterId: 'enc_core', rewards: { alloy: -1300 } })
+    expect(resources.getAmount('alloy').toNumber()).toBe(700)
+
+    // 余额不足（100 < 1300）：扣至空且不为负
+    resources.setAmount('alloy', 100)
+    encounters.pendingEventId = 'enc_core'
+    encounters.pendingAt = Date.now()
+    const r4 = game.resolveEncounter('B')
+    expect(r4).toEqual({ encounterId: 'enc_core', rewards: { alloy: -1300 } })
     expect(resources.getAmount('alloy').toNumber()).toBe(0)
   })
 
