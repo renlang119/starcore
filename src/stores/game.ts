@@ -19,6 +19,7 @@ import { useTranscendStore } from './transcend'
 import { useAchievementsStore } from './achievements'
 import { useDailyStore } from './daily'
 import { useArchiveStore } from './archive'
+import { useEncountersStore } from './encounters'
 import { createGameEffects, wireGameProviders } from './game-effects'
 import { createGamePersistence } from './game-persistence'
 import { TECHS, adjustedTechCost } from '@/data/tech'
@@ -26,6 +27,7 @@ import { BUILDINGS, buildingCost } from '@/data/buildings'
 import { enhanceCost, MAX_RELIC_LEVEL } from '@/data/relics'
 import type { MilestoneReward } from '@/data/endless'
 import type { ResourceType } from '@/data/buildings'
+import type { EncounterResolution } from './encounters'
 import type { OfflineReport } from '@/lib/offline-gains'
 
 const TICK_INTERVAL = 1000 // ms
@@ -46,6 +48,7 @@ export const useGameStore = defineStore('game', () => {
   const achievements = useAchievementsStore()
   const daily = useDailyStore()
   const archive = useArchiveStore()
+  const encounters = useEncountersStore()
 
   // —— game meta state ——
   const lastSaveTime = ref(Date.now())
@@ -148,6 +151,7 @@ export const useGameStore = defineStore('game', () => {
     achievements,
     daily,
     archive,
+    encounters,
     totalProduction,
     offlineMult,
     lastSaveTime,
@@ -173,6 +177,32 @@ export const useGameStore = defineStore('game', () => {
 
   /** 驻扎小时累计进位（v1.21 周挑战：内存小数累加，满 1 小时 bump；不入档） */
   const garrisonHourCarry = ref(0)
+
+  // —— 随机遭遇事件（v1.26 可玩内容扩展方案 8）——
+  /**
+   * 遭遇事件结算发放（EncounterCard 选项按钮回调）：encounters store 掷取
+   * 结果后按奖励对象逐项落地——资源走 resources.gain（负值合金损失至多
+   * 扣空，不产生负库存）；units 走 military 库存直加（收编入伍不经训练
+   * 队列、不占训练槽）。返回结算结果供 toast 回执，无挂起/已过期返回 null。
+   */
+  function resolveEncounter(choice: 'A' | 'B'): EncounterResolution | null {
+    const result = encounters.resolve(choice)
+    if (!result) return null
+    const { rewards } = result
+    for (const [key, value] of Object.entries(rewards)) {
+      if (key === 'units') {
+        if (value > 0) military.addToOwned('assault', value)
+        continue
+      }
+      if (value < 0) {
+        // 负值损失（仅合金）：至多扣空，不产生负库存
+        resources.spend(key as ResourceType, -value)
+        continue
+      }
+      resources.gain(key as ResourceType, value)
+    }
+    return result
+  }
 
   // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
   /** 里程碑奖励发放（MapView 领取按钮回调）：combat 记账成功后按奖励对象逐资源发放 */
@@ -267,6 +297,10 @@ export const useGameStore = defineStore('game', () => {
         }
       }
     }
+
+    // 7. 随机遭遇事件（v1.26 方案 8）：在线限定掷骰 + 过期静默失效。
+    // 挂起事件 toast 由 UI 层消费 pendingEvent 呈现，store 侧零 UI 依赖
+    encounters.tick(now)
   }
 
   /**
@@ -383,6 +417,7 @@ export const useGameStore = defineStore('game', () => {
     military.reset()
     combat.reset() // 转生清驻扎/本轮通关，远征深度跨转生保留
     exploration.reset()
+    encounters.reset() // 本轮数据：挂起与冷却窗口随转生清空
     // relics 保留
     // transcend 保留
     // 初始能量加成
@@ -487,6 +522,7 @@ export const useGameStore = defineStore('game', () => {
     achievements,
     daily,
     archive,
+    encounters,
     claimChallenge,
     claimMilestone,
     // meta
@@ -536,5 +572,7 @@ export const useGameStore = defineStore('game', () => {
     canTranscend,
     previewTranscendGain,
     doTranscend,
+    // encounters（v1.26）
+    resolveEncounter,
   }
 })

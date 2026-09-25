@@ -14,6 +14,7 @@ import { MILESTONE_STEP } from '@/data/endless'
 import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
 import { INFINITE_NODE_IDS, MAX_INFINITE_NODE_LEVEL } from '@/stores/transcend'
 import { ARCHIVE_ENEMY_KEYS } from '@/stores/archive'
+import { ENCOUNTER_IDS } from '@/data/encounters'
 
 // —— 有效 ID 集合（用于 validateSaveData 内容范围校验）——
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
@@ -110,6 +111,14 @@ export function validateAndRepair(data: unknown): data is SaveData {
       arc.enemies = arc.enemies.filter(
         (k: unknown) => typeof k === 'string' && ARCHIVE_ENEMY_KEYS.has(k)
       )
+    }
+    // encounters.pendingEventId：剥离未知事件 id（v1.26；挂起丢失零损失，
+    // 与「未知 id 只损失对应进度」的条目级剥离口径一致）
+    const enc = data.encounters
+    if (_isObject(enc) && enc.pendingEventId !== undefined) {
+      if (typeof enc.pendingEventId !== 'string' || !ENCOUNTER_IDS.has(enc.pendingEventId)) {
+        delete enc.pendingEventId
+      }
     }
   }
   return validateSaveData(data)
@@ -319,6 +328,16 @@ function validateSaveData(data: unknown): data is SaveData {
     const arc = d.archive as Record<string, unknown>
     if (!Array.isArray(arc.enemies)) return false
     if (!arc.enemies.every((k: unknown) => typeof k === 'string')) return false
+  }
+  // encounters（v1.26 可选字段）：存在则校验结构。挂起事件 id 白名单校验在
+  // _validateAndRepair 剥离后到达此处（未知 id 只损失挂起，不拒整档）；
+  // 时间戳非负有限（过期判定与窗口比较都在读取侧，存档值本身不判真伪）
+  if (d.encounters !== undefined) {
+    if (!_isObject(d.encounters)) return false
+    const enc = d.encounters as Record<string, unknown>
+    if (!_isNonNegFinite(enc.nextTriggerAt)) return false
+    if (enc.pendingEventId !== undefined && typeof enc.pendingEventId !== 'string') return false
+    if (enc.pendingAt !== undefined && !_isNonNegFinite(enc.pendingAt)) return false
   }
   return true
 }

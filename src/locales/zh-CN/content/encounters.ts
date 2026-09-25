@@ -1,0 +1,48 @@
+/**
+ * encounters — 中文内容文案（v1.26 可玩内容扩展方案 8）
+ *
+ * 简体中文为基线语言；新增文案直接在此维护，并跑缺键扫描守卫。
+ * 数值口径见数据表与 EV 核验表，此处仅玩家可见文案。
+ */
+export default {
+  'content.encounters.enc_flux.name': '能量涌流',
+  'content.encounters.enc_flux.desc': '一股游离能量团在舰桥外盘旋，正缓缓逸散',
+  'content.encounters.enc_flux.optA': '就地收集',
+  'content.encounters.enc_flux.optB': '引导汇聚',
+  'content.encounters.enc_vein.name': '合金矿脉',
+  'content.encounters.enc_vein.desc': '扫描器捕捉到一条裸露的合金矿脉',
+  'content.encounters.enc_vein.optA': '标准开采',
+  'content.encounters.enc_vein.optB': '定向爆破',
+  'content.encounters.enc_signal.name': '数据截获',
+  'content.encounters.enc_signal.desc': '一段加密数据流擦过接收阵列',
+  'content.encounters.enc_signal.optA': '完整破译',
+  'content.encounters.enc_signal.optB': '快速扫描',
+  'content.encounters.enc_depot.name': '破损补给舱',
+  'content.encounters.enc_depot.desc': '一只补给舱残骸缓缓翻滚，舱体正在漏气',
+  'content.encounters.enc_depot.optA': '小心回收',
+  'content.encounters.enc_depot.optB': '加压拖曳',
+  'content.encounters.enc_salvage.name': '残骸回收',
+  'content.encounters.enc_salvage.desc': '战舰残骸静静悬停，装甲与核心尚存',
+  'content.encounters.enc_salvage.optA': '拆解装甲',
+  'content.encounters.enc_salvage.optB': '赌一把武器核心',
+  'content.encounters.enc_recruit.name': '流浪编队',
+  'content.encounters.enc_recruit.desc': '几架无主突击兵发出入伙请求',
+  'content.encounters.enc_recruit.optA': '收编入伍',
+  'content.encounters.enc_recruit.optB': '收下装备',
+  'content.encounters.enc_beacon.name': '未知信标',
+  'content.encounters.enc_beacon.desc': '一枚未知信标自深空传来重复信号',
+  'content.encounters.enc_beacon.optA': '解码数据核',
+  'content.encounters.enc_beacon.optB': '抽出能源芯',
+  'content.encounters.enc_well.name': '暗捕获井',
+  'content.encounters.enc_well.desc': '一口废弃捕获井仍在渗出暗能量',
+  'content.encounters.enc_well.optA': '安全封井',
+  'content.encounters.enc_well.optB': '强行重启',
+  'content.encounters.enc_core.name': '曲率核心',
+  'content.encounters.enc_core.desc': '报废引擎的曲率核心还在不稳定地脉动',
+  'content.encounters.enc_core.optA': '稳妥切割',
+  'content.encounters.enc_core.optB': '完整起爆',
+  'content.encounters.enc_wager.name': '深空赌局',
+  'content.encounters.enc_wager.desc': '一名漂泊商人提议用货物赌一把运气',
+  'content.encounters.enc_wager.optA': '收下开价',
+  'content.encounters.enc_wager.optB': '接受赌局',
+}

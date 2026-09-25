@@ -6,10 +6,12 @@ import ActionQueuePanel from '@/components/home/ActionQueuePanel.vue'
 import QuickActions from '@/components/home/QuickActions.vue'
 import OverviewPanel from '@/components/home/OverviewPanel.vue'
 import DailyCard from '@/components/home/DailyCard.vue'
+import EncounterCard from '@/components/home/EncounterCard.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
 // P3-3 新手引导（HomeView 3 步）
 const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick', 'home-actions'])
+// 遭遇事件结算回执由 AppShell 全局 toast 统一呈现（v1.26，组件内不处理）
 </script>
 
 <template>
@@ -21,6 +23,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
     </div>
 
     <QuickActions :active-step="activeStep" @dismiss="dismiss" @skip="skipAll" />
+    <EncounterCard />
     <DailyCard />
     <OverviewPanel />
   </div>

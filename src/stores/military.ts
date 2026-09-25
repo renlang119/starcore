@@ -157,6 +157,12 @@ export const useMilitaryStore = defineStore('military', () => {
     return completed
   }
 
+  /** 收编直加入库存（不经训练队列；v1.26 遭遇事件「流浪编队」专用） */
+  function addToOwned(unitId: UnitId, count: number): void {
+    if (count <= 0) return
+    owned.value[unitId] += count
+  }
+
   /** 编入编队 */
   function assignToFormation(formationId: string, unitId: UnitId, count: number): boolean {
     const f = formations.value.find((f) => f.id === formationId)
@@ -249,6 +255,7 @@ export const useMilitaryStore = defineStore('military', () => {
     formationPower,
     totalPower,
     startTraining,
+    addToOwned,
     applyTick,
     assignToFormation,
     removeFromFormation,

@@ -43,6 +43,19 @@ export interface CombatSaveData {
 export interface ArchiveSaveData {
   enemies: string[]
 }
+
+/**
+ * 随机遭遇事件存档（v1.26 可选字段：旧档缺失视为无挂起、窗口重开）。
+ * 本轮数据：挂起与窗口时间戳随转生清空，hardReset 同清。
+ */
+export interface EncountersSaveData {
+  /** 下次可触发时刻（ms 绝对时间戳；重启续窗口防重载即触发） */
+  nextTriggerAt: number
+  /** 挂起事件 id（白名单在 validate 剥离 / hydrate 过滤） */
+  pendingEventId?: string
+  /** 挂起时刻（ms；pendingEventId 存在时有效，超时由读取侧/tick 静默失效） */
+  pendingAt?: number
+}
 export interface ExplorationSaveData {
   progress: Record<
     string,
@@ -156,4 +169,6 @@ export interface SaveData {
   daily?: DailySaveData
   /** 档案馆（v1.18 可选字段，旧档缺失视为空图鉴） */
   archive?: ArchiveSaveData
+  /** 随机遭遇事件（v1.26 可选字段，旧档缺失视为无挂起、窗口重开） */
+  encounters?: EncountersSaveData
 }

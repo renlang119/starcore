@@ -19,6 +19,9 @@ import { STRONGHOLDS } from '@/data/pve'
 import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
 import { useArchiveStore } from './archive'
+import { useEncountersStore } from './encounters'
+import { setEncounterRandomProvider } from './encounters'
+import { useMilitaryStore } from './military'
 import { useResearchStore } from './research'
 import { useCombatStore } from './combat'
 import { D } from '@/lib/decimal'
@@ -240,6 +243,94 @@ describe('game store — expedition milestone lifecycle（v1.20）', () => {
     expect(game.combat.milestonesClaimed).toEqual([])
     expect(game.combat.expeditionBest).toBe(0)
     game.stop()
+  })
+})
+
+describe('game store — encounters lifecycle（v1.26）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    // 重置模块级 slotProvider，防止跨测试污染
+    setRelicSlotProvider(() => 0)
+    setEncounterRandomProvider(() => 0)
+  })
+
+  it('doTranscend clears pending encounter and rerolls window（本轮数据口径）', () => {
+    const game = useGameStore()
+    const encounters = useEncountersStore()
+    const resources = useResourcesStore()
+
+    // 预制挂起态
+    encounters.pendingEventId = 'enc_flux'
+    encounters.pendingAt = Date.now()
+    encounters.nextTriggerAt = Date.now() + 300_000
+
+    resources.setAmount('energy', 1e9)
+    resources.gain('energy', 1e9)
+    expect(game.canTranscend()).toBe(true)
+    expect(game.doTranscend()).toBe(true)
+    // 本轮数据：挂起清空、窗口重开
+    expect(encounters.pendingEventId).toBe('')
+    expect(encounters.pendingAt).toBe(0)
+  })
+
+  it('hardReset clears pending encounter', async () => {
+    await clearAllSaves()
+    const game = useGameStore()
+    const encounters = useEncountersStore()
+
+    encounters.pendingEventId = 'enc_vein'
+    encounters.pendingAt = Date.now()
+
+    await game.hardReset()
+    expect(encounters.pendingEventId).toBe('')
+    game.stop()
+  })
+
+  it('tick 触发遭遇事件（预制过期窗口后单 tick 秒触）', () => {
+    const game = useGameStore()
+    const encounters = useEncountersStore()
+    // 预制窗口已到（固定通道 → 事件恒取池首）
+    encounters.nextTriggerAt = Date.now() - 1
+    game.tick()
+    expect(encounters.pendingEventId).not.toBe('')
+    game.stop()
+  })
+
+  it('resolveEncounter 发放：资源入账 + 收编入库存 + 损失至多扣空', () => {
+    const game = useGameStore()
+    const encounters = useEncountersStore()
+    const resources = useResourcesStore()
+    const military = useMilitaryStore()
+
+    // 稳定分支结算（固定通道 → rollOutcome 恒命中首支）
+    setEncounterRandomProvider(() => 0)
+    encounters.pendingEventId = 'enc_flux'
+    encounters.pendingAt = Date.now()
+    const r = game.resolveEncounter('A')
+    expect(r).toEqual({ encounterId: 'enc_flux', rewards: { energy: 8000 } })
+    expect(resources.getAmount('energy').toNumber()).toBeGreaterThanOrEqual(8000)
+
+    // 收编：突击兵直接入库存
+    encounters.pendingEventId = 'enc_recruit'
+    encounters.pendingAt = Date.now()
+    const r2 = game.resolveEncounter('A')
+    expect(r2).not.toBeNull()
+    expect(military.getOwned('assault')).toBe(80)
+
+    // 损失分支（enc_core B 末支 -1300）：合金库存 100 → 至多扣空不为负
+    encounters.pendingEventId = 'enc_core'
+    encounters.pendingAt = Date.now()
+    setEncounterRandomProvider(() => 0.99)
+    const r3 = game.resolveEncounter('B')
+    expect(r3).toEqual({ encounterId: 'enc_core', rewards: { alloy: -1300 } })
+    expect(resources.getAmount('alloy').toNumber()).toBe(0)
+  })
+
+  it('resolveEncounter 无挂起返回 null 且不改资源', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    expect(game.resolveEncounter('A')).toBeNull()
+    expect(resources.getAmount('energy').toNumber()).toBe(resources.getAmount('energy').toNumber())
   })
 })
 
