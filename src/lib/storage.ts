@@ -20,6 +20,7 @@ export type {
   AchievementsSaveData,
   DailySaveData,
   ArchiveSaveData,
+  EncountersSaveData,
   SaveData,
 } from './save/schema'
 export { writeSave, writeSaveSync, readSave, clearSave, clearAllSaves } from './save/io'

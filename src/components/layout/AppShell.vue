@@ -5,6 +5,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useBreakpoint } from '@/composables/useBreakpoint'
 import { useToast } from '@/composables/useToast'
 import { useTimeout } from '@/composables/useTimeout'
+import { resourceRows } from '@/lib/resource-rows'
+import { D } from '@/lib/decimal'
 import { APP_STARS } from '@/data/app-stars'
 import { useGameStore } from '@/stores/game'
 import TopBar from './TopBar.vue'
@@ -20,13 +22,47 @@ const router = useRouter()
 const { isDesktop } = useBreakpoint()
 const game = useGameStore()
 
-/** 全局轻提示实例（存档失败提醒等跨路由提示） */
+/** 全局轻提示实例（存档失败提醒/遭遇事件提醒等跨路由提示）；暴露给子组件复用单实例 */
 const toast = useToast()
 // 存档双通道写失败（配额/隐私模式）：跨路由常驻提示，直到下次成功保存清除
 watch(
   () => game.saveFailed,
   (failed) => {
     if (failed) toast.show(t('save.storageFull'), 3000)
+  }
+)
+
+// 遭遇事件触发全局提醒（v1.26 方案 8）：挂起即提示，玩家在其他页面也能感知；
+// 点不点由玩家决定（不打断，首页事件卡挂起待处理）。
+// 提醒延迟 500ms 且结算时取消：首页点选项后不弹「遭遇事件」提醒、
+// 回执文案不被覆盖（结算先清挂起，挂起 watch 的待弹 timer 作废）
+let encToastTimer: ReturnType<typeof setTimeout> | null = null
+watch(
+  () => game.encounters.pendingEventId,
+  (id) => {
+    if (id) encToastTimer = setTimeout(() => toast.show(t('ui.encounter.title'), 2500), 500)
+  }
+)
+
+// 遭遇事件结算回执（v1.26）：lastResolution 非空即有新结算，呈现并取消待弹提醒
+watch(
+  () => game.encounters.lastResolution,
+  (r) => {
+    if (!r) return
+    if (encToastTimer) {
+      clearTimeout(encToastTimer)
+      encToastTimer = null
+    }
+    const entries = Object.entries(r.rewards) as [string, number][]
+    const rows = resourceRows(
+      Object.fromEntries(entries.map(([k, v]) => [k, D(v)])),
+      game.resources.allMeta
+    )
+    const changes =
+      rows.length === 0
+        ? t('ui.encounter.nothing')
+        : rows.map((x) => `${x.amount} ${x.name}`).join(' + ')
+    toast.show(t('ui.encounter.resolved', { name: r.name, changes }), 3200)
   }
 )
 
