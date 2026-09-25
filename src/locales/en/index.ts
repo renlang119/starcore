@@ -11,6 +11,7 @@
 import achievements from './ui/achievements.ts'
 import app from './ui/app.ts'
 import archive from './ui/archive.ts'
+import encounter from './ui/encounter.ts'
 import army from './ui/army.ts'
 import battle from './ui/battle.ts'
 import build from './ui/build.ts'
@@ -41,11 +42,13 @@ import traitsContent from './content/traits.ts'
 import transcendContent from './content/transcend.ts'
 import unitsContent from './content/units.ts'
 import weeklyBossContent from './content/weeklyBoss.ts'
+import encountersContent from './content/encounters.ts'
 
 export default {
   ...achievements,
   ...app,
   ...archive,
+  ...encounter,
   ...army,
   ...battle,
   ...build,
@@ -77,4 +80,5 @@ export default {
   ...transcendContent,
   ...unitsContent,
   ...weeklyBossContent,
+  ...encountersContent,
 }

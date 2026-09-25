@@ -26,6 +26,7 @@ import {
 } from '@/stores/relics'
 import { resetGarrisonGuard, resetFormationTraitProvider } from '@/stores/combat'
 import { setAchievementExternalProviders } from '@/stores/achievements'
+import { setEncounterRandomProvider } from '@/stores/encounters'
 
 /** 恢复全部模块级 provider 为各 store 声明处的默认值 */
 export function resetProviderSingletons(): void {
@@ -35,6 +36,7 @@ export function resetProviderSingletons(): void {
   setRelicEnhanceDoneProvider(() => {})
   resetGarrisonGuard()
   resetFormationTraitProvider()
+  setEncounterRandomProvider(Math.random)
   setAchievementExternalProviders({
     relicsOwned: () => 0,
     relicKinds: () => 0,
