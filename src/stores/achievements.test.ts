@@ -46,7 +46,7 @@ describe('achievements — 定义表完整性', () => {
     }
   })
 
-  it('prestige_mult 奖励仅 1 个成就（欧米茄传承）且封顶 1.1', () => {
+  it('prestige_mult 奖励仅 1 个成就（欧米伽传承）且封顶 1.1', () => {
     const prestigeAchs = ACHIEVEMENTS.filter((a) =>
       a.effects.some((e) => e.type === 'prestige_mult')
     )
