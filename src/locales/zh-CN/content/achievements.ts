@@ -74,7 +74,7 @@ export default {
   'content.achievements.ach_relic_3.name': '遗物学大家',
   'content.achievements.ach_relic_4.desc': '集齐全部 20 种遗物',
   'content.achievements.ach_relic_4.effect.0.label': '负熵 +10%',
-  'content.achievements.ach_relic_4.name': '欧米茄传承',
+  'content.achievements.ach_relic_4.name': '欧米伽传承',
   'content.achievements.ach_relic_5.desc': '累计合成 1 次遗物',
   'content.achievements.ach_relic_5.name': '初试熔合',
   'content.achievements.ach_relic_6.desc': '累计合成 5 次遗物',
