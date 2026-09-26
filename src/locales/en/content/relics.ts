@@ -94,10 +94,11 @@ export default {
   'content.relics.set.ruin.name': 'Forerunner Legacy',
   'content.relics.set.ruin.partial.label': 'Set: Data output +6% (Forerunner Legacy 2 pcs)',
   'content.relics.set.ruin.partial.short': 'Data output +6%',
-  'content.relics.set.silencer.full.label': 'Full set: Dark Matter output +12% (Silent Ones Echo)',
+  'content.relics.set.silencer.full.label':
+    'Full set: Dark Matter output +12% (Echo of the Silent Ones)',
   'content.relics.set.silencer.full.short': 'Dark Matter output +12%',
-  'content.relics.set.silencer.name': 'Silent Ones Echo',
+  'content.relics.set.silencer.name': 'Echo of the Silent Ones',
   'content.relics.set.silencer.partial.label':
-    'Set: Dark Matter output +6% (Silent Ones Echo 2 pcs)',
+    'Set: Dark Matter output +6% (Echo of the Silent Ones 2 pcs)',
   'content.relics.set.silencer.partial.short': 'Dark Matter output +6%',
 }

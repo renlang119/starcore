@@ -182,12 +182,12 @@ export default {
     'An outpost built by the mysterious Silent Ones; the endgame challenge',
   'content.pve.silencer_1.enemy.0.name': 'Silent Scout',
   'content.pve.silencer_1.enemy.1.name': 'Silent Elite',
-  'content.pve.silencer_1.name': 'Silent Ones Outpost',
+  'content.pve.silencer_1.name': 'Outpost of the Silent Ones',
   'content.pve.silencer_2.desc':
     'A colony fleet floating silent in the dead system; no battle damage, no survivors',
   'content.pve.silencer_2.enemy.0.name': 'Silent Scout',
   'content.pve.silencer_2.enemy.1.name': 'Silent Elite',
-  'content.pve.silencer_2.name': 'Silent Ones Colony Ship',
+  'content.pve.silencer_2.name': 'Colony Ship of the Silent Ones',
   'content.pve.silencer_3.desc':
     'The wreck of the Silent Ones’ flagship; its black box holds an answer from the cluster’s depths',
   'content.pve.silencer_3.enemy.0.name': 'Flagship of the Silent Ones',
@@ -198,7 +198,7 @@ export default {
   'content.pve.silencer_4.enemy.0.name': 'Homeport Bulwark',
   'content.pve.silencer_4.enemy.1.name': 'Gate Sentinel',
   'content.pve.silencer_4.enemy.2.name': 'Silent Watcher',
-  'content.pve.silencer_4.name': 'Silent Ones Homeport',
+  'content.pve.silencer_4.name': 'Homeport of the Silent Ones',
   'content.pve.silencer_5.desc':
     'The Silent Sovereign enthroned in the Gallery of Gates, the true gatekeeper hub of the Frozen Gate',
   'content.pve.silencer_5.enemy.0.name': 'Silent Sovereign',
@@ -213,7 +213,7 @@ export default {
   'content.pve.silencer_6.enemy.2.name': 'Homeport Bulwark',
   'content.pve.silencer_6.enemy.3.name': 'Gate Sentinel',
   'content.pve.silencer_6.enemy.4.name': 'Silent Watcher',
-  'content.pve.silencer_6.name': 'Silent Ones Master Mind',
+  'content.pve.silencer_6.name': 'Master Mind of the Silent Ones',
   'content.pve.silencer_7.desc':
     'The source of every signal: the Silent Ones’ echo behind the gate, the Receiver that has kept the gate for generations',
   'content.pve.silencer_7.enemy.0.name': 'Silent Echo',
@@ -221,7 +221,7 @@ export default {
   'content.pve.silencer_7.enemy.2.name': 'Void Bulwark',
   'content.pve.silencer_7.enemy.3.name': 'Gate Sentinel',
   'content.pve.silencer_7.enemy.4.name': 'Silent Watcher',
-  'content.pve.silencer_7.name': 'Silent Ones Echo',
+  'content.pve.silencer_7.name': 'Echo of the Silent Ones',
   'content.pve.type.beast.name': 'Alien Behemoths',
   'content.pve.type.raider.name': 'Raider Camps',
   'content.pve.type.ruin.name': 'Ancient Ruins',
