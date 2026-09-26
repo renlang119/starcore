@@ -20,7 +20,7 @@ export default {
   'battle.garrisonAt': 'Garrison at "',
   'battle.garrisonBlocked':
     'Cannot garrison now: the stronghold is not conquered or the formation is unavailable',
-  'battle.garrisonBlockedDispatch': 'This formation is dispatched and cannot garrison',
+  'battle.deployBlockedDispatch': 'This formation is dispatched and cannot deploy',
   'battle.garrisonConfirm': 'Confirm Garrison',
   'battle.garrisonDesc': '": station the formation to steadily earn the following gains',
   'battle.garrisonGains': 'Expected Gains',

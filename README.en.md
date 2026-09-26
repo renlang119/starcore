@@ -84,8 +84,9 @@ starcore/
 │  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
 │  ├─ locales/      locale bundles (zh-CN baseline + en English, split by domain under ui/ and content/)
 │  ├─ router/       route definitions
-│  ├─ stores/       12 Pinia stores (resources, buildings, research, military, combat,
-│  │                exploration, relics, rebirth, achievements, daily, archive, game)
+│  ├─ stores/       13 Pinia stores (resources, buildings, research, military, combat,
+│  │                exploration, relics, rebirth, achievements, daily, archive, encounters,
+│  │                game)
 │  ├─ styles/       8 style modules (tokens, base, fonts, buttons, Toast, animations, background, utilities)
 │  ├─ tests/        test harness (vitest setup and shared helpers)
 │  ├─ views/        11 views (home, build, tech, map, army, battle, relics, rebirth, achievements, archive, settings)
@@ -101,7 +102,7 @@ starcore/
 ## Quality
 
 - **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 46 test files,
-  675 cases
+  677 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document

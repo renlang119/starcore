@@ -15,6 +15,8 @@ import {
 import { TECHS } from '@/data/tech'
 import { UNITS } from '@/data/units'
 import { D } from '@/lib/decimal'
+import { validateAndRepair } from '@/lib/save/validate'
+import { minimalSaveData } from '@/tests/fixtures'
 
 const afford = () => true
 
@@ -367,5 +369,37 @@ describe('military store · 派遣远征（v1.27 方案 6）', () => {
     expect(done.f1.reward.energy).toBe(Math.round(20_000_000 * Math.pow(1.35, 9)))
     expect(m.isDispatched('f1')).toBe(false)
     expect(m.isDispatched('f2')).toBe(true)
+  })
+
+  it('validateAndRepair：未知编队派遣条目剥离后过校验（不拒档）', () => {
+    const data = minimalSaveData({
+      military: {
+        owned: {},
+        training: [],
+        formations: [
+          { id: 'f1', name: 'A', units: {} },
+          { id: 'f2', name: 'B', units: {} },
+        ],
+        dispatches: { f1: { hours: 4, startTime: 1 }, fX: { hours: 4, startTime: 1 } },
+      } as never,
+    })
+    expect(validateAndRepair(data)).toBe(true)
+    expect(Object.keys((data.military as { dispatches: object }).dispatches)).toEqual(['f1'])
+  })
+
+  it('validateAndRepair：派遣字段结构非法整档拒绝', () => {
+    const bad = (dispatches: unknown) =>
+      minimalSaveData({
+        military: {
+          owned: {},
+          training: [],
+          formations: [{ id: 'f1', name: 'A', units: {} }],
+          dispatches,
+        } as never,
+      })
+    expect(validateAndRepair(bad('garbage'))).toBe(false)
+    expect(validateAndRepair(bad({ f1: { hours: 0, startTime: 1 } }))).toBe(false)
+    expect(validateAndRepair(bad({ f1: { hours: 4, startTime: -1 } }))).toBe(false)
+    expect(validateAndRepair(bad({ f1: { hours: 4 } }))).toBe(false)
   })
 })
