@@ -2,7 +2,7 @@
    深空背景（星点 / 星云 / 暗角）
    ============================================================ */
 
-/* P2-1 星云层 + 暗角 — 三层纵深：星点(底) → 星云+暗角(中) → 内容(顶) */
+/* 星云层 + 暗角 — 三层纵深：星点(底) → 星云+暗角(中) → 内容(顶) */
 body::after {
   content: '';
   position: fixed;
@@ -36,7 +36,7 @@ body::after {
     inset 0 0 60px 20px color-mix(in srgb, var(--color-void) 30%, transparent);
 }
 
-/* P2-2 星点闪烁 */
+/* 星点闪烁 */
 .star-field {
   position: fixed;
   inset: 0;

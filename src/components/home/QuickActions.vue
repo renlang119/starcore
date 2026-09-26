@@ -17,7 +17,7 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
-// P3-2 快速操作入口：按 id 白名单从 NAV_ITEMS 派生（图标/路径同源），入口色为首页专属映射
+// 快速操作入口：按 id 白名单从 NAV_ITEMS 派生（图标/路径同源），入口色为首页专属映射
 const QUICK_ENTRIES: { id: string; color: string; label?: string }[] = [
   { id: 'build', color: 'var(--color-core)' },
   // 「科技树」在首页入口沿用既有「科技」文案（v0.54 起口径，避免可见文案变化）
@@ -32,9 +32,9 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
 </script>
 
 <template>
-  <!-- P3-2 快速操作入口 — Hero 下方一行 4 个等宽紧凑按钮 -->
+  <!-- 快速操作入口 — Hero 下方一行 4 个等宽紧凑按钮 -->
   <section class="quick-actions" :aria-label="t('home.quick.aria')">
-    <!-- P3-3 onboarding: 快速操作引导 -->
+    <!-- onboarding: 快速操作引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-quick'"
       class="ob-quick"
@@ -57,7 +57,7 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
 </template>
 
 <style scoped>
-/* —— P3-2 快速操作入口 —— */
+/* —— 快速操作入口 —— */
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -91,7 +91,7 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
   transform: scale(0.95);
 }
 
-/* —— P3-3 onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+/* —— onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
 .ob-quick {
   position: absolute;
   bottom: 100%;

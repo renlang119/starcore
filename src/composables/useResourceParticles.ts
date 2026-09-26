@@ -1,5 +1,5 @@
 /**
- * useResourceParticles.ts — P3-3/P3-6 资源产出粒子动画
+ * useResourceParticles.ts — 资源产出粒子动画
  *
  * 功能：
  * - rate > 0 时，pill 旁生成 2px 光点向上飘 28px
@@ -13,7 +13,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 interface Particle {
   id: number
   resourceId: string
-  /** 生命周期（ms），生成时随机 800~1200（体验增强设计规范 §P3-6） */
+  /** 生命周期（ms），生成时随机 800~1200 */
   duration: number
 }
 

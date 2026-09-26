@@ -22,10 +22,10 @@ const { displayActions, hasActions } = useActionQueue()
 </script>
 
 <template>
-  <!-- 行动队列（P1-2 合并模块，P1-7 背景区分） -->
+  <!-- 行动队列（合并模块，背景区分） -->
   <section class="action-queue" aria-labelledby="action-queue-title">
     <h3 id="action-queue-title" class="section-title">{{ t('home.actionQueue.title') }}</h3>
-    <!-- P3-3 onboarding: 行动队列引导 -->
+    <!-- onboarding: 行动队列引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-actions'"
       class="ob-actions"
@@ -79,7 +79,7 @@ const { displayActions, hasActions } = useActionQueue()
 </template>
 
 <style scoped>
-/* —— P1-2 行动队列 —— */
+/* —— 行动队列 —— */
 .action-queue {
   background: color-mix(in srgb, var(--color-core) 2%, transparent);
   border-radius: var(--radius-lg);
@@ -170,16 +170,16 @@ const { displayActions, hasActions } = useActionQueue()
   transition: all 0.2s var(--ease-out);
 }
 .action-item.actionable:hover {
-  transform: translateY(-2px); /* P2-4 */
+  transform: translateY(-2px);
   background: var(--color-hover);
   border-color: var(--color-border-glow);
   box-shadow:
     var(--elevation-2),
-    /* P2-6 */ 0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--c) 20%, transparent);
 }
 .action-item.actionable:active {
-  transform: translateY(0) scale(0.98); /* P2-4：卡片回弹与卡片统一 */
-  transition: transform 0.1s var(--ease-out); /* P2-4：active 回弹 0.1s 与 ov-item 对齐 */
+  transform: translateY(0) scale(0.98); /* 卡片回弹与卡片统一 */
+  transition: transform 0.1s var(--ease-out); /* active 回弹 0.1s 与 ov-item 对齐 */
 }
 .action-item.actionable .action-icon-block {
   width: 40px;
@@ -228,14 +228,14 @@ const { displayActions, hasActions } = useActionQueue()
   font-size: var(--text-sm);
 }
 
-/* P1-2 桌面端适配 */
+/* 桌面端适配 */
 @media (min-width: 768px) {
   .action-list {
     gap: var(--space-3);
   }
 }
 
-/* —— P3-3 onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+/* —— onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
 .ob-actions {
   position: relative;
   width: 100%;

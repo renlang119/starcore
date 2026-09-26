@@ -2,10 +2,9 @@
  * src/tests/reset-providers.ts — isolate:false 下模块级单例 provider 的集中重置
  *
  * 背景（v0.93）：vitest isolate:false 跨文件共享 worker，
- * 5 个模块级 provider（military.trainingSlotProvider / relics.slotProvider /
- * relics.enhanceSpend / combat.garrisonGuard / achievements.externalProviders）
+ * 全部模块级 provider（见 resetProviderSingletons 清单）
  * 持有「创建它的那次 pinia」里的 store 闭包；任何测试文件注入后，后续文件
- * 读到的是已废弃 pinia 的旧闭包。前靠 6 个测试文件里 8 处散落的手工重置
+ * 读到的是已废弃 pinia 的旧闭包。v0.93 前靠 6 个测试文件里 8 处散落的手工重置
  * 兜底，存在盲点（relics.test 的合成/套装组不重置 enhanceSpend）。
  *
  * 本文件由 vitest.config.ts 的 setupFiles 挂载，每个测试文件开始前把全部
@@ -36,7 +35,7 @@ import { setEncounterRandomProvider } from '@/stores/encounters'
 export function resetProviderSingletons(): void {
   setTrainingSlotProvider(() => BASE_TRAINING_SLOTS)
   setRelicSlotProvider(() => 0)
-  setRelicEnhanceSpendProvider(() => false)
+  setRelicEnhanceSpendProvider(() => false) // 未注入扣费通道时拒绝强化（安全语义）
   setRelicEnhanceDoneProvider(() => {})
   resetGarrisonGuard()
   resetFormationTraitProvider()

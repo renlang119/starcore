@@ -32,7 +32,7 @@ const emptyText = computed(() =>
     : t('tech.branchDone', { branch: TECH_BRANCHES[activeBranch.value].name })
 )
 
-// P3-3 onboarding
+// onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding(['tech-research'])
 
 function techStatus(id: string): 'completed' | 'available' | 'locked' {
@@ -59,7 +59,7 @@ function tryResearch(id: string) {
       ⚙ {{ t('tech.protocolOngoing') }}
     </p>
 
-    <!-- P3-3 onboarding -->
+    <!-- onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'tech-research'"
       class="onboard-tech"
@@ -206,7 +206,7 @@ function tryResearch(id: string) {
   border: 1px solid var(--color-border-line);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
-  box-shadow: var(--elevation-1); /* P2-6 */
+  box-shadow: var(--elevation-1);
   transition:
     opacity 0.2s,
     transform 0.2s var(--ease-out),
@@ -214,12 +214,12 @@ function tryResearch(id: string) {
     box-shadow 0.2s var(--ease-out);
 }
 .tech-card:not(.locked):not(.completed):hover {
-  transform: translateY(-2px); /* P2-4 */
+  transform: translateY(-2px);
   border-color: var(--color-border-glow);
-  box-shadow: var(--elevation-2); /* P2-6 */
+  box-shadow: var(--elevation-2);
 }
 .tech-card:not(.locked):not(.completed):active {
-  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transform: translateY(0) scale(0.98); /* 卡片按压回弹 */
   transition: transform 0.1s var(--ease-out);
 }
 .tech-card.completed {
@@ -289,9 +289,9 @@ function tryResearch(id: string) {
   font-size: var(--text-xs);
   color: var(--color-locked);
   margin-bottom: var(--space-2);
-} /* P2-7 */
+}
 
-/* P3-3 onboarding */
+/* onboarding */
 .onboard-tech {
   width: 100%;
   margin-bottom: var(--space-2);

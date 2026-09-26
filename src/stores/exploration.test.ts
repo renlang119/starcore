@@ -1,7 +1,7 @@
 /**
  * exploration.test.ts — 探索 store 测试
  * 覆盖：初始进度 / availableNodes 前置链 / startExplore 校验与扣费 /
- * 完成时间锁定（mult 变化不影响进行中探索）/ applyTick 奖励发放 /
+ * 完成时间锁定（mult 变化不影响进行中探索）/ applyTick 奖励发放 / isExploring 未知节点防御 /
  * endTime=0 容缺 / getProgress / reset / serialize-hydrate
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'

@@ -31,9 +31,8 @@ function showNext() {
   }, SHOW_MS)
 }
 
-// 队列长度变化即调度下一条（current 非空时说明正在展示，shiftToast 后会再次触发）
+// watch 队列长度：新增与 shift 后都会触发 showNext 链式推进
 watch(() => ach.toastQueue.length, showNext, { immediate: true })
-// 展示中一条被消费后 length 变化也会触发 showNext，链式推进
 </script>
 
 <template>

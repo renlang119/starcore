@@ -5,7 +5,7 @@
  * which works identically in dev and production builds. Do not hardcode
  * the version string elsewhere; import APP_VERSION from this module instead.
  *
- * 显示口径：去掉末尾的 .0（package.json 的 "0.87.0" 显示为 v0.87；
+ * 显示口径：去掉末尾的 .0（package.json 的 "1.31.0" 显示为 v1.31；
  * 非零尾版本如 0.86.1 原样显示）。存档版本由整数 SAVE_VERSION 承载，
  * 与本模块无关。
  */

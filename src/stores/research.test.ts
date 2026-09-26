@@ -127,7 +127,7 @@ describe('research — 效果聚合', () => {
     expect(store.getValue('training_slot')).toBe(0)
   })
 
-  it('getMult cost_mult/tech：研究加速 ×0.85（techCostMult 已收敛至 game 聚合）', () => {
+  it('getMult cost_mult/tech：研究加速 ×0.85（techCostMult 收敛至 game 聚合，见 game.test.ts）', () => {
     expect(store.getMult('cost_mult', 'tech').toNumber()).toBe(1)
     complete('research_speed')
     expect(store.getMult('cost_mult', 'tech').toNumber()).toBeCloseTo(0.85, 10)

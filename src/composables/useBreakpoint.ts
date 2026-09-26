@@ -10,7 +10,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
  * 而非等 onMounted 才更新。这消除了移动端首帧渲染 SideNav 的闪烁（FOUC）。
  * 本项目是纯客户端 SPA（无 SSR），可在 setup 中安全访问 window。
  *
- * 注：P3-4 预留的四档断点（S/M/L/XL）零消费方，v0.78 删除；当前仅导出 isDesktop。
+ * 注：预留的四档断点（S/M/L/XL）零消费方，v0.78 删除；当前仅导出 isDesktop。
  */
 
 const MOBILE_BREAKPOINT = 768 // px, 与 Tailwind md 断点一致

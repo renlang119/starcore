@@ -17,7 +17,7 @@ export interface BuildingDef {
   icon: string // svg symbol id
   /** 基础成本 {资源: 数量}，每级按 costGrowth 增长 */
   baseCost: Partial<Record<ResourceType, number>>
-  costGrowth: number // 成本增长系数，默认 1.15
+  costGrowth: number // 成本增长系数（数据表逐条显式声明）
   /** 产出 {资源: 每秒} per level */
   produces: Partial<Record<ResourceType, number>>
   /** 解锁条件：前置科技 id */

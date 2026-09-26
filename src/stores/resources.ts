@@ -59,7 +59,7 @@ export const useResourcesStore = defineStore('resources', () => {
     energy: D(START_ENERGY),
   })
   const totals = ref<Record<ResourceType, Decimal>>(zeroResources())
-  /** 每秒产出（由 game loop 每帧计算并写入） */
+  /** 每秒产出（由 game loop 每 tick（1 秒）计算并写入） */
   const production = ref<Record<ResourceType, Decimal>>(zeroResources())
 
   // —— getters ——

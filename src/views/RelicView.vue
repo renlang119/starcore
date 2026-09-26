@@ -430,7 +430,7 @@ function onEnhanceFail(msg: string) {
 .slot-empty {
   color: var(--color-locked);
   font-size: var(--text-xs);
-} /* P2-7 */
+}
 
 .active-effects {
   background: var(--color-surface);

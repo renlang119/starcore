@@ -19,7 +19,7 @@ import { useRouter } from 'vue-router'
 const game = useGameStore()
 const router = useRouter()
 
-// P3-3 onboarding
+// onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding(['map-explore'])
 
 // 点击反馈 toast
@@ -111,7 +111,7 @@ function claimMilestone() {
 }
 
 // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
-/** 解锁口径与远征入口一致（本轮已克 silencer_3） */
+/** 解锁口径与远征一致（锚点据点 silencer_3） */
 const weeklyBossUnlocked = computed(() => game.combat.isEndlessUnlocked())
 /** 本周是否已击败（跨周自动失效由 daily store 承担） */
 const weeklyBossDefeated = computed(() => game.daily.isWeeklyBossDefeated())
@@ -143,7 +143,7 @@ const weeklyBossCard = computed(() => {
       ⚙ {{ t('map.protocolOngoing') }}
     </p>
 
-    <!-- P3-3 onboarding -->
+    <!-- onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'map-explore'"
       class="onboard-map"
@@ -466,7 +466,7 @@ const weeklyBossCard = computed(() => {
   padding: var(--space-1) var(--space-3);
 }
 
-/* P3-3 onboarding */
+/* onboarding */
 .onboard-map {
   width: 100%;
   margin-bottom: var(--space-2);

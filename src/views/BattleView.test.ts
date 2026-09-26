@@ -89,7 +89,7 @@ describe('BattleView — 挂载与渲染', () => {
   it('显示编队信息和驻扎区域', () => {
     const wrapper = mountBattle()
 
-    // 战斗按钮区域存在（P1-5 迁移后 class 从 .btn-battle → .btn-accent）
+    // 战斗按钮区域存在（迁移后 class 从 .btn-battle → .btn-accent）
     expect(wrapper.find('[data-testid="battle-start"]').exists()).toBe(true)
   })
 })

@@ -3,7 +3,7 @@
  *
  * 从 UpgradeCountdown 组件拆出：逐项判定资源缺口，可产出资源按
  * 「缺口 ÷ 生产速率」取最长者作为瓶颈；区分可产出 / 需手动获取
- * 两类状态，五种显示形态由 type 收敛（none / ready / countdown /
+ * 两类状态，四种显示形态由 type 收敛（none / ready / countdown /
  * manual）。纯派生逻辑，无副作用。
  */
 import { t } from '@/i18n'
