@@ -263,7 +263,7 @@ export const useGameStore = defineStore('game', () => {
     }
     totalPlayTime.value += dt
 
-    // 1. 计算产出（5.2：使用 cached computed，避免每 tick 全量遍历建筑）
+    // 1. 计算产出（使用 cached computed，避免每 tick 全量遍历建筑）
     const totalProd = totalProduction.value
     for (const [res, v] of Object.entries(totalProd)) {
       resources.setProduction(res as ResourceType, v)
@@ -424,7 +424,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * 执行转生（奇点重启）
    *
-   * 3.14 设计意图说明：
+   * 设计意图说明：
    * 转生后 resources.reset(true) 会重置 totals（历史总产出）为 0。
    * 这是设计意图而非 bug——放置类游戏的标准循环：
    *   每轮 run 积累能量 → 获得负熵 → 转生重置 → 新一轮 run
@@ -462,7 +462,7 @@ export const useGameStore = defineStore('game', () => {
     return true
   }
 
-  // —— 3.12：原子操作（check + spend + execute 一体化，消除竞态）——
+  // —— 原子操作（check + spend + execute 一体化，消除竞态）——
   /**
    * 尝试升级建筑：原子检查资源 + 扣费 + 升级
    * 替代视图中 canAfford → spendCost → upgrade 的三步非原子调用
@@ -594,7 +594,7 @@ export const useGameStore = defineStore('game', () => {
     doImport,
     corruptRaw,
     exportCorruptRaw,
-    // atomic actions (3.12)
+    // atomic actions
     tryUpgradeBuilding,
     tryUpgradeBuildingSteps,
     previewUpgradeBuildingSteps,

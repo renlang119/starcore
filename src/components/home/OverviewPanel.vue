@@ -19,7 +19,7 @@ const buildingsUnlocked = computed(() => {
 const relicsEquipped = computed(() => game.relics.equippedRelics.length)
 const playTime = computed(() => fmtTime(game.totalPlayTime))
 
-// 文明概况指标列表（P1-6 视觉层次）
+// 文明概况指标列表（视觉层次）
 interface OverviewItem {
   key: string
   label: string
@@ -79,7 +79,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
 </script>
 
 <template>
-  <!-- 文明概况（P1-6 视觉层次，P1-3 桌面 6 列） -->
+  <!-- 文明概况（视觉层次，桌面 6 列） -->
   <section class="overview" aria-labelledby="overview-title">
     <h3 id="overview-title" class="section-title">{{ t('home.overview.title') }}</h3>
     <ul class="overview-grid">
@@ -100,7 +100,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
 </template>
 
 <style scoped>
-/* —— P1-6 文明概况 —— */
+/* —— 文明概况 —— */
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -120,16 +120,16 @@ const overviewItems = computed<OverviewItem[]>(() => {
   align-items: center;
   gap: var(--space-2);
   transition: all 0.2s var(--ease-out);
-  box-shadow: var(--elevation-1); /* P2-6 */
+  box-shadow: var(--elevation-1);
 }
 .ov-item:hover {
   background: var(--color-hover);
   border-color: var(--color-border-glow);
-  transform: translateY(-2px); /* P2-4 */
-  box-shadow: var(--elevation-2); /* P2-6 */
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-2);
 }
 .ov-item:active {
-  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transform: translateY(0) scale(0.98); /* 卡片按压回弹 */
   transition: transform 0.1s var(--ease-out);
 }
 .ov-top {
@@ -153,7 +153,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
   text-align: center;
 }
 
-/* P1-6 桌面端 6 列横排 */
+/* 桌面端 6 列横排 */
 @media (min-width: 768px) {
   .overview-grid {
     grid-template-columns: repeat(6, 1fr);

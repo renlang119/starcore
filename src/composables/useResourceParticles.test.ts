@@ -1,7 +1,7 @@
 /**
  * useResourceParticles.test.ts — 资源粒子随机动画时长（v0.50）
  *
- * 体验增强设计规范 §P3-6：生命周期随机 0.8–1.2s，经 --duration 注入 CSS，
+ * 生命周期随机 0.8–1.2s，经 --duration 注入 CSS，
  * 移除定时器与动画时长同步。
  *
  * @vitest-environment jsdom

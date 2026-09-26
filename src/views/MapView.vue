@@ -19,7 +19,7 @@ import { useRouter } from 'vue-router'
 const game = useGameStore()
 const router = useRouter()
 
-// P3-3 onboarding
+// onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding(['map-explore'])
 
 // 点击反馈 toast
@@ -143,7 +143,7 @@ const weeklyBossCard = computed(() => {
       ⚙ {{ t('map.protocolOngoing') }}
     </p>
 
-    <!-- P3-3 onboarding -->
+    <!-- onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'map-explore'"
       class="onboard-map"
@@ -466,7 +466,7 @@ const weeklyBossCard = computed(() => {
   padding: var(--space-1) var(--space-3);
 }
 
-/* P3-3 onboarding */
+/* onboarding */
 .onboard-map {
   width: 100%;
   margin-bottom: var(--space-2);

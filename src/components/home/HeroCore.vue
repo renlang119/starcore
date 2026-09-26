@@ -34,7 +34,7 @@ const coreGlowSize = computed(() => {
   return Math.round(size)
 })
 
-// —— P2-3 核心环信息映射 ——
+// —— 核心环信息映射 ——
 // 外环 r1 → 探索进度（completedNodes / totalNodes）
 // 中环 r2 → 科技完成率（completedTechs / totalTechs）
 // 内环 r3 → 能量等级（log10 分 4 档）
@@ -58,7 +58,7 @@ const energyPhase = computed(() => {
   return 3 // ≥100M
 })
 
-// P2-3 phase classes for rings
+// phase classes for rings
 const r1Phase = computed(() => {
   const p = exploreProgress.value
   if (p >= 1) return 'phase-active'
@@ -78,7 +78,7 @@ const r3Phase = computed(() => {
   return 'phase-idle'
 })
 
-// P2-4 核心点击脉动（重触发先清旧；卸载清理由 useTimeout 承载）
+// 核心点击脉动（重触发先清旧；卸载清理由 useTimeout 承载）
 const coreClicked = ref(false)
 const clickTimer = useTimeout()
 function onCoreClick() {
@@ -104,9 +104,9 @@ const allExplored = computed(
 </script>
 
 <template>
-  <!-- 星核核心视觉 — 核心能量值 + 产出率（P1-1） -->
+  <!-- 星核核心视觉 — 核心能量值 + 产出率 -->
   <section class="hero" :aria-label="t('home.hero.aria')">
-    <!-- P3-3 onboarding: 核心引导 -->
+    <!-- onboarding: 核心引导 -->
     <OnboardingBubble
       v-if="activeStep === 'home-core'"
       class="ob-core"
@@ -141,13 +141,13 @@ const allExplored = computed(
       {{ rateDisplay }}
     </div>
     <p v-if="allExplored" class="final-salute">{{ t('home.hero.finalSalute') }}。</p>
-    <!-- P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 -->
+    <!-- 视觉动线引导 — Hero 底部向下渐隐光柱 -->
     <div class="hero-flow" aria-hidden="true"></div>
   </section>
 </template>
 
 <style scoped>
-/* —— P1-1 星核核心视觉 —— */
+/* —— 星核核心视觉 —— */
 .hero {
   display: flex;
   flex-direction: column;
@@ -171,13 +171,13 @@ const allExplored = computed(
 }
 .core-visual:active {
   transform: scale(0.95);
-} /* P2-4 */
-/* P2-4 核心点击额外脉动 */
+}
+/* 核心点击额外脉动 */
 .core-visual.core-clicked {
   animation: coreClickPulse 0.6s var(--ease-out);
 }
 
-/* P1-1 外层渗透光晕 */
+/* 外层渗透光晕 */
 .core-visual::after {
   content: '';
   position: absolute;
@@ -199,7 +199,7 @@ const allExplored = computed(
   animation: corePulse 3s ease-in-out infinite;
 }
 
-/* P2-3 核心环信息映射 — 3 层环映射游戏状态 */
+/* 核心环信息映射 — 3 层环映射游戏状态 */
 .core-ring {
   position: absolute;
   border-radius: 50%;
@@ -307,7 +307,7 @@ const allExplored = computed(
   color: var(--color-alert);
 }
 
-/* P2-9 视觉动线引导 — Hero 底部向下渐隐光柱 */
+/* 视觉动线引导 — Hero 底部向下渐隐光柱 */
 .hero-flow {
   position: absolute;
   bottom: calc(-1 * var(--space-6));
@@ -335,7 +335,7 @@ const allExplored = computed(
   max-width: 34em;
 }
 
-/* P1-1 桌面端差异 */
+/* 桌面端差异 */
 @media (min-width: 768px) {
   .core-visual {
     width: 240px;
@@ -366,7 +366,7 @@ const allExplored = computed(
   }
 }
 
-/* —— P3-3 onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+/* —— onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
 .ob-core {
   position: absolute;
   top: 0;

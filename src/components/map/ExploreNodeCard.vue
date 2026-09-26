@@ -95,19 +95,19 @@ const game = useGameStore()
   border: 1px solid var(--color-border-line);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
-  box-shadow: var(--elevation-1); /* P2-6 */
+  box-shadow: var(--elevation-1);
   transition:
     transform 0.2s var(--ease-out),
     border-color 0.2s,
     box-shadow 0.2s var(--ease-out);
 }
 .node-card:not(.locked):not(.completed):hover {
-  transform: translateY(-2px); /* P2-4 */
+  transform: translateY(-2px);
   border-color: var(--color-border-glow);
-  box-shadow: var(--elevation-2); /* P2-6 */
+  box-shadow: var(--elevation-2);
 }
 .node-card:not(.locked):not(.completed):active {
-  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transform: translateY(0) scale(0.98); /* 卡片按压回弹 */
   transition: transform 0.1s var(--ease-out);
 }
 .node-card.completed {
@@ -133,7 +133,7 @@ const game = useGameStore()
 }
 .node-card.locked .n-name,
 .node-card.locked .n-desc {
-  color: var(--color-locked); /* P2-7：锁定卡名称与描述迁移 */
+  color: var(--color-locked); /* 锁定卡名称与描述迁移 */
 }
 .n-done {
   color: var(--color-quantum);
@@ -173,7 +173,7 @@ const game = useGameStore()
 .n-locked {
   font-size: var(--text-xs);
   color: var(--color-locked);
-} /* P2-7 */
+}
 .n-rewards {
   display: flex;
   flex-wrap: wrap;

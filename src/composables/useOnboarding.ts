@@ -1,5 +1,5 @@
 /**
- * useOnboarding.ts — P3-3 新手引导气泡
+ * useOnboarding.ts — 新手引导气泡
  *
  * 功能：
  * - localStorage 持久化已完成的 step

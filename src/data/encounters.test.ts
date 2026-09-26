@@ -18,7 +18,7 @@ import {
 } from './encounters'
 import { setEncounterRandomProvider } from '@/stores/encounters'
 
-/** 折算率与量级带（阶段 1 设计稿 EV 折算口径；调整数值前先改设计稿核验表） */
+/** 折算率与量级带（EV 折算口径；调整数值前先改核验表） */
 const RATE = { energy: 1, alloy: 1, data: 6, dark: 8000, units: 60 } as const
 const BAND_MIN = 4400
 const BAND_MAX = 120000

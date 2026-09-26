@@ -256,7 +256,7 @@ const unitRows = computed(() =>
   transition: transform 0.1s var(--ease-out);
 }
 .unit-card.locked .u-name {
-  color: var(--color-locked); /* P2-7：卡名迁移；锁定不降 opacity */
+  color: var(--color-locked); /* 卡名迁移；锁定不降 opacity */
 }
 .u-head {
   display: flex;
@@ -338,7 +338,7 @@ const unitRows = computed(() =>
   color: var(--color-locked);
   text-align: center;
   padding: var(--space-2);
-} /* P2-7 */
+}
 
 .train-queue {
   margin-top: var(--space-2);

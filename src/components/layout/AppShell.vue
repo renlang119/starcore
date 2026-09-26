@@ -90,7 +90,7 @@ watch(
 /** 宽版内容区：路由 meta.wide 控制（首页双列需要更宽的 max-width） */
 const isWideContent = computed(() => route.meta.wide === true)
 
-/** P2-2 星点闪烁 — 背景星点配置（表见 data/app-stars.ts） */
+/** 星点闪烁 — 背景星点配置（表见 data/app-stars.ts） */
 const stars = APP_STARS
 
 /**
@@ -100,7 +100,7 @@ const stars = APP_STARS
  */
 const showBattleBack = computed(() => route.path.startsWith('/battle'))
 
-// P3-5 路由跃迁白光 overlay 触发控制
+// 路由跃迁白光 overlay 触发控制
 const warpFlash = ref(false)
 const warpTimer = useTimeout()
 watch(
@@ -120,7 +120,7 @@ watch(
     <!-- 图标符号表：全应用只挂载一次（v0.77 收敛，消除各视图与成就提示的重复 symbol） -->
     <Icons />
 
-    <!-- P2-2 星点闪烁 -->
+    <!-- 星点闪烁 -->
     <div class="star-field" aria-hidden="true">
       <span
         v-for="(s, i) in stars"
@@ -155,7 +155,7 @@ watch(
       <BottomNav v-if="!isDesktop" />
     </div>
 
-    <!-- P3-5 路由跃迁白光 overlay -->
+    <!-- 路由跃迁白光 overlay -->
     <div v-if="warpFlash" class="warp-overlay" aria-hidden="true"></div>
 
     <!-- 离线收益弹窗 -->
@@ -242,7 +242,7 @@ watch(
   color: var(--color-t-secondary);
 }
 
-/* P3-5 路由跃迁白光 overlay — 全屏覆盖，350ms 闪过 */
+/* 路由跃迁白光 overlay — 全屏覆盖，350ms 闪过 */
 .warp-overlay {
   position: fixed;
   inset: 0;

@@ -1,5 +1,5 @@
 /* ============================================================
-   P1-5 按钮系统 — 四类语义型全局按钮
+   按钮系统 — 四类语义型全局按钮
    .btn           基础骨架（v0.96 补登）：四类共用，单独使用须搭配语义类
    .btn-primary   主操作（升级/确认）
    .btn-secondary 次操作（取消/返回）
@@ -36,14 +36,14 @@
 .btn-primary:active {
   transform: scale(0.95);
   transition: transform 0.1s var(--ease-out);
-} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
+} /* 按下 0.1s，释放回 0.15s 两段式 */
 .btn-primary:disabled {
   background: var(--color-elevated);
   color: var(--color-t-tertiary);
   cursor: not-allowed;
   opacity: 0.4;
-  pointer-events: none; /* P2-7：禁止 hover/active 反馈 */
-} /* P2-7: 统一 .4 */
+  pointer-events: none; /* 禁止 hover/active 反馈 */
+} /* 统一 .4 */
 
 .btn-secondary {
   background: var(--color-elevated);
@@ -58,12 +58,12 @@
 .btn-secondary:active {
   transform: scale(0.95);
   transition: transform 0.1s var(--ease-out);
-} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
+} /* 按下 0.1s，释放回 0.15s 两段式 */
 .btn-secondary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
-} /* P2-7 */
+}
 
 .btn-accent {
   background: var(--accent, var(--color-core));
@@ -77,14 +77,14 @@
 .btn-accent:active {
   transform: scale(0.95);
   transition: transform 0.1s var(--ease-out);
-} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
+} /* 按下 0.1s，释放回 0.15s 两段式 */
 .btn-accent:disabled {
   background: var(--color-elevated);
   color: var(--color-t-tertiary);
   cursor: not-allowed;
   opacity: 0.4;
   pointer-events: none;
-} /* P2-7 */
+}
 
 .btn-ghost {
   background: transparent;
@@ -98,12 +98,12 @@
 .btn-ghost:active {
   transform: scale(0.95);
   transition: transform 0.1s var(--ease-out);
-} /* P2-4：按下 0.1s，释放回 0.15s 两段式 */
+} /* 按下 0.1s，释放回 0.15s 两段式 */
 .btn-ghost:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
-} /* P2-7 已统一 */
+} /* 已统一 */
 
 /* 尺寸变体 */
 .btn-primary.sm,

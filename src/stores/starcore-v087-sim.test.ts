@@ -154,7 +154,7 @@ describe('时间加速全玩法仿真', () => {
     expect(game.doTranscend()).toBe(true)
     expect(buildings.getLevel('fusion_reactor')).toBe(0)
     expect(transcend.negativeEntropy.gte(gain)).toBe(true)
-    // totals 随转生清零（3.14 设计意图：防白嫖负熵，成就侧已先采集终身计数）
+    // totals 随转生清零（设计意图：防白嫖负熵，成就侧已先采集终身计数）
     expect(resources.getTotal('energy').toNumber()).toBeLessThan(totalEnergyBefore)
     // 转生后负熵可购买（批量）
     transcend.negativeEntropy = D(1000)

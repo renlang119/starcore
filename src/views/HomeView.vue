@@ -9,7 +9,7 @@ import DailyCard from '@/components/home/DailyCard.vue'
 import EncounterCard from '@/components/home/EncounterCard.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 
-// P3-3 新手引导（HomeView 3 步）
+// 新手引导（HomeView 3 步）
 const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick', 'home-actions'])
 // 遭遇事件结算回执由 AppShell 全局 toast 统一呈现（v1.26，组件内不处理）
 </script>
@@ -37,7 +37,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
   animation: screenIn 0.4s var(--ease-out);
 }
 
-/* —— P1-3 桌面端双列布局 —— */
+/* —— 桌面端双列布局 —— */
 /* 内容区宽度由 AppShell 按 route.meta.wide 加宽（v0.77），本视图只管内部布局 */
 .home-top-row {
   display: flex;
@@ -60,7 +60,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
   }
 }
 
-/* —— P3-4 四档响应断点 —— */
+/* —— 四档响应断点 —— */
 /* L 断点（1024-1439px）：双列比 38/62 */
 @media (min-width: 1024px) {
   .home-top-row {

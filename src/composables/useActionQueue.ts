@@ -52,7 +52,7 @@ const fallbackActions: ActionItem[] = [
 export function useActionQueue() {
   const game = useGameStore()
 
-  // P1-2 行动队列（合并 activeEvents + suggestions）
+  // 行动队列（合并 activeEvents + suggestions）
   const actionQueue = computed<ActionItem[]>(() => {
     const items: ActionItem[] = []
     const completedTechs = game.research.completed

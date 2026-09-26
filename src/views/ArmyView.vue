@@ -15,7 +15,7 @@ const game = useGameStore()
 const toast = useToast()
 const activeTab = ref<'barracks' | 'formation'>('barracks')
 
-// P3-3 onboarding
+// onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding(['army-train'])
 
 const totalPower = computed(() => game.military.totalPower(game.atkMult, game.defMult))
@@ -30,7 +30,7 @@ function showFeedback(msg: string) {
   <div class="army-view">
     <h2 class="page-title font-display">{{ t('army.title') }}</h2>
 
-    <!-- P3-3 onboarding -->
+    <!-- onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'army-train'"
       class="ob-army"
@@ -148,7 +148,7 @@ function showFeedback(msg: string) {
   border-color: var(--color-alert);
 }
 
-/* P3-3 onboarding（变体类承载定位与层级，v0.97） */
+/* onboarding（变体类承载定位与层级，v0.97） */
 .ob-army {
   position: relative;
   width: 100%;

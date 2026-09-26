@@ -55,7 +55,7 @@ export interface GameEffects {
   totalProduction: ComputedRef<Record<string, Decimal>>
 }
 
-/** 统一效果系统（6.2：替代三处重复 getMax 逻辑）与全局乘数缓存 */
+/** 统一效果系统（替代三处重复 getMax 逻辑）与全局乘数缓存 */
 export function createGameEffects(deps: {
   research: ResearchStore
   relics: RelicsStore
@@ -72,7 +72,7 @@ export function createGameEffects(deps: {
   effectSystem.register(transcend as EffectSource)
   effectSystem.register(achievements as EffectSource)
 
-  // —— 计算全局乘数（5.1：改为 computed 缓存，仅在依赖变化时重算）——
+  // —— 计算全局乘数（改为 computed 缓存，仅在依赖变化时重算）——
   const productionMults = computed<Record<string, Decimal>>(() => {
     const result: Record<string, Decimal> = {}
     for (const res of ['energy', 'crystal', 'alloy', 'data', 'dark']) {
@@ -92,7 +92,7 @@ export function createGameEffects(deps: {
   const autoResearch = computed(() => effectSystem.getValue('auto_research') > 0)
   const autoExplore = computed(() => effectSystem.getValue('auto_explore') > 0)
 
-  /** 5.2：缓存总产出——仅当建筑等级或乘数变化时重算 */
+  /** 缓存总产出——仅当建筑等级或乘数变化时重算 */
   const totalProduction = computed(() => buildings.getTotalProduction(productionMults.value))
 
   return {

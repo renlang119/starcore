@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 /**
- * OnboardingBubble.vue — P3-3 新手引导气泡
+ * OnboardingBubble.vue — 新手引导气泡
  *
  * 视觉：elevated 底 + core 描边 + elevation-2 阴影
  * 动画：floatUp 入场

@@ -21,7 +21,7 @@
   color: var(--color-t-secondary);
   margin-top: calc(-1 * var(--space-3));
 }
-/* P1-8 section-title 分级：主标题 17px + 完整左边线 2px */
+/* section-title 分级：主标题 17px + 完整左边线 2px */
 .section-title {
   font-size: 17px;
   font-weight: 600;
@@ -30,7 +30,7 @@
   padding-left: var(--space-2);
   border-left: 2px solid var(--color-core);
 }
-/* P1-8 次标题：14px + 短左边线 12px */
+/* 次标题：14px + 短左边线 12px */
 .section-title.sub {
   font-size: var(--text-sm);
   margin-bottom: var(--space-2);
@@ -100,7 +100,7 @@
 }
 
 /* ============================================================
-   P3-3 空状态与骨架屏
+   空状态与骨架屏
    ============================================================ */
 .empty-state {
   display: flex;
@@ -171,7 +171,7 @@
 }
 
 /* ============================================================
-   P1-4 品牌名样式 — PingFang SC Bold + letter-spacing + text-shadow
+   品牌名样式 — PingFang SC Bold + letter-spacing + text-shadow
    方案B：零新增资源，用排版处理靠近科幻感
    ============================================================ */
 .brand-name {

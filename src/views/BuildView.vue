@@ -30,10 +30,10 @@ const allMaxed = computed(
     buildingsInSector.value.every((b) => game.buildings.isMaxed(b.id))
 )
 
-// P3-3 onboarding
+// onboarding
 const { activeStep, dismiss, skipAll } = useOnboarding(['build-upgrade'])
 
-// 3.12：使用原子操作替代 canAfford + spendCost + upgrade 三步
+// 使用原子操作替代 canAfford + spendCost + upgrade 三步
 // v0.86 批量升级：段位切换 ×1/×10/×100，买满语义（能买几级买几级）
 const bulkSteps = ref(1)
 
@@ -101,7 +101,7 @@ function tryUpgrade(id: string) {
       ⚙ {{ t('build.protocolOngoing') }}
     </p>
 
-    <!-- P3-3 onboarding -->
+    <!-- onboarding -->
     <OnboardingBubble
       v-if="activeStep === 'build-upgrade'"
       class="ob-build"
@@ -264,19 +264,19 @@ function tryUpgrade(id: string) {
   border: 1px solid var(--color-border-line);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
-  box-shadow: var(--elevation-1); /* P2-6 */
+  box-shadow: var(--elevation-1);
   transition:
     transform 0.2s var(--ease-out),
     border-color 0.2s,
     box-shadow 0.2s var(--ease-out);
 }
 .build-card:not(.locked):hover {
-  transform: translateY(-2px); /* P2-4 */
+  transform: translateY(-2px);
   border-color: var(--color-border-glow);
-  box-shadow: var(--elevation-2); /* P2-6 */
+  box-shadow: var(--elevation-2);
 }
 .build-card:not(.locked):active {
-  transform: translateY(0) scale(0.98); /* P2-4：卡片按压回弹 */
+  transform: translateY(0) scale(0.98); /* 卡片按压回弹 */
   transition: transform 0.1s var(--ease-out);
 }
 .b-head {
@@ -307,7 +307,7 @@ function tryUpgrade(id: string) {
   margin-bottom: var(--space-1);
 }
 .build-card.locked .b-name {
-  color: var(--color-locked); /* P2-7：锁定卡名称迁移 */
+  color: var(--color-locked); /* 锁定卡名称迁移 */
 }
 .b-desc {
   font-size: var(--text-xs);
@@ -353,13 +353,13 @@ function tryUpgrade(id: string) {
 .lock-msg {
   font-size: var(--text-xs);
   color: var(--color-locked);
-} /* P2-7 */
+}
 .b-maxed span {
   font-size: var(--text-xs);
   color: var(--color-amber);
 }
 
-/* P3-3 onboarding（变体类承载定位与层级，v0.97） */
+/* onboarding（变体类承载定位与层级，v0.97） */
 .ob-build {
   position: relative;
   width: 100%;

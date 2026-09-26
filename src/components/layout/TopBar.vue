@@ -13,7 +13,7 @@ import type { ResourceType } from '@/data/buildings'
 const game = useGameStore()
 const res = game.resources
 
-// P2-5 资源变化高亮 — 监听格式化后的资源值，变化时 0.3s 短暂高亮变绿
+// 资源变化高亮 — 监听格式化后的资源值，变化时 0.3s 短暂高亮变绿
 // 使用 ref + watchEffect 替代 computed 内突变 reactive，消除副作用
 const flashState = ref<Record<string, boolean>>({})
 const prevAmounts: Record<string, string> = {}
@@ -52,7 +52,7 @@ watchEffect(() => {
   }
 })
 
-// P3-6 资源产出粒子动画 — 仅 rate > 0 的资源才生成粒子
+// 资源产出粒子动画 — 仅 rate > 0 的资源才生成粒子
 function getPositiveRateResources(): string[] {
   const ids: string[] = []
   for (const [id] of Object.entries(res.allMeta)) {
@@ -80,7 +80,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
         <span class="sr-only">{{ r.name }}</span>
         <span class="r-amount font-mono">{{ r.amount }}</span>
         <span class="r-rate font-mono" :style="{ color: r.color }">{{ r.rate }}</span>
-        <!-- P3-6 资源产出粒子 -->
+        <!-- 资源产出粒子 -->
         <span
           v-for="p in particles.filter((pt) => pt.resourceId === r.id)"
           :key="p.id"
@@ -139,7 +139,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   display: none;
 }
 .res-pill {
-  position: relative; /* P3-6 粒子定位基准 */
+  position: relative; /* 粒子定位基准 */
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -162,7 +162,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   font-weight: 600;
   color: var(--color-t-primary);
 }
-/* P2-10 产出率字号优化 — 较数值更小、更淡，建立视觉层级 */
+/* 产出率字号优化 — 较数值更小、更淡，建立视觉层级 */
 .r-rate {
   font-size: var(--text-xs);
   opacity: 0.55;
@@ -177,7 +177,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   user-select: none;
 }
 
-/* P2-5 资源变化高亮 — 0.3s 短暂变绿过渡 */
+/* 资源变化高亮 — 0.3s 短暂变绿过渡 */
 .res-pill.flash .r-amount {
   animation: resFlash 0.3s var(--ease-out);
 }
@@ -192,7 +192,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   }
 }
 
-/* P2-10 窄屏渐变遮罩提示可滑动 */
+/* 窄屏渐变遮罩提示可滑动 */
 @media (max-width: 767px) {
   .res-strip::after {
     content: '';
@@ -213,7 +213,7 @@ const { particles } = useResourceParticles(getPositiveRateResources)
   }
 }
 
-/* P3-6 资源产出粒子 — 2px 光点向上飘 28px */
+/* 资源产出粒子 — 2px 光点向上飘 28px */
 .res-particle {
   position: absolute;
   top: 50%;
