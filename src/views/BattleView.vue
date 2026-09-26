@@ -217,7 +217,7 @@ const {
         <Icon name="i-ui-sword" size="md" />
         {{
           formationDispatched
-            ? t('battle.garrisonBlockedDispatch')
+            ? t('battle.deployBlockedDispatch')
             : isWeeklyBoss && bossFlow.isWeeklyBossDefeated.value
               ? t('battle.weeklyBossDefeated')
               : t('battle.deploy')

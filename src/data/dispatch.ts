@@ -5,8 +5,8 @@
  * 与驻扎（据点持续每秒产出）互补：刚解锁期驻扎占优、远征前沿 D10 后派遣反超
  * （EV 核验表交叉点 best≈10.2）。
  *
- * 数值口径（方案 8 EV 核验表法流程，`~/脚本/starcore-v127-dispatch-ev.py`
- * PASS 口径进测试基线，改数值前先改核验表再同步此处）：
+ * 数值口径（方案 8 EV 核验表法流程，全部断言 PASS 口径进测试基线，
+ * 改数值前先改核验表再同步此处）：
  * - 奖励 = silencer_3 奖励五资源 × 1.35^(max(1,best)-1) × 时长权重 × 特性乘区，
  *   与 endlessStronghold 同源锚玩家远征前沿（expeditionBest 终身数据，实时派生不冻结，
  *   周强敌同口径）；relicChance/relicRarityBias 不入派遣奖励（纯资源包）
