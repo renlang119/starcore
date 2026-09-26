@@ -17,7 +17,7 @@ describe('编队特性数据层', () => {
     expect(DEFAULT_TRAIT_ID).toBe('balanced')
   })
 
-  it('数值定稿契约（阶段1 校准冻结值）', () => {
+  it('数值定稿契约（校准冻结值）', () => {
     const byId = Object.fromEntries(TRAITS.map((tr) => [tr.id, tr]))
     expect(byId['balanced'].atkMult).toBe(1)
     expect(byId['assault_doctrine'].atkMult).toBe(1.12)

@@ -1,5 +1,5 @@
 /**
- * endless.test.ts — 无尽远征模式测试（v0.60 玩法扩展方案 5）
+ * endless.test.ts — 无尽远征模式测试（v0.60 玩法扩展方案 5；含缩放/解锁/编成/合成据点/里程碑五段）
  */
 import { describe, it, expect } from 'vitest'
 import {

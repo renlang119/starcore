@@ -45,7 +45,7 @@ export const WEEKLY_BOSS_FLOOR = 6
 export const WEEKLY_BOSS_TEMPLATE_IDS = ['silencer_3', 'raider_5', 'beast_4', 'ruin_4'] as const
 
 /**
- * 模板深度偏移（阶段1 校准 2026-09-24 六轮定稿）：把四类编成 50% 墙位的
+ * 模板深度偏移（校准 2026-09-24 六轮定稿）：把四类编成 50% 墙位的
  * 结构分量对齐——单体巨兽（beast_4，血池集中、50 回合限制下更难）墙位偏早，
  * 步兵海（raider_5）偏晚。卡墙玩家 Boss 胜率落 [15%, 85%] 可过带。
  */
@@ -56,7 +56,7 @@ export const WEEKLY_BOSS_OFFSET: Record<(typeof WEEKLY_BOSS_TEMPLATE_IDS)[number
   ruin_4: 2,
 }
 
-/** 奖励倍率：≈1.5 场前沿远征单场，周频一次性（校准 §5 量级口径） */
+/** 奖励倍率：≈1.5 场前沿远征单场，周频一次性（v1.24 校准量级口径） */
 export const WEEKLY_BOSS_REWARD_MULT = 1.5
 
 /** 模板强度归一化系数（endless TEMPLATE_NORMALIZE 同公式，模块加载时算一次） */

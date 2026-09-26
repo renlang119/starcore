@@ -34,7 +34,7 @@ describe('combat store', () => {
 
   it('winning battle — large army vs tier-1 stronghold', () => {
     const combat = useCombatStore()
-    // 100 assault units should easily beat raider_1 (5 grunts, 40hp each)
+    // 100 突击兵稳胜 raider_1（5 兵 × 40 血）
     const formation = makeFormation('f1', { assault: 100 })
     const stronghold = STRONGHOLDS.find((s) => s.id === 'raider_1')!
     const result = combat.resolveBattle(formation, stronghold, D(1), D(1))
@@ -45,7 +45,7 @@ describe('combat store', () => {
 
   it('losing battle — tiny army vs tier-4 stronghold', () => {
     const combat = useCombatStore()
-    // 1 assault vs silencer_1 (5 scouts 1500hp + 2 elites 4000hp)
+    // 1 突击兵打 silencer_1（5 侦察 1500 血 + 2 精英 4000 血）
     const formation = makeFormation('f1', { assault: 1 })
     const stronghold = STRONGHOLDS.find((s) => s.id === 'silencer_1')!
     const result = combat.resolveBattle(formation, stronghold, D(1), D(1))
@@ -54,7 +54,7 @@ describe('combat store', () => {
 
   // —— v0.93：战斗 HP 记账修复回归 ——
 
-  /** 构造只有单一敌方单位的据点（直改编成，绕开数据表） */
+  /** 构造可控敌方编成的据点（直改编成，绕开数据表） */
   function makeDummyStronghold(hp: number, count: number): StrongholdDef {
     return {
       id: 'dummy_battle_regression',
@@ -74,8 +74,7 @@ describe('combat store', () => {
     // 修复前血池逐轮坍缩，16 回合即清空；修复后血池守恒，50 回合超时判负
     const formation = makeFormation('f1', { assault: 1 })
     const result = combat.resolveBattle(formation, makeDummyStronghold(100, 10), D(1), D(1))
-    // 全额血池 1000，每回合最多磨掉 1 点（攻击 12 − 敌防 0×0.4 → 保底 1 取全额伤害 12？
-    // 敌防为 0 时无保底参与：dmg=12 − 0 = 12/回合 → 1000/12 = 84 回合 > 50 上限
+    // 敌防 0 → 每回合 12 伤：1000/12 = 84 回合 > 50 上限 → 超时判负
     expect(result.victory).toBe(false)
     expect(result.rounds).toBe(50)
     expect(result.log.some((e) => e.msg.includes('战斗超时'))).toBe(true)
@@ -91,7 +90,7 @@ describe('combat store', () => {
     const result = combat.resolveBattle(
       formation,
       makeDummyStronghold(100, 4),
-      D(25), // 12×25=300
+      D(25), // 12×25 = 300（默认无特性，×1）
       D(1)
     )
     expect(result.victory).toBe(true)
@@ -123,9 +122,9 @@ describe('combat store', () => {
     const combat = useCombatStore()
     const formation = makeFormation('f1', { assault: 5 })
     const stronghold = STRONGHOLDS.find((s) => s.id === 'raider_1')!
-    // With 1x mult, 5 assault might lose or barely win
+    // 1x 倍率下 5 突击兵胜负不确定，故仅在胜利时比较回合数
     const weakResult = combat.resolveBattle(formation, stronghold, D(1), D(1))
-    // With 100x mult, 5 assault should dominate
+    // 100x 倍率下 5 突击兵应轻取
     const strongResult = combat.resolveBattle(formation, stronghold, D(100), D(100))
     expect(strongResult.victory).toBe(true)
     // Strong result should take fewer rounds than weak result (if weak wins at all)
@@ -142,7 +141,6 @@ describe('combat store', () => {
     const data = combat.serialize()
     expect(data.garrisoned['raider_1']).toBeDefined()
 
-    // Reset and hydrate
     combat.reset()
     expect(Object.keys(combat.garrisoned).length).toBe(0)
     combat.hydrate(data)
@@ -384,7 +382,7 @@ describe('combat store · 编队特性（v1.23）', () => {
     const formation = makeFormation('f1', { assault: 60 })
     const stronghold = STRONGHOLDS.find((s) => s.id === 'raider_1')!
     // 同种子差分：分钟种子在本用例两次调用间可能跨分钟，改用固定差分口径——
-    // 强攻 ×1.12 攻击的胜利回合数 ≤ 均衡的胜利回合数（同编队 id）
+    // 强攻 ×1.12 攻击的胜利回合数 ≤ 均衡（同编队 id）——攻击乘区只增不减，胜利回合单调不增
     setFormationTraitProvider(() => 'balanced')
     const base = combat.resolveBattle(formation, stronghold, D(1), D(1))
     setFormationTraitProvider(() => 'assault_doctrine')
@@ -430,7 +428,7 @@ describe('combat store · 编队特性（v1.23）', () => {
     }
   })
 
-  it('旧档无 trait：provider 未注入时战斗与驻扎面与既有一致', () => {
+  it('旧档无 trait：provider 返回 undefined（等同未注入）时与既有一致', () => {
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
     combat.garrison('raider_1', 'f1')

@@ -68,8 +68,8 @@ export const useGameStore = defineStore('game', () => {
   const initError = ref<'too_new' | 'corrupt' | 'failed' | null>(null)
   const corruptRaw = ref<string | null>(null)
   /**
-   * 存档写入失败标志：双通道全失败（配额/隐私模式）时置位，由全局提示层
-   * 给玩家可见反馈；下次成功保存自动清除。避免整段进度只在内存而玩家不知情。
+   * 存档写入失败标志：任一写入通道失败时置位（如配额/隐私模式），由全局
+   * 提示层给玩家可见反馈；下次成功保存自动清除。避免整段进度只在内存而玩家不知情。
    */
   const saveFailed = ref(false)
 
@@ -89,7 +89,7 @@ export const useGameStore = defineStore('game', () => {
     totalProduction,
   } = createGameEffects({ research, relics, transcend, achievements, buildings })
 
-  // 各 store 一次性依赖注入（槽位扩展 / 强化支出通道 / 成就外部指标 / 训练并行槽 / 驻扎前置守卫）
+  // 各 store 一次性依赖注入（9 类 provider，详见 wireGameProviders）
   wireGameProviders({
     effectSystem,
     resources,
@@ -263,7 +263,7 @@ export const useGameStore = defineStore('game', () => {
     }
     totalPlayTime.value += dt
 
-    // 1. 计算产出（5.2：使用 cached computed，避免每 tick 全量遍历建筑）
+    // 1. 计算产出（使用 cached computed，避免每 tick 全量遍历建筑）
     const totalProd = totalProduction.value
     for (const [res, v] of Object.entries(totalProd)) {
       resources.setProduction(res as ResourceType, v)
@@ -315,7 +315,7 @@ export const useGameStore = defineStore('game', () => {
       daily.bump('explores')
     }
 
-    // 5. 成就：终身计数采集 + 解锁判定（37 条全表扫描，每秒一次开销可忽略）
+    // 5. 成就：终身计数采集 + 解锁判定（全表扫描，每秒一次开销可忽略）
     // playtime 指标直接读 totalPlayTime 现值（转生不清、hardReset 才清），无需单独累计
     collectLifetimeTotals()
     achievements.checkAndUnlock()
@@ -381,7 +381,7 @@ export const useGameStore = defineStore('game', () => {
     daily.ensureWeek()
     lastTickTime.value = Date.now()
     tickTimer = setInterval(tick, TICK_INTERVAL)
-    saveTimer = setInterval(save, 15000) // 每 15 秒自动存档（缩短间隔降低丢失量）
+    saveTimer = setInterval(save, 15000) // 自动存档周期 15 秒：压缩崩溃或误关时的进度丢失窗口
     // 标签页回到前台时立即触发一次 tick，补算后台期间的进度
     visibilityHandler = () => {
       if (document.visibilityState === 'visible') {
@@ -424,7 +424,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * 执行转生（奇点重启）
    *
-   * 3.14 设计意图说明：
+   * 设计意图说明：
    * 转生后 resources.reset(true) 会重置 totals（历史总产出）为 0。
    * 这是设计意图而非 bug——放置类游戏的标准循环：
    *   每轮 run 积累能量 → 获得负熵 → 转生重置 → 新一轮 run
@@ -462,7 +462,7 @@ export const useGameStore = defineStore('game', () => {
     return true
   }
 
-  // —— 3.12：原子操作（check + spend + execute 一体化，消除竞态）——
+  // —— 原子操作（check + spend + execute 一体化，消除竞态）——
   /**
    * 尝试升级建筑：原子检查资源 + 扣费 + 升级
    * 替代视图中 canAfford → spendCost → upgrade 的三步非原子调用
@@ -502,7 +502,7 @@ export const useGameStore = defineStore('game', () => {
 
   /**
    * 批量强化预览：返回当前能量下点击一次批量强化的实际可完成级数。
-   * 逐级按新等级取价，能量不足或达 20 级上限自然停止，最多 steps 级；
+   * 逐级按新等级取价，能量不足或达 MAX_RELIC_LEVEL 上限自然停止，最多 steps 级；
    * 取价与扣费顺序同 relics.enhanceSteps，供按钮文案按实际级数显示。
    */
   function previewRelicEnhanceSteps(instanceId: string, steps: number): number {
@@ -594,7 +594,7 @@ export const useGameStore = defineStore('game', () => {
     doImport,
     corruptRaw,
     exportCorruptRaw,
-    // atomic actions (3.12)
+    // atomic actions
     tryUpgradeBuilding,
     tryUpgradeBuildingSteps,
     previewUpgradeBuildingSteps,

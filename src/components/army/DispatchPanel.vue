@@ -2,10 +2,9 @@
 /**
  * DispatchPanel.vue — 编队派遣区（v1.27 可玩内容扩展方案 6）。
  *
- * 每编队卡内嵌一行：未解锁显示解锁提示；未派遣显示时长档位选择 + 预期
- * 带回预览 + 派出按钮；派遣中显示倒计时（完成态高亮召回）；召回按比例
- * 结算并即时提示。锁定面（决策点 4）：派遣中编队的战斗/驻扎/编入撤出
- * 入口由宿主各页禁用，本组件只负责派遣自身状态。
+ * 职责：渲染每编队卡的派遣状态与操作（未解锁 / 未派遣 / 派遣中三态）。
+ * 锁定面：派遣中编队的战斗/驻扎/编入撤出入口由宿主各页禁用，
+ * 本组件只负责派遣自身状态。
  */
 import { t } from '@/i18n'
 import { computed, onBeforeUnmount, ref } from 'vue'
@@ -27,7 +26,7 @@ const dispatch = computed(() => game.military.dispatches[props.formationId])
 /** 选中档位（小时）；派遣中读在途档位 */
 const selectedHours = ref<number>(DISPATCH_TIERS[0].hours)
 
-/** 每秒跳动的「现在」（倒计时用，派遣完成时停止 advance 也能被召回） */
+/** 每秒跳动的「现在」（倒计时用） */
 const nowTick = ref(Date.now())
 let timer: ReturnType<typeof setInterval> | null = null
 timer = setInterval(() => {
@@ -61,6 +60,7 @@ function send() {
   }
 }
 
+/** 召回：完成前按 t/H 比例结算，完成态停走后仍可召回（全额发放） */
 function recall() {
   const r = game.military.recallDispatch(props.formationId, Date.now())
   if (!r) return
@@ -145,7 +145,7 @@ function recall() {
         {{ t('army.dispatchSend') }}
       </button>
     </template>
-    <!-- 召回/派出失败回执（本实例须自行挂载，useToast 非单例） -->
+    <!-- 召回/派出失败回执（本实例须自行挂载，useToast 非单例；与 AppShell 全局回执 toast 并存、互不共用） -->
     <Toast :toast="toast" />
   </div>
 </template>

@@ -3,7 +3,7 @@
  *
  * 由 buildings/exploration/research/resources 四个 store 测试的同名同义用例
  * 合并而来（v1.04）：hydrate(undefined) 必须不改变现状，含已有内容的 store
- * 不被清空。
+ * 不被清空；daily / achievements 的 undefined 容缺仍留各自文件（daily 状态含周逻辑，故未并入）。
  */
 import { describe, it, expect } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'

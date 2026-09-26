@@ -59,7 +59,7 @@ describe('buildings — 成本公式 ceil(base × growth^level)', () => {
 
   it('高等级大数成本（decimal 通道精度）', () => {
     const def = getBuilding('dyson_swarm')!
-    const cost = buildingCost(def, 200) // 50000×1.1^200 ≈ 9.2e12
+    const cost = buildingCost(def, 200) // 50000×1.1^200 ≈ 9.5e12
     expect(cost.energy).toBeGreaterThan(9e12)
     expect(cost.energy).toBeLessThan(1e13)
     expect(Number.isInteger(cost.energy)).toBe(true) // ceil 取整

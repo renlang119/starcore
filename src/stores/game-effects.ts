@@ -3,7 +3,7 @@
  *
  * 统一效果系统注册、全局乘数 computed、生产缓存与自动化开关派生，
  * 以及各 store 的一次性依赖注入（槽位扩展 / 强化支出通道 / 成就外部
- * 指标 / 训练并行槽 / 驻扎前置守卫）。返回契约与拆分前一致。
+ * 指标 / 训练并行槽 / 驻扎前置守卫 / 合成与强化计数 / 派遣锚 / 编队特性）。返回契约与拆分前一致。
  */
 import { computed } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
@@ -55,7 +55,7 @@ export interface GameEffects {
   totalProduction: ComputedRef<Record<string, Decimal>>
 }
 
-/** 统一效果系统（6.2：替代三处重复 getMax 逻辑）与全局乘数缓存 */
+/** 统一效果系统（替代三处重复 getMax 逻辑）与全局乘数缓存 */
 export function createGameEffects(deps: {
   research: ResearchStore
   relics: RelicsStore
@@ -72,7 +72,7 @@ export function createGameEffects(deps: {
   effectSystem.register(transcend as EffectSource)
   effectSystem.register(achievements as EffectSource)
 
-  // —— 计算全局乘数（5.1：改为 computed 缓存，仅在依赖变化时重算）——
+  // —— 计算全局乘数（改为 computed 缓存，仅在依赖变化时重算）——
   const productionMults = computed<Record<string, Decimal>>(() => {
     const result: Record<string, Decimal> = {}
     for (const res of ['energy', 'crystal', 'alloy', 'data', 'dark']) {
@@ -92,7 +92,7 @@ export function createGameEffects(deps: {
   const autoResearch = computed(() => effectSystem.getValue('auto_research') > 0)
   const autoExplore = computed(() => effectSystem.getValue('auto_explore') > 0)
 
-  /** 5.2：缓存总产出——仅当建筑等级或乘数变化时重算 */
+  /** 缓存总产出——仅当建筑等级或乘数变化时重算 */
   const totalProduction = computed(() => buildings.getTotalProduction(productionMults.value))
 
   return {
@@ -161,7 +161,7 @@ export function wireGameProviders(deps: {
     playtime: () => deps.totalPlayTime.value,
     expeditionBest: () => combat.expeditionBest,
   })
-  // 训练并行槽：基础 1 槽 + 科技加成（集群操练 I/II 各 +1），封顶 MAX_TRAINING_SLOTS
+  // 训练并行槽：科技加成后封顶 MAX_TRAINING_SLOTS（基础与递增细节见 military.ts）
   setTrainingSlotProvider(() =>
     Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
   )

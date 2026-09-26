@@ -9,7 +9,7 @@ import { t } from '@/i18n'
 defineProps<{
   /** 当前选择深度 */
   depth: number
-  /** 可选深度上限（前沿，封顶于 MAX_ENDLESS_DEPTH） */
+  /** 可选深度上限（父层已按 MAX_ENDLESS_DEPTH 钳制的前沿值；常量见 src/data/endless.ts） */
   maxDepth: number
 }>()
 

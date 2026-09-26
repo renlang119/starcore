@@ -139,7 +139,7 @@ describe('resources — production / applyTick', () => {
   it('applyTick：小数 dt 精度（decimal 通道无浮点漂移）', () => {
     r.setProduction('energy', D('0.1'))
     for (let i = 0; i < 10; i++) r.applyTick(0.1)
-    expect(r.getTotal('energy').toString()).toBe('0.1') // 0.1×0.1×10 精确
+    expect(r.getTotal('energy').toString()).toBe('0.1') // 0.1/s × 0.1s × 10 次，精确无漂移
   })
 })
 

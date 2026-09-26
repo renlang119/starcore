@@ -4,7 +4,7 @@
  * 职责：在线挂机的低频决策点。tick 掷骰触发、挂起待处理、过期静默消失、
  * 二选一即时结算（toast 回执由 UI 层消费返回值呈现）。
  *
- * 设计口径（方案 8 计划稿批复 + 阶段 1 设计稿）：
+ * 设计口径：
  * - 仅在线 tick 触发：离线补算路径不调用本 store；离线归来窗口已过的，
  *   回来首个 tick 弹一个（回来给惊喜，属设计）
  * - 同一时刻至多 1 个挂起事件；结算/过期后按 now 重开窗口
@@ -32,12 +32,11 @@ import {
   type EncounterRewards,
 } from '@/data/encounters'
 
-/** 掷骰通道（测试注入固定值；默认 Math.random）。事件选取与窗口间隔共用 */
+/** 掷骰通道（测试注入固定值；默认 Math.random）。事件选取、窗口间隔与结算掷骰共用 */
 let randomProvider: () => number = Math.random
 export function setEncounterRandomProvider(fn: () => number) {
   randomProvider = fn
 }
-/** 下一次窗口间隔（ms）：均匀随机 [MIN, MAX]，经注入通道取随机 */
 function rollIntervalMs(): number {
   return (
     ENCOUNTER_INTERVAL_MIN * 1000 +
@@ -96,7 +95,7 @@ export const useEncountersStore = defineStore('encounters', () => {
     pendingAt.value = now
   }
 
-  /** 下一次窗口间隔（ms；经注入通道取随机，测试可固定） */
+  /** 下一次窗口间隔（ms）：均匀随机 [MIN, MAX]；经注入通道取随机，测试可固定 */
   function rollInterval(): number {
     return rollIntervalMs()
   }

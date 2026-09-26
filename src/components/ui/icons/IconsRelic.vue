@@ -1,5 +1,5 @@
 <template>
-  <!-- 遗物图标（含 i-nav-relic 导航兜底 + i-relic-omega r_omega 遗物占用；v0.78 补 i-relic-armor / i-relic-capsule） -->
+  <!-- 遗物图标（含 i-nav-relic 导航兜底 + i-relic-omega r_omega 遗物占用 + i-relic-armor / i-relic-capsule） -->
   <symbol
     id="i-nav-relic"
     viewBox="0 0 24 24"

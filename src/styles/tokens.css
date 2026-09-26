@@ -3,7 +3,7 @@
    风格：cosmic sci-fi（深空底色 + 星核青蓝主色 + 琥珀稀有辅色）
    ============================================================ */
 :root {
-  /* —— 表层（P0-3 明度梯度拉大） —— */
+  /* —— 表层（明度梯度拉大） —— */
   --color-void: #05070d;
   --color-surface: #0e1424;
   --color-elevated: #182238;
@@ -16,7 +16,7 @@
   --color-core-dim: #00b8cc;
   --color-core-deep: #006b7a;
 
-  /* —— 辅色（P0-4 quantum 饱和度对齐） —— */
+  /* —— 辅色（quantum 饱和度对齐） —— */
   --color-amber: #ffb627;
   --color-quantum: #2ee6a0;
   --color-alert: #f43f5e;
@@ -52,13 +52,13 @@
   --radius-lg: 14px;
   --radius-pill: 999px;
 
-  /* —— 图标尺寸（P0-8 收敛 6 种为 4 种 Token） —— */
+  /* —— 图标尺寸（收敛 6 种为 4 种 Token） —— */
   --icon-xs: 12px;
   --icon-sm: 14px;
   --icon-md: 18px;
   --icon-lg: 24px;
 
-  /* —— 间距（P0-5，4px 基准，8 级线性阶梯） —— */
+  /* —— 间距（4px 基准，8 级线性阶梯） —— */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -67,7 +67,7 @@
   --space-6: 24px;
   --space-8: 40px;
 
-  /* —— 字号（P0-6，1:1.250 模数，Major Third，base 16px） —— */
+  /* —— 字号（1:1.250 模数，Major Third，base 16px） —— */
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 16px;
@@ -79,11 +79,11 @@
   /* —— 动效 —— */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* —— Elevation 阴影（P2-6，三级深色 UI 专用） —— */
+  /* —— Elevation 阴影（三级深色 UI 专用） —— */
   --elevation-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 2px 8px rgba(0, 0, 0, 0.3);
   --elevation-2: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 8px 24px rgba(0, 0, 0, 0.4);
   --elevation-3: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 16px 48px rgba(0, 0, 0, 0.5);
 
-  /* —— 状态色（P2-7）—— */
+  /* —— 状态色 —— */
   --color-locked: #6387ab; /* 灰蓝提亮版，锁定态专用；vs surface 4.88:1 / vs void 5.36:1（WCAG AA ≥4.5，v0.83） */
 }
