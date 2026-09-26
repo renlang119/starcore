@@ -14,6 +14,7 @@ import { DISPATCH_TIERS, dispatchRewardPreview, getDispatchTier } from '@/data/d
 import { resourceRows } from '@/lib/resource-rows'
 import { fmtTime } from '@/lib/format'
 import { useToast } from '@/composables/useToast'
+import Toast from '@/components/ui/Toast.vue'
 
 const props = defineProps<{ formationId: string }>()
 
@@ -144,6 +145,8 @@ function recall() {
         {{ t('army.dispatchSend') }}
       </button>
     </template>
+    <!-- 召回/派出失败回执（本实例须自行挂载，useToast 非单例） -->
+    <Toast :toast="toast" />
   </div>
 </template>
 
