@@ -19,7 +19,7 @@ export default {
   'map.weeklyBossTitle': 'Weekly Foe',
   'map.weeklyBossReady': 'This week: {name}. Defeat it for rich rewards',
   'map.weeklyBossDone': 'Defeated. Refreshes next Monday',
-  'map.weeklyBossLocked': 'Unlocks after conquering the Silencer flagship',
+  'map.weeklyBossLocked': 'Unlocks after conquering the Flagship of the Silent Ones',
   'map.milestoneClaimed': 'Layer {depth} milestone reward claimed',
   'map.explore': 'Explore',
   'map.exploreStarted': 'Exploration started',
