@@ -51,7 +51,7 @@ export const ENCOUNTER_EXPIRE_MS = 60_000
 
 /**
  * 事件池：10 模板，四类风味——资源类 4 / 军事类 2 / 探索类 1 / 风险赌注类 3。
- * 数值与设计稿同源；文案经语言包 content.encounters 域取词。
+ * 数值与核验表同源；文案经语言包 content.encounters 域取词。
  */
 export const ENCOUNTERS: EncounterDef[] = [
   // —— 资源类 4：B 选项「稳中略好」，低方差 ——
