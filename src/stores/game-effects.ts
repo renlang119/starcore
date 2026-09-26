@@ -3,7 +3,7 @@
  *
  * 统一效果系统注册、全局乘数 computed、生产缓存与自动化开关派生，
  * 以及各 store 的一次性依赖注入（槽位扩展 / 强化支出通道 / 成就外部
- * 指标 / 训练并行槽 / 驻扎前置守卫）。返回契约与拆分前一致。
+ * 指标 / 训练并行槽 / 驻扎前置守卫 / 合成与强化计数 / 派遣锚 / 编队特性）。返回契约与拆分前一致。
  */
 import { computed } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
@@ -161,7 +161,7 @@ export function wireGameProviders(deps: {
     playtime: () => deps.totalPlayTime.value,
     expeditionBest: () => combat.expeditionBest,
   })
-  // 训练并行槽：基础 1 槽 + 科技加成（集群操练 I/II 各 +1），封顶 MAX_TRAINING_SLOTS
+  // 训练并行槽：科技加成后封顶 MAX_TRAINING_SLOTS（基础与递增细节见 military.ts）
   setTrainingSlotProvider(() =>
     Math.min(MAX_TRAINING_SLOTS, 1 + effectSystem.getValue('training_slot'))
   )

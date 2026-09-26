@@ -111,7 +111,7 @@ function claimMilestone() {
 }
 
 // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
-/** 解锁口径与远征入口一致（本轮已克 silencer_3） */
+/** 解锁口径与远征一致（锚点据点 silencer_3） */
 const weeklyBossUnlocked = computed(() => game.combat.isEndlessUnlocked())
 /** 本周是否已击败（跨周自动失效由 daily store 承担） */
 const weeklyBossDefeated = computed(() => game.daily.isWeeklyBossDefeated())

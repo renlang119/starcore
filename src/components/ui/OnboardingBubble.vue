@@ -6,7 +6,7 @@ import { t } from '@/i18n'
  * 视觉：elevated 底 + core 描边 + elevation-2 阴影
  * 动画：floatUp 入场
  * 契约：根节点不携带 position/z-index，定位与层级由父级
- *       .ob-* 变体类承载（z-index 60，《弹窗与确认流规范》层级表定标）
+ *       .ob-* 变体类承载（z-index 60，与弹窗层级约定一致）
  */
 defineProps<{
   /** 气泡标题 */

@@ -1,6 +1,6 @@
 /**
- * military.test.ts — 训练并行槽位（v0.48）
- * 基础 1 槽，科技「集群操练 I/II」各 +1，上限 3；满槽拒绝入队，队列中任务不受影响
+ * military.test.ts — 训练并行槽位（v0.48）；另含编队特性（v1.23）与派遣远征（v1.27）
+ * 基础 1 槽，科技「集群操练 I/II」各 +1，上限 3；满槽拒绝入队，队列中任务不受影响；旧档超槽任务继续跑完，仅限新入队
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
@@ -260,7 +260,7 @@ describe('military store · 派遣远征（v1.27 方案 6）', () => {
     const results = m.collectCompletedDispatches(t0 + 4 * 3_600_000)
     expect(Object.keys(results)).toEqual(['f1'])
     expect(results.f1.completed).toBe(true)
-    // best=10 锚：energy = round(2e7 × 1.35^9 × 1.0)（endless 同源缩放）
+    // best=10 锚：energy = round(2e7 × 1.35^9 × 1.0)（1.35 系 dispatch 层缩放，与 endless.REWARD_GROWTH 同源）
     expect(results.f1.reward.energy).toBe(Math.round(20_000_000 * Math.pow(1.35, 9)))
     expect(m.isDispatched('f1')).toBe(false)
   })

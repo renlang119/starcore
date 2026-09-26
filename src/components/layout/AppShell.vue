@@ -22,7 +22,7 @@ const router = useRouter()
 const { isDesktop } = useBreakpoint()
 const game = useGameStore()
 
-/** 全局轻提示实例（存档失败提醒/遭遇事件提醒等跨路由提示）；暴露给子组件复用单实例 */
+/** AppShell 级轻提示（存档失败 / 遭遇事件等跨路由提示）：本组件统一 watch 并挂载；useToast 非全局单例，子组件（如 DispatchPanel）各自持实例 */
 const toast = useToast()
 // 存档双通道写失败（配额/隐私模式）：跨路由常驻提示，直到下次成功保存清除
 watch(
@@ -96,7 +96,6 @@ const stars = APP_STARS
 /**
  * 战斗页面 (/battle/:id) 不在常规导航中，
  * 移动端需要一个浮动「返回」按钮让玩家回到主界面。
- * 遗物/奇点重启已收入底部导航「更多」菜单，不再需要额外入口。
  */
 const showBattleBack = computed(() => route.path.startsWith('/battle'))
 

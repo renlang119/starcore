@@ -29,7 +29,7 @@ const coreGlowSize = computed(() => {
   const energy = game.resources.getAmount('energy')
   if (energy.lte(0)) return 48
   const logVal = Math.log10(energy.toNumber())
-  // log10(50)=1.7 → 48px, log10(1e6)=6 → ~90px, log10(1e12)=12 → 120px
+  // log10(50)=1.7 → 48px（下限钳制），log10(1e6)=6 → 77px，log10(1e12)=12 → 120px（封顶）
   const size = Math.min(120, Math.max(48, 32 + logVal * 7.5))
   return Math.round(size)
 })

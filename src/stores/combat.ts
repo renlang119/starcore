@@ -1,6 +1,6 @@
 /**
  * combat.ts — PVE 战斗系统 store
- * 4 类据点、自动战斗结算、挂机驻扎
+ * PVE 战斗：4 类据点自动结算、无尽远征、每周强敌、挂机驻扎
  */
 import { t } from '@/i18n'
 import { defineStore } from 'pinia'
@@ -61,7 +61,7 @@ interface CombatUnit {
   counteredBy?: UnitId[] // 敌方单位被哪些玩家兵种克制
 }
 
-/** 正式据点 id 集合（远征合成据点 'endless' 不在其中） */
+/** 正式据点 id 集合（远征 'endless' 与周 Boss 'weekly_boss' 合成据点均不在其中） */
 const STRONGHOLD_ID_SET = new Set(STRONGHOLDS.map((s) => s.id))
 
 /** 防御减伤系数：实际伤害 = 攻击 - 防御 × 系数（战斗公式核心常数） */
@@ -314,7 +314,7 @@ export const useCombatStore = defineStore('combat', () => {
       if (r.alloy) rewards.alloy = r.alloy
       if (r.data) rewards.data = r.data
       if (r.dark) rewards.dark = r.dark
-      // 遗物掉落
+      // 遗物掉落：由 rewards.relicChance 触发，稀有度偏置 relicRarityBias
       if (r.relicChance && rng() < r.relicChance) {
         relic = rollRelic(r.relicRarityBias ?? 0, rng)
         trimmedLog.push({
@@ -334,7 +334,7 @@ export const useCombatStore = defineStore('combat', () => {
     return { victory, log: trimmedLog, rewards, relic, losses, rounds }
   }
 
-  /** 驻扎据点（挂机） */
+  /** 驻扎据点（挂机）：已驻 / 未攻克 / 守卫拒绝时返回 false */
   function garrison(strongholdId: string, formationId: string): boolean {
     if (garrisoned.value[strongholdId]) return false
     // 驻扎前置校验由 game store 注入（依赖探索解锁/编队状态等跨 store 数据，
@@ -359,8 +359,7 @@ export const useCombatStore = defineStore('combat', () => {
 
   // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
 
-  /** 本周 Boss 合成据点（不入 STRONGHOLDS 表；胜利严禁入 completedStrongholds，
-   *  buildResult 按 id 排除已天然覆盖，白名单双保险兜底） */
+  /** 本周 Boss 合成据点（不入 STRONGHOLDS 表） */
   function getWeeklyBossStronghold(expeditionBest: number, weekKey: string): StrongholdDef {
     return weeklyBossStronghold(expeditionBest, weekKey)
   }

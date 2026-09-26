@@ -1,5 +1,5 @@
 /**
- * achievements.test.ts — 成就/里程碑 store 测试（v0.57；v1.22 扩至 49 条）
+ * achievements.test.ts — 成就/里程碑 store 测试（v0.57；v1.22 扩展）
  *
  * 覆盖：
  * 1. 定义表完整性（49 成就、id 唯一、类别合法、阈值正数）
@@ -191,7 +191,7 @@ describe('achievements — 外部现值指标', () => {
     zeroAchievementProviders({ enemyKinds: () => 20 })
     expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_8')
     expect(store.isUnlocked('ach_battle_9')).toBe(false)
-    // 全收录 56 → ach_battle_9；攻防连乘含 1.02 × 1.03
+    // 全收录（ENEMY_KIND_TOTAL）→ ach_battle_9；攻防连乘含 1.02 × 1.03
     zeroAchievementProviders({ enemyKinds: () => 56 })
     expect(store.checkAndUnlock().map((a) => a.id)).toContain('ach_battle_9')
     expect(store.getMult('combat_mult', 'attack').toNumber()).toBeCloseTo(1.02 * 1.03, 10)
@@ -357,8 +357,7 @@ describe('game store 集成 — 转生保留 / hardReset 清空 / tick 采集', 
     const game = useGameStore()
     const resources = useResourcesStore()
     const achv = game.achievements
-    // v0.62 起 tick 会触发每日签到发奖（首签 +2e4 能量入 totals，差值采集照计终身）。
-    // 签到也烧在第一个 tick：此后 totals=2e4，终身=2e4
+    // 首签 2e4 在第一个 tick 入 totals（此后 totals=2e4、终身=2e4；签到机制详见 game.test.ts 同款注释）
     game.lastTickTime = Date.now() - 1000
     game.tick()
     // 直接抬高 totals 模拟本轮产出（tick 差值采集）：2e4 + 2e5
@@ -403,4 +402,4 @@ describe('game store 集成 — 转生保留 / hardReset 清空 / tick 采集', 
   })
 })
 
-const BUILDING_FIRST_ID = BUILDINGS[0].id // 数据表首个建筑（v1.04 派生）
+const BUILDING_FIRST_ID = BUILDINGS[0].id // 数据表首个建筑

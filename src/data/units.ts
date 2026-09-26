@@ -2,7 +2,7 @@
  * units.ts — 兵种定义与三角克制
  * 4 种兵种，形成双三角克制链：
  *   常规三角：突击兵 → 护卫兵 → 重装兵 → 突击兵
- *   灵能独立线：灵能者 vs 重装兵（额外克制）
+ *   灵能独立线：灵能者 vs 重装兵（额外克制）；突击兵另克制灵能者
  */
 
 import { t } from '@/i18n'
@@ -22,7 +22,7 @@ export interface UnitDef {
   cost: Partial<Record<'energy' | 'alloy' | 'data' | 'dark', number>>
   /** 训练时间（秒/兵） */
   trainTime: number
-  /** 克制的目标兵种列表（对其造成 1.5x 伤害） */
+  /** 克制的目标兵种列表（按 counterMult 倍率造成克制伤害） */
   counters: UnitId[]
   /** 克制倍率 */
   counterMult: number

@@ -597,7 +597,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 10,
     effects: prod(3),
   },
-  // —— 游玩时长（终身在线秒数，离线挂机时间不计）——
+  // —— 游玩时长（终身在线秒数；离线不计，后台节流窗口按 1 秒计）——
   {
     id: 'ach_time_1',
     name: t('content.achievements.ach_time_1.name'),

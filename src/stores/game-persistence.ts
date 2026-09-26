@@ -2,7 +2,7 @@
  * game-persistence.ts — 主 store 的存档簇（从 game.ts 拆出）。
  *
  * 存档数据组装、读写通道（异步/同步）、读档与 hydrate、导入导出、
- * 离线收益补算与清档重置。所依赖的状态 ref 与 store 由调用方注入，
+ * 损坏档原始载荷导出、离线收益补算与清档重置。所依赖的状态 ref 与 store 由调用方注入，
  * 返回契约与拆分前一致（含错误态守卫：initError 置位时拒绝一切写入）。
  */
 import { t } from '@/i18n'
@@ -121,10 +121,7 @@ export function createGamePersistence(deps: {
   }
 
   // —— 存档（错误态守卫：initError 置位时拒绝一切写入，防空状态覆盖原始存档）——
-  /**
-   * 存档写入失败标志：双通道全失败（配额/隐私模式）时置位，由全局提示层
-   * 给玩家可见反馈；下次成功保存自动清除。避免整段进度只在内存而玩家不知情。
-   */
+  // saveFailed 定义与语义见 game.ts
   async function save(): Promise<boolean> {
     if (initError.value) return false
     const ok = await writeSave(buildSaveData())

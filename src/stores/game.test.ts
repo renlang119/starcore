@@ -29,7 +29,7 @@ import { rollRelic, getRelicById } from '@/data/relics'
 import { setRelicSlotProvider } from './relics'
 import type { Formation } from './military'
 
-/** 基础能量采集建筑（数据表首个建筑，v1.04 派生） */
+/** 基础能量采集建筑 = BUILDINGS[0]（solar_collector，无 requires） */
 const SOLAR = BUILDINGS[0].id
 
 describe('game store — tick integration', () => {
@@ -73,10 +73,10 @@ describe('game store — tick integration', () => {
     const before = resources.getAmount('energy').toNumber()
     game.tick()
     const after = resources.getAmount('energy').toNumber()
-    // 产出断言（v0.83 强化：原 ≥ 弱断言改为精确区间）。
-    // delta = 每日签到自动首签 20000（v0.62 设计行为：签到 tick 驱动，
+    // 区间断言锁签到 20000 + 产出上界。
+    // delta = 每日签到自动首签 20000（数值源 daily.ts streakReward；签到 tick 驱动，
     // 新档首 tick 必触发）+ solar L1 产出 0.5×dt（dt 为真实时钟差，
-    // 测试环境远小于 1s，不确定），故用区间断言锁签到值 + 产出上界
+    // 测试环境远小于 1s，不确定）
     const delta = after - before
     expect(delta).toBeGreaterThanOrEqual(20000) // 签到 20000
     expect(delta).toBeLessThan(20001) // + 产出 0.5×(<1s)，升级消耗已在 before 之前
@@ -409,7 +409,8 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     resources.setAmount('energy', 1e12)
     game.lastTickTime = Date.now() - 1000
     game.tick()
-    // 修复前：runAutomation 传按 unlock 效果目标派生的集合（建筑 id 集合），isUnlocked 查科技 id 永不相交
+    // 修复前：runAutomation 传按 unlock 效果目标派生的集合（建筑 id 集合），isUnlocked 查科技 id 永不相交；
+    // 修复后：传 completed 科技 id 集合
     expect(buildings.getLevel('fusion_reactor')).toBe(1)
   })
 
@@ -437,7 +438,7 @@ describe('game store — 自动化 QoL（v0.58）', () => {
     const game = useGameStore()
     const resources = useResourcesStore()
     const buildings = useBuildingsStore()
-    // 首级成本 10（costGrowth 1.1），10 + 11 + 12 = 33 > 30 → 2 级
+    // costGrowth 1.18：10 + 12 = 22 ≤ 30、+ 14 = 36 > 30 → 2 级
     resources.setAmount('energy', 30)
     const done = game.tryUpgradeBuildingSteps(SOLAR, 10)
     expect(done).toBe(2)
@@ -593,10 +594,9 @@ describe('game store — 自动化 QoL（v0.58）', () => {
 })
 
 // —— v0.75：初始化错误态（兜底：读档/hydrate 异常不静默卡加载屏）——
-// 走真实 readSave 通道：把存档写进 localStorage 备份键（jsdom 环境），
-// 不用模块 mock：最小实验（2026-09-15，双文件一 mock 一不 mock 同 worker 跑）证实
-// vi.mock 按文件隔离、不跨文件泄漏；本文件不 mock 是因集成测试须驱动真实 store 链，
-// 与可靠性无关
+// 走真实 readSave 通道：把存档写进 localStorage 备份键（jsdom 环境；IndexedDB
+// 主档在 jsdom 不可用，v0.93 用例以 try/catch 兼容两态）。不 mock 是因集成测试
+// 须驱动真实 store 链，非可靠性考量（vi.mock 按文件隔离、不跨文件泄漏）
 const BACKUP_KEY = 'starcore_save_v1_backup'
 
 function writeBackupSave(data: SaveData): void {
@@ -659,7 +659,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   it('A1 端到端：远征胜利后整档导出/导入通过', async () => {
     const game = useGameStore()
     const combat = useCombatStore()
-    combat.completedStrongholds.add('silencer_3') // 解锁远征
+    combat.completedStrongholds.add('silencer_3') // 解锁锚点据点 → 远征（endless）解锁
     const stronghold = combat.getEndlessStronghold(1)
     const formation = {
       id: 'f1',
@@ -820,7 +820,7 @@ describe('v0.82 驻扎守卫真实规则分支', () => {
   })
 
   it('据点 requires 探索未完成 → 拒绝驻扎', () => {
-    useGameStore() // 注册守卫
+    useGameStore() // 注册守卫（复位由 reset-providers.ts 兜底）
     const combat = useCombatStore()
     combat.completedStrongholds.add('raider_1')
     // node_orbit 未探索 → 守卫第一条规则拦截

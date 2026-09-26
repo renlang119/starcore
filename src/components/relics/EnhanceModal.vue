@@ -63,7 +63,7 @@ function doEnhance() {
   game.daily.bump('enhances', done)
 }
 
-// v0.86 批量强化段位（默认 ×1 与既有行为一致；封顶 20 级，×100 可一键拉满）
+// 批量强化段位（默认 ×1；×100 支持一次到位，实际级数以能量预算逐级模拟为准）
 const bulkSteps = ref(1)
 
 /**

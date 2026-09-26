@@ -11,7 +11,7 @@ import { useOnboarding } from '@/composables/useOnboarding'
 import { useToast } from '@/composables/useToast'
 
 const game = useGameStore()
-// 全局轻提示（v0.77：训练开始反馈）
+// 视图级轻提示（v0.77：训练开始反馈）
 const toast = useToast()
 const activeTab = ref<'barracks' | 'formation'>('barracks')
 

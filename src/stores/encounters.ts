@@ -32,12 +32,11 @@ import {
   type EncounterRewards,
 } from '@/data/encounters'
 
-/** 掷骰通道（测试注入固定值；默认 Math.random）。事件选取与窗口间隔共用 */
+/** 掷骰通道（测试注入固定值；默认 Math.random）。事件选取、窗口间隔与结算掷骰共用 */
 let randomProvider: () => number = Math.random
 export function setEncounterRandomProvider(fn: () => number) {
   randomProvider = fn
 }
-/** 下一次窗口间隔（ms）：均匀随机 [MIN, MAX]，经注入通道取随机 */
 function rollIntervalMs(): number {
   return (
     ENCOUNTER_INTERVAL_MIN * 1000 +
@@ -96,7 +95,7 @@ export const useEncountersStore = defineStore('encounters', () => {
     pendingAt.value = now
   }
 
-  /** 下一次窗口间隔（ms；经注入通道取随机，测试可固定） */
+  /** 下一次窗口间隔（ms）：均匀随机 [MIN, MAX]；经注入通道取随机，测试可固定 */
   function rollInterval(): number {
     return rollIntervalMs()
   }

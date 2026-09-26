@@ -21,7 +21,7 @@ import type { ResourceType } from './buildings'
 
 /**
  * 解锁锚点：本轮攻克沉默者旗舰 silencer_3 后开放远征。
- * 注：silencer_3 已非全表最强据点（v0.71 星团层终章 silencer_4「沉默者母港」强度 592,300 更高），
+ * 注：silencer_3 已非全表最强据点（现行最强为深空层 silencer_7）；
  * 锚定 silencer_3 为设计意图：远征是通关沉默者旗舰后的长尾入口，与后续更高难度据点解耦，
  * 避免每新增一层据点就被动抬高远征门槛。
  * （导出供 endless.test.ts 直测，无运行期消费方）
@@ -110,7 +110,7 @@ export function endlessEnemies(depth: number): EnemyUnit[] {
   return scaleEnemies(template.enemies, scale, prefix)
 }
 
-/** 合成据点的 tier 占位（剧情章节标签语义对无尽不适用，UI 侧不展示） */
+/** 合成据点的 tier 占位（取 6 = 星团层终章档位形态；剧情章节标签语义对无尽不适用，UI 侧不展示） */
 const ENDLESS_TIER_PLACEHOLDER = 6
 
 /** 远征奖励基准 = 沉默者旗舰（silencer_3）奖励，按深度指数缩放 */

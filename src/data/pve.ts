@@ -1,6 +1,6 @@
 /**
  * pve.ts — PVE 据点定义
- * 4 类据点：掠夺者营地、异星巨兽、古代遗迹、沉默者前哨
+ * 4 类据点（共 36 个）：掠夺者营地、异星巨兽、古代遗迹、沉默者前哨
  * 每类有多个难度层级，难度越高奖励越好
  */
 
@@ -10,7 +10,7 @@ import type { UnitId } from './units'
 type StrongholdType = 'raider' | 'beast' | 'ruin' | 'silencer'
 
 export interface EnemyUnit {
-  unitId: string // 兵种骨架 id（数值模板）；同一 unitId 可在不同据点换皮复用
+  unitId: string // 兵种骨架 id（数值模板）
   name: string // 据点特色显示名（v0.97 起注明：换皮名不必与 unitId 字面一致，
   // 如同一 archon_core 在信标据点称「信标核心」、在长堤据点称「长堤核心」）
   attack: number

@@ -46,7 +46,7 @@ const hasAnyUnits = computed(
     game.military.trainingQueue.length > 0
 )
 
-// 训练并行槽：满槽时禁用训练按钮并提示（集群操练 I/II 各 +1 槽，上限 3）
+// 训练并行槽：满槽时禁用训练按钮并提示（上限 3，由科技「集群操练 I/II」递增，见 military.maxTrainingSlots）
 const slotsFull = computed(
   () => game.military.trainingQueue.length >= game.military.maxTrainingSlots
 )
@@ -122,7 +122,7 @@ const unitRows = computed(() =>
     :action="t('common.goTech')"
     to="/tech"
   />
-  <!-- 已解锁但尚无部队：轻提示（单位卡片本身即训练入口，空态不遮挡卡片） -->
+  <!-- 空状态 2：已解锁但无存量、编入与在训任务（单位卡片本身即训练入口，空态不遮挡卡片） -->
   <template v-else>
     <EmptyState
       v-if="!hasAnyUnits"

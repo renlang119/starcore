@@ -92,7 +92,7 @@ export const TRAITS: TraitDef[] = [
 /** 特性查找 Map（O(1)） */
 const TRAIT_MAP = new Map(TRAITS.map((tr) => [tr.id, tr]))
 
-/** 缺省特性 id（编队不带 trait 字段 / 未知 id 自愈时回落） */
+/** 缺省特性 id */
 export const DEFAULT_TRAIT_ID: TraitId = 'balanced'
 
 /**

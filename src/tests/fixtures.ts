@@ -2,7 +2,7 @@
  * fixtures.ts — 跨文件存档/状态工厂（v1.04 收敛）
  *
  * makeSaveData：全字段合法存档（storage 导出/导入往返用）。
- * minimalSaveData：极简合法存档（game 初始化/导入用；resources 只含
+ * minimalSaveData：通用极简合法存档工厂（按需覆盖顶层字段）；resources 只含
  *   energy 键即可过校验器——校验只查值形态不查键齐全）。
  * exploredNodes：把一组节点构造为「已完成」并 hydrate 进 exploration store。
  */

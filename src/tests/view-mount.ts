@@ -1,7 +1,7 @@
 /**
  * view-mount.ts — 视图组件测试共享装配（v1.04 收敛）
  *
- * 七个 view 测试此前各自逐字携带同一套装配：
+ * 各 view/组件测试此前各自逐字携带同一套装配：
  * vue-router / useFocusTrap 的 vi.mock 工厂体、mountView + wrappers 登记、
  * 每个 describe 重复的 beforeEach（清 mock + 清 localStorage + 重建 pinia）
  * 与 afterEach（统一卸载）。此处收敛为单一出处。

@@ -1,6 +1,6 @@
 /**
  * navigation.ts — 统一导航项定义
- * SideNav 和 BottomNav 共用此数据源，通过 tier 字段筛选
+ * SideNav / BottomNav / 首页快速操作等共用此数据源，通过 tier 字段筛选
  */
 
 import { t } from '@/i18n'

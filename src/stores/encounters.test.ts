@@ -127,7 +127,7 @@ describe('encounters store — 结算', () => {
     // 再挂起一次， provider 恒 0.9 → 空手分支
     store.pendingEventId = 'enc_well'
     store.pendingAt = T0
-    setEncounterRandomProvider(() => 0.9)
+    setEncounterRandomProvider(() => 0.9) // 0.9 > 0.35 → 落空手带（65%）
     const r2 = store.resolve('B', T0 + 1000)
     expect(r2).toEqual({ encounterId: 'enc_well', rewards: {} })
   })

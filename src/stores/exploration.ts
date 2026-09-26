@@ -11,7 +11,7 @@ import type { ExplorationSaveData } from '@/lib/storage'
 export interface ExploreProgress {
   nodeId: string
   startTime: number // 0 = 未开始
-  endTime: number // 预计完成时间戳（0 = 未开始）；锁定后不受 exploreMult 变化影响
+  endTime: number // 预计完成时间戳（0 = 未开始；> 0 且 < now = 已到期待 tick 结算）；锁定后不受 exploreMult 变化影响
   completed: boolean
 }
 

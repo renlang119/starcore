@@ -31,7 +31,7 @@ const emit = defineEmits<{ stay: []; confirm: [] }>()
 
 const game = useGameStore()
 
-// 战斗结果展示数据
+// —— 结果展示派生（奖励 / 损失 / 无损失）——
 const rewardRows = computed(() => {
   if (!props.result?.rewards) return []
   return resourceRows(props.result.rewards, game.resources.allMeta, { positiveOnly: true })

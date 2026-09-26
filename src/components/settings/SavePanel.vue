@@ -14,7 +14,6 @@ import { useTimeout } from '@/composables/useTimeout'
 
 const game = useGameStore()
 
-// 存档管理
 const importCode = ref('')
 const importMsg = useToast()
 const saveMsg = useToast()

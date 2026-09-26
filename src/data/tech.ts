@@ -183,7 +183,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 晶体学 ——
+  // —— 晶脉学 ——
   {
     id: 'crystal_eff_1',
     name: t('content.tech.crystal_eff_1.name'),
@@ -640,7 +640,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 暗物质学 ——
+  // —— 暗物质学与奇点学 ——
   {
     id: 'dark_detection',
     name: t('content.tech.dark_detection.name'),

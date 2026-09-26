@@ -12,7 +12,7 @@ const visible = computed(() => !!game.offlineReport)
 
 /**
  * 分组展示数据：标题 / 色调 / 行（资源行走 resourceRows，训练行查兵种表）。
- * 建筑产出沿用「标题行在列表内」的既有结构（titleInList），间距与其余分组不同属历史形态。
+ * 建筑产出沿用「标题行在列表内」的既有结构（titleInList）。
  */
 const groups = computed(() => {
   const report = game.offlineReport

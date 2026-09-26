@@ -1,9 +1,10 @@
 <script setup lang="ts">
 /**
- * LogList — 战斗日志行列表（v1.07 收敛自 BattleView 的页面日志区与结果弹窗战报）
+ * LogList — 战斗日志行列表
  *
  * 容器类名（.log-list / .modal-log-list）由调用方经 class 透传并留在调用方
  * scoped 样式管辖；本组件自带日志行本体样式（.log-entry / .log-round）。
+ * 收敛自 BattleView 页面日志区与结果弹窗战报（v1.07）。
  */
 import type { BattleLogEntry } from '@/stores/combat'
 

@@ -21,7 +21,7 @@ import { setEncounterRandomProvider } from '@/stores/encounters'
 /** 折算率与量级带（EV 折算口径；调整数值前先改核验表） */
 const RATE = { energy: 1, alloy: 1, data: 6, dark: 8000, units: 60 } as const
 const BAND_MIN = 4400
-const BAND_MAX = 120000
+const BAND_MAX = 120000 // 护栏带放宽上界（实际带 4.4e3–9.2e3，见 encounters.ts 头注）
 const EV_GAP_MAX = 0.15
 
 function optionEv(opt: EncounterOption): number {

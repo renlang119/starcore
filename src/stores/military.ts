@@ -1,6 +1,6 @@
 /**
  * military.ts — 造兵与部队系统 store
- * 4 种兵种训练 + 部队编组（最多 3 支编队）
+ * 4 种兵种训练 + 部队编组（最多 3 支编队）、编队特性与派遣远征
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'

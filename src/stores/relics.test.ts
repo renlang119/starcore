@@ -148,7 +148,7 @@ describe('relics — 套装加成', () => {
     const row = store.setProgress.find((r) => r.set.id === 'silencer')!
     expect(row.count).toBe(2)
     expect(row.mode).toBe('partial')
-    expect(store.equippedEffects.some((e) => e.label.includes('暗物质产出 +6%'))).toBe(true)
+    expect(store.equippedEffects.some((e) => e.label.includes('暗物质产出 +6%'))).toBe(true) // 断言依赖套装 label 文案，文案改动须同步
   })
 
   it('装备 3 件同系 → full 加成（partial 不叠加）', () => {
@@ -182,7 +182,7 @@ describe('relics — 套装加成', () => {
       ...inject(store, 'r_dark_3'),
     ]
     ids.forEach((id, i) => store.equip(id, i))
-    // r_dark_1(1.05) × r_dark_2(1.15) × r_dark_3(1.4) × 满套(1.12)
+    // r_dark_1(1.05) × r_dark_2(1.15) × r_dark_3(1.4) × 满套(silencer full.value = 1.12)
     const expected = 1.05 * 1.15 * 1.4 * 1.12
     expect(store.getMult('production_mult', 'dark')).toBeCloseTo(expected, 10)
   })
@@ -234,7 +234,7 @@ describe('relics — 强化（v0.70）', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     store = useRelicsStore()
-    // 重置模块级 provider，防止跨测试污染（slotProvider 同款先例）
+    // 重置模块级 provider，防止跨测试污染
     setRelicEnhanceSpendProvider(() => true)
   })
 

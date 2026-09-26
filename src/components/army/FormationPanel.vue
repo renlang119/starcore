@@ -22,7 +22,7 @@ const traitDescFor = ref<string | null>(null)
 function pickTrait(fid: string, traitId: string) {
   const current = getTrait(game.military.formations.find((f) => f.id === fid)?.trait).id
   if (current === traitId) {
-    // 再点当前项 = 展开/收起效果描述，不重复写状态
+    // 再点当前项 = 展开/收起效果描述，不重复写状态；trait 为空时 balanced 视为当前项（不落库，靠模板特判高亮）
     traitDescFor.value = traitDescFor.value === fid ? null : fid
     return
   }
@@ -30,7 +30,7 @@ function pickTrait(fid: string, traitId: string) {
   traitDescFor.value = fid
 }
 
-// 全入/全撤确认（大数量操作需确认）
+// 全入/全撤确认（数量 >100 触发确认）
 const pendingBulkAction = ref<{
   type: 'assign' | 'remove'
   fid: string

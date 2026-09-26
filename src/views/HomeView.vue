@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // HomeView — 首页编排（v0.54 起瘦身为组件编排）
-// 四个板块实现见 components/home/；行动队列数据组装见 composables/useActionQueue
+// 板块组件实现见 components/home/；行动队列数据组装见 composables/useActionQueue
 import HeroCore from '@/components/home/HeroCore.vue'
 import ActionQueuePanel from '@/components/home/ActionQueuePanel.vue'
 import QuickActions from '@/components/home/QuickActions.vue'
