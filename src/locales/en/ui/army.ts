@@ -11,7 +11,7 @@ export default {
   'army.confirmAllOut': 'Confirm All Out',
   'army.counter': 'Counters',
   'army.dispatchTitle': 'Expedition Dispatch',
-  'army.dispatchLocked': 'Defeat the Silencer Flagship to unlock dispatch',
+  'army.dispatchLocked': 'Defeat the Flagship of the Silent Ones to unlock dispatch',
   'army.dispatchReturnIn': 'Returning in {time}',
   'army.dispatchReady': 'Dispatch complete — recall to collect',
   'army.dispatchRecall': 'Recall',
