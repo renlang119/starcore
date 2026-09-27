@@ -118,7 +118,7 @@ starcore/
 
 - [游戏设定与架构](docs/游戏设定与架构.md) · Game Design & Architecture
 - [游戏数值设定规范](docs/游戏数值设定规范.md) · Numerical Design Specification
-- [设计Token规范](docs/设计Token规范.md) · Design Token Specification
+- [设计令牌规范](docs/设计令牌规范.md) · Design Token Specification
 - [组件与按钮设计规范](docs/组件与按钮设计规范.md) · Components & Buttons Specification
 - [交互状态规范](docs/交互状态规范.md) · Interaction States Specification
 - [氛围视觉规范](docs/氛围视觉规范.md) · Atmosphere & Visuals Specification
