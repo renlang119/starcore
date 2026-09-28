@@ -117,7 +117,7 @@ function toggleCollapsed() {
   flex-shrink: 0;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border-line);
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-4) var(--space-2);
   /* display: flex 由全局 @media (min-width:768px) 控制 */
   display: flex;
   flex-direction: column;
@@ -136,8 +136,8 @@ function toggleCollapsed() {
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-2) var(--space-5);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1) var(--space-5);
   overflow: hidden;
 }
 .brand-mark {
@@ -155,7 +155,7 @@ function toggleCollapsed() {
   animation: corePulse 3s ease-in-out infinite;
 }
 .brand-name {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-core);
   white-space: nowrap;
   overflow: hidden;
@@ -169,7 +169,7 @@ function toggleCollapsed() {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: 500;
@@ -193,6 +193,7 @@ function toggleCollapsed() {
 .nav-label {
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
   transition: opacity 0.15s var(--ease-out);
 }
 .side-nav.collapsed .nav-label {

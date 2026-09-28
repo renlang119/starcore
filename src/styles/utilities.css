@@ -173,13 +173,14 @@
 /* ============================================================
    品牌名样式 — PingFang SC Bold + letter-spacing + text-shadow
    方案B：零新增资源，用排版处理靠近科幻感
+   字距 2px：与 200px 侧栏宽匹配，容纳 EN 全名 StarCore Era
    ============================================================ */
 .brand-name {
   font-family: 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei UI', system-ui, sans-serif;
   font-weight: 700;
-  letter-spacing: 4px;
+  letter-spacing: 2px;
   text-shadow: 0 0 12px color-mix(in srgb, var(--color-core) 40%, transparent);
-  padding-left: 4px; /* 补偿 letter-spacing 导致的左偏移 */
+  padding-left: 2px; /* 补偿 letter-spacing 导致的左偏移（随字距取值） */
 }
 
 /* 读屏专用文本（视觉隐藏，v0.97）：资源区与成本标签的名称播报 */
