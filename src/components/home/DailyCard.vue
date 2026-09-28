@@ -168,6 +168,13 @@ function claim(templateId: string) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* 移动端：长挑战名换行显示（EN 长模板单行放不下，避免中段省略号截词） */
+@media (max-width: 767px) {
+  .c-name {
+    white-space: normal;
+    line-height: 1.3;
+  }
+}
 .c-bar {
   flex: 1;
   min-width: 40px;

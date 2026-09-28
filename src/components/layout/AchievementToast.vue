@@ -67,11 +67,11 @@ watch(() => ach.toastQueue.length, showNext, { immediate: true })
   pointer-events: none;
   max-width: min(320px, calc(100vw - 2 * var(--space-4)));
 }
-/* 移动端：顶部居中，避开 TopBar 资源条 */
+/* 移动端：顶部居中，置于顶栏（实测高 49px）之下——避开底部导航与「更多」面板 */
 @media (max-width: 767px) {
   .ach-toast {
-    top: auto;
-    bottom: 96px; /* 底部导航之上 */
+    top: calc(49px + var(--space-2));
+    bottom: auto;
     right: var(--space-3);
     left: var(--space-3);
     max-width: none;
@@ -119,7 +119,7 @@ watch(() => ach.toastQueue.length, showNext, { immediate: true })
 @media (max-width: 767px) {
   .ach-toast-enter-from,
   .ach-toast-leave-to {
-    transform: translateY(12px);
+    transform: translateY(-12px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
