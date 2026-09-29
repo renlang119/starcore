@@ -29,10 +29,10 @@ function baseLifetime(
 const toBase64 = (s: string) => btoa(String.fromCharCode(...new TextEncoder().encode(s)))
 
 describe('storage export/import', () => {
-  it('exportSave produces SCB- prefixed string', async () => {
+  it('exportSave produces SCB1- prefixed string', async () => {
     const data = makeSaveData()
     const exported = await exportSave(data)
-    expect(exported.startsWith('SCB-')).toBe(true)
+    expect(exported.startsWith('SCB1-')).toBe(true)
     expect(exported.length).toBeGreaterThan(10)
   })
 
@@ -73,9 +73,9 @@ describe('storage export/import', () => {
   })
 
   it('importSave rejects corrupted (valid base64 but bad JSON)', async () => {
-    // SCB- + valid base64 of non-JSON content
+    // SCB1- + valid base64 of non-JSON content（结构不符判 invalid）
     const fakeB64 = toBase64('not json at all')
-    const result = await importSave('SCB-' + fakeB64)
+    const result = await importSave('SCB1-' + fakeB64)
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.reason).toBe('invalid')
   })
@@ -314,8 +314,15 @@ describe('storage — 存档加固（v0.75）', () => {
     const marker = `"endTime":${data.exploration.progress.node_orbit.endTime}`
     const tampered = json.replace(marker, '"endTime":1e999')
     expect(tampered).not.toBe(json) // 替换命中
-    const result = await importSave('SCB-' + toBase64(tampered))
+    // v1.35：篡改数据无法伪造签名——用合法导出载体换入篡改 d（签名不匹配判 corrupted）
+    const exported = await exportSave(data)
+    const payload = JSON.parse(
+      new TextDecoder().decode(Uint8Array.from(atob(exported.slice(5)), (ch) => ch.charCodeAt(0)))
+    ) as { d: string; c: string }
+    payload.d = tampered
+    const result = await importSave('SCB1-' + toBase64(JSON.stringify(payload)))
     expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.reason).toBe('corrupted')
   })
 
   it('exploration：未知节点条目丢弃（不整档拒绝）', async () => {
@@ -495,12 +502,12 @@ describe('storage — 存档安全（v0.81）', () => {
     }
   })
 
-  it('SCE- 旧前缀仍按 Base64(JSON) 解析（与 SCB- 同路径）', async () => {
+  it('SCE- 旧前缀 v1.35 起导入拒绝（无签名防修改器通道）', async () => {
     const data = makeSaveData()
     const code = 'SCE-' + toBase64(JSON.stringify(data))
     const result = await importSave(code)
-    expect(result.ok).toBe(true)
-    if (result.ok) expect(result.data.transcend.totalTranscends).toBe(1)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.reason).toBe('invalid')
   })
 
   it('中文与 emoji 经导出/导入往返无损', async () => {
@@ -512,14 +519,14 @@ describe('storage — 存档安全（v0.81）', () => {
     if (result.ok) expect(result.data.player.name).toBe('测试指挥官🌌')
   })
 
-  it('标准编码与旧 escape/unescape 实现产物互通（存量导出码不失效）', async () => {
-    // 旧实现（escape/unescape）编码的中文存档，新实现必须能解
+  it('旧 SCB- 裸 JSON 载荷 v1.35 起导入拒绝（存量旧导出码须重新导出）', async () => {
+    // 旧格式无签名；与 SCE- 同口径一律拒绝
     const data = makeSaveData()
     data.player.name = '中文名'
     const legacyB64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))))
     const result = await importSave('SCB-' + legacyB64)
-    expect(result.ok).toBe(true)
-    if (result.ok) expect(result.data.player.name).toBe('中文名')
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.reason).toBe('invalid')
   })
 })
 

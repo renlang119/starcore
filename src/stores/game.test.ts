@@ -8,8 +8,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
+import { saveSignature } from '@/lib/integrity'
 import { fnv1a } from '@/lib/random'
-import { minimalSaveData, exploredNodes } from '@/tests/fixtures'
+import { makeSaveData, minimalSaveData, exploredNodes } from '@/tests/fixtures'
 import { exportSave, importSave, clearAllSaves, type SaveData } from '@/lib/storage'
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
@@ -601,7 +602,7 @@ const BACKUP_KEY = 'starcore_save_v1_backup'
 
 function writeBackupSave(data: SaveData): void {
   const json = JSON.stringify(data)
-  localStorage.setItem(BACKUP_KEY, JSON.stringify({ d: json, c: fnv1a(json).toString(16) }))
+  localStorage.setItem(BACKUP_KEY, JSON.stringify({ d: json, c: saveSignature(json) }))
 }
 
 describe('game store — 初始化错误态（v0.75）', () => {
@@ -699,6 +700,25 @@ describe('game store — 初始化错误态（v0.75）', () => {
     expect(localStorage.getItem(BACKUP_KEY)).toBe('not-a-payload')
   })
 
+  it('v1.35 硬切：旧 fnv1a 校验和档判 corrupt（走错误屏出口）', async () => {
+    // v1.35 之前的写路径形态：c 为 fnv1a 十六进制
+    const data = makeSaveData()
+    const json = JSON.stringify(data)
+    localStorage.setItem(BACKUP_KEY, JSON.stringify({ d: json, c: fnv1a(json).toString(16) }))
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBe('corrupt')
+  })
+
+  it('v1.35 硬切：裸对象档（无校验载荷）判 corrupt', async () => {
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(makeSaveData()))
+    const game = useGameStore()
+    const loaded = await game.init()
+    expect(loaded).toBe(false)
+    expect(game.initError).toBe('corrupt')
+  })
+
   it('v0.93 too_new 优先：主档版本过新时不静默采用旧备份', async () => {
     // 主档 version=2（too_new），备份为可读旧档——修复前旧备份胜出被静默
     // hydrate，随后自动存档覆盖新版主档（不可逆回滚）；修复后进 too_new 错误屏
@@ -710,7 +730,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
         'starcore_save_v1',
         JSON.stringify({
           d: JSON.stringify({ ...stale, version: 2 }),
-          c: fnv1a(JSON.stringify({ ...stale, version: 2 })).toString(16),
+          c: saveSignature(JSON.stringify({ ...stale, version: 2 })),
         })
       )
     } catch {
@@ -770,14 +790,14 @@ describe('game store — 初始化错误态（v0.75）', () => {
       const store = localforage.createInstance({ name: 'starcore', storeName: 'save' })
       await store.setItem(
         'starcore_save_v1',
-        JSON.stringify({ d: JSON.stringify(stale), c: fnv1a(JSON.stringify(stale)).toString(16) })
+        JSON.stringify({ d: JSON.stringify(stale), c: saveSignature(JSON.stringify(stale)) })
       )
     } catch {
       // jsdom 无 IndexedDB 时主档写不进也不影响：备份仍是 savedAt 新者
     }
     localStorage.setItem(
       BACKUP_KEY,
-      JSON.stringify({ d: JSON.stringify(now), c: fnv1a(JSON.stringify(now)).toString(16) })
+      JSON.stringify({ d: JSON.stringify(now), c: saveSignature(JSON.stringify(now)) })
     )
     const game = useGameStore()
     const loaded = await game.init()
