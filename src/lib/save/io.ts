@@ -2,12 +2,15 @@
  * save/io.ts — 存档读写通道（从 storage.ts 拆出）。
  *
  * localforage（IndexedDB）作为主存，localStorage 作为辅助/备份；
- * 写路径双通道共用 { d, c } 校验载荷。读路径双通道都尝试并取较新一档，
- * 严格区分「无档」与「有值但损坏」，版本过新优先报错。
+ * 写路径双通道共用 { d, c } 校验载荷，c 为 HMAC-SHA256 存档签名
+ * （lib/integrity.ts，keyed；v1.35 起替代旧 fnv1a）。
+ * 读路径双通道都尝试并取较新一档，严格区分「无档」与「有值但损坏」，
+ * 版本过新优先报错；旧格式（fnv1a 校验和 / 裸对象）一律判损坏
+ * （测试期硬切，走错误屏的导出原始档与清除存档重开出口）。
  */
 import { t } from '@/i18n'
 import localforage from 'localforage'
-import { fnv1a } from '@/lib/random'
+import { saveSignature, verifySaveSignature } from '@/lib/integrity'
 import type { SaveData } from './schema'
 import { tooNewVersion, validateAndRepair } from './validate'
 
@@ -19,9 +22,9 @@ const STORE = localforage.createInstance({
 
 const SAVE_KEY = 'starcore_save_v1'
 
-/** FNV-1a 校验和——检测存档被篡改或损坏 */
+/** 存档签名——HMAC-SHA256（keyed），检测存档被篡改或损坏 */
 function _checksum(data: string): string {
-  return fnv1a(data).toString(16)
+  return saveSignature(data)
 }
 
 /** 拼 { d, c } 校验载荷（checksum 防篡改/损坏，写路径双通道共用） */
@@ -131,12 +134,13 @@ function _savedAtOf(outcome: SaveReadOutcome): number {
   return -1
 }
 
-/** 解析已 JSON.parse 的值（兼容新格式 { d, c } 和旧格式裸对象，v1.03 收敛双入口） */
+/** 解析已 JSON.parse 的值（v1.35 起仅接受 keyed 签名格式 { d, c }；
+ * 旧 fnv1a 校验和与裸对象档一律判不可用，走错误屏出口） */
 function _parsePayload(value: unknown): SaveReadOutcome | null {
   if (!_isObject(value)) return null
-  // 新格式：{ d: json, c: checksum }
+  // 新格式：{ d: json, c: HMAC 签名 }
   if (typeof value.d === 'string' && typeof value.c === 'string') {
-    if (_checksum(value.d) !== value.c) return null // 校验失败——被篡改或损坏
+    if (!verifySaveSignature(value.d, value.c)) return null // 校验失败——被篡改或损坏
     try {
       const data = JSON.parse(value.d)
       const tooNew = tooNewVersion(data)
@@ -147,10 +151,7 @@ function _parsePayload(value: unknown): SaveReadOutcome | null {
       return null
     }
   }
-  // 旧格式兼容：裸 SaveData 对象
-  const tooNew = tooNewVersion(value)
-  if (tooNew !== null) return { status: 'too_new', version: tooNew }
-  if (validateAndRepair(value)) return { status: 'ok', data: value as SaveData }
+  // 旧格式（裸对象 / fnv1a 校验和）不再兼容：测试期硬切，判损坏
   return null
 }
 
@@ -159,7 +160,7 @@ function _parseStored(stored: unknown): SaveReadOutcome | null {
   return _parsePayload(stored)
 }
 
-/** 解析 localStorage 备份，验证校验和防篡改 */
+/** 解析 localStorage 备份，验证签名防篡改 */
 function _parseBackup(raw: string): SaveReadOutcome | null {
   try {
     return _parsePayload(JSON.parse(raw))
