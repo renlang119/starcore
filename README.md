@@ -78,6 +78,7 @@ starcore/
 ├─ docs/            十一册规范文档，见「文档索引」（含 archive 历史归档）
 ├─ public/          favicon、分享图与本地字体（Orbitron、JetBrains Mono）
 ├─ scripts/         质量脚本（计数守恒、文案缺键检查）
+├─ tools/           诊断工具（环境自检、端到端与数值校验）
 ├─ changelog/       版本历史三档（活跃档 changelog.md 与两份历史存档）
 ├─ deploy.sh        部署脚本
 └─ 工程配置（vite.config.ts、vitest.config.ts、tsconfig*.json、eslint.config.js）
@@ -91,6 +92,17 @@ starcore/
   测试硬性校验，防止数值漂移（`corepack pnpm check:conservation`）
 - **文案守卫**：`scripts/check-locales.mjs` 校验文案键闭合（缺键 / 未使用 /
   非字面量调用）、硬编码中文零残留与多语言键面一致性，已并入 `corepack pnpm check` 门禁
+
+## 自检与诊断
+
+项目内置配套诊断工具集，克隆后即可检查自身环境与部署目标：
+
+```bash
+corepack pnpm diagnose        # 环境与仓库自检，缺件时给出修复指引
+corepack pnpm diagnose --fix  # 对可自动修复的缺件执行修复
+```
+
+自检覆盖 Node、依赖、构建产物、浏览器、Python 等前置条件；端到端与数值校验工具用法见 `tools/README.md`。
 
 ## 文档索引
 

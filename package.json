@@ -5,6 +5,9 @@
   "version": "1.35.1",
   "type": "module",
   "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
@@ -18,7 +21,8 @@
     "check:locales": "node scripts/check-locales.mjs",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
-    "check": "corepack pnpm build && corepack pnpm test && corepack pnpm check:conservation && corepack pnpm check:locales --strict && corepack pnpm lint:check && corepack pnpm format:check"
+    "check": "corepack pnpm build && corepack pnpm test && corepack pnpm check:conservation && corepack pnpm check:locales --strict && corepack pnpm lint:check && corepack pnpm format:check",
+    "diagnose": "node tools/diagnose.mjs"
   },
   "dependencies": {
     "@vue/devtools-api": "8.2.1",

@@ -94,6 +94,7 @@ starcore/
 ├─ docs/            11 specification documents (in Chinese), see Documentation (plus archived history)
 ├─ public/          favicon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation, message key checks)
+├─ tools/           diagnostics (environment self-check, end-to-end and numeric)
 ├─ changelog/       version history; active file and two archives
 ├─ deploy.sh        deployment script
 └─ project configs (vite.config.ts, vitest.config.ts, tsconfig*.json, eslint.config.js)
@@ -111,6 +112,17 @@ starcore/
 - **Copy guard**: `scripts/check-locales.mjs` gates message-key closure (missing /
   unused / non-literal calls), zero hardcoded Chinese residuals and
   cross-locale key parity; wired into `corepack pnpm check`
+
+## Self-check & Diagnostics
+
+The repository ships a companion toolset for checking your environment and deployment targets:
+
+```bash
+corepack pnpm diagnose        # environment & repo self-check with fix hints
+corepack pnpm diagnose --fix  # repair fixable missing pieces
+```
+
+The self-check covers Node, dependencies, build output, the browser and Python prerequisites. For end-to-end and numeric diagnostics, see `tools/README.md`.
 
 ## Documentation
 
