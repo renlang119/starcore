@@ -31,4 +31,15 @@ corepack pnpm e2e starcore-v135-save-integrity.mjs  # 运行任意脚本清单
 
 ## 数值校验（balance）
 
-数值调整后的复算与核验脚本（需要 Python 3）；用法见各脚本头注。
+数值调整后的复算与核验脚本（纯 Python 3 标准库，无第三方依赖）：
+
+```bash
+python3 tools/balance/starcore-v126-encounter-ev.py   # 遭遇事件 EV 核验表
+python3 tools/balance/starcore-v127-dispatch-ev.py    # 派遣远征 EV 核验表
+python3 tools/balance/starcore-v123-trait-calib.py    # 编队特性校准模拟
+```
+
+- `starcore-v092-battle-sim.py`：战斗解析忠实移植，各模拟脚本的共享底座；
+- `starcore-v120-milestone-calib.py` / `starcore-v123-trait-calib.py` / `starcore-v124-boss-calib.py`：数值校准模拟；
+- `starcore-v126-encounter-ev.py` / `starcore-v127-dispatch-ev.py`：EV 核验表（断言式，退出码即结论）；
+- 多数脚本运行时直接读取仓库内数据源（`src/data/*.ts`）复算，改数值后先过核验表再同步数据表。
