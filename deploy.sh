@@ -52,7 +52,7 @@ echo "  站点地址: $SITE_URL"
 
 # 1. 前置质量关卡：完整 check（构建含类型检查 + 单测 + 计数守恒 + lint/format，
 #    任一失败即中断，不部署未过关的产物）。
-#    计数守恒的 Playwright 段经 STARCORE_PW_DIR 环境变量启用（本机 deploy.env 配置）；
+#    计数守恒的端到端脚本段缺省扫描仓库内 tools/e2e（可用 STARCORE_PW_DIR 覆盖）；
 #    工作树不干净仅告警不阻断（软校验）。
 echo "[1/5] 前置关卡（check：build / test / 守恒 / lint / format）..."
 if [[ -n "$(git status --porcelain 2>/dev/null || true)" ]]; then

@@ -7,8 +7,8 @@
  * 文档计数词表」四方核对机械化，任何一处漏改直接报错退出。
  *
  * 用法：node scripts/check-conservation.mjs
- *   --pw-dir <dir>  Playwright 脚本目录（也可用环境变量 STARCORE_PW_DIR
- *                   指定；两者皆无时跳过该段检查）
+ *   --pw-dir <dir>  端到端脚本目录（可用环境变量 STARCORE_PW_DIR 覆盖；
+ *                   缺省 = 仓库内 tools/e2e）
  * 退出码：0 = 全部守恒；1 = 存在漂移（差异表打到 stdout）
  */
 import {
@@ -27,7 +27,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const pwDirIdx = args.indexOf('--pw-dir')
-const PW_DIR = pwDirIdx >= 0 ? args[pwDirIdx + 1] : process.env.STARCORE_PW_DIR || null
+const PW_DIR = pwDirIdx >= 0 ? args[pwDirIdx + 1] : process.env.STARCORE_PW_DIR || join(ROOT, 'tools', 'e2e')
 
 // ---------------------------------------------------------------
 // 1. 数据源真值：真实 import 数据模块求值（v0.97 根修）
@@ -219,14 +219,8 @@ if (!new RegExp(`全部 ${T.relicPool} 种`).test(T.achRelic4Desc ?? '')) {
 } else ok('ach_relic_4 文案联动', `desc 含「${T.relicPool} 种」`)
 
 // —— 3b. Playwright 硬断言 ——
-if (PW_DIR === null) {
-  console.log('\n== Playwright 硬断言 ==')
-  console.log('  （未提供 --pw-dir / STARCORE_PW_DIR，跳过该段；将脚本目录以绝对路径传入即启用）')
-} else if (PW_DIR === undefined || PW_DIR === true || String(PW_DIR).startsWith('-')) {
-  bad(
-    'Playwright 目录',
-    '--pw-dir 缺少目录参数（请补绝对路径，如 --pw-dir <脚本目录>），本次跳过该段'
-  )
+if (PW_DIR === undefined || PW_DIR === true || String(PW_DIR).startsWith('-')) {
+  bad('Playwright 目录', '--pw-dir 缺少目录参数（请补绝对路径，如 --pw-dir <脚本目录>）')
 } else {
   console.log('\n== Playwright 硬断言（' + PW_DIR + '/starcore-*.mjs）==')
   const pwPatterns = [
