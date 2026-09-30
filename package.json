@@ -22,7 +22,8 @@
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "check": "corepack pnpm build && corepack pnpm test && corepack pnpm check:conservation && corepack pnpm check:locales --strict && corepack pnpm lint:check && corepack pnpm format:check",
-    "diagnose": "node tools/diagnose.mjs"
+    "diagnose": "node tools/diagnose.mjs",
+    "e2e": "node tools/e2e/run.mjs"
   },
   "dependencies": {
     "@vue/devtools-api": "8.2.1",
@@ -44,6 +45,7 @@
     "eslint-plugin-vue": "^10.11.0",
     "globals": "^17.12.0",
     "jsdom": "^30.0.1",
+    "playwright-core": "^1.62.1",
     "prettier": "^3.9.6",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.70.0",

@@ -17,7 +17,17 @@ corepack pnpm diagnose --fix  # 对可自动修复的缺件执行修复
 
 ## 端到端诊断（e2e）
 
-对本地预览或任意部署地址运行项目全套回归脚本；覆盖全部玩法功能与存档安全性。用法见运行器说明。
+对本地预览或任意部署地址运行回归脚本集（覆盖全部玩法功能与存档安全性）：
+
+```bash
+corepack pnpm e2e                                   # 本地全量回归（自动起停预览，自动选择空闲端口）
+corepack pnpm e2e --remote https://example.com      # 对远程目标运行复跑集
+corepack pnpm e2e starcore-v135-save-integrity.mjs  # 运行任意脚本清单
+```
+
+- 运行器自动管理本地预览服务的启动与停止；`--no-start` 可复用已运行的服务；
+- 每脚本日志分账写入日志目录（缺省系统临时目录 `starcore-e2e`，`--log-dir` 可改）；
+- 浏览器缺失时先运行 `corepack pnpm diagnose --fix`。
 
 ## 数值校验（balance）
 
