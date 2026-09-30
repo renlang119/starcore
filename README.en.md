@@ -42,7 +42,7 @@ growing on through "Singularity Restart" rebirth cycles.
 
 ## Quick Start
 
-Requires Node.js 22.12+ (24.20 used in development); pnpm 9 is invoked via
+Requires Node.js 22.18+ (24.21 used in development); pnpm 9 is invoked via
 corepack (`packageManager` pins 9.15.4, fetched on first run).
 
 ```bash

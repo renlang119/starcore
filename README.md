@@ -28,7 +28,7 @@
 
 ## 快速开始
 
-环境要求：Node.js 22.12 及以上（开发环境实测 24.20），pnpm 9 经 corepack
+环境要求：Node.js 22.18 及以上（开发环境实测 24.21），pnpm 9 经 corepack
 调用（`packageManager` 锁定 9.15.4，首次运行自动拉取）。
 
 ```bash
