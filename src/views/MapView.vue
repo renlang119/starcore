@@ -464,6 +464,7 @@ const weeklyBossCard = computed(() => {
   flex-shrink: 0;
   font-size: var(--text-sm);
   padding: var(--space-1) var(--space-3);
+  min-height: 40px; /* v1.38 触控命中高 ≥40 */
 }
 
 /* onboarding */

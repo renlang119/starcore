@@ -66,7 +66,7 @@ export const ACHIEVEMENT_CATEGORIES: Record<AchievementCategory, { label: string
     battle: { label: t('content.achievements.cat.battle.label'), icon: 'i-ui-sword' },
     relic: { label: t('content.achievements.cat.relic.label'), icon: 'i-nav-relic' },
     transcend: { label: t('content.achievements.cat.transcend.label'), icon: 'i-nav-prestige' },
-    time: { label: t('content.achievements.cat.time.label'), icon: 'i-ui-more' },
+    time: { label: t('content.achievements.cat.time.label'), icon: 'i-ui-clock' },
   }
 
 function prod(pct: number): AchievementEffect[] {

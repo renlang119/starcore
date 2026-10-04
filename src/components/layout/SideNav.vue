@@ -227,7 +227,8 @@ function toggleCollapsed() {
   font-size: var(--text-xs);
 }
 .stat .label {
-  color: var(--color-t-tertiary);
+  /* v1.38 对比度：tertiary 4.30 → secondary（elevated 5.30 / surface 6.14） */
+  color: var(--color-t-secondary);
 }
 .stat .val {
   color: var(--color-t-primary);

@@ -96,7 +96,9 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     kind: 'transcends',
     targets: [1, 2],
     rewardDark: [8, 12],
-    name: (n) => t('home.daily.ch.wkTranscends', { n }),
+    // v1.38：档位含 1，走单数分支（英文语法）
+    name: (n) =>
+      n === 1 ? t('home.daily.ch.wkTranscendsOne', { n }) : t('home.daily.ch.wkTranscends', { n }),
   },
   // —— 扩类（v1.21 可玩内容扩展方案 3）：池 5→9，消除每周同质 ——
   {

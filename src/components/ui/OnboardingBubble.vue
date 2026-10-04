@@ -66,12 +66,15 @@ const emit = defineEmits<{
 }
 .onboard-skip {
   font-size: var(--text-xs);
-  color: var(--color-t-tertiary);
+  /* v1.38 对比度：tertiary 4.30 → secondary 5.30；命中区经内边距扩展至 ≥40px（负外边距保持视觉不变） */
+  color: var(--color-t-secondary);
   text-decoration: underline;
   text-underline-offset: 2px;
+  padding: var(--space-3) var(--space-1);
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-1));
 }
 .onboard-skip:hover {
-  color: var(--color-t-secondary);
+  color: var(--color-t-primary);
 }
 .onboard-ok {
   /* 沿用 btn-secondary.sm，额外加 core 描边 */

@@ -282,6 +282,7 @@ const {
   font-size: var(--text-sm);
   color: var(--color-t-secondary);
   padding: var(--space-2) var(--space-3);
+  min-height: 40px; /* v1.38 触控命中高 ≥40 */
 }
 
 .stronghold-info {

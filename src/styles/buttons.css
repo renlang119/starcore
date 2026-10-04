@@ -112,6 +112,7 @@
 .btn-ghost.sm {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
+  min-height: 40px; /* v1.38 触控命中高 ≥40（紧凑档一并抬升） */
 }
 /* 全宽变体 */
 .btn-primary.block,
@@ -134,6 +135,7 @@
 }
 .seg-btn {
   padding: var(--space-1) var(--space-3); /* 分段切换器统一定标 */
+  min-height: 32px; /* v1.38 命中高抬升（保持紧凑档） */
   font-size: var(--text-xs);
   font-family: var(--font-mono, monospace);
   color: var(--color-t-secondary);
@@ -150,4 +152,24 @@
 .seg-btn.active {
   color: var(--accent, var(--color-core));
   background: color-mix(in srgb, var(--accent, var(--color-core)) 10%, transparent);
+}
+
+/* ============================================================
+   busy 态（v1.38）：禁用 + 内联旋转指示
+   用于真实异步耗时操作（当前消费点：设置页「导入存档」）；
+   使用方绑定 :disabled + aria-busy（见《交互状态规范》§8.7）；
+   reduced-motion 由 base.css 全局规则统一降级
+   ============================================================ */
+.btn-busy {
+  pointer-events: none;
+}
+.btn-busy::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spinRing 0.7s linear infinite;
 }

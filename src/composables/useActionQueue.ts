@@ -109,7 +109,10 @@ export function useActionQueue() {
     if (upgradable > 0) {
       items.push({
         id: 'build-upgrade',
-        label: t('home.actions.upgradable', { count: upgradable }),
+        label:
+          upgradable === 1
+            ? t('home.actions.upgradableOne', { count: upgradable })
+            : t('home.actions.upgradable', { count: upgradable }),
         detail: t('home.actions.upgradeNow'),
         path: '/build',
         color: 'var(--color-core)',
@@ -129,7 +132,10 @@ export function useActionQueue() {
     if (researchable > 0) {
       items.push({
         id: 'tech-research',
-        label: t('home.actions.researchable', { count: researchable }),
+        label:
+          researchable === 1
+            ? t('home.actions.researchableOne', { count: researchable })
+            : t('home.actions.researchable', { count: researchable }),
         detail: t('home.actions.unlockTech'),
         path: '/tech',
         color: 'var(--color-plasma)',
@@ -143,7 +149,10 @@ export function useActionQueue() {
     if (availableExplores.length > 0) {
       items.push({
         id: 'explore-available',
-        label: t('home.actions.explorable', { count: availableExplores.length }),
+        label:
+          availableExplores.length === 1
+            ? t('home.actions.explorableOne', { count: availableExplores.length })
+            : t('home.actions.explorable', { count: availableExplores.length }),
         detail: t('home.actions.exploreNew'),
         path: '/map',
         color: 'var(--color-quantum)',

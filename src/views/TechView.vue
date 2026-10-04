@@ -8,6 +8,7 @@ import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import Icon from '@/components/ui/Icon.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
+import { useTimeoutMap } from '@/composables/useTimeout'
 
 const game = useGameStore()
 const activeBranch = ref<TechBranch | 'all'>('all')
@@ -46,8 +47,14 @@ function getAdjustedCost(def: (typeof TECHS)[0]) {
   return adjustedTechCost(def.cost, game.techCostMult.toNumber())
 }
 
+// v1.38 研究成功闪光（动效规范 §1.4：科技系统 plasma 紫）
+const flashState = ref<Record<string, boolean>>({})
+const flashTimers = useTimeoutMap()
 function tryResearch(id: string) {
   game.tryResearch(id)
+  if (!game.research.isCompleted(id)) return
+  flashState.value[id] = true
+  flashTimers.set(id, () => (flashState.value[id] = false), 400)
 }
 </script>
 
@@ -103,7 +110,13 @@ function tryResearch(id: string) {
 
     <!-- 科技列表 -->
     <ul v-else class="tech-list" :aria-label="t('tech.listAria')">
-      <li v-for="tech in techsToShow" :key="tech.id" class="tech-card" :class="techStatus(tech.id)">
+      <li
+        v-for="tech in techsToShow"
+        :key="tech.id"
+        class="tech-card"
+        :class="[techStatus(tech.id), { 'flash-success': flashState[tech.id] }]"
+        :style="{ '--flash-color': 'var(--color-plasma)' }"
+      >
         <div class="t-head">
           <div class="t-icon" :style="{ color: TECH_BRANCHES[tech.branch].color }">
             <Icon :name="tech.icon" size="md" />
@@ -175,6 +188,7 @@ function tryResearch(id: string) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  min-height: 40px; /* v1.38 触控命中高 ≥40 */
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-surface);

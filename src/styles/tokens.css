@@ -19,7 +19,7 @@
   /* —— 辅色（quantum 饱和度对齐） —— */
   --color-amber: #ffb627;
   --color-quantum: #2ee6a0;
-  --color-alert: #f43f5e;
+  --color-alert: #f8546f; /* 对比度 vs elevated 4.90 / surface 5.67（v1.38 提亮一档达 AA，原 4.32） */
   --color-plasma: #a78bfa;
 
   /* —— 领域色（星图层 / 扇区 / 稀有度与学域专属，v1.08 入库） —— */

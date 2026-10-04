@@ -78,15 +78,23 @@ function tryImport() {
   }
   showImportConfirm.value = true
 }
+/** 导入处理中（v1.38 busy 态）：解析与写入期间禁用按钮 + 内联旋转指示 */
+const importing = ref(false)
 async function confirmImport() {
   showImportConfirm.value = false
-  const result = await game.doImport(importCode.value)
-  importMsg.show(
-    result.success ? t('save.importOk') : result.message || t('save.importInvalid'),
-    3000
-  )
-  if (result.success) {
-    reloadTimer.set(() => location.reload(), 1500)
+  if (importing.value) return
+  importing.value = true
+  try {
+    const result = await game.doImport(importCode.value)
+    importMsg.show(
+      result.success ? t('save.importOk') : result.message || t('save.importInvalid'),
+      3000
+    )
+    if (result.success) {
+      reloadTimer.set(() => location.reload(), 1500)
+    }
+  } finally {
+    importing.value = false
   }
 }
 function cancelImport() {
@@ -139,7 +147,15 @@ function cancelHardReset() {
     </div>
     <div class="import-box">
       <textarea v-model="importCode" :placeholder="t('save.importPlaceholder')" rows="3"></textarea>
-      <button class="btn-secondary sm" @click="tryImport">{{ t('save.import') }}</button>
+      <button
+        class="btn-secondary sm"
+        :class="{ 'btn-busy': importing }"
+        :disabled="importing"
+        :aria-busy="importing"
+        @click="tryImport"
+      >
+        {{ t('save.import') }}
+      </button>
     </div>
     <p v-if="importMsg.msg.value" class="import-msg">{{ importMsg.msg.value }}</p>
   </div>

@@ -61,7 +61,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
       key: 'playtime',
       label: t('home.overview.playtime'),
       value: playTime.value,
-      icon: 'i-ui-more',
+      icon: 'i-ui-clock',
       color: 'var(--color-t-primary)',
     },
   ]

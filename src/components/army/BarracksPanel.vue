@@ -7,7 +7,7 @@
  * 层轻提示（提示挂载在视图根部，随视图加载卸载）。
  */
 import { t } from '@/i18n'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { fmtTime } from '@/lib/format'
 import { UNITS, getUnit, type UnitId } from '@/data/units'
@@ -16,6 +16,7 @@ import CostTag from '@/components/ui/CostTag.vue'
 import ProgressBar from '@/components/ui/ProgressBar.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import Icon from '@/components/ui/Icon.vue'
+import { useTimeoutMap } from '@/composables/useTimeout'
 
 const emit = defineEmits<{ feedback: [msg: string] }>()
 
@@ -58,6 +59,25 @@ const slotHint = computed(() => {
   return t('army.slotsFullHint', { nextTech: nextTech, slots: max + 1 })
 })
 
+// v1.38 反馈动效：训练完成闪光（队列任务到点移出时对兵种卡触发，alert 红）
+// 与训练失败抖动（竞态等边缘场景；参数见动效规范 §1.4 / §1.8）
+const flashState = ref<Record<string, boolean>>({})
+const shakeState = ref<Record<string, boolean>>({})
+const fxTimers = useTimeoutMap()
+let prevQueue: { id: string; unitId: UnitId }[] = []
+watch(
+  () => game.military.trainingQueue.map((t) => ({ id: t.id, unitId: t.unitId })),
+  (now) => {
+    const ids = new Set(now.map((t) => t.id))
+    for (const p of prevQueue) {
+      if (ids.has(p.id)) continue
+      flashState.value[p.unitId] = true
+      fxTimers.set('flash-' + p.unitId, () => (flashState.value[p.unitId] = false), 400)
+    }
+    prevQueue = now
+  }
+)
+
 function tryTrain(unitId: UnitId) {
   const count = trainCount.value[unitId]
   if (count <= 0) return
@@ -73,7 +93,12 @@ function tryTrain(unitId: UnitId) {
       'feedback',
       t('army.trainStarted', { unitName: getUnit(unitId)?.name ?? unitId, count: count })
     )
-  else emit('feedback', slotsFull.value ? t('army.slotsFull') : t('common.insufficient'))
+  else {
+    emit('feedback', slotsFull.value ? t('army.slotsFull') : t('common.insufficient'))
+    // v1.38 操作失败抖动（动效规范 §1.8）
+    shakeState.value[unitId] = true
+    fxTimers.set('shake-' + unitId, () => (shakeState.value[unitId] = false), 300)
+  }
 }
 
 function getUnitCost(unitId: UnitId, count: number) {
@@ -134,7 +159,8 @@ const unitRows = computed(() =>
       v-for="row in unitRows"
       :key="row.def.id"
       class="unit-card"
-      :class="{ locked: !row.unlocked }"
+      :class="{ locked: !row.unlocked, 'flash-success': flashState[row.def.id] }"
+      :style="{ '--flash-color': 'var(--color-alert)' }"
     >
       <div class="u-head">
         <div
@@ -199,6 +225,7 @@ const unitRows = computed(() =>
         <button
           class="btn-accent block"
           style="--accent: var(--color-alert)"
+          :class="{ 'shake-error': shakeState[row.def.id] }"
           :disabled="slotsFull || row.count === 0 || !row.canAfford"
           @click="tryTrain(row.def.id)"
         >
@@ -311,8 +338,8 @@ const unitRows = computed(() =>
   margin-bottom: var(--space-2);
 }
 .count-btn {
-  width: 36px;
-  height: 28px;
+  width: 40px;
+  height: 40px; /* v1.38 触控命中区 40×40（原 36×28） */
   border-radius: var(--radius-sm);
   background: var(--color-elevated);
   font-size: var(--text-xs);

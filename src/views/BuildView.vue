@@ -14,6 +14,7 @@ import Toast from '@/components/ui/Toast.vue'
 import { useOnboarding } from '@/composables/useOnboarding'
 import { useToast } from '@/composables/useToast'
 import { bulkLabel } from '@/composables/useBulkLabel'
+import { useTimeoutMap } from '@/composables/useTimeout'
 
 const game = useGameStore()
 // 全局轻提示（v0.77：建造开始反馈）
@@ -68,6 +69,10 @@ const rows = computed(() =>
   })
 )
 
+// v1.38 升级成功闪光（动效规范 §1.4：建造系统 core 青）
+const flashState = ref<Record<string, boolean>>({})
+const flashTimers = useTimeoutMap()
+
 function tryUpgrade(id: string) {
   const done = game.tryUpgradeBuildingSteps(id, bulkSteps.value)
   if (!done) return
@@ -78,6 +83,8 @@ function tryUpgrade(id: string) {
       ? t('build.startedBulk', { name: name, done: done })
       : t('build.started', { name: name })
   )
+  flashState.value[id] = true
+  flashTimers.set(id, () => (flashState.value[id] = false), 400)
 }
 </script>
 
@@ -138,7 +145,13 @@ function tryUpgrade(id: string) {
 
     <!-- 建筑列表 -->
     <ul v-else class="building-list" :aria-label="t('build.listAria')">
-      <li v-for="row in rows" :key="row.b.id" class="build-card" :class="{ locked: !row.unlocked }">
+      <li
+        v-for="row in rows"
+        :key="row.b.id"
+        class="build-card"
+        :class="{ locked: !row.unlocked, 'flash-success': flashState[row.b.id] }"
+        :style="{ '--flash-color': 'var(--color-core)' }"
+      >
         <div class="b-head">
           <div class="b-icon" :style="{ color: SECTORS[row.b.sector].color }">
             <Icon :name="row.b.icon" size="lg" />
@@ -219,6 +232,7 @@ function tryUpgrade(id: string) {
 .sector-tab {
   flex: 1 1 calc(33.3% - 4px);
   min-width: 0;
+  min-height: 40px; /* v1.38 触控命中高 ≥40 */
   padding: var(--space-2) var(--space-2);
   border-radius: var(--radius-md);
   background: var(--color-surface);

@@ -1,6 +1,6 @@
 // 星核纪元 v0.83 专项：守护网 e2e（#23 锁定态调色五视图 + #20 symbol 总数）
 // A. --color-locked 调亮为 #6387ab 后，五视图锁定态文字实测色 = rgb(99,135,171)
-// B. 符号表挂载 122 个 symbol 且 id 无重复（与守恒脚本 SFC 真值同口径）
+// B. 符号表挂载 123 个 symbol 且 id 无重复（与守恒脚本 SFC 真值同口径）
 import { launch, check, finish, newSeededPage } from './starcore-pwlib.mjs';
 
 function makeSave(opts = {}) {
@@ -84,7 +84,7 @@ console.log('== B. symbol 总数守护 ==');
     const ids = [...document.querySelectorAll('symbol[id]')].map((s) => s.id);
     return { total: ids.length, unique: new Set(ids).size };
   });
-  check(`symbol 挂载总数 = 122（实际 ${sym.total}）`, sym.total === 122);
+  check(`symbol 挂载总数 = 123（实际 ${sym.total}）`, sym.total === 123);
   check(`symbol id 无重复（唯一 ${sym.unique} / 总数 ${sym.total}）`, sym.unique === sym.total);
   await page.context().close();
 }
