@@ -62,11 +62,11 @@ Vue 3 · TypeScript · Vite · Pinia · Vue Router · decimal.js · localforage
 ```text
 starcore/
 ├─ src/
-│  ├─ components/   41 个组件（含图标子组件 8 个），按 ui / layout / home / relics / build / army / battle / map / settings 分组
+│  ├─ components/   42 个组件（含图标子组件 8 个），按 ui / layout / home / relics / build / army / battle / map / settings 分组
 │  ├─ composables/  13 个组合式函数（断点、Toast、行动队列、引导、粒子等）
 │  ├─ data/         15 份数据表（建筑、科技、探索、据点、遗物、成就、远征、周强敌、遭遇、派遣、部队、编队特性、导航、剧情、背景星点）
 │  ├─ i18n/         多语言门面（取词与语言识别）
-│  ├─ lib/          17 个基础模块（高精度数值、格式化、效果系统、离线收益、随机、存档链路（save/ 子目录）、批量与成本助手等）
+│  ├─ lib/          18 个基础模块（高精度数值、格式化、效果系统、离线收益、随机、完整性签名、存档链路（save/ 子目录）、批量与成本助手等）
 │  ├─ locales/      语言包（zh-CN 基线 + en 英文，ui/ 界面层 + content/ 内容层按域拆分）
 │  ├─ router/       路由定义
 │  ├─ stores/       13 个 Pinia store（资源、建筑、研究、军事、战斗、探索、

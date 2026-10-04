@@ -77,11 +77,11 @@ Safari 14+; both desktop and mobile layouts are supported.
 ```text
 starcore/
 ├─ src/
-│  ├─ components/   41 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
+│  ├─ components/   42 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
 │  ├─ composables/  13 composables (breakpoints, Toast, action queue, onboarding, particles, …)
 │  ├─ data/         15 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, weekly boss, encounters, dispatch, units, formation doctrines, navigation, story, background stars)
 │  ├─ i18n/         i18n facade (message lookup and locale detection)
-│  ├─ lib/          17 core modules (decimal math, formatting, effect system, offline gains, random, save pipeline under save/, batch and cost helpers, …)
+│  ├─ lib/          18 core modules (decimal math, formatting, effect system, offline gains, random, integrity signatures, save pipeline under save/, batch and cost helpers, …)
 │  ├─ locales/      locale bundles (zh-CN baseline + en English, split by domain under ui/ and content/)
 │  ├─ router/       route definitions
 │  ├─ stores/       13 Pinia stores (resources, buildings, research, military, combat,
