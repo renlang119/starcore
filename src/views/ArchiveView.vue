@@ -247,6 +247,13 @@ function cardEnemy(card: EnemyCard) {
   flex-direction: column;
   gap: var(--space-2);
 }
+/* 桌面端宽屏：双列网格，利用横向空间（v1.37） */
+@media (min-width: 1024px) {
+  .story-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .story-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border-line);

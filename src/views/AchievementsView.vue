@@ -185,6 +185,13 @@ const bonusSummary = computed(() => {
   flex-direction: column;
   gap: var(--space-2);
 }
+/* 桌面端宽屏：双列网格，利用横向空间（v1.37） */
+@media (min-width: 1024px) {
+  .ach-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .ach-card {
   display: flex;
   gap: var(--space-3);

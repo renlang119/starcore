@@ -90,6 +90,9 @@ watch(
 /** 宽版内容区：路由 meta.wide 控制（首页双列需要更宽的 max-width） */
 const isWideContent = computed(() => route.meta.wide === true)
 
+/** 网格版内容区：路由 meta.grid 控制（科技树/成就/档案馆桌面端双列需要更宽的 max-width，v1.37） */
+const isGridContent = computed(() => route.meta.grid === true)
+
 /** 星点闪烁 — 背景星点配置（表见 data/app-stars.ts） */
 const stars = APP_STARS
 
@@ -143,7 +146,10 @@ watch(
     <!-- 主区域 -->
     <div class="main-area">
       <TopBar />
-      <main class="content" :class="{ 'content--wide': isWideContent }">
+      <main
+        class="content"
+        :class="{ 'content--wide': isWideContent, 'content--grid': isGridContent }"
+      >
         <router-view v-slot="{ Component }">
           <transition name="warp" mode="out-in">
             <component :is="Component" />
@@ -220,9 +226,24 @@ watch(
     max-width: 1440px;
   }
 }
+/* 网格版内容（科技树/成就/档案馆）：≥1024px 加宽承载双列网格（v1.37） */
+.content--grid {
+  max-width: 720px;
+}
+@media (min-width: 1024px) {
+  .content--grid {
+    max-width: 1280px;
+  }
+}
+@media (min-width: 1440px) {
+  .content--grid {
+    max-width: 1440px;
+  }
+}
 .extra-nav {
   position: fixed;
-  bottom: 72px;
+  /* 紧凑胶囊：坐入操作按钮行与底部导航之间的空隙，不再遮挡「出征」等按钮（v1.37） */
+  bottom: 79px;
   left: 50%;
   transform: translateX(-50%);
   /* display: flex 由 JS v-if 控制显隐，仅移动端渲染 */
@@ -231,13 +252,14 @@ watch(
   background: var(--color-surface);
   border: 1px solid var(--color-border-glow);
   border-radius: var(--radius-pill);
-  padding: var(--space-1);
+  padding: 2px;
   z-index: 50;
 }
 .extra-nav button {
-  padding: var(--space-2) var(--space-4);
+  padding: 0 var(--space-3);
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);
+  line-height: 14px;
   color: var(--color-t-secondary);
 }
 

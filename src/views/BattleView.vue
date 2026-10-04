@@ -355,4 +355,11 @@ const {
   max-height: 300px;
   overflow-y: auto;
 }
+
+/* 移动端：底部留白加大，使浮动返回钮可落位于操作行与底部导航之间的空隙（v1.37） */
+@media (max-width: 767px) {
+  .battle-view {
+    padding-bottom: var(--space-6);
+  }
+}
 </style>
