@@ -67,16 +67,14 @@ if [[ $SKIP_BUILD -eq 0 ]]; then
 else
   [[ -f dist/index.html ]] || { echo "[FAIL] dist/ 不存在，先构建" >&2; exit 1; }
   echo "[2/5] 跳过构建（--skip-build），预检本地产物版本 ..."
-  LOCAL_BUNDLE=$(grep -oE 'index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1 || true)
-  # 显示串为运行时 replace 生成、bundle 无静态 v 串，验证双要素：
-  # 完整版本串原样存在（版本源正确）+ 去零逻辑存在（显示口径在）
-  if [[ -z "$LOCAL_BUNDLE" ]] \
-    || ! grep -qE "\"${VERSION//./\\.}\"" "dist/assets/$LOCAL_BUNDLE" \
-    || ! grep -qF 'replace(/\.0$/' "dist/assets/$LOCAL_BUNDLE"; then
+  # 版本证据：构建期注入 index.html 的 app-version 元标记（与入口/分块结构无关）；
+  # 显示串为运行时 replace 生成、bundle 无静态 v 串，去零逻辑在产物 JS 中直查
+  if ! grep -qF "name=\"app-version\" content=\"$VERSION\"" dist/index.html \
+    || ! grep -rqF 'replace(/\.0$/' dist/assets; then
     echo "[FAIL] 本地产物版本与 package.json（v$VERSION）不符，先重新构建" >&2
     exit 1
   fi
-  echo "  [OK] 本地产物 v$VERSION（$LOCAL_BUNDLE）"
+  echo "  [OK] 本地产物 v$VERSION（app-version 元标记）"
 fi
 
 # 3. 同步产物
@@ -110,29 +108,44 @@ sudo chmod -R a+rX "$DEST"
 
 # 5. 验证：线上入口 + 版本号
 echo "[5/5] 验证 ..."
-VERSION_RE="${DISPLAY_VERSION//./\\.}"
 LOCAL_CODE=$(curl -s --max-time 15 -o /dev/null -w '%{http_code}' "$SITE_URL/?t=$(date +%s)" || true)
-BUNDLE=$(curl -s --max-time 15 "$SITE_URL/?t=$(date +%s)" | grep -oE 'index-[A-Za-z0-9_-]+\.js' | head -1 || true)
+# 单次抓取 HTML 后做串内匹配：避免 curl|grep 管道在 pipefail 下
+# 因对端提前关闭被误判（v0.90 实测验证段两次假 WARN 的加固）
+INDEX_HTML=$(curl -s --max-time 15 "$SITE_URL/?t=$(date +%s)" || true)
+REMOTE_META_OK=""
+BUNDLE=""
+APP_BUNDLE=""
 REMOTE_VERSION=""
 REMOTE_STRIP=""
-if [[ -n "$BUNDLE" ]]; then
-  # 单次抓取 bundle 后做串内匹配：避免 curl|grep 管道在 pipefail 下
-  # 因对端提前关闭被误判（v0.90 实测验证段两次假 WARN 的加固）
-  BUNDLE_JS=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" || true)
-  if [[ -n "$BUNDLE_JS" ]]; then
-    REMOTE_VERSION=$(grep -oE "\"${VERSION//./\\.}\"" <<< "$BUNDLE_JS" | head -1 || true)
-    if grep -qF 'replace(/\.0$/' <<< "$BUNDLE_JS"; then
-      REMOTE_STRIP=strip-ok
+if [[ -n "$INDEX_HTML" ]]; then
+  # 版本证据：构建期 app-version 元标记；显示口径（去零逻辑）经入口内
+  # 动态引用定位到 app 分块后直查（src/app.ts 更名时需同步本段）
+  if grep -qF "name=\"app-version\" content=\"$VERSION\"" <<< "$INDEX_HTML"; then
+    REMOTE_META_OK="meta-ok"
+  fi
+  BUNDLE=$(grep -oE 'index-[A-Za-z0-9_-]+\.js' <<< "$INDEX_HTML" | head -1 || true)
+  if [[ -n "$BUNDLE" ]]; then
+    BUNDLE_JS=$(curl -s --max-time 15 "$SITE_URL/assets/$BUNDLE" || true)
+    APP_BUNDLE=$(grep -oE 'app-[A-Za-z0-9_-]+\.js' <<< "$BUNDLE_JS" | head -1 || true)
+  fi
+  if [[ -n "$APP_BUNDLE" ]]; then
+    APP_JS=$(curl -s --max-time 15 "$SITE_URL/assets/$APP_BUNDLE" || true)
+    if [[ -n "$APP_JS" ]]; then
+      REMOTE_VERSION=$(grep -oE "\"${VERSION//./\\.}\"" <<< "$APP_JS" | head -1 || true)
+      if grep -qF 'replace(/\.0$/' <<< "$APP_JS"; then
+        REMOTE_STRIP=strip-ok
+      fi
     fi
   fi
 fi
 
 echo "  HTTP 状态: $LOCAL_CODE"
-echo "  线上 bundle: $BUNDLE"
-if [[ "$LOCAL_CODE" == "200" && -n "$REMOTE_VERSION" && -n "$REMOTE_STRIP" ]]; then
+echo "  版本元标记: ${REMOTE_META_OK:-未命中}"
+echo "  线上分块: index=${BUNDLE:-无} app=${APP_BUNDLE:-无}"
+if [[ "$LOCAL_CODE" == "200" && -n "$REMOTE_META_OK" && -n "$REMOTE_VERSION" && -n "$REMOTE_STRIP" ]]; then
   echo "  [OK] 部署验证通过：线上版本 v$DISPLAY_VERSION"
 else
-  echo "  [WARN] 验证未完全通过，请人工检查（状态码 $LOCAL_CODE，版本串命中: ${REMOTE_VERSION:-无}）" >&2
+  echo "  [WARN] 验证未完全通过，请人工检查（状态码 $LOCAL_CODE，元标记: ${REMOTE_META_OK:-无}，版本串命中: ${REMOTE_VERSION:-无}，显示口径: ${REMOTE_STRIP:-无}）" >&2
   exit 2
 fi
 

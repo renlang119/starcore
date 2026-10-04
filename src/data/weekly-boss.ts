@@ -32,7 +32,7 @@ import { fnv1a, mulberry32 } from '@/lib/random'
 export const WEEKLY_BOSS_ID = 'weekly_boss'
 
 /** 周 Boss 可达的最大深度（防御性上限，语义同 MAX_ENDLESS_DEPTH） */
-export const MAX_WEEKLY_BOSS_DEPTH = 999
+const MAX_WEEKLY_BOSS_DEPTH = 999
 
 /** Boss 门槛深度：远征解锁初期（best < 6）锁定在此，不再下探 */
 export const WEEKLY_BOSS_FLOOR = 6

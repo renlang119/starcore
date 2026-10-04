@@ -1,9 +1,25 @@
-import { defineConfig } from 'vite'
+import { readFileSync } from 'node:fs'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
+// 版本元标记：构建期注入 index.html（部署链路的版本证据，与入口/分块结构无关；
+// 界面显示串由 src/version.ts 运行时生成）
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+  version: string
+}
+const versionMeta: Plugin = {
+  name: 'inject-version-meta',
+  transformIndexHtml(html) {
+    return html.replace(
+      '</head>',
+      `  <meta name="app-version" content="${pkg.version}" />\n</head>`
+    )
+  },
+}
+
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), versionMeta],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

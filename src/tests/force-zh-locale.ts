@@ -7,7 +7,7 @@
  *
  * 本文件由 vitest.config.ts 的 setupFiles 挂载（config 中现居 setupFiles[0]，须保持首位），在每个测试
  * 文件的模块图求值前把浏览器语言钉在 zh-CN（locale 模块在 import 时解析
- * 一次，setupFiles 先于测试文件执行，故此处覆盖生效）。需要英文语境的
+ * 一次，setupFiles 先于测试文件执行，故此处覆盖生效）；并按需装载 zh-CN 语言包（按需加载改版后，测试模块图求值的前置）。需要英文语境的
  * 测试自行用 resolveLocale 依赖注入或 vi.stubGlobal 覆盖。
  */
 Object.defineProperty(navigator, 'languages', {
@@ -15,3 +15,8 @@ Object.defineProperty(navigator, 'languages', {
   configurable: true,
 })
 Object.defineProperty(navigator, 'language', { value: 'zh-CN', configurable: true })
+
+// 语言包按需加载后，测试模块图（含数据表模块级取词）求值前须先装载；
+// 动态 import 置于钉桩之后，确保 locale 模块解析时读到 zh-CN
+const { loadLocaleBundles } = await import('@/i18n')
+await loadLocaleBundles()

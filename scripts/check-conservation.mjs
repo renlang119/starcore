@@ -53,19 +53,30 @@ function mirrorTs(abs) {
   if (mirrored.has(abs)) return mirrored.get(abs)
   const out = join(TRUTH_TMP, truthName(abs))
   mirrored.set(abs, out) // 先登记防环
-  const src = readFileSync(abs, 'utf8').replace(/from\s+['"]([^'"]+)['"]/g, (whole, spec) => {
+  const resolveTarget = (spec) => {
     let target = null
     if (spec.startsWith('@/')) target = join(ROOT, 'src', spec.slice(2))
     else if (spec.startsWith('./') || spec.startsWith('../')) target = resolve(dirname(abs), spec)
-    if (!target) return whole
+    if (!target) return null
     if (!target.endsWith('.ts')) {
       if (existsSync(target) && statSync(target).isDirectory()) target = join(target, 'index.ts')
       else if (!existsSync(target + '.ts') && existsSync(join(target, 'index.ts')))
         target = join(target, 'index.ts')
       else target += '.ts'
     }
-    return `from './${basename(mirrorTs(target))}'`
-  })
+    return target
+  }
+  const src = readFileSync(abs, 'utf8')
+    .replace(/from\s+['"]([^'"]+)['"]/g, (whole, spec) => {
+      const target = resolveTarget(spec)
+      return target ? `from './${basename(mirrorTs(target))}'` : whole
+    })
+    // 动态 import（语言包按需加载后 i18n 门面以 import() 引用语言包）：
+    // 同口径重写，把动态依赖一并镜像，可被执行
+    .replace(/import\(\s*['"]([^'"]+)['"]\s*\)/g, (whole, spec) => {
+      const target = resolveTarget(spec)
+      return target ? `import('./${basename(mirrorTs(target))}')` : whole
+    })
   writeFileSync(out, src)
   return out
 }
@@ -73,6 +84,11 @@ function mirrorTs(abs) {
 async function truthImport(abs) {
   return import(pathToFileURL(mirrorTs(abs)).href)
 }
+
+// i18n 门面：语言包按需加载后，数据模块在求值期取词（desc 等文案联动读取），
+// 须先装载再求值（本脚本语境解析为 zh-CN 基线）
+const i18nMod = await truthImport(join(ROOT, 'src', 'i18n', 'index.ts'))
+await i18nMod.loadLocaleBundles()
 
 const techMod = await truthImport(join(ROOT, 'src', 'data', 'tech.ts'))
 const exploreMod = await truthImport(join(ROOT, 'src', 'data', 'explore.ts'))

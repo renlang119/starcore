@@ -7,24 +7,44 @@
  * 键规则：'域.子路径'（域 = 语言模块文件名；内容层为 content.<数据域>.<id>.<字段>）。
  * 缺键回退：当前语言 → 基线语言 zh-CN → 返回键名（开发态告警一次）。
  *
+ * 加载模型（按需加载）：语言包经动态 import 移出首包，入口在求值应用主体前
+ * 先 await loadLocaleBundles()。数据表等模块级取词因此必须位于语言包就绪后
+ * 才求值的模块图内（main.ts 以动态 import 延迟整个应用主体，见其头注）；
+ * 语言包未就绪时 t() 返回键名并告警（开发态），不抛错。
  * 环境安全：不发散浏览器 API（交给 locale.ts 守卫），可被纯 Node 工具链导入。
  * 切换语义：整页刷新生效（locale 模块加载时解析一次）。
  */
-import zhCN from '../locales/zh-CN/index.ts'
-import en from '../locales/en/index.ts'
 import { DEFAULT_LOCALE, getLocale } from './locale.ts'
 
 export type I18nParams = Record<string, string | number>
 type Bundle = Record<string, string>
 
-const BUNDLES: Record<string, Bundle> = { 'zh-CN': zhCN, en }
+/** 语言包装载器（新增语言：locale.ts 注册表加项 + 此处补 loader + 补 src/locales/<code>/ 目录） */
+const BUNDLE_LOADERS: Record<string, () => Promise<{ default: Bundle }>> = {
+  'zh-CN': () => import('../locales/zh-CN/index.ts'),
+  en: () => import('../locales/en/index.ts'),
+}
+
+let bundle: Bundle | undefined
+let fallbackBundle: Bundle | undefined
 const warned = new Set<string>()
+
+/** 装载语言包：当前语言 +（非基线时并装基线作缺键回退）；应用挂载与工具链取词前调用 */
+export async function loadLocaleBundles(): Promise<void> {
+  const cur = getLocale()
+  const loader = BUNDLE_LOADERS[cur]
+  if (!loader) {
+    throw new Error(`[i18n] 未注册的语言: ${cur}`)
+  }
+  bundle = (await loader()).default
+  const fallbackLoader = cur === DEFAULT_LOCALE ? undefined : BUNDLE_LOADERS[DEFAULT_LOCALE]
+  fallbackBundle = fallbackLoader ? (await fallbackLoader()).default : undefined
+}
 
 /** 取词：支持 {param} 命名插值；缺参保留占位符，缺键返回键名 */
 export function t(key: string, params?: I18nParams): string {
-  const cur = getLocale()
-  let msg = BUNDLES[cur]?.[key]
-  if (msg === undefined) msg = BUNDLES[DEFAULT_LOCALE]?.[key]
+  let msg = bundle?.[key]
+  if (msg === undefined) msg = fallbackBundle?.[key]
   if (msg === undefined) {
     if (!warned.has(key)) {
       warned.add(key)

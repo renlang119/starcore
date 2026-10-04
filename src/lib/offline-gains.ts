@@ -10,7 +10,7 @@ import type { ResourceType } from '@/data/buildings'
 import type { UnitId } from '@/data/units'
 
 /** 离线收益上限（秒） */
-export const OFFLINE_CAP = 24 * 3600
+const OFFLINE_CAP = 24 * 3600
 
 export interface OfflineReport {
   duration: number

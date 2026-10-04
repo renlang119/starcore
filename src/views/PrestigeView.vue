@@ -278,7 +278,7 @@ function cancelTranscend() {
 .btn-transcend {
   width: 100%;
   padding: var(--space-4);
-  background: linear-gradient(135deg, var(--color-amber), #ff8c00);
+  background: linear-gradient(135deg, var(--color-amber), var(--color-amber-deep));
   color: var(--color-void);
   border-radius: var(--radius-md);
   font-weight: 700;
