@@ -1,5 +1,5 @@
 /**
- * fixtures.ts — 跨文件存档/状态工厂（v1.04 收敛）
+ * fixtures.ts — 跨文件存档/状态工厂（v1.04 统一）
  *
  * makeSaveData：全字段合法存档（storage 导出/导入往返用）。
  * minimalSaveData：通用极简合法存档工厂（按需覆盖顶层字段）；resources 只含

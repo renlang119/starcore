@@ -3,12 +3,12 @@ import { t } from '@/i18n'
 import ModalOverlay from './ModalOverlay.vue'
 
 /**
- * ConfirmModal — 确认弹窗共用骨架（v1.07 收敛自部队批量/转生三弹窗/挂机驻扎
+ * ConfirmModal — 确认弹窗共用骨架（v1.07 合并自部队批量/转生三弹窗/挂机驻扎
  * 五处同构弹窗）
  *
  * 标题与说明由默认插槽承载（槽内容在调用方作用域编译，各视图 scoped 样式链
  * 保持原样；弹窗内容被 ModalOverlay 搬进内层 .modal 的既有约束不额外引入）；
- * 本组件收敛 ModalOverlay 包裹与取消/确认按钮组两部分。
+ * 本组件统一 ModalOverlay 包裹与取消/确认按钮组两部分。
  */
 withDefaults(
   defineProps<{

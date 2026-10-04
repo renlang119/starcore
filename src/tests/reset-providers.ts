@@ -52,7 +52,7 @@ export function resetProviderSingletons(): void {
   })
 }
 
-/** 成就外部指标全零桩 + 按需覆盖（achievements.test 七处字面量重复的收敛，v1.04） */
+/** 成就外部指标全零桩 + 按需覆盖（achievements.test 七处字面量重复的统一，v1.04） */
 export function zeroAchievementProviders(
   overrides?: Partial<
     Record<

@@ -18,7 +18,7 @@
 
   /* —— 辅色（quantum 饱和度对齐） —— */
   --color-amber: #ffb627;
-  --color-amber-deep: #ff8c00; /* 转生按钮渐变深端（自 PrestigeView 硬编码收口） */
+  --color-amber-deep: #ff8c00; /* 转生按钮渐变深端（自 PrestigeView 硬编码统一） */
   --color-quantum: #2ee6a0;
   --color-alert: #f8546f; /* 对比度 vs elevated 4.90 / surface 5.67（v1.38 提亮一档达 AA，原 4.32） */
   --color-plasma: #a78bfa;
@@ -53,7 +53,7 @@
   --radius-lg: 14px;
   --radius-pill: 999px;
 
-  /* —— 图标尺寸（收敛 6 种为 4 种 Token） —— */
+  /* —— 图标尺寸（统一 6 种为 4 种 Token） —— */
   --icon-xs: 12px;
   --icon-sm: 14px;
   --icon-md: 18px;

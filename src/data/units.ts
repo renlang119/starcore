@@ -94,7 +94,7 @@ export const UNITS: UnitDef[] = [
   },
 ]
 
-/** 默认编队骨架工厂：初始/重置/存档自愈三处共用（每次返回新副本，v1.03 收敛） */
+/** 默认编队骨架工厂：初始/重置/存档自愈三处共用（每次返回新副本，v1.03 统一） */
 export function defaultFormations(): { id: string; name: string; units: Record<UnitId, number> }[] {
   return [
     {

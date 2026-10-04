@@ -158,7 +158,7 @@ export function streakReward(day: number): { energy: number; dark: number } | nu
 /** 断签回归补偿包 */
 export const RETURN_GIFT = { energy: 5e4, dark: 2 }
 
-/** 周计数零值表（初始化/换周清零/重置共用，v1.03 收敛；v1.21 扩四键） */
+/** 周计数零值表（初始化/换周清零/重置共用，v1.03 统一；v1.21 扩四键） */
 function emptyCounters() {
   return {
     battles: 0,

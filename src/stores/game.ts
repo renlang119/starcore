@@ -181,7 +181,7 @@ export const useGameStore = defineStore('game', () => {
   // —— 随机遭遇事件（v1.26 可玩内容扩展方案 8）——
   /**
    * 遭遇事件结算发放（EncounterCard 选项按钮回调）：encounters store 掷取
-   * 结果后按奖励对象逐项落地——资源走 resources.gain（负值合金损失按余额
+   * 结果后按奖励对象逐项发放——资源走 resources.gain（负值合金损失按余额
    * 封顶扣至空，不产生负库存）；units 走 military 库存直加（收编入伍不经训练
    * 队列、不占训练槽）。返回结算结果供 toast 回执，无挂起/已过期返回 null。
    */

@@ -21,7 +21,7 @@ corepack pnpm diagnose --fix  # 对可自动修复的缺件执行修复
 
 ```bash
 corepack pnpm e2e                                   # 本地全量回归（自动起停预览，自动选择空闲端口）
-corepack pnpm e2e --remote https://example.com      # 对远程目标运行复跑集
+corepack pnpm e2e --remote https://example.com      # 对远程目标运行重跑集
 corepack pnpm e2e starcore-v135-save-integrity.mjs  # 运行任意脚本清单
 ```
 

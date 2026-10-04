@@ -46,7 +46,7 @@ const bottleneckColor = computed(() => {
 })
 
 /**
- * 倒计时行描述（四种形态收敛为数据驱动）：kind 决定色点与文案，
+ * 倒计时行描述（四种形态统一为数据驱动）：kind 决定色点与文案，
  * hint 决定是否带「明细」入口（混合态第二行无入口）。
  */
 const rows = computed(() => {
@@ -285,7 +285,7 @@ function toggleExpand() {
   color: var(--color-amber);
 }
 
-/* —— 混合态两行间距（行体收敛后以相邻兄弟边距表达） —— */
+/* —— 混合态两行间距（行体统一后以相邻兄弟边距表达） —— */
 .countdown-row + .countdown-row {
   margin-top: var(--space-1);
 }

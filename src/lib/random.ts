@@ -1,7 +1,7 @@
 /**
  * random.ts — 种子化随机与字符串哈希（全项目唯一实现）
  *
- * v0.73 自 combat/daily/storage 三处重复实现收敛而来。
+ * v0.73 自 combat/daily/storage 三处重复实现统一而来。
  * 同族算法行为不变：fnv1a 同串同值，mulberry32 同种子同序列，
  * 现有战斗/签到/存档校验测试即守护。
  */

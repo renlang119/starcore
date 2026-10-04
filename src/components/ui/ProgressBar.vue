@@ -2,7 +2,7 @@
 /**
  * ProgressBar.vue — 通用进度条（轨道 + 填充）
  *
- * 收敛 MapView / ArmyView / AchievementsView / DailyCard / ActionQueuePanel
+ * 统一 MapView / ArmyView / AchievementsView / DailyCard / ActionQueuePanel
  * 五处同构实现（v1.02）。调用方类名自动落在组件根节点，填充条类名经
  * fillClass 保留（单测与 Playwright 锚点不变）；高度/配色/圆角/过渡/辉光
  * 经 `--pb-*` 变量在调用方 scoped 规则里注入（缺省值见样式段）。

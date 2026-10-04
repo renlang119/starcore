@@ -1,10 +1,10 @@
 /**
- * view-mount.ts — 视图组件测试共享装配（v1.04 收敛）
+ * view-mount.ts — 视图组件测试共享装配（v1.04 统一）
  *
  * 各 view/组件测试此前各自逐字携带同一套装配：
  * vue-router / useFocusTrap 的 vi.mock 工厂体、mountView + wrappers 登记、
  * 每个 describe 重复的 beforeEach（清 mock + 清 localStorage + 重建 pinia）
- * 与 afterEach（统一卸载）。此处收敛为单一出处。
+ * 与 afterEach（统一卸载）。此处统一为单一出处。
  *
  * 用法：
  *   const mockPush = vi.fn()
@@ -81,7 +81,7 @@ export function useViewTestHooks(): void {
   })
 }
 
-/** 引导气泡双态断言：未读显示，预置已读后重挂不显示（v1.04 收敛同构用例） */
+/** 引导气泡双态断言：未读显示，预置已读后重挂不显示（v1.04 统一同构用例） */
 export async function expectOnboardingBubble(
   component: Component,
   opts: { selector: string; stepId: string; stubs?: Record<string, unknown> }

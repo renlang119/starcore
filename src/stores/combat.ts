@@ -219,7 +219,7 @@ export const useCombatStore = defineStore('combat', () => {
           dmg *= defRef.counterMult + trait.counterBonus
         }
         // 单位组总血不变量：(存活数-1)×单兵上限血 + 残兵血。
-        // 受击后 hp 只记残兵血量，直接 hp×count 会把血池腰斩，
+        // 受击后 hp 只记残兵血量，直接 hp×count 会把血池折半，
         // 多单位堆叠会被低攻编队在回合上限内磨死（超时软墙失效）
         const totalHp = (tgt.count - 1) * tgt.maxHp + tgt.hp
         const dmgDealt = Math.min(

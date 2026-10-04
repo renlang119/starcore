@@ -1,7 +1,7 @@
 import { onUnmounted } from 'vue'
 
 /**
- * useTimeout — setTimeout 句柄样板收敛（v1.07）
+ * useTimeout — setTimeout 句柄样板统一（v1.07）
  *
  * 统一样板：重触发先清旧（含触发后句柄复位）、组件卸载自动清理。
  * 此前六处组件各自手写句柄与 onUnmounted；setInterval 类（资源粒子、

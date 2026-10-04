@@ -9,7 +9,7 @@ import { Decimal, D, add, ser, deser, gte } from '@/lib/decimal'
 import type { ResourceType } from '@/data/buildings'
 import type { ResourceSaveData } from '@/lib/storage'
 
-/** 五资源零值表（state 初始化与 reset 共用，v1.03 收敛） */
+/** 五资源零值表（state 初始化与 reset 共用，v1.03 统一） */
 function zeroResources(): Record<ResourceType, Decimal> {
   return { energy: D(0), crystal: D(0), alloy: D(0), data: D(0), dark: D(0) }
 }

@@ -34,7 +34,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsInlineLimit: 4096,
     // 不产出 sourcemap：产物内本就不含 sourceMappingURL，本地构建的 .map 亦无用途；
-    // 源码暴露面由「不生成」直接收口（部署侧 deploy.sh 仍保留 --exclude='*.map' 作为兜底）
+    // 源码暴露面由「不生成」直接消除（部署侧 deploy.sh 仍保留 --exclude='*.map' 作为兜底）
     sourcemap: false,
     rollupOptions: {
       output: {

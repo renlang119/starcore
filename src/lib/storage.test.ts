@@ -9,7 +9,7 @@ import { exportSave, importSave, type DailySaveData } from './storage'
 import { makeSaveData } from '@/tests/fixtures'
 import type { AchievementsSaveData } from './storage'
 
-/** 成就终身计数的全零基准（按需覆盖单字段，v1.04 收敛 4 份字面量） */
+/** 成就终身计数的全零基准（按需覆盖单字段，v1.04 统一 4 份字面量） */
 function baseLifetime(
   over?: Partial<AchievementsSaveData['lifetime']>
 ): AchievementsSaveData['lifetime'] {

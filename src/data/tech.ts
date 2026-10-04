@@ -1103,7 +1103,7 @@ export function techAvailable(def: TechDef, completed: Set<string>): boolean {
 /**
  * 按成本乘数换算科技实付成本（向上取整）
  *
- * v0.73 收敛：原 game/useActionQueue/TechView 三处重复循环统一调用本函数。
+ * v0.73 统一：原 game/useActionQueue/TechView 三处重复循环统一调用本函数。
  * 乘数由调用方传 game.techCostMult（含科技与遗物的 cost_mult/tech 全量聚合）。
  */
 export function adjustedTechCost(cost: TechDef['cost'], mult: number): Record<string, number> {

@@ -6,7 +6,7 @@
  *
  * 用法：
  *   node tools/e2e/run.mjs                    # 本地全量回归（自动起停预览，端口自 4173 起自动选择空闲）
- *   node tools/e2e/run.mjs --remote <URL>     # 对远程目标运行复跑集
+ *   node tools/e2e/run.mjs --remote <URL>     # 对远程目标运行重跑集
  *   node tools/e2e/run.mjs <脚本> [...]        # 运行任意脚本清单（默认本地预览）
  *
  * 选项：
@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const E2E_DIR = path.join(ROOT, 'tools', 'e2e')
 
-// —— 清单：本地全量回归（35）/ 远程复跑（25）——
+// —— 清单：本地全量回归（35）/ 远程重跑（25）——
 const SUITE = [
   'starcore-baseline-regress.mjs',
   'starcore-v045-release.mjs',
@@ -102,7 +102,7 @@ function printHelp() {
 
 用法：
   node tools/e2e/run.mjs                    本地全量回归（自动起停预览，自动选择空闲端口）
-  node tools/e2e/run.mjs --remote <URL>     对远程目标运行复跑集
+  node tools/e2e/run.mjs --remote <URL>     对远程目标运行重跑集
   node tools/e2e/run.mjs <脚本> [...]        运行任意脚本清单（默认本地预览）
 
 选项：
@@ -292,7 +292,7 @@ async function main() {
   }
 
   console.log('===== 星核纪元 · 端到端诊断 =====')
-  console.log(`模式：${mode === 'remote' ? '远程复跑' : '本地回归'}（${list.length} 个脚本）`)
+  console.log(`模式：${mode === 'remote' ? '远程重跑' : '本地回归'}（${list.length} 个脚本）`)
   console.log(`目标：${target}`)
   console.log(`日志：${logDir}`)
   console.log('')

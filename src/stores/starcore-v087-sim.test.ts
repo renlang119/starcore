@@ -1,7 +1,7 @@
 /**
  * starcore-v087-sim.test.ts — 时间加速全玩法仿真
  *
- * 性质：v0.86.2 起收编常规测试基线，随全量测试运行；fake timer 大步
+ * 性质：v0.86.2 起纳入常规测试基线，随全量测试运行；fake timer 大步
  * 推进模拟数小时游戏时间，校验数值守恒、阶段推进无死锁、转生循环
  * 与长时加速无 NaN/Infinity/负值泄漏。
  * @vitest-environment jsdom

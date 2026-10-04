@@ -34,7 +34,7 @@ await page.waitForTimeout(1500)
 
 // 1. 离线报告应弹出（ModalOverlay 结构）
 const modal = page.locator('.modal-overlay')
-ok('离线报告弹出（收敛后 ModalOverlay 遮罩）', (await modal.count()) > 0)
+ok('离线报告弹出（统一后 ModalOverlay 遮罩）', (await modal.count()) > 0)
 const dialog = page.locator('[role="dialog"]')
 ok('role=dialog 结构保留', (await dialog.count()) > 0)
 const text = await page.evaluate(() => document.querySelector('.modal')?.textContent || '')

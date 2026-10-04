@@ -15,7 +15,7 @@ import EnhanceModal from '@/components/relics/EnhanceModal.vue'
 
 const game = useGameStore()
 
-// —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.73 收敛至 useToast） ——
+// —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.73 统一至 useToast） ——
 const toast = useToast()
 
 // —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
@@ -524,5 +524,5 @@ function onEnhanceFail(msg: string) {
   padding: 1px var(--space-2);
 }
 
-/* 槽位满 toast：样式已收敛至全局 styles/toast.css（v0.73） */
+/* 槽位满 toast：样式已统一至全局 styles/toast.css（v0.73） */
 </style>

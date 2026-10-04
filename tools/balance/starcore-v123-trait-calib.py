@@ -185,7 +185,7 @@ def qual_flip(none_w, trait_ws, n):
     return none_w <= n * QUAL_BASE_MAX and any(w >= n * QUAL_FLIP_MIN for w in trait_ws)
 
 def main():
-    # 200 局定稿（2026-09-24 修正：8→40 扩样暴露抽样敏感，一次加大到 200 收口）
+    # 200 局定稿（2026-09-24 修正：8→40 扩样暴露抽样敏感，一次加大到 200 定稿）
     # 前 40 枚为上一轮口径，样本集为原集的向前扩展
     seeds = [0x1234 + i * 7919 for i in range(200)]
     problems = []

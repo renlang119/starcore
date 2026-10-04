@@ -279,7 +279,7 @@ function validateSaveData(data: unknown): data is SaveData {
   if (!_isObject(d.transcend)) return false
   const tc = d.transcend as Record<string, unknown>
   if (tc.negativeEntropy !== undefined && !_isNonNegNumberStr(tc.negativeEntropy)) return false
-  // totalTranscends：存在则必须是非负整数（v0.81 收口：NaN/负值/Infinity 曾可入档，
+  // totalTranscends：存在则必须是非负整数（v0.81 修正：NaN/负值/Infinity 曾可入档，
   // 负值使首转保底 +1 永久失效）
   if (tc.totalTranscends !== undefined && !_isNonNegInt(tc.totalTranscends)) return false
   if (!Array.isArray(tc.tree)) return false
@@ -375,7 +375,7 @@ function _isObject(v: unknown): v is Record<string, unknown> {
  * 检查值是非负有限数字字符串（如 "100"、"3.14"、"1e+61"）——
  * 白名单形态判定：空串/空白/Infinity/NaN/负数/前导符号一律拒绝
  * （此前用 Number(v) 判定，Number('')===0 会放行空串，deser 时抛 DecimalError）。
- * 指数位数限 1~6 位（v0.81 收口）：不限位时 "1e999…" 可绕过校验构造 Infinity，
+ * 指数位数限 1~6 位（v0.81 修正）：不限位时 "1e999…" 可绕过校验构造 Infinity，
  * ser(Infinity) 写出 "Infinity" 后下一轮读档被本正则拒绝 → 整档判废；
  * 6 位上限覆盖到 1e999999（绝对值远超游戏任意数值），正常存档零影响
  */
@@ -391,7 +391,7 @@ function _isNonNegNumberStrRecord(v: unknown): boolean {
   return true
 }
 
-/** 非负有限数字判定（存档数值字段的最常用约束，v1.03 收敛多处展开写法） */
+/** 非负有限数字判定（存档数值字段的最常用约束，v1.03 统一多处展开写法） */
 function _isNonNegFinite(v: unknown): v is number {
   return typeof v === 'number' && isFinite(v) && v >= 0
 }

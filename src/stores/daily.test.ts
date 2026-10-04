@@ -18,7 +18,7 @@ import { minimalSaveData } from '@/tests/fixtures'
 import { validateAndRepair } from '@/lib/save/validate'
 import type { DailySaveData } from '@/lib/storage'
 
-/** 周挑战条目工厂（v1.04 收敛 10 份字面量；默认 wk_battles 形态，按字段覆盖） */
+/** 周挑战条目工厂（v1.04 统一 10 份字面量；默认 wk_battles 形态，按字段覆盖） */
 function ch(templateId: string, over: Partial<WeeklyChallenge> = {}): WeeklyChallenge {
   return { templateId, kind: 'battles', tier: 0, target: 5, rewardDark: 3, claimed: false, ...over }
 }

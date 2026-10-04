@@ -75,7 +75,7 @@
   color: var(--color-t-tertiary);
   text-align: center;
 }
-/* 协议徽标（建造/星图/科技三页页头同一形态，v1.02 收敛） */
+/* 协议徽标（建造/星图/科技三页页头同一形态，v1.02 统一） */
 .auto-badge {
   font-size: var(--text-xs);
   color: var(--color-quantum);
@@ -83,7 +83,7 @@
   margin-bottom: var(--space-2);
   letter-spacing: 0.05em;
 }
-/* 小字次要标签（据点/区域类型，v1.02 收敛自 MapView/BattleView） */
+/* 小字次要标签（据点/区域类型，v1.02 合并自 MapView/BattleView） */
 .s-type {
   font-size: var(--text-xs);
   color: var(--color-t-secondary);
@@ -140,7 +140,7 @@
   padding: var(--space-4);
 }
 
-/* 确认弹窗共用骨架（v1.02 收敛自 ArmyView/PrestigeView；
+/* 确认弹窗共用骨架（v1.02 合并自 ArmyView/PrestigeView；
    PrestigeView 的标题尺寸与色由视图 scoped 覆盖） */
 .confirm-title {
   font-size: var(--text-base);
@@ -209,7 +209,7 @@
   font-weight: 600;
   margin-bottom: var(--space-1);
 }
-/* 遗物卡面共用结构（v1.02 收敛：图鉴/强化弹窗/合成产物三处同源） */
+/* 遗物卡面共用结构（v1.02 统一：图鉴/强化弹窗/合成产物三处同源） */
 .r-head {
   display: flex;
   justify-content: space-between;

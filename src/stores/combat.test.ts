@@ -80,7 +80,7 @@ describe('combat store', () => {
     expect(result.log.some((e) => e.msg.includes('战斗超时'))).toBe(true)
   })
 
-  it('血池不变量：受伤后有效血量不被腰斩（真值扣除口径）', () => {
+  it('血池不变量：受伤后有效血量不被折半（真值扣除口径）', () => {
     const combat = useCombatStore()
     // 敌 4 单位×100HP，玩家攻击恰好 300（一次打掉 3 个整单位）：
     // 第二轮再打 300 应恰好清空 → 2 回合胜利。
