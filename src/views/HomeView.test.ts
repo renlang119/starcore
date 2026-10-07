@@ -59,22 +59,20 @@ describe('HomeView — HeroCore', () => {
     game.resources.setAmount('energy', 123456)
     await wrapper.vm.$nextTick()
 
-    // v1.40 五资源五角环绕：能量值在顶点能量节点，小标「星核能量」
+    // v1.41 五资源节点显名：能量值在顶点能量节点，名称取资源元表（能量）
     const energyNode = wrapper.find('.res-node.pos-energy')
     expect(energyNode.exists()).toBe(true)
     expect(energyNode.find('.node-value').text()).not.toBe('0')
-    expect(energyNode.find('.node-label').text()).toBe('星核能量')
+    expect(energyNode.find('.node-name').text()).toBe('能量')
     // 五节点齐备（能量 + 四资源）
     expect(wrapper.findAll('.res-node').length).toBe(5)
-    // 圆心显示能量产率
-    expect(wrapper.find('.core-visual .rate-display').exists()).toBe(true)
   })
 
-  it('点击核心跳转建造页', async () => {
+  it('点击节点区跳转建造页', async () => {
     const wrapper = mountView(HomeView, {
       stubs: { Transition: { template: '<div><slot /></div>' } },
     })
-    await wrapper.find('.core-visual').trigger('click')
+    await wrapper.find('.hero-stage').trigger('click')
     expect(mockPush).toHaveBeenCalledWith('/build')
   })
 })

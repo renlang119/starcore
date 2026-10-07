@@ -126,14 +126,14 @@ console.log('== C. 全局 Toast 无障碍 ==');
   await ctx.close();
 }
 
-// —— D. 星核核心空格键——
-console.log('== D. 星核核心空格键 ==');
+// —— D. 首页英雄区空格键——
+console.log('== D. 首页英雄区空格键 ==');
 {
   const ctx = await newCtx(browser);
   const page = await ctx.newPage();
   await page.goto(URL + '/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(600);
-  await page.locator('.core-visual').focus();
+  await page.locator('.hero-stage').focus();
   await page.keyboard.press('Space');
   await page.waitForTimeout(500);
   const path = await page.evaluate(() => location.pathname);

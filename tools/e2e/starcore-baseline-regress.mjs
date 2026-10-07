@@ -1,4 +1,4 @@
-// 基线回归：三档视口溢出检查 + Hero 产出率显示 + 首屏正常
+// 基线回归：三档视口溢出检查 + Hero 五资源节点 + 首屏正常
 import { launch, PREVIEW_URL as URL } from './starcore-pwlib.mjs';
 
 const browser = await launch();
@@ -28,10 +28,13 @@ for (const vp of [
   const w = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
   ok(`${vp.name} 无横向溢出`, w.doc <= w.win, `doc=${w.doc} win=${w.win}`);
 
-  // A2 验证（桌面+移动各一次）：hero 产出率无重复 /s
+  // A2 验证（桌面+移动各一次）：hero 五资源节点齐备 + 能量节点显名（v1.41 中央圆移除后改验节点）
   if (vp.name === 'desktop-1280' || vp.name === 'mobile-375') {
-    const heroRate = await page.evaluate(() => document.querySelector('.hero .rate-display')?.innerText || 'NOT FOUND');
-    ok(`${vp.name} Hero 产出率格式`, heroRate !== 'NOT FOUND' && !heroRate.includes('/s /s'), JSON.stringify(heroRate));
+    const hero = await page.evaluate(() => ({
+      nodes: document.querySelectorAll('.hero .res-node').length,
+      energyName: document.querySelector('.hero .pos-energy .node-name')?.textContent?.trim() || '',
+    }));
+    ok(`${vp.name} Hero 五资源节点`, hero.nodes === 5 && hero.energyName === '能量', JSON.stringify(hero));
   }
 
   // 首屏正常渲染

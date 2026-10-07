@@ -114,13 +114,13 @@ if (canBuy) {
 // 8. tick 循环运转：游戏主循环存活 + 数值健康（v0.83 重写原「数值随时间变化」——
 // 原断言在 fmt 分辨率与新档签到后 20K 量级下不可见 0.5/s 产出，恒假）。
 // 改验：能量 ≥ 2e4（新档首 tick 自动首签已发放，循环 tick 已执行）。
-// 注意 goto 后须等 Vue 挂载 + init 异步读档完成，否则 .hero 尚未渲染
+// 注意 goto 后须等 Vue 挂载 + init 异步读档完成，否则五资源节点尚未渲染
 await page.goto(URL + '/', { waitUntil: 'networkidle' }); // 从 /build 回首页（.hero 在首页）
 await page.waitForTimeout(2500);
 const loopOk = await page.evaluate(() => {
-  const text = document.querySelector('.hero')?.innerText || '';
-  const m = text.match(/([\d,.]+[KM]?)\s*\n\s*星核能量/);
-  const energyText = m ? m[1] : '';
+  // v1.41 中央圆移除后直接读顶点能量节点数值
+  const el = document.querySelector('.pos-energy .node-value');
+  const energyText = el ? el.textContent.trim() : '';
   const mult = energyText.includes('K') ? 1000 : energyText.includes('M') ? 1e6 : 1;
   const v = parseFloat(energyText.replace(/,/g, '')) * mult;
   return { energyText, v };

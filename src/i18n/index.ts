@@ -2,7 +2,7 @@
  * i18n 门面 — 唯一对外取词接口
  *
  * 用法（组件 / 模块通用）：import { t } from '@/i18n'
- *  - 模板：{{ t('home.hero.coreLabel') }}（script setup 会暴露导入的 t）
+ *  - 模板：{{ t('home.hero.aria') }}（script setup 会暴露导入的 t）
  *  - 脚本：t('save.export')、t('home.daily.checkedIn', { streak: 3 })
  * 键规则：'域.子路径'（域 = 语言模块文件名；内容层为 content.<数据域>.<id>.<字段>）。
  * 缺键回退：当前语言 → 基线语言 zh-CN → 返回键名（开发态告警一次）。

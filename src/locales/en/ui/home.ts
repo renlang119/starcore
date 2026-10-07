@@ -42,11 +42,11 @@ export default {
   'home.daily.streakUnit': 'days',
   'home.daily.title': 'Daily Check-in',
   'home.hero.aria': 'StarCore Core',
-  'home.hero.buttonAria': 'StarCore Core; click to enter the Build page',
-  'home.hero.coreLabel': 'StarCore Energy',
+  'home.hero.buttonAria': 'StarCore resources; click to enter the Build page',
   'home.hero.finalSalute':
     'The Forerunners’ road ends here; the StarCore civilization takes up the Gatekeepers’ watch. The entire universe has been explored',
-  'home.hero.onboarding': 'This is your StarCore energy. Click the core to jump to the Build page.',
+  'home.hero.onboarding':
+    'Here are your five resources with amounts and rates. Click to jump to the Build page.',
   'home.overview.army': 'Units',
   'home.overview.buildings': 'Buildings',
   'home.overview.playtime': 'Playtime',
