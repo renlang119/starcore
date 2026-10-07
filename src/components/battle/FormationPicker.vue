@@ -62,6 +62,7 @@ const game = useGameStore()
 }
 .f-tab {
   flex: 1;
+  min-height: 40px; /* v1.44 触控命中高 ≥40（对齐扇区/分支页签口径） */
   padding: var(--space-2);
   border-radius: var(--radius-md);
   background: var(--color-surface);

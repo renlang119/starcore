@@ -60,6 +60,20 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
   }
 }
 
+/* 中窄档整理（v1.44）：768-999px 维持单列堆叠——40/60 双列不足以容纳
+   328px 舞台与六格概况，避免核心视觉区徽章溢入侧栏带 */
+@media (min-width: 768px) and (max-width: 999.98px) {
+  .home-top-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    align-items: stretch; /* 抵消 768 格栅块的 start，堆叠态子项占满行宽 */
+  }
+  .home-top-row .hero {
+    position: static;
+  }
+}
+
 /* —— 四档响应断点 —— */
 /* L 断点（1024-1439px）：双列比 38/62 */
 @media (min-width: 1024px) {

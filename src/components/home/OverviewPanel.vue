@@ -153,10 +153,10 @@ const overviewItems = computed<OverviewItem[]>(() => {
   text-align: center;
 }
 
-/* 桌面端 6 列横排 */
+/* 桌面端横排（v1.44 修订：六列最低需约 562px，768-809px 用三列防右缘裁切） */
 @media (min-width: 768px) {
   .overview-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-3);
   }
   .ov-item {
@@ -171,6 +171,13 @@ const overviewItems = computed<OverviewItem[]>(() => {
   }
   .ov-value {
     font-size: var(--text-base);
+  }
+}
+
+/* 六列横排：810px 起（v1.44） */
+@media (min-width: 810px) {
+  .overview-grid {
+    grid-template-columns: repeat(6, 1fr);
   }
 }
 </style>

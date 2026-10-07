@@ -139,6 +139,7 @@ function toggleCollapsed() {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-1) var(--space-5);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .brand-mark {
   width: 28px;
@@ -173,6 +174,7 @@ function toggleCollapsed() {
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: 500;
+  flex-shrink: 0; /* v1.44：低高度视口不再压缩，侧栏转内部滚动 */
   color: var(--color-t-secondary);
   transition: all 0.15s var(--ease-out);
   overflow: hidden;
@@ -217,6 +219,7 @@ function toggleCollapsed() {
   gap: var(--space-2);
   overflow: hidden;
   transition: opacity 0.15s var(--ease-out);
+  flex-shrink: 0;
 }
 .side-nav.collapsed .side-footer {
   opacity: 0;

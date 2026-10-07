@@ -66,6 +66,7 @@ const emit = defineEmits<{
 }
 .onboard-skip {
   font-size: var(--text-xs);
+  line-height: 1.5; /* v1.44：显式行高，英文系统字体行盒偏矮致命中高不足 40px */
   /* v1.38 对比度：tertiary 4.30 → secondary 5.30；命中区经内边距扩展至 ≥40px（负外边距保持视觉不变） */
   color: var(--color-t-secondary);
   text-decoration: underline;
