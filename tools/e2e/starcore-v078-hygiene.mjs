@@ -88,9 +88,10 @@ console.log('== A. 遗物图标独立化 ==');
 }
 
 // —— B. fmt 进位边界 ——
+// v1.43 起首页隐藏顶栏资源条，顶栏药丸改在 /build 读取
 console.log('== B. fmt 进位边界 ==');
 {
-  const page = await newSeededPage(browser, makeSave({ amounts: { energy: '999999999999.9', crystal: '999949000', alloy: '999950000' } }), '/');
+  const page = await newSeededPage(browser, makeSave({ amounts: { energy: '999999999999.9', crystal: '999949000', alloy: '999950000' } }), '/build');
   const pills = await page.evaluate(() => {
     const out = {};
     document.querySelectorAll('.res-pill').forEach((p) => {
@@ -109,7 +110,8 @@ console.log('== B. fmt 进位边界 ==');
 console.log('== C. 粒子 reduced-motion 运行时切换 ==');
 {
   const save = makeSave({ levels: { solar_collector: 30 } });
-  const page = await newSeededPage(browser, save, '/', { viewport: { width: 1280, height: 900 }, extraCtx: { reducedMotion: 'no-preference' } });
+  // v1.43 起首页隐藏顶栏资源条，顶栏药丸改在 /build 读取
+  const page = await newSeededPage(browser, save, '/build', { viewport: { width: 1280, height: 900 }, extraCtx: { reducedMotion: 'no-preference' } });
   const rateText = await page.evaluate(() => {
     const pill = [...document.querySelectorAll('.res-pill')].find((p) =>
       (p.querySelector('use')?.getAttribute('href') || '').includes('i-res-energy')

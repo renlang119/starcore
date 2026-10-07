@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
 import { resourceRows } from '@/lib/resource-rows'
@@ -12,6 +13,10 @@ import type { ResourceType } from '@/data/buildings'
 
 const game = useGameStore()
 const res = game.resources
+const route = useRoute()
+
+// 首页隐藏顶栏资源条：hero 五资源节点已完整呈现资源信息（v1.43，路由 meta 控制）
+const showStrip = computed(() => route.meta.hideTopResources !== true)
 
 // 资源变化高亮 — 监听格式化后的资源值，变化时 0.3s 短暂高亮变绿
 // 使用 ref + watchEffect 替代 computed 内突变 reactive，消除副作用
@@ -89,7 +94,7 @@ onBeforeUnmount(() => {
     <div class="brand">
       <span class="brand-name">{{ t('common.brand') }}</span>
     </div>
-    <div class="strip-wrap">
+    <div v-if="showStrip" class="strip-wrap">
       <ul ref="stripEl" class="res-strip" :aria-label="t('nav.resourcesAria')">
         <li
           v-for="r in resourceList"

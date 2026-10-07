@@ -28,13 +28,22 @@ for (const vp of [
   const w = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth, win: window.innerWidth }));
   ok(`${vp.name} 无横向溢出`, w.doc <= w.win, `doc=${w.doc} win=${w.win}`);
 
-  // A2 验证（桌面+移动各一次）：hero 五资源节点齐备 + 能量节点显名（v1.41 中央圆移除后改验节点）
+  // A2 验证（桌面+移动各一次）：hero 五资源节点齐备 + 能量节点显名（v1.41 中央圆移除后改验节点）；
+  // A3 验证（v1.43）：首页顶栏资源条隐藏、他页保留
   if (vp.name === 'desktop-1280' || vp.name === 'mobile-375') {
     const hero = await page.evaluate(() => ({
       nodes: document.querySelectorAll('.hero .res-node').length,
       energyName: document.querySelector('.hero .pos-energy .node-name')?.textContent?.trim() || '',
     }));
     ok(`${vp.name} Hero 五资源节点`, hero.nodes === 5 && hero.energyName === '能量', JSON.stringify(hero));
+    const pillsHome = await page.evaluate(() => document.querySelectorAll('.top-bar .res-pill').length);
+    ok(`${vp.name} 首页顶栏资源隐藏`, pillsHome === 0, `pills=${pillsHome}`);
+    await page.goto(URL + '/build', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(800);
+    const pillsBuild = await page.evaluate(() => document.querySelectorAll('.top-bar .res-pill').length);
+    ok(`${vp.name} 他页顶栏资源保留`, pillsBuild === 5, `pills=${pillsBuild}`);
+    await page.goto(URL + '/', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(500);
   }
 
   // 首屏正常渲染

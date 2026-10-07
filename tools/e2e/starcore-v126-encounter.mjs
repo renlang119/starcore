@@ -135,12 +135,13 @@ console.log('== B. 结算与发放 ==');
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   const card = page.locator('[data-testid="encounter-card"]');
   await card.waitFor({ state: 'visible', timeout: 8000 });
-  await v('B1 选项 A 能量入账（顶栏 50K → 58K）', async () => {
+  await v('B1 选项 A 能量入账（首页能量节点 50K → 58K）', async () => {
     await page.click('[data-testid="encounter-opt-A"]');
     await card.waitFor({ state: 'detached', timeout: 5000 });
     await page.waitForTimeout(400);
-    const topbar = await page.textContent('body');
-    if (!/58K/.test(topbar)) throw new Error('能量未入账 58K');
+    // v1.43 起首页顶栏资源条隐藏，改验 hero 能量节点
+    const energyVal = await page.evaluate(() => document.querySelector('.pos-energy .node-value')?.textContent?.trim() || '');
+    if (energyVal !== '58K') throw new Error('能量未入账 58K: ' + energyVal);
   });
   await ctx.close();
 
@@ -152,14 +153,15 @@ console.log('== B. 结算与发放 ==');
   const page2 = await ctx2.newPage();
   await ctx2.addInitScript(injectSave, savePayload(makeSeed({ encounters: { nextTriggerAt: Date.now() + 600000, pendingEventId: 'enc_core', pendingAt: Date.now() } })));
   await page2.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
-  await v('B2 负合金损失：2000 − 1300 = 700（顶栏含 700）', async () => {
+  await v('B2 负合金损失：2000 − 1300 = 700（首页合金节点）', async () => {
     const card2 = page2.locator('[data-testid="encounter-card"]');
     await card2.waitFor({ state: 'visible', timeout: 8000 });
     await page2.click('[data-testid="encounter-opt-B"]');
     await card2.waitFor({ state: 'detached', timeout: 5000 });
     await page2.waitForTimeout(400);
-    const topbar = await page2.textContent('body');
-    if (!/700/.test(topbar)) throw new Error('合金未按 700 入账');
+    // v1.43 起首页顶栏资源条隐藏，改验 hero 合金节点
+    const alloyVal = await page2.evaluate(() => document.querySelector('.pos-alloy .node-value')?.textContent?.trim() || '');
+    if (alloyVal !== '700') throw new Error('合金未按 700 入账: ' + alloyVal);
   });
   await ctx2.close();
 
@@ -177,12 +179,16 @@ console.log('== B. 结算与发放 ==');
     await page3.click('[data-testid="encounter-opt-B"]');
     await card3.waitFor({ state: 'detached', timeout: 5000 });
     await page3.waitForTimeout(400);
-    const topbar = await page3.textContent('body');
-    if (/-.{0,4}(合金|1,?300)/.test(topbar)) throw new Error('出现负库存展示');
-    if (!/合金0(?=0 \/s)/.test(topbar)) {
-      const i = topbar.indexOf('合金');
-      throw new Error('未按扣至空展示: ' + topbar.slice(i, i + 16));
-    }
+    // v1.43 起首页顶栏资源条隐藏，改验 hero 合金节点（扣至空且不现负号）
+    const alloy = await page3.evaluate(() => {
+      const el = document.querySelector('.pos-alloy');
+      return {
+        value: el?.querySelector('.node-value')?.textContent?.trim() ?? '(无节点)',
+        rate: el?.querySelector('.node-rate')?.textContent?.trim() ?? '(无)',
+      };
+    });
+    if (/-/.test(alloy.value + alloy.rate)) throw new Error('出现负库存展示');
+    if (alloy.value !== '0') throw new Error('未按扣至空展示: ' + JSON.stringify(alloy));
   });
   await ctx3.close();
 }

@@ -5,7 +5,9 @@ const routes = [
     path: '/',
     name: 'home',
     component: () => import('@/views/HomeView.vue'),
-    meta: { wide: true },
+    // wide：首页双列宽内容；hideTopResources：首页 hero 五资源节点已完整呈现资源信息，
+    // 顶栏资源条隐藏（其他页面照常显示，v1.43）
+    meta: { wide: true, hideTopResources: true },
   },
   { path: '/build', name: 'build', component: () => import('@/views/BuildView.vue') },
   {

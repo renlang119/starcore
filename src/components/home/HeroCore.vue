@@ -59,6 +59,11 @@ function onStageClick() {
 const allExplored = computed(
   () => EXPLORE_NODES.length > 0 && EXPLORE_NODES.every((n) => game.exploration.isCompleted(n.id))
 )
+
+// 读屏摘要：首页顶栏资源条隐藏（v1.43），资源信息经此段对读屏可见
+const srSummary = computed(() =>
+  resNodes.value.map((n) => `${n.name} ${n.amount} ${n.rate}`).join('；')
+)
 </script>
 
 <template>
@@ -73,6 +78,8 @@ const allExplored = computed(
       @dismiss="emit('dismiss')"
       @skip="emit('skip')"
     />
+    <!-- 读屏摘要：首页顶栏资源条隐藏后，资源信息经此段可达（v1.43） -->
+    <p class="sr-only">{{ srSummary }}</p>
     <div
       class="hero-stage"
       :class="{ 'stage-clicked': stageClicked }"
