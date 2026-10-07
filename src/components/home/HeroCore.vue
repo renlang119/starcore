@@ -116,11 +116,12 @@ const allExplored = computed(
   padding: var(--space-6) 0 var(--space-4);
   position: relative;
 }
-/* 五角形舞台：五节点按坐标环绕（v1.41 中央圆移除后节点区承接点击跳建造页） */
+/* 五角形舞台：五节点按坐标环绕（v1.41 中央圆移除后节点区承接点击跳建造页；
+   v1.42 节点图形改圆形，舞台随节点直径加宽加高） */
 .hero-stage {
   position: relative;
-  width: 260px;
-  height: 264px;
+  width: 280px;
+  height: 272px;
   cursor: pointer;
   transition: transform 0.2s var(--ease-out);
 }
@@ -132,21 +133,22 @@ const allExplored = computed(
   animation: coreClickPulse 0.6s var(--ease-out);
 }
 
-/* 五资源节点（含零值弱化；新档四资源与暗物质长期为 0 呈弱化态） */
+/* 五资源节点：圆形徽章（含零值弱化；新档四资源与暗物质长期为 0 呈弱化态） */
 .res-node {
   position: absolute;
   left: calc(50% + var(--dx, 0px));
   top: calc(50% + var(--dy, 0px));
   transform: translate(-50%, -50%);
-  width: 56px;
+  width: 88px;
+  height: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1px;
-  padding: var(--space-1) 0;
   background: color-mix(in srgb, var(--color-surface) 78%, transparent);
   border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
-  border-radius: var(--radius-md);
+  border-radius: 50%;
   box-shadow: var(--elevation-1);
   transition: opacity 0.4s var(--ease-out);
 }
@@ -224,17 +226,18 @@ const allExplored = computed(
   max-width: 34em;
 }
 
-/* 桌面端差异（≥768px：R=120、节点与舞台同步放大） */
+/* 桌面端差异（≥768px：R=120、圆形节点与舞台同步放大） */
 @media (min-width: 768px) {
   .hero {
     padding: var(--space-8) 0 var(--space-6);
   }
   .hero-stage {
-    width: 320px;
-    height: 304px;
+    width: 328px;
+    height: 320px;
   }
   .res-node {
-    width: 60px;
+    width: 100px;
+    height: 100px;
   }
   .pos-energy {
     --dy: -120px;
