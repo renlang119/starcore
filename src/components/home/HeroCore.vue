@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // HeroCore — 星核核心视觉（v0.54 从 HomeView 拆出）
-// 核心能量值 + 产出率 + 三层状态环 + 点击跳转建造页
+// v1.40 五资源五角环绕：核心缩至 110/130px，五资源节点按正五角形环绕，
+// 能量居顶点（数值+小标），圆心改显能量产率；三层状态环与跳建造页保留
 import { t } from '@/i18n'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -9,7 +10,9 @@ import { useGameStore } from '@/stores/game'
 import { fmt, fmtRate } from '@/lib/format'
 import { TECHS } from '@/data/tech'
 import { EXPLORE_NODES } from '@/data/explore'
+import type { ResourceType } from '@/data/buildings'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
+import Icon from '@/components/ui/Icon.vue'
 
 defineProps<{
   /** 当前应显示的引导 step（null 表示不显示） */
@@ -23,7 +26,7 @@ const emit = defineEmits<{
 const game = useGameStore()
 const router = useRouter()
 
-// —— 核心视觉：核心能量值 + 产出率 ——
+// —— 核心视觉：圆心能量产率 ——
 // 核心光晕大小随能量对数缩放（最小 48px，最大 120px）
 const coreGlowSize = computed(() => {
   const energy = game.resources.getAmount('energy')
@@ -33,6 +36,25 @@ const coreGlowSize = computed(() => {
   const size = Math.min(120, Math.max(48, 32 + logVal * 7.5))
   return Math.round(size)
 })
+
+// —— 五资源节点（正五角形环绕，顶点朝上）——
+// 布位即资源解锁顺序：能量顶点、晶体/合金两肩、数据流/暗物质底边
+const NODE_IDS: ResourceType[] = ['energy', 'crystal', 'alloy', 'data', 'dark']
+const resNodes = computed(() =>
+  NODE_IDS.map((id) => {
+    const meta = game.resources.getMeta(id)
+    const amount = game.resources.getAmount(id)
+    return {
+      id,
+      name: meta.name,
+      icon: meta.icon,
+      color: meta.color,
+      amount: fmt(amount),
+      rate: fmtRate(game.resources.getRate(id)),
+      zero: amount.lte(0),
+    }
+  })
+)
 
 // —— 核心环信息映射 ——
 // 外环 r1 → 探索进度（completedNodes / totalNodes）
@@ -89,7 +111,7 @@ function onCoreClick() {
   router.push('/build')
 }
 
-// 产出率（带 /s 后缀，负值时变红）
+// 产出率（带 /s 后缀，负值时变红；v1.40 移至圆心显示）
 const rateDisplay = computed(() => {
   const rate = game.resources.getRate('energy')
   const formatted = fmtRate(rate)
@@ -104,7 +126,7 @@ const allExplored = computed(
 </script>
 
 <template>
-  <!-- 星核核心视觉 — 核心能量值 + 产出率 -->
+  <!-- 星核核心视觉 — 五资源五角环绕 + 圆心能量产率 -->
   <section class="hero" :aria-label="t('home.hero.aria')">
     <!-- onboarding: 核心引导 -->
     <OnboardingBubble
@@ -115,30 +137,44 @@ const allExplored = computed(
       @dismiss="emit('dismiss')"
       @skip="emit('skip')"
     />
-    <div
-      class="core-visual"
-      :class="{ 'core-clicked': coreClicked }"
-      role="button"
-      tabindex="0"
-      :aria-label="t('home.hero.buttonAria')"
-      @click="onCoreClick"
-      @keydown.enter="onCoreClick"
-      @keydown.space.prevent="onCoreClick"
-    >
-      <div class="core-ring r1" :class="r1Phase"></div>
-      <div class="core-ring r2" :class="r2Phase"></div>
-      <div class="core-ring r3" :class="r3Phase"></div>
+    <div class="hero-stage">
       <div
-        class="core-glow"
-        :style="{ width: coreGlowSize + 'px', height: coreGlowSize + 'px' }"
-      ></div>
-      <div class="core-center">
-        <div class="core-value font-display">{{ fmt(game.resources.getAmount('energy')) }}</div>
-        <div class="core-label">{{ t('home.hero.coreLabel') }}</div>
+        class="core-visual"
+        :class="{ 'core-clicked': coreClicked }"
+        role="button"
+        tabindex="0"
+        :aria-label="t('home.hero.buttonAria')"
+        @click="onCoreClick"
+        @keydown.enter="onCoreClick"
+        @keydown.space.prevent="onCoreClick"
+      >
+        <div class="core-ring r1" :class="r1Phase"></div>
+        <div class="core-ring r2" :class="r2Phase"></div>
+        <div class="core-ring r3" :class="r3Phase"></div>
+        <div
+          class="core-glow"
+          :style="{ width: coreGlowSize + 'px', height: coreGlowSize + 'px' }"
+        ></div>
+        <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">
+          {{ rateDisplay }}
+        </div>
       </div>
-    </div>
-    <div class="rate-display font-mono" :class="{ negative: isNegativeRate }">
-      {{ rateDisplay }}
+      <!-- 五资源节点：正五角形环绕，能量居顶点（数值+小标，产率在圆心不重复） -->
+      <!-- 资源信息顶栏已有读屏名称，节点对读屏隐藏 -->
+      <div
+        v-for="n in resNodes"
+        :key="n.id"
+        class="res-node"
+        :class="['pos-' + n.id, { 'node-energy': n.id === 'energy', 'node-zero': n.zero }]"
+        :style="{ '--c': n.color }"
+        :title="`${n.name} ${n.amount} ${n.rate}`"
+        aria-hidden="true"
+      >
+        <Icon class="node-icon" :name="n.icon" size="sm" />
+        <span class="node-value font-mono">{{ n.amount }}</span>
+        <span v-if="n.id === 'energy'" class="node-label">{{ t('home.hero.coreLabel') }}</span>
+        <span v-else class="node-rate font-mono">{{ n.rate }}</span>
+      </div>
     </div>
     <p v-if="allExplored" class="final-salute">{{ t('home.hero.finalSalute') }}。</p>
     <!-- 视觉动线引导 — Hero 底部向下渐隐光柱 -->
@@ -156,10 +192,19 @@ const allExplored = computed(
   padding: var(--space-6) 0 var(--space-4);
   position: relative;
 }
+/* 五角形舞台：核心居中，五节点按坐标环绕（v1.40） */
+.hero-stage {
+  position: relative;
+  width: 260px;
+  height: 248px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .core-visual {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 110px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,8 +228,8 @@ const allExplored = computed(
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 240px;
-  height: 240px;
+  width: 150px;
+  height: 150px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
@@ -197,6 +242,89 @@ const allExplored = computed(
   pointer-events: none;
   z-index: 0;
   animation: corePulse 3s ease-in-out infinite;
+}
+
+/* 圆心产率（v1.40 中心大数字移除后改显产率） */
+.core-visual .rate-display {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--color-core) 40%, transparent);
+}
+
+/* 五资源节点（含零值弱化；新档四资源与暗物质长期为 0 呈弱化态） */
+.res-node {
+  position: absolute;
+  left: calc(50% + var(--dx, 0px));
+  top: calc(50% + var(--dy, 0px));
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  width: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: var(--space-1) 0;
+  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 40%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-1);
+  transition: opacity 0.4s var(--ease-out);
+}
+.node-icon {
+  color: var(--c);
+}
+.node-value {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-t-primary);
+  line-height: 1.2;
+}
+.node-rate {
+  font-size: var(--text-xs);
+  color: var(--c);
+  opacity: 0.9;
+  line-height: 1.2;
+}
+.node-label {
+  font-size: var(--text-xs);
+  color: var(--color-t-secondary);
+  line-height: 1.2;
+}
+/* 能量节点稍大（顶点地位 + 小标） */
+.node-energy {
+  width: 64px;
+  gap: 2px;
+  border-color: color-mix(in srgb, var(--c) 60%, transparent);
+}
+.node-zero {
+  opacity: 0.35;
+}
+
+/* 五点坐标（正五角形顶点朝上，外接圆半径 R=100） */
+.pos-energy {
+  --dx: 0px;
+  --dy: -100px;
+}
+.pos-crystal {
+  --dx: 95px;
+  --dy: -31px;
+}
+.pos-alloy {
+  --dx: -95px;
+  --dy: -31px;
+}
+.pos-data {
+  --dx: 59px;
+  --dy: 81px;
+}
+.pos-dark {
+  --dx: -59px;
+  --dy: 81px;
 }
 
 /* 核心环信息映射 — 3 层环映射游戏状态 */
@@ -281,24 +409,8 @@ const allExplored = computed(
   animation: corePulse 3s ease-in-out infinite;
   z-index: 1;
 }
-.core-center {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-}
-.core-value {
-  font-size: var(--text-2xl);
-  font-weight: 900;
-  color: var(--color-t-primary);
-  text-shadow: 0 0 16px color-mix(in srgb, var(--color-core) 50%, transparent);
-}
-.core-label {
-  font-size: var(--text-xs);
-  color: var(--color-t-secondary);
-  margin-top: var(--space-1);
-}
+
 .rate-display {
-  font-size: var(--text-sm);
   color: var(--color-core);
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -335,34 +447,47 @@ const allExplored = computed(
   max-width: 34em;
 }
 
-/* 桌面端差异 */
+/* 桌面端差异（≥768px：核心 130、R=120、节点与舞台同步放大） */
 @media (min-width: 768px) {
   .core-visual {
-    width: 240px;
-    height: 240px;
+    width: 130px;
+    height: 130px;
   }
   .core-visual::after {
-    width: 288px;
-    height: 288px;
-  }
-  .core-value {
-    font-size: var(--text-display);
-    text-shadow: 0 0 24px color-mix(in srgb, var(--color-core) 50%, transparent);
+    width: 176px;
+    height: 176px;
   }
   .hero {
     padding: var(--space-8) 0 var(--space-6);
   }
-}
-
-/* L 断点（1024-1439px）：核心视觉 260 */
-@media (min-width: 1024px) {
-  .core-visual {
-    width: 260px;
-    height: 260px;
+  .hero-stage {
+    width: 320px;
+    height: 296px;
   }
-  .core-visual::after {
-    width: 312px;
-    height: 312px;
+  .res-node {
+    width: 60px;
+  }
+  .node-energy {
+    width: 70px;
+  }
+  .pos-energy {
+    --dy: -120px;
+  }
+  .pos-crystal {
+    --dx: 114px;
+    --dy: -37px;
+  }
+  .pos-alloy {
+    --dx: -114px;
+    --dy: -37px;
+  }
+  .pos-data {
+    --dx: 71px;
+    --dy: 97px;
+  }
+  .pos-dark {
+    --dx: -71px;
+    --dy: 97px;
   }
 }
 
