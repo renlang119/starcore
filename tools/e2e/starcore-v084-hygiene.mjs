@@ -126,8 +126,8 @@ console.log('== C. 全局 Toast 无障碍 ==');
   await ctx.close();
 }
 
-// —— D. 首页英雄区空格键——
-console.log('== D. 首页英雄区空格键 ==');
+// —— D. 首页核心视觉区空格键——
+console.log('== D. 首页核心视觉区空格键 ==');
 {
   const ctx = await newCtx(browser);
   const page = await ctx.newPage();
