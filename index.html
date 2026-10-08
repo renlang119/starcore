@@ -21,10 +21,108 @@
   <meta name="twitter:image:alt" content="星核纪元 · StarCore Era" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self';" />
   <title>星核纪元 · StarCore Era</title>
+  <style>
+    /* 启动画面（首屏装载段）：语言包与应用主体就绪前显示，应用挂载时由
+       Vue 整体替换，无独立移除逻辑；样式内联、零请求，HTML 解析即渲染 */
+    .boot-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      background: #05070d;
+      color: #e8edf5;
+      font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+        'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    }
+    .boot-star {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00e5ff;
+      box-shadow: 0 0 22px 5px rgba(0, 229, 255, 0.4);
+      animation: boot-pulse 1.6s ease-in-out infinite;
+    }
+    .boot-title {
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-indent: 0.35em; /* 宽字距视觉居中补偿 */
+      text-align: center;
+    }
+    .boot-sub {
+      margin-top: 10px;
+      color: #8b96a8;
+      font-size: 12px;
+      letter-spacing: 0.42em;
+      text-indent: 0.42em;
+      text-align: center;
+    }
+    .boot-error .boot-star {
+      display: none;
+    }
+    .boot-error-text {
+      max-width: 26em;
+      padding: 0 24px;
+      color: #8b96a8;
+      font-size: 14px;
+      line-height: 1.8;
+      text-align: center;
+    }
+    @keyframes boot-pulse {
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.45);
+        opacity: 0.55;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .boot-star {
+        animation: none;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="app"></div>
-  <noscript>星核纪元是一款需要启用 JavaScript 才能运行的网页游戏。</noscript>
+  <div id="app">
+    <div class="boot-screen" role="status" aria-label="Loading">
+      <div class="boot-star" aria-hidden="true"></div>
+      <div class="boot-logo">
+        <div class="boot-title">星核纪元</div>
+        <div class="boot-sub">STARCORE ERA</div>
+      </div>
+    </div>
+  </div>
+  <!-- 装载失败画面模板：引导链失败时由 main.ts 克隆进挂载点；
+       文案静态写入（语言包未就绪无法取词），集中此处便于审查 -->
+  <template id="boot-error-template">
+    <div class="boot-screen boot-error" role="alert">
+      <div class="boot-logo">
+        <div class="boot-title">星核纪元</div>
+        <div class="boot-sub">STARCORE ERA</div>
+      </div>
+      <p class="boot-error-text">
+        加载失败，请刷新重试。<br />
+        Failed to load. Please refresh the page.
+      </p>
+    </div>
+  </template>
+  <noscript>
+    <style>
+      .boot-screen {
+        display: none;
+      }
+    </style>
+    星核纪元是一款需要启用 JavaScript 才能运行的网页游戏。
+  </noscript>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

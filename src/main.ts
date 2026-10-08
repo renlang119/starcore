@@ -14,4 +14,12 @@ loadLocaleBundles()
   })
   .catch((err: unknown) => {
     console.error('[starcore] bootstrap failed:', err)
+    // 装载失败出口（v1.45）：语言包或应用主体取数失败时引导链中断，
+    // 克隆静态双语错误模板替代启动画面（文案在 index.html 内联，
+    // 语言包未就绪无法走 i18n 取词）
+    const app = document.getElementById('app')
+    const tpl = document.getElementById('boot-error-template')
+    if (app && tpl instanceof HTMLTemplateElement) {
+      app.replaceChildren(tpl.content.cloneNode(true))
+    }
   })

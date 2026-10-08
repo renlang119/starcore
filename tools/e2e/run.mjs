@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const E2E_DIR = path.join(ROOT, 'tools', 'e2e')
 
-// —— 清单：本地全量回归（35）/ 远程重跑（25）——
+// —— 清单：本地全量回归（36）/ 远程重跑（26）——
 const SUITE = [
   'starcore-baseline-regress.mjs',
   'starcore-v045-release.mjs',
@@ -65,6 +65,7 @@ const SUITE = [
   'starcore-v126-encounter.mjs',
   'starcore-v127-dispatch.mjs',
   'starcore-v135-save-integrity.mjs',
+  'starcore-boot-screen.mjs',
 ]
 
 const REMOTE = [
@@ -93,6 +94,7 @@ const REMOTE = [
   'starcore-v126-encounter.mjs',
   'starcore-v127-dispatch.mjs',
   'starcore-v135-save-integrity.mjs',
+  'starcore-boot-screen.mjs',
 ]
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
