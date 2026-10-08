@@ -92,13 +92,26 @@ console.log('== A. SCB1- 导出/导入 round-trip ==');
   const importCode = saveCode(JSON.stringify(dObj));
   await page.locator('.import-box textarea').fill(importCode);
   await page.locator('button', { hasText: '导入存档' }).first().click();
-  await page.waitForTimeout(400);
+  // 导入确认弹窗条件等待：负载下渲染可能迟于固定窗口，弹窗未到会点空
   const confirmBtn = page.locator('button', { hasText: '确认导入' }).first();
+  await confirmBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
   if ((await confirmBtn.count()) > 0) await confirmBtn.click();
-  await page.waitForTimeout(1500);
-  const after = await page.evaluate(() => {
-    try { return JSON.parse(JSON.parse(localStorage.getItem('starcore_save_v1_backup')).d); } catch { return null; }
-  });
+  // 导入成功后应用约 1.5 秒触发整页刷新：固定等待与刷新计时器同值存在
+  // 相撞窗口（过晚撞刷新、过早读旧档），且种子按导航重放注入，刷新后
+  // 读到的始终是种子档，回读只能在刷新前窗口捕获。改有界轮询、见替换
+  // 档即收；刷新过程中的上下文销毁按未读到处理、下一轮重试
+  let after = null;
+  for (let i = 0; i < 40; i++) {
+    try {
+      after = await page.evaluate(() => {
+        try { return JSON.parse(JSON.parse(localStorage.getItem('starcore_save_v1_backup')).d); } catch { return null; }
+      });
+    } catch {
+      after = null; // 刷新进行中：上下文已销毁，下一轮重试
+    }
+    if (after !== null && after.player.name === '签名轮换档') break;
+    await page.waitForTimeout(200);
+  }
   check('SCB1- 导入成功（替换语义生效）', after !== null && after.player.name === '签名轮换档');
   await page.context().close();
 }
