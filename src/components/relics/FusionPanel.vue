@@ -6,7 +6,7 @@ import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import Icon from '@/components/ui/Icon.vue'
 
 /**
- * FusionPanel — 合成工坊区块 + 合成产物弹窗（自 RelicView 拆出，v0.72）
+ * FusionPanel：合成工坊区块 + 合成产物弹窗（自 RelicView 拆出，v0.72）
  *
  * 选材状态由 useRelicFusion 持有、视图层传入；本组件只负责工坊 UI 与合成动作。
  * data-testid 与 DOM 结构与拆分前一致，供单测与 Playwright 脚本断言。
@@ -186,7 +186,7 @@ function closeResult(fusion: RelicFusionApi) {
 }
 
 /* 产物弹窗内容样式自 RelicView 原样迁入（.synth-modal 是 ModalOverlay 根节点上的 class，
-   scoped 规则匹配不到它，故去掉该前缀只保留内容选择器——与拆分前实际生效范围一致；
+   scoped 规则匹配不到它，故去掉该前缀只保留内容选择器，与拆分前实际生效范围一致；
    .result-sub 原本无本视图样式定义，保留类名维持 DOM 不变） */
 .result-title {
   color: var(--color-plasma);

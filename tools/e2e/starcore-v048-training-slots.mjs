@@ -49,7 +49,7 @@ const norm = (s) => (s || '').replace(/\s+/g, '');
 
 const browser = await launch();
 
-// —— A. 无科技：基础 1 槽 ——
+// A. 无科技：基础 1 槽
 console.log('== A. 基础 1 槽（无集群操练）==');
 {
   const page = await newArmyPage(browser, ['military_basic']);
@@ -68,7 +68,7 @@ console.log('== A. 基础 1 槽（无集群操练）==');
   await page.context().close();
 }
 
-// —— B. 集群操练 I：2 槽 ——
+// B. 集群操练 I：2 槽
 console.log('== B. 集群操练 I → 2 槽 ==');
 {
   const page = await newArmyPage(browser, ['military_basic', 'parallel_training_1']);
@@ -87,7 +87,7 @@ console.log('== B. 集群操练 I → 2 槽 ==');
   await page.context().close();
 }
 
-// —— C. 集群操练 I+II：3 槽封顶 ——
+// C. 集群操练 I+II：3 槽封顶
 console.log('== C. 集群操练 I+II → 3 槽封顶 ==');
 {
   const page = await newArmyPage(browser, ['military_basic', 'adv_units', 'parallel_training_1', 'parallel_training_2']);

@@ -1,9 +1,9 @@
 /**
- * encounters.ts — 随机遭遇事件定义（v1.26 可玩内容扩展方案 8）
+ * encounters.ts：随机遭遇事件定义（v1.26 可玩内容扩展方案 8）
  *
  * 在线挂机时的低频决策点：每个事件恰两个选项（稳收益 vs 风险赌注），
  * 玩家不处理则过期消失。设计红线：
- * - 量级克制：奖励是「顺路的糖」，折算能量当量 4.4e3–9.2e3（签到同级口径；实际带，测试侧用更宽护栏），
+ * - 量级克制：奖励是「顺路的糖」，折算能量当量 4.4e3~9.2e3（签到同级口径；实际带，测试侧用更宽护栏），
  *   不锚玩家进度、不造第二资源轴
  * - 纯增量：不碰战斗公式；存档为可选字段零迁移（store 侧见 src/stores/encounters.ts）
  * - 随机即时事件用 Math.random（无需确定性重放；fnv1a/mulberry32 保留给周期刷新类）
@@ -50,11 +50,11 @@ export const ENCOUNTER_INTERVAL_MAX = 900
 export const ENCOUNTER_EXPIRE_MS = 60_000
 
 /**
- * 事件池：10 模板，四类风味——资源类 4 / 军事类 2 / 探索类 1 / 风险赌注类 3。
+ * 事件池：10 模板，四类风味，资源类 4 / 军事类 2 / 探索类 1 / 风险赌注类 3。
  * 数值与核验表同源；文案经语言包 content.encounters 域取词。
  */
 export const ENCOUNTERS: EncounterDef[] = [
-  // —— 资源类 4：B 选项「稳中略好」，低方差 ——
+  // 资源类 4：B 选项「稳中略好」，低方差
   {
     id: 'enc_flux',
     flavor: 'resource',
@@ -123,7 +123,7 @@ export const ENCOUNTERS: EncounterDef[] = [
       ],
     },
   },
-  // —— 军事类 2：收编 vs 折现 / 稳拆 vs 赌核心 ——
+  // 军事类 2：收编 vs 折现 / 稳拆 vs 赌核心
   {
     id: 'enc_salvage',
     flavor: 'military',
@@ -155,7 +155,7 @@ export const ENCOUNTERS: EncounterDef[] = [
       chances: [{ p: 1, rewards: { energy: 4400, alloy: 400 } }],
     },
   },
-  // —— 探索类 1：暗物质独家产出 vs 大额能源 ——
+  // 探索类 1：暗物质独家产出 vs 大额能源
   {
     id: 'enc_beacon',
     flavor: 'explore',
@@ -173,7 +173,7 @@ export const ENCOUNTERS: EncounterDef[] = [
       ],
     },
   },
-  // —— 赌注类 3：高方差同期望，「翻倍 or 白忙」 ——
+  // 赌注类 3：高方差同期望，「翻倍 or 白忙」
   {
     id: 'enc_well',
     flavor: 'gamble',

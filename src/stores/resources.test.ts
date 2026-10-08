@@ -1,5 +1,5 @@
 /**
- * resources.test.ts — 资源 store 测试
+ * resources.test.ts：资源 store 测试
  * 覆盖：初始状态 / gain / spend / canAfford / spendCost 原子性 /
  * applyTick / reset（含 keepDark）/ serialize-hydrate
  */

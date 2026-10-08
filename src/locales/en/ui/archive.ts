@@ -1,5 +1,5 @@
 /**
- * archive — English interface copy (translated from the zh-CN baseline).
+ * archive：English interface copy (translated from the zh-CN baseline).
  * Terminology follows references/i18n-en-glossary.md.
  */
 export default {

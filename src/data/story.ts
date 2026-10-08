@@ -1,5 +1,5 @@
 /**
- * story.ts — 探索节点剧情文案
+ * story.ts：探索节点剧情文案
  *
  * 34 条节点叙事片段（v1.08 自 explore.ts 迁出的世界观资产）；
  * 由 ArchiveView 星图档案按节点 id 回读；键 = 探索节点 id。

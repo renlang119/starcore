@@ -1,5 +1,5 @@
 /**
- * effect-system.test.ts — 效果聚合契约（v0.78）
+ * effect-system.test.ts：效果聚合契约（v0.78）
  *
  * 固化 EffectSource 的 target 语义（见 effect-system.ts 文件头）：
  * - 带 target 类型按 target 过滤，'all'/缺省对任意 target 生效；

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * FormationPanel.vue — 编组面板（编队卡与批量编入 / 撤回）。
+ * FormationPanel.vue：编组面板（编队卡与批量编入 / 撤回）。
  *
  * 从 ArmyView 拆出：编队战力与各兵种库存 / 编入数、±1 ±10 直接调整、
  * 全入 / 全撤超过阈值时的二次确认弹窗。类名与文案保持不变。

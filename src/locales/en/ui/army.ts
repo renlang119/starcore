@@ -1,5 +1,5 @@
 /**
- * army — English locale messages (translated from the zh-CN baseline)
+ * army：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'army.aboutTo': 'About to',

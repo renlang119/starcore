@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * EmptyState — 页面空状态通用组件（体验增强设计规范 §3.2.1）
+ * EmptyState：页面空状态通用组件（体验增强设计规范 §3.2.1）
  *
  * 图标 + 主文案 + 提示文案 + 可选引导按钮，居中堆叠。
  * 样式复用全局 .empty-state 体系（utilities.css）。

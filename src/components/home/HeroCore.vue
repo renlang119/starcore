@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// HeroCore — 星核核心视觉（v0.54 从 HomeView 拆出）
-// v1.40 五资源五角环绕；v1.41 中央圆形视觉（状态环/光晕/圆心产率）整体移除——
+// HeroCore：星核核心视觉（v0.54 从 HomeView 拆出）
+// v1.40 五资源五角环绕；v1.41 中央圆形视觉（状态环/光晕/圆心产率）整体移除，
 // 五资源已按节点分开显示（含名称），点击节点区仍可跳建造页
 import { t } from '@/i18n'
 import { computed, ref } from 'vue'
@@ -25,7 +25,7 @@ const emit = defineEmits<{
 const game = useGameStore()
 const router = useRouter()
 
-// —— 五资源节点（正五角形环绕，顶点朝上，各自显示名称）——
+// 五资源节点（正五角形环绕，顶点朝上，各自显示名称），
 // 布位即资源解锁顺序：能量顶点、晶体/合金两肩、数据流/暗物质底边
 const NODE_IDS: ResourceType[] = ['energy', 'crystal', 'alloy', 'data', 'dark']
 const resNodes = computed(() =>
@@ -67,7 +67,7 @@ const srSummary = computed(() =>
 </script>
 
 <template>
-  <!-- 星核核心视觉 — 五资源节点正五角形环绕 -->
+  <!-- 星核核心视觉：五资源节点正五角形环绕 -->
   <section class="hero" :aria-label="t('home.hero.aria')">
     <!-- onboarding: 核心引导 -->
     <OnboardingBubble
@@ -108,13 +108,13 @@ const srSummary = computed(() =>
       </div>
     </div>
     <p v-if="allExplored" class="final-salute">{{ t('home.hero.finalSalute') }}。</p>
-    <!-- 视觉动线引导 — Hero 底部向下渐隐光柱 -->
+    <!-- 视觉动线引导：Hero 底部向下渐隐光柱 -->
     <div class="hero-flow" aria-hidden="true"></div>
   </section>
 </template>
 
 <style scoped>
-/* —— 星核核心视觉 —— */
+/* 星核核心视觉 */
 .hero {
   display: flex;
   flex-direction: column;
@@ -205,7 +205,7 @@ const srSummary = computed(() =>
   --dy: 81px;
 }
 
-/* 视觉动线引导 — Hero 底部向下渐隐光柱 */
+/* 视觉动线引导：Hero 底部向下渐隐光柱 */
 .hero-flow {
   position: absolute;
   bottom: calc(-1 * var(--space-6));
@@ -267,7 +267,7 @@ const srSummary = computed(() =>
   }
 }
 
-/* —— onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+/* onboarding 气泡定位（变体类承载定位与层级，v0.97）， */
 .ob-core {
   position: absolute;
   top: 0;

@@ -1,5 +1,5 @@
 /**
- * combat.test.ts — combat.ts 战斗结算基础测试
+ * combat.test.ts：combat.ts 战斗结算基础测试
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
@@ -52,7 +52,7 @@ describe('combat store', () => {
     expect(result.victory).toBe(false)
   })
 
-  // —— v0.93：战斗 HP 记账修复回归 ——
+  // v0.93：战斗 HP 记账修复回归
 
   /** 构造可控敌方编成的据点（直改编成，绕开数据表） */
   function makeDummyStronghold(hp: number, count: number): StrongholdDef {
@@ -97,7 +97,7 @@ describe('combat store', () => {
     expect(result.rounds).toBe(2)
   })
 
-  // —— v0.94：敌方空编成防御 ——
+  // v0.94：敌方空编成防御
 
   it('敌方空编成防御判负：不走空数组恒真判胜', () => {
     const combat = useCombatStore()
@@ -147,7 +147,7 @@ describe('combat store', () => {
     expect(combat.garrisoned['raider_1']).toBeDefined()
   })
 
-  // —— 无尽远征（v0.60）——
+  // 无尽远征（v0.60），
 
   it('远征战果：仅攻克当前前沿推进，重打/失败/跳层不推进', () => {
     const combat = useCombatStore()
@@ -226,7 +226,7 @@ describe('combat store', () => {
     expect(s.id).toBe('endless')
   })
 
-  // —— v0.75：远征通关集污染修复 ——
+  // v0.75：远征通关集污染修复
 
   it('远征胜利不写入正式通关集；serialize 白名单过滤兜底', () => {
     const combat = useCombatStore()
@@ -250,7 +250,7 @@ describe('combat store', () => {
     expect(combat.completedStrongholds.has('endless')).toBe(false)
   })
 
-  // —— v0.82：驻扎校验 ——
+  // v0.82：驻扎校验
 
   it('驻扎门槛：未攻克据点拒绝驻扎（combat 本体校验）', () => {
     const combat = useCombatStore()
@@ -269,7 +269,7 @@ describe('combat store', () => {
     setGarrisonGuard(() => true) // 还原守卫，防跨文件状态泄漏（isolate:false）
   })
 
-  // —— v1.20：远征里程碑奖励 ——
+  // v1.20：远征里程碑奖励
 
   it('里程碑领取：未达标拒、达标返回奖励并记账、重复领取拒', () => {
     const combat = useCombatStore()
@@ -369,7 +369,7 @@ describe('combat store', () => {
   })
 })
 
-// —— v1.23 方案 7：编队特性战斗与驻扎乘区 ——
+// v1.23 方案 7：编队特性战斗与驻扎乘区
 describe('combat store · 编队特性（v1.23）', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -381,8 +381,8 @@ describe('combat store · 编队特性（v1.23）', () => {
     const combat = useCombatStore()
     const formation = makeFormation('f1', { assault: 60 })
     const stronghold = STRONGHOLDS.find((s) => s.id === 'raider_1')!
-    // 同种子差分：分钟种子在本用例两次调用间可能跨分钟，改用固定差分口径——
-    // 强攻 ×1.12 攻击的胜利回合数 ≤ 均衡（同编队 id）——攻击乘区只增不减，胜利回合单调不增
+    // 同种子差分：分钟种子在本用例两次调用间可能跨分钟，改用固定差分口径，
+    // 强攻 ×1.12 攻击的胜利回合数 ≤ 均衡（同编队 id），攻击乘区只增不减，胜利回合单调不增
     setFormationTraitProvider(() => 'balanced')
     const base = combat.resolveBattle(formation, stronghold, D(1), D(1))
     setFormationTraitProvider(() => 'assault_doctrine')

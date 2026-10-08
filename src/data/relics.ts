@@ -1,5 +1,5 @@
 /**
- * relics.ts — 遗物系统定义
+ * relics.ts：遗物系统定义
  * 4 种稀有度：普通 / 稀有 / 史诗 / 传说
  * 遗物提供永久增益，可装备到遗物槽位
  */
@@ -64,7 +64,7 @@ export function relicRarityColor(rarity: string): string {
 }
 
 export const RELIC_POOL: RelicDef[] = [
-  // —— 普通 ——
+  // 普通
   {
     id: 'r_energy_1',
     name: t('content.relics.r_energy_1.name'),
@@ -156,7 +156,7 @@ export const RELIC_POOL: RelicDef[] = [
     ],
   },
 
-  // —— 稀有 ——
+  // 稀有
   {
     id: 'r_energy_2',
     name: t('content.relics.r_energy_2.name'),
@@ -253,7 +253,7 @@ export const RELIC_POOL: RelicDef[] = [
     ],
   },
 
-  // —— 史诗 ——
+  // 史诗
   {
     id: 'r_energy_3',
     name: t('content.relics.r_energy_3.name'),
@@ -337,7 +337,7 @@ export const RELIC_POOL: RelicDef[] = [
     ],
   },
 
-  // —— 传说 ——
+  // 传说
   {
     id: 'r_omega',
     name: t('content.relics.r_omega.name'),
@@ -445,7 +445,7 @@ export function getRelicById(id: string): RelicDef | undefined {
  * 套装定义（v0.61 玩法扩展方案 6）
  * 按来源系别分 4 组：同系遗物装备 2 件触发小额加成，3 件（满套）翻倍。
  * 加成走派生 RelicEffect 注入 equippedEffects 通道（EffectSystem 零改动）；
- * 量级刻意压小额——套装是收集方向标，不是第二权力轴。
+ * 量级刻意压小额，套装是收集方向标，不是第二权力轴。
  */
 type RelicSetId = 'raiders' | 'beast' | 'ruin' | 'silencer'
 

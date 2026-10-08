@@ -1,5 +1,5 @@
 /**
- * daily.ts — 每日签到/周期挑战 store（v0.62 玩法扩展方案 7）
+ * daily.ts：每日签到/周期挑战 store（v0.62 玩法扩展方案 7）
  *
  * 职责：
  * - 每日签到：当日首次进游戏自动签到（本地日期字符串判定，放置游戏少一次交互）；
@@ -100,7 +100,7 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     name: (n) =>
       n === 1 ? t('home.daily.ch.wkTranscendsOne', { n }) : t('home.daily.ch.wkTranscends', { n }),
   },
-  // —— 扩类（v1.21 可玩内容扩展方案 3）：池 5→9，消除每周同质 ——
+  // 扩类（v1.21 可玩内容扩展方案 3）：池 5→9，消除每周同质
   {
     templateId: 'wk_expedition',
     kind: 'expedition',
@@ -278,7 +278,7 @@ export const useDailyStore = defineStore('daily', () => {
     return { dark: c.rewardDark, streakBonus: 1 }
   }
 
-  // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
+  // 每周强敌（v1.24 可玩内容扩展方案 5），
 
   /** 本周 Boss 是否已击败（跨周自动失效：标记周 ≠ 当前周即视为未击败）。
    *  now 缺省读响应式 currentWeek（tick 对齐，跨周时消费侧自动刷新）；
@@ -290,7 +290,7 @@ export const useDailyStore = defineStore('daily', () => {
 
   /**
    * 记账本周 Boss 已击败（useBattleFlow 胜利分支调用；重复记账幂等无副作用）。
-   * 纯记账不发放资源——奖励由战斗结算的 grantRewards 走据点 rewards 即时发放，
+   * 纯记账不发放资源，奖励由战斗结算的 grantRewards 走据点 rewards 即时发放，
    * 本函数只负责「本周已击败」标记（claimChallenge 先例：记账与发放分离）。
    */
   function claimWeeklyBoss(now = new Date()): void {

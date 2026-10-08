@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 /**
- * EndlessDepthPanel.vue — 无尽远征深度选择面板（从 BattleView 拆出）。
+ * EndlessDepthPanel.vue：无尽远征深度选择面板（从 BattleView 拆出）。
  *
  * 深度状态由父层持有（跟随前沿 / 手动钳制的调度在调用方），
  * 本组件仅渲染「− / 深度 / ＋」与前沿徽标，类名与 data-testid 不变。
@@ -48,7 +48,7 @@ const emit = defineEmits<{ step: [delta: number] }>()
 </template>
 
 <style scoped>
-/* —— 无尽远征深度选择（v0.60）—— */
+/* 无尽远征深度选择（v0.60）， */
 .endless-depth {
   background: var(--color-surface);
   border: 1px solid color-mix(in srgb, var(--color-plasma) 45%, transparent);

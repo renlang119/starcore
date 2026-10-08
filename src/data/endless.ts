@@ -1,12 +1,12 @@
 /**
- * endless.ts — 无尽远征模式定义（v0.60 玩法扩展方案 5）
+ * endless.ts：无尽远征模式定义（v0.60 玩法扩展方案 5）
  *
  * 据点全通后的可重复挑战层：无限深度缩放。
  * 不新增敌方兵种，敌方编成按深度轮换 4 类模板，克制关系随模板复用；
  * 敌方数值 = 模板 × endlessScale(d)，奖励 = 沉默者旗舰基准 × endlessRewardScale(d)。
  *
  * 平衡性设计意图（v0.60 方案稿校准，战斗公式忠实移植 + 蒙特洛模拟）：
- * - 敌方成长 1.25/层，奖励成长 1.35/层——奖励刻意快于敌人，越深越值得打；
+ * - 敌方成长 1.25/层，奖励成长 1.35/层，奖励刻意快于敌人，越深越值得打；
  * - 刚全通的部队（攻×3 防×2.5）约 D7-D10 进入软墙灰区（保底 1 伤害 + 50 回合超时判负）：
  *   胜负对编队构成敏感，且 4 模板轮换允许 ±1 层抖动（非严格单调），
  *   每轮转生推深 2-4 层，构成「转生 → 练兵 → 推深」的长尾 meta 循环；
@@ -141,7 +141,7 @@ export function endlessStronghold(depth: number): StrongholdDef {
   }
 }
 
-// —— 里程碑奖励（v1.20 可玩内容扩展方案 2）——
+// 里程碑奖励（v1.20 可玩内容扩展方案 2），
 
 /** 里程碑档位步长：每攻克 10 层一档（导出供测试与视图文案直测/直读） */
 export const MILESTONE_STEP = 10
@@ -161,7 +161,7 @@ export function endlessMilestoneTier(depth: number): number {
 /**
  * 档位奖励 = 深度 10×tier 的合成据点资源奖励（endlessStronghold 同源公式）。
  * 校准依据（v092 战斗模拟分档实测）：档 A 刚通关深空约可推至 D15，
- * 档 B 至 D25，档 C 至 D35 附近，D40 触软墙——每 10 层一档与进度带对齐；
+ * 档 B 至 D25，档 C 至 D35 附近，D40 触软墙，每 10 层一档与进度带对齐；
  * 奖励与该深度单场战斗同量级（约为前一整档段累计战斗收入的 27%，
  * 1/Σ(k=0..9)1.35^-k ≈ 1/3.67），随深度自缩放、档位不封顶。非法档位返回空对象。
  */
@@ -182,7 +182,7 @@ export function endlessMilestoneReward(tier: number): Partial<Record<ResourceTyp
 }
 
 /**
- * 档位是否可领取：深度达标且未在已领清单（补领语义——
+ * 档位是否可领取：深度达标且未在已领清单（补领语义，
  * 更早的未领档位在深度达标后仍可领取，与领取顺序无关）。
  */
 export function milestoneClaimable(tier: number, depth: number, claimed: number[]): boolean {

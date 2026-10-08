@@ -4,7 +4,7 @@
 // C. 空编队自愈：formations=[] 注入档 → 战斗页正常渲染，不白屏
 // D. 转生树幂聚合：Lv 高等级注入档正常加载，产出乘数 = value^level 语义
 // E. 导入替换语义：缺省字段回落初始值、totalTranscends=0 可清零
-// F. 训练 count 整数：小数 count 注入档被拒（走错误屏）——校验层收紧的直接验证
+// F. 训练 count 整数：小数 count 注入档被拒（走错误屏），校验层收紧的直接验证
 // G. 无档回归：正常启动，不误入错误屏
 import { launch, check, finish, newSeededPage, savePayload, saveCode, BASE_URL as URL } from './starcore-pwlib.mjs';
 
@@ -43,7 +43,7 @@ function makeSave({ levels = {}, amounts = {}, formations, totalTranscends = 0, 
 
 const browser = await launch();
 
-// —— A. corrupt 错误屏 ——
+// A. corrupt 错误屏
 console.log('== A. corrupt 错误屏 ==');
 {
   // 两份都损坏：主档（IndexedDB 在 headless 不可写则空）+ 备份档为非法载荷
@@ -63,14 +63,14 @@ console.log('== A. corrupt 错误屏 ==');
   );
   check('提供「导出原始存档」入口', screenText.includes('导出原始存档'));
   check('提供「清除存档重开」出口', screenText.includes('清除存档重开'));
-  // 关键：不静默开新档——15 秒保护窗内原始载荷不被覆盖
+  // 关键：不静默开新档，15 秒保护窗内原始载荷不被覆盖
   await page.waitForTimeout(2000);
   const raw = await page.evaluate(() => localStorage.getItem('starcore_save_v1_backup'));
   check('原始损坏载荷未被自动存档覆盖', raw === 'not-a-valid-payload');
   await page.context().close();
 }
 
-// —— B. 指数限位 ——
+// B. 指数限位
 console.log('== B. 指数限位 ==');
 {
   const bad = makeSave({ amounts: { energy: '1e99999999999999999' } });
@@ -86,7 +86,7 @@ console.log('== B. 指数限位 ==');
   await page2.context().close();
 }
 
-// —— C. 空编队自愈 ——
+// C. 空编队自愈
 console.log('== C. 空编队自愈 ==');
 {
   const page = await newSeededPage(browser, makeSave({ formations: [] }), '/battle/raider_1');
@@ -108,7 +108,7 @@ console.log('== C. 空编队自愈 ==');
   await page.context().close();
 }
 
-// —— D. 转生树幂聚合 ——
+// D. 转生树幂聚合
 console.log('== D. 转生树幂聚合 ==');
 {
   // 等级拉满至校验上限：读取不挂死、首页正常渲染（幂聚合不物化 1e6 份 effects）
@@ -128,7 +128,7 @@ console.log('== D. 转生树幂聚合 ==');
   await page2.context().close();
 }
 
-// —— E. 导入替换语义 ——
+// E. 导入替换语义
 console.log('== E. 导入替换语义 ==');
 {
   // 先用正常档起游戏，把转生次数堆起来，再导出一份 totalTranscends=0 的极简码导入
@@ -196,7 +196,7 @@ console.log('== E. 导入替换语义 ==');
   await page.context().close();
 }
 
-// —— F. 训练 count 整数 ——
+// F. 训练 count 整数
 console.log('== F. 训练 count 整数 ==');
 {
   const bad = makeSave();
@@ -207,7 +207,7 @@ console.log('== F. 训练 count 整数 ==');
   await page.context().close();
 }
 
-// —— G. 无档回归 ——
+// G. 无档回归
 console.log('== G. 无档回归 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });

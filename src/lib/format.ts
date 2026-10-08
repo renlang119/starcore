@@ -1,5 +1,5 @@
 /**
- * format.ts — 数值格式化与时间格式化
+ * format.ts：数值格式化与时间格式化
  */
 import { Decimal } from './decimal'
 

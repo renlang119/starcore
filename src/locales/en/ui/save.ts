@@ -1,5 +1,5 @@
 /**
- * save — English locale messages (translated from the zh-CN baseline)
+ * save：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'save.clear': 'Clear Save',

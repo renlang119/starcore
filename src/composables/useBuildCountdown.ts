@@ -1,5 +1,5 @@
 /**
- * useBuildCountdown.ts — 建筑升级倒计时预估（木桶原理）。
+ * useBuildCountdown.ts：建筑升级倒计时预估（木桶原理）。
  *
  * 从 UpgradeCountdown 组件拆出：逐项判定资源缺口，可产出资源按
  * 「缺口 ÷ 生产速率」取最长者作为瓶颈；区分可产出 / 需手动获取

@@ -366,7 +366,7 @@ function cancelTranscend() {
   color: var(--color-quantum);
 }
 
-/* —— 无限天赋区（v0.56）—— */
+/* 无限天赋区（v0.56）， */
 .infinite-title {
   display: flex;
   align-items: center;

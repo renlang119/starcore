@@ -41,7 +41,7 @@ function makeSave({ relics = [] } = {}) {
 
 const browser = await launch();
 
-// —— A. 全新档渲染 ——
+// A. 全新档渲染
 console.log('== A. 全新档：工坊/套装区块渲染 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/relic');
@@ -52,7 +52,7 @@ console.log('== A. 全新档：工坊/套装区块渲染 ==');
   await page.context().close();
 }
 
-// —— B. 注档合成全流程 ——
+// B. 注档合成全流程
 console.log('== B. 注档：点选 → 合成 → 产物弹窗 ==');
 {
   // 3 件普通（r_energy_1 / r_alloy_1 / r_data_1）+ 2 件沉默者系（r_dark_1/r_dark_2 供 D 用）
@@ -90,7 +90,7 @@ console.log('== B. 注档：点选 → 合成 → 产物弹窗 ==');
   await page.context().close();
 }
 
-// —— C. 校验矩阵 ——
+// C. 校验矩阵
 console.log('== C. 校验：混选拦截 / 已装备与 legendary 置灰 ==');
 {
   const page = await newSeededPage(browser, makeSave({
@@ -128,7 +128,7 @@ console.log('== C. 校验：混选拦截 / 已装备与 legendary 置灰 ==');
   await page.context().close();
 }
 
-// —— D. 套装激活 ——
+// D. 套装激活
 console.log('== D. 套装：2 件 partial 激活 / 卸下失活 ==');
 {
   const page = await newSeededPage(browser, makeSave({ relics: [{ id: 'r_dark_1' }, { id: 'r_dark_2' }, { id: 'r_energy_1' }] }), '/relic');
@@ -148,7 +148,7 @@ console.log('== D. 套装：2 件 partial 激活 / 卸下失活 ==');
   await page.context().close();
 }
 
-// —— E. 成就不回归 ——
+// E. 成就不回归
 console.log('== E. 成就页 49 卡 + 欧米伽传承 20 种口径 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements');
@@ -159,7 +159,7 @@ console.log('== E. 成就页 49 卡 + 欧米伽传承 20 种口径 ==');
   await page.context().close();
 }
 
-// —— F. 移动视口 ——
+// F. 移动视口
 console.log('== F. 移动视口不溢出 ==');
 {
   const mob = await newSeededPage(browser, makeSave({ relics: [{ id: 'r_dark_1' }, { id: 'r_dark_2' }, { id: 'r_dark_3' }, { id: 'r_omega' }] }), '/relic', { viewport: { width: 390, height: 844 } });
@@ -170,7 +170,7 @@ console.log('== F. 移动视口不溢出 ==');
   await mob.context().close();
 }
 
-// —— G. 强化等级轴（v0.70） ——
+// G. 强化等级轴（v0.70）
 console.log('== G. 强化：注档 Lv5 卡面 → 面板 → 强化 Lv6 ==');
 {
   const save = makeSave({ relics: [{ id: 'r_energy_3' }] });
@@ -203,7 +203,7 @@ console.log('== G. 强化：注档 Lv5 卡面 → 面板 → 强化 Lv6 ==');
   await page.context().close();
 }
 
-// —— H. 强化面板移动视口 ——
+// H. 强化面板移动视口
 console.log('== H. 移动视口（390px）开强化面板不溢出 ==');
 {
   const save = makeSave({ relics: [{ id: 'r_energy_3' }] });

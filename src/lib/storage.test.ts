@@ -1,5 +1,5 @@
 /**
- * storage.test.ts — storage.ts 存档导出/导入测试
+ * storage.test.ts：storage.ts 存档导出/导入测试
  *
  * 测试 exportSave / importSave 的编码-解码往返和完整性校验。
  * 不涉及 IndexedDB / localStorage（需要浏览器环境）。
@@ -80,7 +80,7 @@ describe('storage export/import', () => {
     if (!result.ok) expect(result.reason).toBe('invalid')
   })
 
-  // —— 转生树格式校验（purchased 旧格式已随 v0.73 兼容精简移除，仅 level 合法）——
+  // 转生树格式校验（purchased 旧格式已随 v0.73 兼容精简移除，仅 level 合法），
   it('importSave rejects legacy purchased-format tree entries', async () => {
     const data = makeSaveData()
     data.transcend.tree = [
@@ -110,7 +110,7 @@ describe('storage export/import', () => {
     expect(result.ok).toBe(false)
   })
 
-  // —— 成就字段校验 ——
+  // 成就字段校验
   it('importSave accepts save with achievements + totalPlayTime', async () => {
     const data = makeSaveData()
     data.version = 1
@@ -179,7 +179,7 @@ describe('storage export/import', () => {
     expect(result.ok).toBe(false)
   })
 
-  // —— 遗物强化 level 可选字段 ——
+  // 遗物强化 level 可选字段
   it('importSave accepts relic level field', async () => {
     const data = makeSaveData()
     data.relics = {
@@ -314,7 +314,7 @@ describe('storage — 存档加固（v0.75）', () => {
     const marker = `"endTime":${data.exploration.progress.node_orbit.endTime}`
     const tampered = json.replace(marker, '"endTime":1e999')
     expect(tampered).not.toBe(json) // 替换命中
-    // v1.35：篡改数据无法伪造签名——用合法导出载体换入篡改 d（签名不匹配判 corrupted）
+    // v1.35：篡改数据无法伪造签名，用合法导出载体换入篡改 d（签名不匹配判 corrupted）
     const exported = await exportSave(data)
     const payload = JSON.parse(
       new TextDecoder().decode(Uint8Array.from(atob(exported.slice(5)), (ch) => ch.charCodeAt(0)))

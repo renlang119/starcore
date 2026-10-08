@@ -1,5 +1,5 @@
 /**
- * resources — English locale messages (translated from the zh-CN baseline)
+ * resources：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'resources.alloy': 'Alloy',

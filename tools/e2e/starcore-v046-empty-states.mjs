@@ -1,5 +1,5 @@
 // 星核纪元 v0.46 回归：四页空状态 + EmptyState 组件
-// 存档注入方式：context.addInitScript(payload)——在应用 JS 执行前写入 localStorage，
+// 存档注入方式：context.addInitScript(payload)，在应用 JS 执行前写入 localStorage，
 // 规避「旧页面 beforeunload saveSync 覆盖备份」的时序问题。
 import { launch, check, finish, savePayload, PREVIEW_URL as URL } from './starcore-pwlib.mjs';
 
@@ -55,7 +55,7 @@ async function newPage(browser, save = null) {
 const browser = await launch();
 const consoleErrors = [];
 
-// —— 1. 全新存档：基本渲染无空态 ——
+// 1. 全新存档：基本渲染无空态
 console.log('== 全新存档基本渲染 ==');
 {
   const page = await newPage(browser);
@@ -74,7 +74,7 @@ console.log('== 全新存档基本渲染 ==');
 }
 async function ctx_close(page) { await page.context().close(); }
 
-// —— 2. ArmyView 空态：未解锁军事 ——
+// 2. ArmyView 空态：未解锁军事
 console.log('== ArmyView 空态（未解锁军事）==');
 {
   const page = await newPage(browser); // 全新档：无军事科技
@@ -89,7 +89,7 @@ console.log('== ArmyView 空态（未解锁军事）==');
   await page.context().close();
 }
 
-// —— 3. RelicView 空态 ——
+// 3. RelicView 空态
 console.log('== RelicView 空态 ==');
 {
   const page = await newPage(browser);
@@ -103,7 +103,7 @@ console.log('== RelicView 空态 ==');
   await page.context().close();
 }
 
-// —— 4. ArmyView 空态 2：已解锁但无部队（v0.48 改版：轻提示 + 卡片同屏，不再有死按钮）——
+// 4. ArmyView 空态 2：已解锁但无部队（v0.48 改版：轻提示 + 卡片同屏，不再有死按钮），
 console.log('== ArmyView 空态（已解锁无部队）==');
 {
   const page = await newPage(browser, makeSave({ militaryBasic: true }));
@@ -116,7 +116,7 @@ console.log('== ArmyView 空态（已解锁无部队）==');
   await page.context().close();
 }
 
-// —— 5. TechView 空态：全部科技完成 ——
+// 5. TechView 空态：全部科技完成
 console.log('== TechView 空态（全部完成）==');
 {
   const page = await newPage(browser, makeSave({ allTechs: true }));
@@ -127,7 +127,7 @@ console.log('== TechView 空态（全部完成）==');
   await page.context().close();
 }
 
-// —— 5b. BuildView：锁定扇区不显示空态（锁定卡保留预告价值）——
+// 5b. BuildView：锁定扇区不显示空态（锁定卡保留预告价值），
 // 注：建筑定义当前无 maxLevel 字段，「全部满级」触发条件数据上暂不成立，逻辑保留待数据演进
 console.log('== BuildView 锁定扇区（无空态，锁定卡预告）==');
 {
@@ -135,7 +135,7 @@ console.log('== BuildView 锁定扇区（无空态，锁定卡预告）==');
   await page.goto(URL + '/build', { waitUntil: 'networkidle' });
   await page.waitForTimeout(800);
   check('能量扇区正常显示建筑卡', (await page.locator('.build-card').count()) > 0);
-  // 切到未解锁扇区（若有）——检查锁定卡仍显示且无空态
+  // 切到未解锁扇区（若有），检查锁定卡仍显示且无空态
   const tabs = await page.locator('.sector-tab').count();
   if (tabs > 1) {
     await page.locator('.sector-tab').nth(tabs - 1).click();
@@ -146,7 +146,7 @@ console.log('== BuildView 锁定扇区（无空态，锁定卡预告）==');
   await page.context().close();
 }
 
-// —— 5c. MapView 空态：全部节点完成 ——
+// 5c. MapView 空态：全部节点完成
 console.log('== MapView 空态（全部探索完毕）==');
 {
   const page = await newPage(browser, makeSave({ allNodesCompleted: true }));
@@ -157,7 +157,7 @@ console.log('== MapView 空态（全部探索完毕）==');
   await page.context().close();
 }
 
-// —— 6. 全新档十路由 console error ——
+// 6. 全新档十路由 console error
 console.log('== 十路由 console error ==');
 {
   const page = await newPage(browser);

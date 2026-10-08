@@ -43,7 +43,7 @@ function makeSave(opts = {}) {
 
 const browser = await launch();
 
-// —— A. 锁定态文字色五视图——
+// A. 锁定态文字色五视图，
 console.log('== A. 锁定态文字色五视图 ==');
 const EXPECT = 'rgb(99, 135, 171)'; // #6387ab
 const views = [
@@ -76,7 +76,7 @@ const views = [
   }
 }
 
-// —— B. symbol 总数守护——
+// B. symbol 总数守护，
 console.log('== B. symbol 总数守护 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/');

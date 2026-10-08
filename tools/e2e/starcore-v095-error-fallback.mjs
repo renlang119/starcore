@@ -44,7 +44,7 @@ function makeSave({ energy = '1e9' } = {}) {
 
 const browser = await launch();
 
-// —— A. corrupt 错误屏导出下载 ——
+// A. corrupt 错误屏导出下载
 console.log('== A. corrupt 错误屏导出下载 ==');
 {
   const ctx = await browser.newContext({
@@ -79,7 +79,7 @@ console.log('== A. corrupt 错误屏导出下载 ==');
   await ctx.close();
 }
 
-// —— B. 运行期兜底 ——
+// B. 运行期兜底
 console.log('== B. 运行期兜底 ==');
 {
   const pageErrors = [];

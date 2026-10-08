@@ -15,10 +15,10 @@ import EnhanceModal from '@/components/relics/EnhanceModal.vue'
 
 const game = useGameStore()
 
-// —— 槽位满提示 toast（合成混选拒绝复用同一实现，v0.73 统一至 useToast） ——
+// 槽位满提示 toast（合成混选拒绝复用同一实现，v0.73 统一至 useToast）
 const toast = useToast()
 
-// —— 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上 ——
+// 合成工坊（v0.61）：状态在 composable，选材点击发生在图鉴卡上
 const fusion = useRelicFusion({ notify: toast.show })
 
 /** 装备槽视图行：一次性解析遗物实例与展示字段（替代三处 owned.find 扫描） */
@@ -69,7 +69,7 @@ function equip(relic: OwnedRelic, slot: number) {
 
 const getRarityColor = relicRarityColor
 
-// —— 丢弃功能（两次点击确认） ——
+// 丢弃功能（两次点击确认）
 const pendingDiscardId = ref<string | null>(null)
 const discardTimer = useTimeout()
 
@@ -91,7 +91,7 @@ function handleDiscard(e: Event, relic: OwnedRelic) {
   }
 }
 
-// —— 强化（v0.70）：面板内聚于 EnhanceModal，此处只持开关与失败 toast ——
+// 强化（v0.70）：面板内聚于 EnhanceModal，此处只持开关与失败 toast
 const selectedEnhance = ref<OwnedRelic | null>(null)
 
 function openEnhance(r: OwnedRelic) {
@@ -309,7 +309,7 @@ function onEnhanceFail(msg: string) {
   color: var(--color-amber);
 }
 
-/* —— 套装（v0.61）—— */
+/* 套装（v0.61）， */
 .sets-list {
   display: flex;
   flex-direction: column;
@@ -355,7 +355,7 @@ function onEnhanceFail(msg: string) {
   color: var(--color-t-tertiary);
 }
 
-/* —— 图鉴卡 —— */
+/* 图鉴卡 */
 .relic-card {
   position: relative;
   background: var(--color-surface);
@@ -487,7 +487,7 @@ function onEnhanceFail(msg: string) {
   font-weight: 600;
 }
 
-/* —— 卡面操作按钮（v0.70 强化入口，v0.96 主操作平铺为显式按钮）—— */
+/* 卡面操作按钮（v0.70 强化入口，v0.96 主操作平铺为显式按钮）， */
 .card-actions {
   display: flex;
   align-items: center;

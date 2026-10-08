@@ -52,7 +52,7 @@ const negValue = async (page) => norm(await page.locator('.neg-value').textConte
 
 const browser = await launch();
 
-// —— A. 买断节点已激活态渲染（level 格式，v0.73 起为唯一格式）——
+// A. 买断节点已激活态渲染（level 格式，v0.73 起为唯一格式），
 console.log('== A. 买断节点已激活渲染 ==');
 {
   const save = makeSave({
@@ -76,7 +76,7 @@ console.log('== A. 买断节点已激活渲染 ==');
   await page.context().close();
 }
 
-// —— B. 购买无限节点：扣费 / 升级 / 成本递增 ——
+// B. 购买无限节点：扣费 / 升级 / 成本递增
 console.log('== B. 无限节点重复购买 ==');
 {
   const save = makeSave({ ne: '20', transcends: 3, tree: [] });
@@ -99,7 +99,7 @@ console.log('== B. 无限节点重复购买 ==');
   await page.context().close();
 }
 
-// —— C. 买满 14 买断节点后无限节点仍可购买（循环不断裂）——
+// C. 买满 14 买断节点后无限节点仍可购买（循环不断裂），
 console.log('== C. 买满买断后无限节点仍可购买 ==');
 {
   const save = makeSave({
@@ -119,7 +119,7 @@ console.log('== C. 买满买断后无限节点仍可购买 ==');
   await page.context().close();
 }
 
-// —— D. 余额不足禁用 ——
+// D. 余额不足禁用
 console.log('== D. 余额不足升级按钮禁用 ==');
 {
   const save = makeSave({ ne: '3', transcends: 1, tree: [{ id: 't_inf_prod', level: 1 }] });

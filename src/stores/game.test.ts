@@ -1,5 +1,5 @@
 /**
- * game.test.ts — game.ts 集成测试
+ * game.test.ts：game.ts 集成测试
  *
  * 测试 tick 循环、离线补算、转生重置的核心流程。
  * 各 Store 需按正确顺序初始化（Pinia createPinia）。
@@ -594,7 +594,7 @@ describe('game store — 自动化 QoL（v0.58）', () => {
   })
 })
 
-// —— v0.75：初始化错误态（兜底：读档/hydrate 异常不静默卡加载屏）——
+// v0.75：初始化错误态（兜底：读档/hydrate 异常不静默卡加载屏），
 // 走真实 readSave 通道：把存档写进 localStorage 备份键（jsdom 环境；IndexedDB
 // 主档在 jsdom 不可用，v0.93 用例以 try/catch 兼容两态）。不 mock 是因集成测试
 // 须驱动真实 store 链，非可靠性考量（vi.mock 按文件隔离、不跨文件泄漏）
@@ -694,7 +694,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
     const game = useGameStore()
     await game.init()
     expect(game.initError).toBe('corrupt')
-    // 错误态下手动 save 也应被拒绝——错误态未 stop（无循环），但 save 会覆盖原档，
+    // 错误态下手动 save 也应被拒绝，错误态未 stop（无循环），但 save 会覆盖原档，
     // 校验 save 前的守卫：手动 save 在错误态直接返回
     await game.save()
     expect(localStorage.getItem(BACKUP_KEY)).toBe('not-a-payload')
@@ -720,7 +720,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 
   it('v0.93 too_new 优先：主档版本过新时不静默采用旧备份', async () => {
-    // 主档 version=2（too_new），备份为可读旧档——修复前旧备份胜出被静默
+    // 主档 version=2（too_new），备份为可读旧档，修复前旧备份胜出被静默
     // hydrate，随后自动存档覆盖新版主档（不可逆回滚）；修复后进 too_new 错误屏
     const stale = { ...minimalSaveData(), savedAt: 1000 }
     try {
@@ -832,7 +832,7 @@ describe('game store — 初始化错误态（v0.75）', () => {
   })
 })
 
-// —— v0.82 驻扎守卫三条真实规则分支（game store 注入的 garrisonGuard）——
+// v0.82 驻扎守卫三条真实规则分支（game store 注入的 garrisonGuard），
 describe('v0.82 驻扎守卫真实规则分支', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

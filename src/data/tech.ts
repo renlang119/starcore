@@ -1,5 +1,5 @@
 /**
- * tech.ts — 科技树定义
+ * tech.ts：科技树定义
  * 8 大分支：能量学、晶脉学、材料学、计算学、军事学、探索学、暗物质学、奇点学
  */
 
@@ -92,7 +92,7 @@ export const TECH_BRANCHES: Record<
 }
 
 export const TECHS: TechDef[] = [
-  // —— 能量学 ——
+  // 能量学
   {
     id: 'fusion_tech',
     name: t('content.tech.fusion_tech.name'),
@@ -183,7 +183,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 晶脉学 ——
+  // 晶脉学
   {
     id: 'crystal_eff_1',
     name: t('content.tech.crystal_eff_1.name'),
@@ -203,7 +203,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 材料学 ——
+  // 材料学
   {
     id: 'refine_tech',
     name: t('content.tech.refine_tech.name'),
@@ -312,7 +312,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 计算学 ——
+  // 计算学
   {
     id: 'quantum_tech',
     name: t('content.tech.quantum_tech.name'),
@@ -421,7 +421,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 军事学 ——
+  // 军事学
   {
     id: 'military_basic',
     name: t('content.tech.military_basic.name'),
@@ -528,7 +528,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 晶脉学 ——
+  // 晶脉学
   {
     id: 'crystal_growth',
     name: t('content.tech.crystal_growth.name'),
@@ -602,7 +602,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 探索学 ——
+  // 探索学
   {
     id: 'explore_basic',
     name: t('content.tech.explore_basic.name'),
@@ -640,7 +640,7 @@ export const TECHS: TechDef[] = [
     ],
   },
 
-  // —— 暗物质学与奇点学 ——
+  // 暗物质学与奇点学
   {
     id: 'dark_detection',
     name: t('content.tech.dark_detection.name'),
@@ -772,7 +772,7 @@ export const TECHS: TechDef[] = [
       },
     ],
   },
-  // —— 恒星系层配套科技 ——
+  // 恒星系层配套科技
   {
     id: 'stellar_charting',
     name: t('content.tech.stellar_charting.name'),
@@ -836,7 +836,7 @@ export const TECHS: TechDef[] = [
       },
     ],
   },
-  // —— 星团层配套科技（v0.71）——
+  // 星团层配套科技（v0.71），
   {
     id: 'starcluster_charting',
     name: t('content.tech.starcluster_charting.name'),
@@ -901,7 +901,7 @@ export const TECHS: TechDef[] = [
       },
     ],
   },
-  // —— 星臂层配套科技（v0.90）——
+  // 星臂层配套科技（v0.90），
   {
     id: 'arm_navigation',
     name: t('content.tech.arm_navigation.name'),
@@ -962,7 +962,7 @@ export const TECHS: TechDef[] = [
       },
     ],
   },
-  // —— 星系层配套科技（v0.91）——
+  // 星系层配套科技（v0.91），
   {
     id: 'galaxy_charting',
     name: t('content.tech.galaxy_charting.name'),
@@ -1023,7 +1023,7 @@ export const TECHS: TechDef[] = [
       },
     ],
   },
-  // —— 深空层配套科技（v0.92）——
+  // 深空层配套科技（v0.92），
   {
     id: 'void_charting',
     name: t('content.tech.void_charting.name'),

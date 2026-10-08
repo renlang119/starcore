@@ -1,5 +1,5 @@
 /**
- * useOnboarding.ts — 新手引导气泡
+ * useOnboarding.ts：新手引导气泡
  *
  * 功能：
  * - localStorage 持久化已完成的 step
@@ -42,7 +42,7 @@ function saveCompleted(set: Set<string>) {
 /**
  * 使用引导流程（各流程共享同一存储 key；按步骤区分，无需流程参数）
  * @param steps 该流程的 step ID 列表（按顺序）
- * @returns activeStep — 当前应显示的 step（null 表示不显示）
+ * @returns activeStep：当前应显示的 step（null 表示不显示）
  */
 export function useOnboarding(steps: string[]) {
   const activeStep = ref<string | null>(null)

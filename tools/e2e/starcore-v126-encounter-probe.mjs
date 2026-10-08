@@ -1,5 +1,5 @@
 /**
- * starcore-v126-encounter-probe.mjs — 随机遭遇事件冒烟探针（非套件）
+ * starcore-v126-encounter-probe.mjs：随机遭遇事件冒烟探针（非套件）
  *
  * 校验面（10 项）：
  *  A. 触发与渲染：预制窗口旧值触发事件卡（渲染/标题/双选项）+ 三路零命中
@@ -10,7 +10,7 @@
  *   BASE_URL 缺省本地预览；SC_URL 环境变量可指定远程地址
  */
 import { launch, check, finish, savePayload, injectSave, PREVIEW_URL } from './starcore-pwlib.mjs'
-// 注入正确姿势：ctx.addInitScript(injectSave, savePayload(save))——injectSave 在页面上下文执行
+// 注入正确姿势：ctx.addInitScript(injectSave, savePayload(save))，injectSave 在页面上下文执行
 
 const BASE = process.env.SC_URL || process.argv[2] || PREVIEW_URL
 
@@ -56,7 +56,7 @@ async function verify(label, fn) {
   }
 }
 
-// —— A 段：触发与渲染（桌面视口）——
+// A 段：触发与渲染（桌面视口），
 {
   const ctx = await browser.newContext({ locale: 'zh-CN', viewport: { width: 1280, height: 800 } })
   const errors = []
@@ -90,7 +90,7 @@ async function verify(label, fn) {
   await ctx.close()
 }
 
-// —— B 段：结算与回执 ——
+// B 段：结算与回执
 {
   const ctx = await browser.newContext({ locale: 'zh-CN', viewport: { width: 1280, height: 800 } })
   const page = await ctx.newPage()
@@ -119,7 +119,7 @@ async function verify(label, fn) {
   await ctx.close()
 }
 
-// —— C 段：选项 A 资源入账 + 新档无卡 + 移动视口 ——
+// C 段：选项 A 资源入账 + 新档无卡 + 移动视口
 {
   const ctx = await browser.newContext({ locale: 'zh-CN', viewport: { width: 390, height: 844 } })
   const page = await ctx.newPage()

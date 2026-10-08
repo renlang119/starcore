@@ -53,7 +53,7 @@ function makeSave(opt = {}) {
   };
 }
 
-// —— E 先行（零浏览器，签名实现自检）：Node 单源签名器 + 载荷形态 ——
+// E 先行（零浏览器，签名实现自检）：Node 单源签名器 + 载荷形态
 console.log('== E. 签名形态自检 ==');
 {
   const probe = JSON.stringify(makeSave());
@@ -68,7 +68,7 @@ console.log('== E. 签名形态自检 ==');
 
 const browser = await launch();
 
-// —— A. 导出/导入 round-trip ——
+// A. 导出/导入 round-trip
 console.log('== A. SCB1- 导出/导入 round-trip ==');
 {
   const page = await newSeededPage(browser, makeSave({ name: undefined }), '/settings');
@@ -103,7 +103,7 @@ console.log('== A. SCB1- 导出/导入 round-trip ==');
   await page.context().close();
 }
 
-// —— B. 篡改拒收 ——
+// B. 篡改拒收
 console.log('== B. 篡改拒收（签名不匹配 / 重签后结构拦） ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/settings');
@@ -143,7 +143,7 @@ console.log('== B. 篡改拒收（签名不匹配 / 重签后结构拦） ==');
   await page.context().close();
 }
 
-// —— C. 旧格式导入拒绝 ——
+// C. 旧格式导入拒绝
 console.log('== C. 旧格式导入拒绝 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/settings');
@@ -172,7 +172,7 @@ console.log('== C. 旧格式导入拒绝 ==');
   await page.context().close();
 }
 
-// —— D. 本地旧格式硬切 ——
+// D. 本地旧格式硬切
 console.log('== D. 本地 fnv1a 旧载荷硬切 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -202,7 +202,7 @@ console.log('== D. 本地 fnv1a 旧载荷硬切 ==');
   await ctx.close();
 }
 
-// —— F. 正常写路径防回落 ——
+// F. 正常写路径防回落
 console.log('== F. 正常存档写路径签名形态 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/');

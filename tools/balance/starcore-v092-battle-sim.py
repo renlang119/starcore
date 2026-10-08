@@ -102,7 +102,7 @@ def formation_variant(base, variant):
         return f
     return dict(base)
 
-# ---------- 新据点敌人编成（v0.92 设计定稿，强度带 9.98e6–3.29e7） ----------
+# ---------- 新据点敌人编成（v0.92 设计定稿，强度带 9.98e6~3.29e7） ----------
 STRONGHOLDS = {
     'raider_12': dict(name='虚空掠夺者旗舰', enemies=[
         dict(unitId='raider_phantom',    name='虚空快艇',     attack=299,  defense=149, hp=2176,  count=900, counteredBy=['assault']),

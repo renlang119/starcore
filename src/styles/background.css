@@ -2,7 +2,7 @@
    深空背景（星点 / 星云 / 暗角）
    ============================================================ */
 
-/* 星云层 + 暗角 — 三层纵深：星点(底) → 星云+暗角(中) → 内容(顶) */
+/* 星云层 + 暗角：三层纵深：星点(底) → 星云+暗角(中) → 内容(顶) */
 body::after {
   content: '';
   position: fixed;
@@ -10,21 +10,21 @@ body::after {
   z-index: 0;
   pointer-events: none;
   background:
-    /* 星云团 1 — 青蓝色，左上区域 */
+    /* 星云团 1：青蓝色，左上区域 */
     radial-gradient(
       ellipse 80% 60% at 15% 20%,
       color-mix(in srgb, var(--color-core) 4.5%, transparent) 0%,
       color-mix(in srgb, var(--color-core) 2%, transparent) 40%,
       transparent 70%
     ),
-    /* 星云团 2 — 紫色，右下区域 */
+    /* 星云团 2：紫色，右下区域 */
     radial-gradient(
         ellipse 70% 50% at 85% 75%,
         color-mix(in srgb, var(--color-plasma) 4%, transparent) 0%,
         color-mix(in srgb, var(--color-plasma) 1.5%, transparent) 45%,
         transparent 75%
       ),
-    /* 星云团 3 — 琥珀色微染，中心偏下 */
+    /* 星云团 3：琥珀色微染，中心偏下 */
     radial-gradient(
         ellipse 60% 40% at 50% 90%,
         color-mix(in srgb, var(--color-amber) 2.5%, transparent) 0%,

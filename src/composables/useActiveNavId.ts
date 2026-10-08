@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router'
 import { NAV_ITEMS } from '@/data/navigation'
 
 /**
- * useActiveNavId — 当前路由对应的导航项 id（SideNav / BottomNav 共用，v1.07 统一）
+ * useActiveNavId：当前路由对应的导航项 id（SideNav / BottomNav 共用，v1.07 统一）
  *
  * 匹配不到（如战斗页 /battle/:id）返回 undefined：不高亮、不打 aria-current（v0.95）。
  */

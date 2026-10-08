@@ -1,5 +1,5 @@
 /**
- * exploration.ts — 探索系统 store
+ * exploration.ts：探索系统 store
  * 星图节点探索、进度跟踪
  */
 import { defineStore } from 'pinia'

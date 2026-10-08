@@ -1,5 +1,5 @@
 /**
- * view-mount.ts — 视图组件测试共享装配（v1.04 统一）
+ * view-mount.ts：视图组件测试共享装配（v1.04 统一）
  *
  * 各 view/组件测试此前各自逐字携带同一套装配：
  * vue-router / useFocusTrap 的 vi.mock 工厂体、mountView + wrappers 登记、

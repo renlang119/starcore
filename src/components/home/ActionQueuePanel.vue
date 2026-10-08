@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// ActionQueuePanel — 首页行动队列（v0.54 从 HomeView 拆出）
+// ActionQueuePanel：首页行动队列（v0.54 从 HomeView 拆出）
 // 数据组装逻辑在 useActionQueue，本组件只负责渲染
 import { t } from '@/i18n'
 import { useRouter } from 'vue-router'
@@ -79,7 +79,7 @@ const { displayActions, hasActions } = useActionQueue()
 </template>
 
 <style scoped>
-/* —— 行动队列 —— */
+/* 行动队列 */
 .action-queue {
   background: color-mix(in srgb, var(--color-core) 2%, transparent);
   border-radius: var(--radius-lg);
@@ -108,7 +108,7 @@ const { displayActions, hasActions } = useActionQueue()
   position: relative;
 }
 
-/* —— 进行中（in-progress）—— */
+/* 进行中（in-progress）， */
 .action-item.in-progress {
   background: var(--color-surface);
   border: 1px solid var(--color-border-line);
@@ -162,7 +162,7 @@ const { displayActions, hasActions } = useActionQueue()
   --pb-overflow: visible;
 }
 
-/* —— 可执行（actionable）—— */
+/* 可执行（actionable）， */
 .action-item.actionable {
   background: var(--color-surface);
   border: 1px solid var(--color-border-line);
@@ -235,7 +235,7 @@ const { displayActions, hasActions } = useActionQueue()
   }
 }
 
-/* —— onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+/* onboarding 气泡定位（变体类承载定位与层级，v0.97）， */
 .ob-actions {
   position: relative;
   width: 100%;

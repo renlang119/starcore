@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * FormationPicker.vue — 战斗页编队选择（从 BattleView 拆出）。
+ * FormationPicker.vue：战斗页编队选择（从 BattleView 拆出）。
  *
  * 编队页签（名称 + 战力）与编队明细行；选中下标由父层持有并回传，
  * 空编队与据点未解锁的提示沿用原文案。类名保持不变。

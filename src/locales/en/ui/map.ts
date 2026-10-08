@@ -1,5 +1,5 @@
 /**
- * map — English locale messages (translated from the zh-CN baseline)
+ * map：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'map.abyssDepth': 'Abyss · Layer {depth}',

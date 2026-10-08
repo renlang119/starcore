@@ -1,5 +1,5 @@
 /**
- * prestige — English locale messages (translated from the zh-CN baseline)
+ * prestige：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'prestige.active': 'Active',

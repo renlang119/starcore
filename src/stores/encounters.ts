@@ -1,5 +1,5 @@
 /**
- * encounters.ts — 随机遭遇事件 store（v1.26 可玩内容扩展方案 8）
+ * encounters.ts：随机遭遇事件 store（v1.26 可玩内容扩展方案 8）
  *
  * 职责：在线挂机的低频决策点。tick 掷骰触发、挂起待处理、过期静默消失、
  * 二选一即时结算（toast 回执由 UI 层消费返回值呈现）。
@@ -50,7 +50,7 @@ export interface EncounterResolution {
   rewards: EncounterRewards
 }
 export const useEncountersStore = defineStore('encounters', () => {
-  // —— state ——
+  // state
   /** 挂起事件 id（空串 = 无挂起） */
   const pendingEventId = ref('')
   /** 挂起时刻（ms；pendingEventId 非空时有效） */
@@ -59,12 +59,12 @@ export const useEncountersStore = defineStore('encounters', () => {
   const nextTriggerAt = ref(Date.now() + rollInterval())
   /**
    * 最近一次结算（含结算时的事件名快照；AppShell watch 呈现回执 toast 用。
-   * 结算回执与触发提醒共用全局 toast 单实例——resolve 清挂起会再触发
+   * 结算回执与触发提醒共用全局 toast 单实例，resolve 清挂起会再触发
    * pendingEventId 的提醒 watch，此字段让回执后写覆盖提醒文案，不叠屏）
    */
   const lastResolution = ref<{ name: string; rewards: EncounterRewards } | null>(null)
 
-  // —— getters ——
+  // getters
   const pendingEvent = computed<EncounterDef | undefined>(() =>
     pendingEventId.value ? getEncounter(pendingEventId.value) : undefined
   )
@@ -144,7 +144,7 @@ export const useEncountersStore = defineStore('encounters', () => {
       nextTriggerAt.value = data.nextTriggerAt
     }
     // 挂起：仅认白名单 id；离线归来已过期的直接失效（不弹不代选），
-    // 语义与 tick 过期一致——恢复现场时按当前时刻判一次
+    // 语义与 tick 过期一致，恢复现场时按当前时刻判一次
     if (
       typeof data.pendingEventId === 'string' &&
       ENCOUNTER_IDS.has(data.pendingEventId) &&

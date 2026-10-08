@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * diagnose.mjs — 星核纪元 · 环境自检（tools 诊断工具集）
+ * diagnose.mjs：星核纪元 · 环境自检（tools 诊断工具集）
  *
  * 检测当前环境与仓库状态，缺件时给出修复指引；加 --fix 对可修复项执行白名单修复。
  *

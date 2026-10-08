@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * GarrisonModal.vue — 挂机驻扎确认弹窗（从 BattleView 拆出）。
+ * GarrisonModal.vue：挂机驻扎确认弹窗（从 BattleView 拆出）。
  *
  * 展示驻扎预期收益（每秒 + 每小时）与说明；确认/取消经事件交回父层。
  * 类名与文案保持不变。

@@ -1,10 +1,10 @@
 /**
- * archive.ts — 档案馆 store（v1.18 可玩内容扩展方案 1）
+ * archive.ts：档案馆 store（v1.18 可玩内容扩展方案 1）
  *
  * 职责：
  * - 敌方档案（图鉴）：交战即记录遭遇的敌方单位条目（胜负都算「已遭遇」，
  *   与探图见影的直觉一致）；远征合成敌人（endless 前缀名）不入图鉴
- *   ——其编成按深度动态生成，入册会使图鉴无限膨胀
+ *   其编成按深度动态生成，入册会使图鉴无限膨胀
  * - 星图档案不自持：节点剧情回读直接并「当前轮已完成」判定（升级后
  *   当前进度立即可见，与成就终身计数「历史不追溯」同口径）
  *
@@ -29,7 +29,7 @@ function enemyKey(strongholdId: string, index: number): string {
 /**
  * 敌方种数聚合（v1.22，从 ArchiveView 下沉单一来源）：
  * 按显示名分桶（同 unitId 换皮条目自然合并）；条目键语言无关，
- * 桶数与键面同样语言无关——成就阈值与展示口径共用。
+ * 桶数与键面同样语言无关，成就阈值与展示口径共用。
  */
 interface EnemyKindBucket {
   type: keyof typeof STRONGHOLD_TYPES
@@ -94,13 +94,13 @@ export const useArchiveStore = defineStore('archive', () => {
     encounter(strongholdId, enemies, seenEnemies.value)
   }
 
-  // —— 生命周期 ——
+  // 生命周期
   /** 转生不清；清档全清（与 achievements.reset 同语义） */
   function reset(): void {
     seenEnemies.value = new Set()
   }
 
-  // —— 序列化 ——
+  // 序列化
   function serialize(): ArchiveSaveData {
     return { enemies: Array.from(seenEnemies.value) }
   }

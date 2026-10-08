@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * LogList — 战斗日志行列表
+ * LogList：战斗日志行列表
  *
  * 容器类名（.log-list / .modal-log-list）由调用方经 class 透传并留在调用方
  * scoped 样式管辖；本组件自带日志行本体样式（.log-entry / .log-round）。

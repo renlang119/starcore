@@ -26,7 +26,7 @@ async function v(label, fn) {
   }
 }
 
-/** 本地日期 YYYY-MM-DD（换天与自动签到按本地日判定；UTC 形态在本地 0–8 时窗口会误判换天并叠加自动签到奖励，2026-09-27 实踩） */
+/** 本地日期 YYYY-MM-DD（换天与自动签到按本地日判定；UTC 形态在本地 0~8 时窗口会误判换天并叠加自动签到奖励，2026-09-27 实踩） */
 function localDateStr(d = new Date()) { return d.toLocaleDateString('sv'); }
 const TODAY = localDateStr();
 
@@ -69,7 +69,7 @@ async function stubCtx(browser) {
 
 const browser = await launch();
 
-// —— A. 触发与渲染 ——
+// A. 触发与渲染
 console.log('== A. 触发与渲染 ==');
 {
   const ctx = await stubCtx(browser);
@@ -126,7 +126,7 @@ console.log('== A. 触发与渲染 ==');
   await ctx.close();
 }
 
-// —— B. 结算发放：能量入账 + 负合金损失 ——
+// B. 结算发放：能量入账 + 负合金损失
 console.log('== B. 结算与发放 ==');
 {
   const ctx = await stubCtx(browser);
@@ -193,7 +193,7 @@ console.log('== B. 结算与发放 ==');
   await ctx3.close();
 }
 
-// —— C. 过期失效 ——
+// C. 过期失效
 console.log('== C. 过期失效 ==');
 {
   const ctx = await stubCtx(browser);
@@ -220,7 +220,7 @@ console.log('== C. 过期失效 ==');
   await ctx2.close();
 }
 
-// —— D. 转生清空 ——
+// D. 转生清空
 console.log('== D. 转生清空 ==');
 {
   const ctx = await stubCtx(browser);
@@ -256,7 +256,7 @@ console.log('== D. 转生清空 ==');
   await ctx.close();
 }
 
-// —— E. 存档往返 ——
+// E. 存档往返
 console.log('== E. 存档往返 ==');
 {
   const ctx = await stubCtx(browser);
@@ -264,7 +264,7 @@ console.log('== E. 存档往返 ==');
   await ctx.addInitScript(injectSave, savePayload(makeSeed({ encounters: { nextTriggerAt: Date.now() + 600000, pendingEventId: 'enc_flux', pendingAt: Date.now() } })));
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.locator('[data-testid="encounter-card"]').waitFor({ state: 'visible', timeout: 8000 });
-  // 触发一次手动存档：game store save 每帧由自动存档器驱动，此处直接等 15s 周期太慢——
+  // 触发一次手动存档：game store save 每帧由自动存档器驱动，此处直接等 15s 周期太慢，
   // 走 localStorage 读备份键（注入即写），主键由 15s 自动存档兜底
   await v('E1 挂起态写盘（备份键含 encounters 三键）', async () => {
     const raw = await page.evaluate(() => localStorage.getItem('starcore_save_v1_backup'));
@@ -298,7 +298,7 @@ console.log('== E. 存档往返 ==');
   await ctx3.close();
 }
 
-// —— F. 移动视口 390px ——
+// F. 移动视口 390px
 console.log('== F. 移动视口 390px ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });

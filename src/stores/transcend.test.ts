@@ -1,5 +1,5 @@
 /**
- * transcend.test.ts — 转生树 store 测试（v0.56 转生树无限化）
+ * transcend.test.ts：转生树 store 测试（v0.56 转生树无限化）
  *
  * 覆盖：
  * 1. 默认树结构（14 买断 + 4 无限）
@@ -310,7 +310,7 @@ describe('transcend — reset', () => {
     expect(store.negativeEntropy.toNumber()).toBe(0)
     expect(store.totalTranscends).toBe(0)
     expect(store.tree.every((n) => n.level === 0)).toBe(true)
-    // 关键回归：JSON 克隆会把 Infinity 变 null——reset 后无限节点必须仍可重复购买
+    // 关键回归：JSON 克隆会把 Infinity 变 null，reset 后无限节点必须仍可重复购买
     store.negativeEntropy = D(30)
     expect(store.purchaseNode('t_inf_prod')).toBe(true)
     expect(store.purchaseNode('t_inf_prod')).toBe(true)

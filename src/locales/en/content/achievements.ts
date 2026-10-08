@@ -1,5 +1,5 @@
 /**
- * achievements — English locale messages (translated from the zh-CN baseline)
+ * achievements：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.achievements.ach_battle_1.desc': 'Conquer 8 strongholds in total',

@@ -1,5 +1,5 @@
 /**
- * offline — English locale messages (translated from the zh-CN baseline)
+ * offline：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'offline.emptyNote': 'No production while offline (build more buildings to earn offline gains)',

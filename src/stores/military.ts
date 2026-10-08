@@ -1,5 +1,5 @@
 /**
- * military.ts — 造兵与部队系统 store
+ * military.ts：造兵与部队系统 store
  * 4 种兵种训练 + 部队编组（最多 3 支编队）、编队特性与派遣远征
  */
 import { defineStore } from 'pinia'
@@ -64,7 +64,7 @@ export function setTrainingSlotProvider(fn: () => number) {
 }
 
 export const useMilitaryStore = defineStore('military', () => {
-  // —— state ——
+  // state
   const owned = ref<Record<UnitId, number>>({
     assault: 0,
     guard: 0,
@@ -78,7 +78,7 @@ export const useMilitaryStore = defineStore('military', () => {
 
   let taskId = 0
 
-  // —— getters ——
+  // getters
   const getOwned = (id: UnitId) => owned.value[id]
   const totalUnits = computed(() => Object.values(owned.value).reduce((a, b) => a + b, 0))
   /** 训练并行槽上限（1~3） */
@@ -133,7 +133,7 @@ export const useMilitaryStore = defineStore('military', () => {
     return { atk: Math.round(atk), def: Math.round(def), hp }
   }
 
-  // —— actions ——
+  // actions
   /** 训练兵种（入队）；并行槽已满时拒绝（已在队列中的任务不受影响，继续跑完） */
   function startTraining(
     unitId: UnitId,
@@ -225,7 +225,7 @@ export const useMilitaryStore = defineStore('military', () => {
     }
   }
 
-  // —— 派遣远征（v1.27 方案 6）——
+  // 派遣远征（v1.27 方案 6），
 
   /** 派遣是否解锁：远征开放（本轮已攻克解锁锚点据点）后才可派遣 */
   const dispatchUnlocked = ref(false)

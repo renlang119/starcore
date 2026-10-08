@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * ArchiveView.vue — 档案馆（v1.18 可玩内容扩展方案 1）
+ * ArchiveView.vue：档案馆（v1.18 可玩内容扩展方案 1）
  *
  * 两大区块：
  * - 星图档案：34 节点按星层分组回读 story.ts 剧情文案（v1.08 迁出后
@@ -24,7 +24,7 @@ type StrongholdType = keyof typeof STRONGHOLD_TYPES
 const game = useGameStore()
 const archive = game.archive
 
-// —— 星图档案：按层分组的节点行 ——
+// 星图档案：按层分组的节点行
 interface StoryRow {
   id: string
   name: string
@@ -54,7 +54,7 @@ const storyGroups = computed(() =>
 
 const seenStories = computed(() => storyRows.value.filter((r) => r.completed).length)
 
-// —— 敌方档案：按据点类型分组的图鉴卡（按显示名聚合，完成 = 该名下任一条目已遭遇）——
+// 敌方档案：按据点类型分组的图鉴卡（按显示名聚合，完成 = 该名下任一条目已遭遇），
 interface EnemyCard {
   /** 聚合显示名（首个条目的名） */
   name: string
@@ -231,7 +231,7 @@ function cardEnemy(card: EnemyCard) {
   color: var(--color-t-tertiary);
 }
 
-/* —— 星图档案 —— */
+/* 星图档案 */
 .layer-group {
   display: flex;
   flex-direction: column;
@@ -295,7 +295,7 @@ function cardEnemy(card: EnemyCard) {
   color: var(--color-locked);
 }
 
-/* —— 敌方档案 —— */
+/* 敌方档案 */
 .type-group {
   display: flex;
   flex-direction: column;

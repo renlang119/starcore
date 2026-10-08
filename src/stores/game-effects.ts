@@ -1,5 +1,5 @@
 /**
- * game-effects.ts — 主 store 的效果系统与全局乘数（从 game.ts 拆出）。
+ * game-effects.ts：主 store 的效果系统与全局乘数（从 game.ts 拆出）。
  *
  * 统一效果系统注册、全局乘数 computed、生产缓存与自动化开关派生，
  * 以及各 store 的一次性依赖注入（槽位扩展 / 强化支出通道 / 成就外部
@@ -72,7 +72,7 @@ export function createGameEffects(deps: {
   effectSystem.register(transcend as EffectSource)
   effectSystem.register(achievements as EffectSource)
 
-  // —— 计算全局乘数（改为 computed 缓存，仅在依赖变化时重算）——
+  // 计算全局乘数（改为 computed 缓存，仅在依赖变化时重算），
   const productionMults = computed<Record<string, Decimal>>(() => {
     const result: Record<string, Decimal> = {}
     for (const res of ['energy', 'crystal', 'alloy', 'data', 'dark']) {
@@ -87,12 +87,12 @@ export function createGameEffects(deps: {
   const prestigeMult = computed(() => effectSystem.getMult('prestige_mult'))
   const offlineMult = computed(() => effectSystem.getMult('offline_bonus'))
   const techCostMult = computed(() => effectSystem.getMult('cost_mult', 'tech'))
-  // —— 自动化 QoL 开关（转生树买断节点；getValue 累加通道 > 0 即已购）——
+  // 自动化 QoL 开关（转生树买断节点；getValue 累加通道 > 0 即已购），
   const autoBuild = computed(() => effectSystem.getValue('auto_build') > 0)
   const autoResearch = computed(() => effectSystem.getValue('auto_research') > 0)
   const autoExplore = computed(() => effectSystem.getValue('auto_explore') > 0)
 
-  /** 缓存总产出——仅当建筑等级或乘数变化时重算 */
+  /** 缓存总产出，仅当建筑等级或乘数变化时重算 */
   const totalProduction = computed(() => buildings.getTotalProduction(productionMults.value))
 
   return {

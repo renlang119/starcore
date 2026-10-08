@@ -1,5 +1,5 @@
 /**
- * relics — English locale messages (translated from the zh-CN baseline)
+ * relics：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.relics.r_alloy_1.desc': 'Alloy fragments extracted from refining residue',

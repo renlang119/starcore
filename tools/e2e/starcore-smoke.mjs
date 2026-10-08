@@ -84,7 +84,7 @@ for (const vp of [
   await ctx.close();
 }
 
-// —— 交互与持久化（桌面视口）——
+// 交互与持久化（桌面视口），
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await ctx.newPage();
 const errs2 = [];
@@ -111,7 +111,7 @@ if (canBuy) {
   ok('交互 建筑升级点击', false, '无可点击购买按钮');
 }
 
-// 8. tick 循环运转：游戏主循环存活 + 数值健康（v0.83 重写原「数值随时间变化」——
+// 8. tick 循环运转：游戏主循环存活 + 数值健康（v0.83 重写原「数值随时间变化」，
 // 原断言在 fmt 分辨率与新档签到后 20K 量级下不可见 0.5/s 产出，恒假）。
 // 改验：能量 ≥ 2e4（新档首 tick 自动首签已发放，循环 tick 已执行）。
 // 注意 goto 后须等 Vue 挂载 + init 异步读档完成，否则五资源节点尚未渲染

@@ -1,5 +1,5 @@
 /**
- * PrestigeView.test.ts — 转生视图组件测试
+ * PrestigeView.test.ts：转生视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载正确性

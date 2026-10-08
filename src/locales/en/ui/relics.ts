@@ -1,5 +1,5 @@
 /**
- * relics — English locale messages (translated from the zh-CN baseline)
+ * relics：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'relics.collection': 'Relic Collection ({owned} pcs / {kinds} types)',

@@ -25,7 +25,7 @@ async function v(label, fn) {
   }
 }
 
-/** 本地日期 YYYY-MM-DD（换天与自动签到按本地日判定；UTC 形态在本地 0–8 时窗口会误判换天并叠加自动签到奖励，2026-09-27 实踩） */
+/** 本地日期 YYYY-MM-DD（换天与自动签到按本地日判定；UTC 形态在本地 0~8 时窗口会误判换天并叠加自动签到奖励，2026-09-27 实踩） */
 function localDateStr(d = new Date()) { return d.toLocaleDateString('sv'); }
 const TODAY = localDateStr();
 const HOUR = 3_600_000;
@@ -94,7 +94,7 @@ async function gotoArmy(page) {
 
 const browser = await launch();
 
-// —— A. 解锁与渲染 ——
+// A. 解锁与渲染
 console.log('== A. 解锁与渲染 ==');
 {
   // best=0（未攻克 silencer_3）：派遣区显示锁定提示
@@ -134,7 +134,7 @@ console.log('== A. 解锁与渲染 ==');
   await ctx2.close();
 }
 
-// —— B. 派出与结算 ——
+// B. 派出与结算
 console.log('== B. 派出与结算 ==');
 {
   const { ctx, page } = await newPage(browser, makeSeed({ best: 5 }));
@@ -198,7 +198,7 @@ console.log('== B. 派出与结算 ==');
   await ctx.close();
 }
 
-// —— C. 提前召回 ——
+// C. 提前召回
 console.log('== C. 提前召回 ==');
 {
   const { ctx, page } = await newPage(browser, makeSeed({ best: 5, dispatchedFormation: 'f1' }));
@@ -229,7 +229,7 @@ console.log('== C. 提前召回 ==');
   await ctx2.close();
 }
 
-// —— D. 锁定面 ——
+// D. 锁定面
 console.log('== D. 锁定面 ==');
 {
   const { ctx, page } = await newPage(browser, makeSeed({ best: 5, dispatchedFormation: 'f1' }));
@@ -275,7 +275,7 @@ console.log('== D. 锁定面 ==');
   }
 }
 
-// —— E. 存档往返 ——
+// E. 存档往返
 console.log('== E. 存档往返 ==');
 {
   const { ctx, page } = await newPage(browser, makeSeed({ best: 5, dispatchedFormation: 'f1' }));
@@ -313,7 +313,7 @@ console.log('== E. 存档往返 ==');
   await ctx3.close();
 }
 
-// —— F. 转生清空 + 移动视口 ——
+// F. 转生清空 + 移动视口
 console.log('== F. 转生清空 + 移动视口 ==');
 {
   const seedT = makeSeed({ best: 5, dispatchedFormation: 'f1' });

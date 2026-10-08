@@ -6,7 +6,7 @@ import { launch, check, finish, BASE_URL as URL } from './starcore-pwlib.mjs';
 
 const browser = await launch();
 
-// —— A. SideNav 折叠态图标可见性 ——
+// A. SideNav 折叠态图标可见性
 console.log('== A. SideNav 折叠态图标可见性 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -64,7 +64,7 @@ console.log('== A. SideNav 折叠态图标可见性 ==');
   await ctx.close();
 }
 
-// —— B. aria-current 边界（战斗页不高亮） ——
+// B. aria-current 边界（战斗页不高亮）
 console.log('== B. aria-current 边界 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -120,7 +120,7 @@ console.log('== B. aria-current 边界 ==');
   await ctx.close();
 }
 
-// —— C. 「更多」面板键盘关闭与关联语义 ——
+// C. 「更多」面板键盘关闭与关联语义
 console.log('== C. 更多面板键盘关闭 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 780 } });
@@ -188,7 +188,7 @@ console.log('== C. 更多面板键盘关闭 ==');
   await ctx.close();
 }
 
-// —— D. 设置路由侧栏高亮（v1.13） ——
+// D. 设置路由侧栏高亮（v1.13）
 console.log('== D. 设置路由侧栏高亮 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });

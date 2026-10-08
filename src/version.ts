@@ -1,5 +1,5 @@
 /**
- * Application version — single source of truth.
+ * Application version：single source of truth.
  *
  * The value is read directly from package.json via Vite's `?raw` import,
  * which works identically in dev and production builds. Do not hardcode

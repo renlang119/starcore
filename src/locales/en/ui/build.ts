@@ -1,5 +1,5 @@
 /**
- * build — English locale messages (translated from the zh-CN baseline)
+ * build：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'build.approx': '≈',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * AchievementToast.vue — 全局成就解锁提示（v0.57）
+ * AchievementToast.vue：全局成就解锁提示（v0.57）
  * 消费 achievements store 的 toast 队列：一次展示一条，2.5s 自动消失后
  * shiftToast 取下一条（连续解锁排队展示）。
  * 挂载于 AppShell，所有路由下可见。
@@ -67,7 +67,7 @@ watch(() => ach.toastQueue.length, showNext, { immediate: true })
   pointer-events: none;
   max-width: min(320px, calc(100vw - 2 * var(--space-4)));
 }
-/* 移动端：顶部居中，置于顶栏（实测高 49px）之下——避开底部导航与「更多」面板 */
+/* 移动端：顶部居中，置于顶栏（实测高 49px）之下，避开底部导航与「更多」面板 */
 @media (max-width: 767px) {
   .ach-toast {
     top: calc(49px + var(--space-2));

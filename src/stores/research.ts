@@ -1,5 +1,5 @@
 /**
- * research.ts — 科技树 store
+ * research.ts：科技树 store
  * 管理已完成科技集合、解锁状态、科技效果汇总
  */
 import { defineStore } from 'pinia'
@@ -10,10 +10,10 @@ import { getTech, techAvailable, type TechDef, type TechEffect } from '@/data/te
 import type { ResearchSaveData } from '@/lib/storage'
 
 export const useResearchStore = defineStore('research', () => {
-  // —— state ——
+  // state
   const completed = ref<Set<string>>(new Set())
 
-  // —— getters ——
+  // getters
   const isCompleted = (id: string) => completed.value.has(id)
   const count = computed(() => completed.value.size)
 
@@ -35,12 +35,12 @@ export const useResearchStore = defineStore('research', () => {
     return aggregateMult(allEffects.value, type, target)
   }
 
-  /** 某类累加值汇总（非乘数型效果，如 training_slot）——EffectSource 接口 */
+  /** 某类累加值汇总（非乘数型效果，如 training_slot），EffectSource 接口 */
   function getValue(type: string): number {
     return aggregateValue(allEffects.value, type)
   }
 
-  // —— actions ——
+  // actions
   function complete(id: string): boolean {
     const def = getTech(id)
     if (!def || completed.value.has(id)) return false

@@ -1,5 +1,5 @@
 /**
- * endless — English locale messages (translated from the zh-CN baseline)
+ * endless：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.endless.desc':

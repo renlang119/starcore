@@ -60,7 +60,7 @@ async function newCtx(browser, init) {
 
 const browser = await launch();
 
-// —— A. 新档首帧周挑战——
+// A. 新档首帧周挑战，
 console.log('== A. 新档首帧周挑战（clock 冻结，无 tick 也生成）==');
 {
   const ctx = await newCtx(browser);
@@ -83,7 +83,7 @@ console.log('== A. 新档首帧周挑战（clock 冻结，无 tick 也生成）=
   await ctx.close();
 }
 
-// —— B. SideNav 存储键迁移——
+// B. SideNav 存储键迁移，
 console.log('== B. SideNav 存储键迁移 ==');
 {
   const ctx = await newCtx(browser, { 'starcore:sidenav-collapsed': 'true' });
@@ -105,7 +105,7 @@ console.log('== B. SideNav 存储键迁移 ==');
   await ctx.close();
 }
 
-// —— C. 全局 Toast 无障碍——
+// C. 全局 Toast 无障碍，
 console.log('== C. 全局 Toast 无障碍 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/build', { waitMs: 1000 });
@@ -126,7 +126,7 @@ console.log('== C. 全局 Toast 无障碍 ==');
   await ctx.close();
 }
 
-// —— D. 首页核心视觉区空格键——
+// D. 首页核心视觉区空格键，
 console.log('== D. 首页核心视觉区空格键 ==');
 {
   const ctx = await newCtx(browser);
@@ -141,7 +141,7 @@ console.log('== D. 首页核心视觉区空格键 ==');
   await ctx.close();
 }
 
-// —— E. og 分享卡元数据——
+// E. og 分享卡元数据，
 console.log('== E. og 分享卡元数据 ==');
 {
   const ctx = await newCtx(browser);
@@ -171,7 +171,7 @@ console.log('== E. og 分享卡元数据 ==');
   await ctx.close();
 }
 
-// —— F. 移动端 toast 抬高避开 extra-nav——
+// F. 移动端 toast 抬高避开 extra-nav，
 console.log('== F. 移动端 toast 抬高避开 extra-nav ==');
 {
   // 窄视口（不设 isMobile，沿用项目惯例）
@@ -212,7 +212,7 @@ console.log('== F. 移动端 toast 抬高避开 extra-nav ==');
   await ctx.close();
 }
 
-// —— G. 引导气泡层级定标——
+// G. 引导气泡层级定标，
 console.log('== G. 引导气泡层级定标 ==');
 {
   // 空引导标记 → 首页 home-core 气泡出现；定位与层级由父级 .ob-core 承载

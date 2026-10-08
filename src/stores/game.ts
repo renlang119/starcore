@@ -1,5 +1,5 @@
 /**
- * game.ts — 主游戏 store
+ * game.ts：主游戏 store
  * 统筹 tick 循环、转生协调与跨 store 编排；
  * 效果系统见 game-effects，存档簇见 game-persistence
  */
@@ -50,7 +50,7 @@ export const useGameStore = defineStore('game', () => {
   const archive = useArchiveStore()
   const encounters = useEncountersStore()
 
-  // —— game meta state ——
+  // game meta state
   const lastSaveTime = ref(Date.now())
   const lastTickTime = ref(Date.now())
   const isRunning = ref(false)
@@ -61,7 +61,7 @@ export const useGameStore = defineStore('game', () => {
    * 初始化错误态（A2 兜底）：读档/hydrate 异常或存档版本过新时置位。
    * 置位后不启动 tick 与自动存档（保护原始存档不被空状态覆盖），
    * App 展示错误屏，由玩家选择导出原始存档或「清除存档重开」。
-   * corrupt：主备档都存在但全部不可读——与「无档」严格区分，
+   * corrupt：主备档都存在但全部不可读，与「无档」严格区分，
    * 不静默开新档（旧路径 15 秒后自动存档会用空状态覆盖损坏档，造成数据丢失）。
    * corruptRaw 保存原始存档载荷，供错误屏「导出原始存档」。
    */
@@ -73,7 +73,7 @@ export const useGameStore = defineStore('game', () => {
    */
   const saveFailed = ref(false)
 
-  // —— 效果系统与全局乘数 ——
+  // 效果系统与全局乘数
   const {
     effectSystem,
     productionMults,
@@ -107,7 +107,7 @@ export const useGameStore = defineStore('game', () => {
   /**
    * 成就终身计数采集：totals 差值快照法。
    * resources.totals 记录本轮总产出（建筑 tick/探索奖励/战斗奖励/离线补算全部入 totals），
-   * 每 tick 取与上次快照的差值计入终身计数——单点采集覆盖全部产出通道。
+   * 每 tick 取与上次快照的差值计入终身计数，单点采集覆盖全部产出通道。
    * 转生会重置 totals（差值为负 → 钳 0）；hydrate/hardReset 时快照显式对齐。
    */
   const lifetimeTotalsSnapshot = { energy: D(0), dark: D(0) }
@@ -128,7 +128,7 @@ export const useGameStore = defineStore('game', () => {
     lifetimeTotalsSnapshot.dark = toZero ? D(0) : resources.getTotal('dark')
   }
 
-  // —— 存档簇（存档组装 / 读写通道 / hydrate / 导入导出 / 离线补算 / 清档重置）——
+  // 存档簇（存档组装 / 读写通道 / hydrate / 导入导出 / 离线补算 / 清档重置），
   const {
     save,
     saveSync,
@@ -166,7 +166,7 @@ export const useGameStore = defineStore('game', () => {
     start,
   })
 
-  // —— 每日签到/周期挑战 ——
+  // 每日签到/周期挑战
   /** 挑战奖励发放（DailyCard 领取按钮回调） */
   function claimChallenge(templateId: string): { dark: number; streakBonus: number } | null {
     const result = daily.claim(templateId)
@@ -178,10 +178,10 @@ export const useGameStore = defineStore('game', () => {
   /** 驻扎小时累计进位（v1.21 周挑战：内存小数累加，满 1 小时 bump；不入档） */
   const garrisonHourCarry = ref(0)
 
-  // —— 随机遭遇事件（v1.26 可玩内容扩展方案 8）——
+  // 随机遭遇事件（v1.26 可玩内容扩展方案 8），
   /**
    * 遭遇事件结算发放（EncounterCard 选项按钮回调）：encounters store 掷取
-   * 结果后按奖励对象逐项发放——资源走 resources.gain（负值合金损失按余额
+   * 结果后按奖励对象逐项发放，资源走 resources.gain（负值合金损失按余额
    * 封顶扣至空，不产生负库存）；units 走 military 库存直加（收编入伍不经训练
    * 队列、不占训练槽）。返回结算结果供 toast 回执，无挂起/已过期返回 null。
    */
@@ -206,7 +206,7 @@ export const useGameStore = defineStore('game', () => {
     return result
   }
 
-  // —— 派遣远征（v1.27 可玩内容扩展方案 6）——
+  // 派遣远征（v1.27 可玩内容扩展方案 6），
   /** 派遣解锁同步（tick 每秒调用）：远征开放即解锁派遣（本轮已攻克解锁锚点据点） */
   function syncDispatchUnlocked(): void {
     military.setDispatchUnlocked(combat.isEndlessUnlocked())
@@ -232,7 +232,7 @@ export const useGameStore = defineStore('game', () => {
     return results
   }
 
-  // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
+  // 远征里程碑（v1.20 可玩内容扩展方案 2），
   /** 里程碑奖励发放（MapView 领取按钮回调）：combat 记账成功后按奖励对象逐资源发放 */
   function claimMilestone(tier: number): MilestoneReward | null {
     const reward = combat.claimMilestone(tier)
@@ -243,7 +243,7 @@ export const useGameStore = defineStore('game', () => {
     return reward
   }
 
-  // —— 主 tick ——
+  // 主 tick
   function tick() {
     const now = Date.now()
     let dt = (now - lastTickTime.value) / 1000
@@ -254,7 +254,7 @@ export const useGameStore = defineStore('game', () => {
     if (dt > 60) {
       // 标签页后台过久：补算离线收益，本次 tick 只算 1 秒
       const report = computeOfflineGains(dt)
-      // 短时离线（<5分钟）静默补算不弹窗——浏览器对不活跃标签页的
+      // 短时离线（<5分钟）静默补算不弹窗，浏览器对不活跃标签页的
       // setInterval 有节流（常降至 1 次/分钟甚至更低），或系统短暂
       // 休眠唤醒，都会导致 dt 突然超过 60 秒。这种情况下玩家并未真正
       // "离开"，弹窗打扰体验。补算逻辑照常执行，仅抑制弹窗。
@@ -277,7 +277,7 @@ export const useGameStore = defineStore('game', () => {
       )
     }
     // 周挑战驻扎时长（v1.21）：在线 tick 按驻扎据点数累计小时，
-    // 满 1 小时 bump 一次（离线补算不计——时长口径与收益口径解耦）
+    // 满 1 小时 bump 一次（离线补算不计，时长口径与收益口径解耦）
     const garrisonCount = Object.keys(combat.garrisoned).length
     if (garrisonCount > 0) {
       garrisonHourCarry.value += (garrisonCount * dt) / 3600
@@ -368,7 +368,7 @@ export const useGameStore = defineStore('game', () => {
       }
     }
   }
-  // —— 自动存档 ——
+  // 自动存档
   let saveTimer: ReturnType<typeof setInterval> | null = null
   let tickTimer: ReturnType<typeof setInterval> | null = null
   let visibilityHandler: (() => void) | null = null
@@ -412,7 +412,7 @@ export const useGameStore = defineStore('game', () => {
     return loaded
   }
 
-  // —— 转生 ——
+  // 转生
   function canTranscend(): boolean {
     const totalEnergy = resources.getTotal('energy')
     const preview = transcend.previewNegEntropy(totalEnergy, prestigeMult.value)
@@ -426,7 +426,7 @@ export const useGameStore = defineStore('game', () => {
    *
    * 设计意图说明：
    * 转生后 resources.reset(true) 会重置 totals（历史总产出）为 0。
-   * 这是设计意图而非 bug——放置类游戏的标准循环：
+   * 这是设计意图而非 bug，放置类游戏的标准循环：
    *   每轮 run 积累能量 → 获得负熵 → 转生重置 → 新一轮 run
    * 如果 totals 不重置，玩家在后续 run 中无需任何努力即可获得大量负熵，
    * 破坏游戏平衡。previewNegEntropy 基于 getTotal('energy') 计算，
@@ -462,7 +462,7 @@ export const useGameStore = defineStore('game', () => {
     return true
   }
 
-  // —— 原子操作（check + spend + execute 一体化，消除竞态）——
+  // 原子操作（check + spend + execute 一体化，消除竞态），
   /**
    * 尝试升级建筑：原子检查资源 + 扣费 + 升级
    * 替代视图中 canAfford → spendCost → upgrade 的三步非原子调用

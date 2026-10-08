@@ -127,7 +127,7 @@ const nodeCard = (page, name) =>
   page.locator('.node-card', { has: page.locator(`.n-name:text-is("${name}")`) });
 const isLocked = (card) => card.evaluate((el) => el.classList.contains('locked'));
 
-// —— A. 九层渲染 ——
+// A. 九层渲染
 console.log('== A. 全新档：星臂层分区 + 全锁定 ==');
 {
   const page = await newSeededPage(browser, makeSave({ rich: false }), '/map');
@@ -141,7 +141,7 @@ console.log('== A. 全新档：星臂层分区 + 全锁定 ==');
   await page.context().close();
 }
 
-// —— B. 旧档形态（v0.89 十六节点全完成）：gate 可用、双分支锁定 ——
+// B. 旧档形态（v0.89 十六节点全完成）：gate 可用、双分支锁定
 console.log('== B. 旧档 16 节点完成：臂缘哨站可用（零迁移）==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: OLD_16_NODES }), '/map');
@@ -157,7 +157,7 @@ console.log('== B. 旧档 16 节点完成：臂缘哨站可用（零迁移）=='
   await page.context().close();
 }
 
-// —— C. 解锁链 ——
+// C. 解锁链
 console.log('== C. 解锁链：gate→双分支→spine→abyss→threshold ==');
 {
   const base = await newSeededPage(browser, makeSave({ completedNodes: [...OLD_16_NODES, 'node_arm_gate'] }), '/map');
@@ -191,7 +191,7 @@ console.log('== C. 解锁链：gate→双分支→spine→abyss→threshold ==')
   await spine.context().close();
 }
 
-// —— D. 34 节点全完成：36 据点全解锁口径 ——
+// D. 34 节点全完成：36 据点全解锁口径
 console.log('== D. 34/34 完成：36 据点全解锁 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: [...OLD_16_NODES, ...ARM_NODES, ...GALAXY_NODES, ...VOID_NODES] }), '/map');
@@ -218,7 +218,7 @@ console.log('== D. 34/34 完成：36 据点全解锁 ==');
   await page2.context().close();
 }
 
-// —— E. 自动化不误开新层 ——
+// E. 自动化不误开新层
 console.log('== E. 自动化不误开（穷档 + 探索协议）==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: OLD_16_NODES, withAutoExplore: true, rich: false }), '/map');
@@ -227,7 +227,7 @@ console.log('== E. 自动化不误开（穷档 + 探索协议）==');
   await page.context().close();
 }
 
-// —— F. 空态口径 ——
+// F. 空态口径
 console.log('== F. 空态不误触 / 全通空态 ==');
 {
   // 27/34（缺深空层节点）：不出空态
@@ -249,7 +249,7 @@ console.log('== F. 空态不误触 / 全通空态 ==');
   await page2.context().close();
 }
 
-// —— G. 科技/成就面 ——
+// G. 科技/成就面
 console.log('== G. 新科技渲染 + 59 卡 + 成就 49 卡 ==');
 {
   const page = await newSeededPage(browser, makeSave({}), '/tech');

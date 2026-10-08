@@ -1,5 +1,5 @@
 /**
- * save/validate.ts — 存档校验与自愈修复（从 storage.ts 拆出）。
+ * save/validate.ts：存档校验与自愈修复（从 storage.ts 拆出）。
  *
  * 负责结构完整性与内容范围校验（防注入/损坏），以及在整档拒绝前
  * 对历史存档已知缺陷做条目级自愈修复（只剥离/补齐可推导的部分）。
@@ -16,7 +16,7 @@ import { INFINITE_NODE_IDS, MAX_INFINITE_NODE_LEVEL } from '@/stores/transcend'
 import { ARCHIVE_ENEMY_KEYS } from '@/stores/archive'
 import { ENCOUNTER_IDS } from '@/data/encounters'
 
-// —— 有效 ID 集合（用于 validateSaveData 内容范围校验）——
+// 有效 ID 集合（用于 validateSaveData 内容范围校验），
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
 const TECH_IDS = new Set(TECHS.map((t) => t.id))
 const UNIT_IDS = new Set<string>(UNITS.map((u) => u.id))
@@ -39,10 +39,10 @@ export function tooNewVersion(data: unknown): number | null {
  * 2. formations 空数组（v0.81）：空数组能通过 every 校验但 hydrate 后编队为 0 支，
  *    战斗页直接读 formations[idx].units 崩溃 → 按默认 f1/f2/f3 补齐空编队
  * 3. 条目级剥离未知 id（v0.93）：版本迭代删除/重命名建筑、科技或遗物 id 时，
- *    老档不应整档判废——与字段自身的结构/范围校验（仍整档拒绝）区分开，
+ *    老档不应整档判废，与字段自身的结构/范围校验（仍整档拒绝）区分开，
  *    未知 id 只损失对应进度，其余进度保留。字段口径与 combat.completed 一致。
  * 4. equipped 槽位引用修复（v0.93）：指向 owned 中不存在实例的槽位置空、
- *    重复出现的实例只保留首个槽位——同一实例重复占槽会双计装备效果
+ *    重复出现的实例只保留首个槽位，同一实例重复占槽会双计装备效果
  *    与套装件数，属可推导修复；与 hydrate 侧防御同步生效。
  */
 export function validateAndRepair(data: unknown): data is SaveData {
@@ -239,7 +239,7 @@ function validateSaveData(data: unknown): data is SaveData {
     }
   }
   if (!_isValidStrArray(cb.completed, STRONGHOLD_IDS)) return false
-  // milestonesClaimed（v1.20 可选）：结构须为数组——条目级净化在 validateAndRepair
+  // milestonesClaimed（v1.20 可选）：结构须为数组，条目级净化在 validateAndRepair
   // 完成（伪领/非法条目剥离），非数组无法自愈，整档拒绝（与 completed 同口径）
   if (cb.milestonesClaimed !== undefined && !Array.isArray(cb.milestonesClaimed)) return false
 
@@ -372,7 +372,7 @@ function _isObject(v: unknown): v is Record<string, unknown> {
 }
 
 /**
- * 检查值是非负有限数字字符串（如 "100"、"3.14"、"1e+61"）——
+ * 检查值是非负有限数字字符串（如 "100"、"3.14"、"1e+61"），
  * 白名单形态判定：空串/空白/Infinity/NaN/负数/前导符号一律拒绝
  * （此前用 Number(v) 判定，Number('')===0 会放行空串，deser 时抛 DecimalError）。
  * 指数位数限 1~6 位（v0.81 修正）：不限位时 "1e999…" 可绕过校验构造 Infinity，

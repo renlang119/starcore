@@ -1,5 +1,5 @@
 /**
- * game-persistence.ts — 主 store 的存档簇（从 game.ts 拆出）。
+ * game-persistence.ts：主 store 的存档簇（从 game.ts 拆出）。
  *
  * 存档数据组装、读写通道（异步/同步）、读档与 hydrate、导入导出、
  * 损坏档原始载荷导出、离线收益补算与清档重置。所依赖的状态 ref 与 store 由调用方注入，
@@ -98,7 +98,7 @@ export function createGamePersistence(deps: {
     saveFailed,
   } = deps
 
-  // —— 存档 ——
+  // 存档
   function buildSaveData(): SaveData {
     return {
       version: SAVE_VERSION,
@@ -120,7 +120,7 @@ export function createGamePersistence(deps: {
     }
   }
 
-  // —— 存档（错误态守卫：initError 置位时拒绝一切写入，防空状态覆盖原始存档）——
+  // 存档（错误态守卫：initError 置位时拒绝一切写入，防空状态覆盖原始存档），
   // saveFailed 定义与语义见 game.ts
   async function save(): Promise<boolean> {
     if (initError.value) return false
@@ -156,7 +156,7 @@ export function createGamePersistence(deps: {
       }
       if (outcome.status === 'corrupt') {
         // 主备档都在但都不可读：进错误屏给导出/清除出口，
-        // 绝不按无档处理——否则 15 秒自动存档会用空状态覆盖损坏档
+        // 绝不按无档处理，否则 15 秒自动存档会用空状态覆盖损坏档
         initError.value = 'corrupt'
         corruptRaw.value = outcome.raw ?? null
         return false
@@ -195,12 +195,12 @@ export function createGamePersistence(deps: {
     daily.hydrate(data.daily)
     archive.hydrate(data.archive)
     encounters.hydrate(data.encounters)
-    // 终身计数快照对齐已恢复的 totals——否则首个 tick 会把整轮历史产量
+    // 终身计数快照对齐已恢复的 totals，否则首个 tick 会把整轮历史产量
     // 当作增量重复计入终身计数
     deps.alignLifetimeSnapshot()
   }
 
-  // —— 离线收益 ——
+  // 离线收益
   function computeOfflineGains(elapsedOverride?: number): OfflineReport | null {
     const now = Date.now()
     const elapsed = elapsedOverride ?? (now - lastSaveTime.value) / 1000
@@ -224,7 +224,7 @@ export function createGamePersistence(deps: {
     offlineReport.value = r
   }
 
-  // —— 导出 / 导入 ——
+  // 导出 / 导入
   async function doExport(): Promise<string> {
     return exportSave(buildSaveData())
   }

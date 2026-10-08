@@ -29,7 +29,7 @@ const isEndless = computed(() => strongholdId.value === ENDLESS_STRONGHOLD_ID)
 /** 是否周 Boss（/battle/weekly_boss，v1.24 方案 5） */
 const isWeeklyBoss = computed(() => strongholdId.value === WEEKLY_BOSS_ID)
 
-// —— 无尽远征（v0.60）：深度选择 + 按深度合成据点 ——
+// 无尽远征（v0.60）：深度选择 + 按深度合成据点
 const endlessDepth = ref(1)
 /** 可选深度：1 ~ 前沿（历史最深+1），并封顶于 MAX_ENDLESS_DEPTH；前沿胜利即推进 */
 const endlessMaxDepth = computed(() => Math.min(game.combat.expeditionBest + 1, MAX_ENDLESS_DEPTH))
@@ -73,7 +73,7 @@ const formation = computed(
   () => game.military.formations[selectedFormation.value] ?? game.military.formations[0]
 )
 
-// —— v0.82 驻扎/出征校验：据点须解锁且已攻克（远征/周 Boss 分支除外）——
+// v0.82 驻扎/出征校验：据点须解锁且已攻克（远征/周 Boss 分支除外），
 const strongholdUnlocked = computed(() => {
   if (isEndless.value) return game.combat.isEndlessUnlocked()
   // 周 Boss：解锁口径与远征入口一致（本轮已克 silencer_3）
@@ -123,7 +123,7 @@ const garrisonDisabled = computed(
   () => isFormationEmpty.value || !strongholdConquered.value || formationDispatched.value
 )
 
-// —— 战斗流程状态机：战斗执行 / 结果弹窗 / 驻扎（useBattleFlow）——
+// 战斗流程状态机：战斗执行 / 结果弹窗 / 驻扎（useBattleFlow），
 const bossFlow = useBattleFlow({
   strongholdId,
   stronghold,

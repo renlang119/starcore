@@ -1,5 +1,5 @@
 /**
- * en — English language pack (translated from the zh-CN baseline)
+ * en：English language pack (translated from the zh-CN baseline)
  *
  * Structure mirrors zh-CN: ui/ for interface copy, content/ for content copy
  * (mirroring src/data filenames). Pure data modules: relative imports with
@@ -68,7 +68,7 @@ export default {
   ...tech,
   ...ui,
 
-  // —— content layer (content/) ——
+  // content layer (content/)
   ...achievementsContent,
   ...buildingsContent,
   ...endlessContent,

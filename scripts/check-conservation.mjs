@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-conservation.mjs — 计数守恒自动检查（v0.73 新增）
+ * check-conservation.mjs：计数守恒自动检查（v0.73 新增）
  *
  * 背景：星层扩展的「守恒触点」随层数增长已达 10 处，v0.71 设计复查曾靠人工
  * 抓出 4 处关键漏项。本脚本把「数据真值 → 单测断言 → Playwright 硬断言 →
@@ -153,7 +153,7 @@ function scanDir(dir, ext, patterns, nameFilter = null) {
   return hits
 }
 
-// —— 3a. 单测硬断言 ——
+// 3a. 单测硬断言
 console.log('\n== 单测断言（src/**/*.test.ts）==')
 const unitDir = join(ROOT, 'src')
 const unitTests = []
@@ -234,7 +234,7 @@ if (!new RegExp(`全部 ${T.relicPool} 种`).test(T.achRelic4Desc ?? '')) {
   bad('ach_relic_4 文案联动', `desc「${T.achRelic4Desc}」未含「${T.relicPool} 种」`)
 } else ok('ach_relic_4 文案联动', `desc 含「${T.relicPool} 种」`)
 
-// —— 3b. Playwright 硬断言 ——
+// 3b. Playwright 硬断言
 if (PW_DIR === undefined || PW_DIR === true || String(PW_DIR).startsWith('-')) {
   bad('Playwright 目录', '--pw-dir 缺少目录参数（请补绝对路径，如 --pw-dir <脚本目录>）')
 } else {
@@ -303,7 +303,7 @@ if (PW_DIR === undefined || PW_DIR === true || String(PW_DIR).startsWith('-')) {
   }
 }
 
-// —— 3c. 文档计数词表 ——
+// 3c. 文档计数词表
 console.log('\n== 文档计数词表（README + docs）==')
 // symbol 总数真值：7 个图标 SFC 的 <symbol 计数（须在 docRules 定义前算好）
 function countSymbols() {
@@ -343,7 +343,7 @@ const docFiles = [
   { p: join(ROOT, 'docs', '游戏设定与架构.md'), name: '游戏设定与架构.md' },
   { p: join(ROOT, 'docs', '图标设计规范.md'), name: '图标设计规范.md' },
 ]
-// 宽匹配规则（v0.83）：「数字 + 关键词邻域」——数字两侧出现关键词即命中，
+// 宽匹配规则（v0.83）：「数字 + 关键词邻域」，数字两侧出现关键词即命中，
 // 不要求完整短语，覆盖「47 项，8 大分支」「20 种，分属 5 资源扇区」「14 买断 +
 // 4 无限」「34 个，9 类里程碑」等分隔形态。规则顺序即优先级：先长形态后短形态；
 // 各规则彼此独立扫描，同一文本可被多条规则命中，局部/历史口径由豁免清单区隔。
@@ -437,7 +437,7 @@ for (const r of docRules) {
 }
 console.log('  （漂移会逐条列出；无漂移仅打命中清单）')
 
-// —— 3d. 汇总 ——
+// 3d. 汇总
 console.log('\n== 汇总 ==')
 rmSync(TRUTH_TMP, { recursive: true, force: true })
 if (issues.length === 0) {

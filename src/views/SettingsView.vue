@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * SettingsView.vue — 设置页（v1.13）：存档管理与语言偏好。
+ * SettingsView.vue：设置页（v1.13）：存档管理与语言偏好。
  *
  * 存档管理 = SavePanel 组件；语言区块 = 「自动」（跟随
  * 浏览器语言识别）与已支持语言列表，接 src/i18n/locale 模块。手动选择

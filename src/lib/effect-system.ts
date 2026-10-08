@@ -1,5 +1,5 @@
 /**
- * effect-system.ts — 统一效果聚合系统
+ * effect-system.ts：统一效果聚合系统
  *
  * 解决 research / relics / transcend 三个 store 各自实现 getMult 的重复问题。
  * 各 store 只需实现 EffectSource 接口，EffectSystem 负责聚合所有来源的乘数。

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// OverviewPanel — 首页文明概况（v0.54 从 HomeView 拆出）
+// OverviewPanel：首页文明概况（v0.54 从 HomeView 拆出）
 import { t } from '@/i18n'
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
@@ -11,7 +11,7 @@ import Icon from '@/components/ui/Icon.vue'
 
 const game = useGameStore()
 
-// —— 文明概况 ——
+// 文明概况
 const buildingsUnlocked = computed(() => {
   const completed = game.research.completed
   return BUILDINGS.filter((b) => isUnlockedBy(b.requires, completed)).length
@@ -100,7 +100,7 @@ const overviewItems = computed<OverviewItem[]>(() => {
 </template>
 
 <style scoped>
-/* —— 文明概况 —— */
+/* 文明概况 */
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

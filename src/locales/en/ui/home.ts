@@ -1,5 +1,5 @@
 /**
- * home — English locale messages (translated from the zh-CN baseline)
+ * home：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'home.actionQueue.empty': 'The StarCore rests silent, awaiting your command',

@@ -8,11 +8,11 @@
 import { chromium } from 'playwright-core'
 import { resolveChromium } from '../lib/chromium.mjs'
 
-// —— 存档签名：直接引用仓库 integrity 模块（Node 原生类型剥离加载）——
+// 存档签名：直接引用仓库 integrity 模块（Node 原生类型剥离加载），
 const INTEGRITY_TS = new URL('../../src/lib/integrity.ts', import.meta.url)
 const { saveSignature } = await import(INTEGRITY_TS.href)
 
-// —— 浏览器可执行文件：解析链统一由 tools/lib/chromium.mjs 提供 ——
+// 浏览器可执行文件：解析链统一由 tools/lib/chromium.mjs 提供
 const _chromium = resolveChromium()
 if (!_chromium) {
   throw new Error(
@@ -21,13 +21,13 @@ if (!_chromium) {
 }
 export const EXE = _chromium.path
 
-// —— 目标基址：SC_URL 优先（远程目标），缺省本地预览（PREVIEW_URL 可覆盖端口）——
+// 目标基址：SC_URL 优先（远程目标），缺省本地预览（PREVIEW_URL 可覆盖端口），
 export const PREVIEW_URL = process.env.PREVIEW_URL || 'http://127.0.0.1:4173'
 export const BASE_URL = process.env.SC_URL || PREVIEW_URL
 
-// —— 浏览器启动（统一 --no-sandbox；附加选项透传，如 { headless: true }）——
+// 浏览器启动（统一 --no-sandbox；附加选项透传，如 { headless: true }），
 // 缺省强制 zh-CN 浏览器语言（站点多语言）：--lang 打底，
-// 并包装 newContext 注入默认 locale——Playwright 上下文缺省 locale=en-US
+// 并包装 newContext 注入默认 locale，Playwright 上下文缺省 locale=en-US
 // 会盖过 --lang，不设则自动匹配英文包致中文断言全灭；单脚本需英文语境时
 // 用 newContext({ locale: 'en-US' }) 显式覆盖（展开序保证显式优先）。
 export async function launch(opts = {}) {
@@ -43,7 +43,7 @@ export async function launch(opts = {}) {
   return browser
 }
 
-// —— 断言计数与收尾：check 记失败数，finish 关浏览器、打印汇总、按失败数退出 ——
+// 断言计数与收尾：check 记失败数，finish 关浏览器、打印汇总、按失败数退出
 let fail = 0
 export function check(name, cond) {
   console.log(`  ${cond ? '✓' : '✗'} ${name}`)
@@ -58,7 +58,7 @@ export async function finish(browser) {
   process.exit(fail === 0 ? 0 : 1)
 }
 
-// —— 存档载荷：HMAC-SHA256 签名，与应用读档口径一致（仅供自动化测试构造合法存档）——
+// 存档载荷：HMAC-SHA256 签名，与应用读档口径一致（仅供自动化测试构造合法存档），
 export function checksum(str) {
   return saveSignature(str)
 }
@@ -83,7 +83,7 @@ export function injectSave(p) {
   localStorage.setItem('starcore_onboarding', JSON.stringify({}))
 }
 
-// —— 带存档种子的新页面：注入备份档后跳转指定路径 ——
+// 带存档种子的新页面：注入备份档后跳转指定路径
 // opts: viewport（缺省 1280x900）/ waitMs（跳转后等待，缺省 1200）/ extraCtx（附加 context 选项）/ base（缺省 BASE_URL）
 export async function newSeededPage(browser, save, path, opts = {}) {
   const {

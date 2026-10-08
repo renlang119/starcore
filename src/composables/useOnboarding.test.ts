@@ -1,5 +1,5 @@
 /**
- * useOnboarding.test.ts — 新手引导存储口径（v0.51）
+ * useOnboarding.test.ts：新手引导存储口径（v0.51）
  *
  * 体验增强设计规范 §3.3.4：localStorage key = starcore_onboarding，
  * JSON 对象，每个 step 一个 boolean，state[stepId] === true 表示已 dismiss。

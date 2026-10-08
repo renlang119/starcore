@@ -1,5 +1,5 @@
 /**
- * SettingsView.test.ts — 设置视图组件测试（v1.13）
+ * SettingsView.test.ts：设置视图组件测试（v1.13）
  *
  * 重点测试：
  * 1. 页面渲染（标题与两区块：存档管理 / 语言）

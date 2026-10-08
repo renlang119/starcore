@@ -1,5 +1,5 @@
 /**
- * AchievementsView.test.ts — 成就视图组件测试
+ * AchievementsView.test.ts：成就视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载与汇总面板

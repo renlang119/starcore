@@ -1,5 +1,5 @@
 /**
- * buildings.ts — 建筑定义
+ * buildings.ts：建筑定义
  * 建筑分布在 5 个扇区：能量扇区、晶体扇区、合金扇区、数据扇区、暗物质扇区
  * 每个建筑有等级、成本增长、产出
  */
@@ -65,7 +65,7 @@ export const SECTORS: Record<
 }
 
 export const BUILDINGS: BuildingDef[] = [
-  // —— 能量扇区 ——
+  // 能量扇区
   {
     id: 'solar_collector',
     name: t('content.buildings.solar_collector.name'),
@@ -114,7 +114,7 @@ export const BUILDINGS: BuildingDef[] = [
     tier: 4,
   },
 
-  // —— 晶体扇区 ——
+  // 晶体扇区
   {
     id: 'crystal_mine',
     name: t('content.buildings.crystal_mine.name'),
@@ -162,7 +162,7 @@ export const BUILDINGS: BuildingDef[] = [
     requires: 'silicon_ring_theory',
     tier: 4,
   },
-  // —— 合金扇区 ——
+  // 合金扇区
   {
     id: 'refinery',
     name: t('content.buildings.refinery.name'),
@@ -211,7 +211,7 @@ export const BUILDINGS: BuildingDef[] = [
     requires: 'stellar_forge_theory',
     tier: 4,
   },
-  // —— 暗物质扇区 ——
+  // 暗物质扇区
   {
     id: 'dark_detector',
     name: t('content.buildings.dark_detector.name'),
@@ -261,7 +261,7 @@ export const BUILDINGS: BuildingDef[] = [
     tier: 4,
   },
 
-  // —— 数据扇区 ——
+  // 数据扇区
   {
     id: 'data_center',
     name: t('content.buildings.data_center.name'),

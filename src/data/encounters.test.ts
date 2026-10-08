@@ -1,5 +1,5 @@
 /**
- * encounters.test.ts — 随机遭遇事件数据表测试（v1.26 可玩内容扩展方案 8）
+ * encounters.test.ts：随机遭遇事件数据表测试（v1.26 可玩内容扩展方案 8）
  *
  * 覆盖：事件池结构契约（10 模板恰两选项、概率归一、数值形态、风味分布）、
  * EV 核验锚点（两选项期望差 ≤15%、赌注类高方差 / 资源类低方差、量级带）、
@@ -21,7 +21,7 @@ import { setEncounterRandomProvider } from '@/stores/encounters'
 /** 折算率与量级带（EV 折算口径；调整数值前先改核验表） */
 const RATE = { energy: 1, alloy: 1, data: 6, dark: 8000, units: 60 } as const
 const BAND_MIN = 4400
-const BAND_MAX = 120000 // 护栏带放宽上界（实际带 4.4e3–9.2e3，见 encounters.ts 头注）
+const BAND_MAX = 120000 // 护栏带放宽上界（实际带 4.4e3~9.2e3，见 encounters.ts 头注）
 const EV_GAP_MAX = 0.15
 
 function optionEv(opt: EncounterOption): number {

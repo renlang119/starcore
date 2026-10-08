@@ -1,5 +1,5 @@
 /**
- * storage.ts — 本地持久化门面（按职责拆分后的统一入口）
+ * storage.ts：本地持久化门面（按职责拆分后的统一入口）
  *
  * 实现按职责分置于 save/ 子模块：schema（类型契约与版本）、
  * io（IndexedDB + localStorage 双通道读写）、validate（校验与自愈修复）、

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// DailyCard — 每日签到/周期挑战合并卡片（v0.62 玩法扩展方案 7）
+// DailyCard：每日签到/周期挑战合并卡片（v0.62 玩法扩展方案 7）
 // 签到自动进行（tick 驱动），卡片只展示状态与挑战领取入口
 import { t } from '@/i18n'
 import { computed } from 'vue'
@@ -13,7 +13,7 @@ const checkedInToday = computed(() => game.daily.lastCheckIn === localDateStr())
 const cycleDay = computed(() => ((game.daily.streak - 1) % 7) + 1)
 
 /**
- * 挑战显示名：直接取模板池 name 函数（单一来源，v1.21 消重——
+ * 挑战显示名：直接取模板池 name 函数（单一来源，v1.21 消重，
  * 此前组件内维护一份硬编码映射，池扩类时须双份同步）。
  */
 function challengeName(c: { templateId: string; target: number }): string {

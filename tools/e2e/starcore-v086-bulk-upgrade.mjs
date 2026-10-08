@@ -66,7 +66,7 @@ function makeSave({ ne = '0', tree = [], relics = [] } = {}) {
 
 const browser = await launch();
 
-// —— A. 建造页批量升级 ——
+// A. 建造页批量升级
 console.log('== A. 建造页：默认 ×1 与切换 ×10 ==');
 {
   // energy=1000：solar_collector 成本 ceil(10×1.18^L) → 10/12/14/17/20/23/27/32/38/45/53…
@@ -111,7 +111,7 @@ console.log('== A2. 建造页：预算中途耗尽买满语义 ==');
   await page.context().close();
 }
 
-// —— B. 转生树 ——
+// B. 转生树
 console.log('== B. 转生树：默认 ×1 + ×100 买满 ==');
 {
   const page = await newSeededPage(browser, makeSave({ ne: '50000' }), '/prestige');
@@ -149,7 +149,7 @@ console.log('== B2. 转生树：部分预算截断 ==');
   await page.context().close();
 }
 
-// —— C. 遗物强化 ——
+// C. 遗物强化
 console.log('== C. 遗物强化：默认 ×1 + ×100 拉满 ==');
 {
   // 拉满 Lv5→Lv20 需约 1.66e11 能量（成本 1.5e6×1.5^L 累加），给 1e12 冗余
@@ -173,7 +173,7 @@ console.log('== C. 遗物强化：默认 ×1 + ×100 拉满 ==');
   await page.context().close();
 }
 
-// —— D. 移动视口 ——
+// D. 移动视口
 console.log('== D. 移动视口（390px）==');
 {
   for (const [path, name] of [['/build', '建造页'], ['/prestige', '转生页']]) {

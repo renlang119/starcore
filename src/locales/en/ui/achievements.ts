@@ -1,5 +1,5 @@
 /**
- * achievements — English locale messages (translated from the zh-CN baseline)
+ * achievements：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'achievements.bonusActive': 'Bonus earned',

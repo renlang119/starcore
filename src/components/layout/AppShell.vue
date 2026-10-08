@@ -93,7 +93,7 @@ const isWideContent = computed(() => route.meta.wide === true)
 /** 网格版内容区：路由 meta.grid 控制（科技树/成就/档案馆桌面端双列需要更宽的 max-width，v1.37） */
 const isGridContent = computed(() => route.meta.grid === true)
 
-/** 星点闪烁 — 背景星点配置（表见 data/app-stars.ts） */
+/** 星点闪烁：背景星点配置（表见 data/app-stars.ts） */
 const stars = APP_STARS
 
 /**
@@ -172,7 +172,7 @@ watch(
     <!-- 全局轻提示（存档失败提醒等） -->
     <Toast :toast="toast" />
 
-    <!-- 战斗页返回按钮——仅移动端 -->
+    <!-- 战斗页返回按钮，仅移动端 -->
     <div v-if="showBattleBack && !isDesktop" class="extra-nav">
       <button @click="router.push('/')">{{ t('common.back') }}</button>
     </div>
@@ -263,7 +263,7 @@ watch(
   color: var(--color-t-secondary);
 }
 
-/* 路由跃迁白光 overlay — 全屏覆盖，350ms 闪过 */
+/* 路由跃迁白光 overlay：全屏覆盖，350ms 闪过 */
 .warp-overlay {
   position: fixed;
   inset: 0;

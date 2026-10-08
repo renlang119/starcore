@@ -1,5 +1,5 @@
 /**
- * decimal.test.ts — decimal.ts 序列化与基础运算测试
+ * decimal.test.ts：decimal.ts 序列化与基础运算测试
  */
 import { describe, it, expect } from 'vitest'
 import { D, ser, deser, add } from './decimal'

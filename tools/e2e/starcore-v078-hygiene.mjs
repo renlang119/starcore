@@ -51,7 +51,7 @@ function makeSave({ relics = [], equipped = [null, null, null, null], levels = {
 
 const browser = await launch();
 
-// —— A. 遗物图标独立化 ——
+// A. 遗物图标独立化
 console.log('== A. 遗物图标独立化 ==');
 {
   const page = await newSeededPage(browser, makeSave({
@@ -87,7 +87,7 @@ console.log('== A. 遗物图标独立化 ==');
   await page.context().close();
 }
 
-// —— B. fmt 进位边界 ——
+// B. fmt 进位边界
 // v1.43 起首页隐藏顶栏资源条，顶栏药丸改在 /build 读取
 console.log('== B. fmt 进位边界 ==');
 {
@@ -106,7 +106,7 @@ console.log('== B. fmt 进位边界 ==');
   await page.context().close();
 }
 
-// —— C. 粒子 reduced-motion 运行时切换 ——
+// C. 粒子 reduced-motion 运行时切换
 console.log('== C. 粒子 reduced-motion 运行时切换 ==');
 {
   const save = makeSave({ levels: { solar_collector: 30 } });
@@ -139,7 +139,7 @@ console.log('== C. 粒子 reduced-motion 运行时切换 ==');
   await page2.context().close();
 }
 
-// —— D. 断点行为不变 ——
+// D. 断点行为不变
 console.log('== D. 断点行为不变 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/');

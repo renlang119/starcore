@@ -1,5 +1,5 @@
 /**
- * battle — English locale messages (translated from the zh-CN baseline)
+ * battle：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'battle.backToMap': 'Back to Star Map',

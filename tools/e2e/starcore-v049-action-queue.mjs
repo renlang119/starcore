@@ -47,7 +47,7 @@ async function newHomePage(browser, opts) {
 
 const browser = await launch();
 
-// —— A. 3 训练 + 2 探索进行中：5 进行中 + 1 可执行 = 6，无汇总卡 ——
+// A. 3 训练 + 2 探索进行中：5 进行中 + 1 可执行 = 6，无汇总卡
 console.log('== A. 进行中全保留 + 补足 ≤6 ==');
 {
   const page = await newHomePage(browser, {
@@ -70,7 +70,7 @@ console.log('== A. 进行中全保留 + 补足 ≤6 ==');
   await page.context().close();
 }
 
-// —— B. 无训练 + 已解锁军事：显示训练引导 ——
+// B. 无训练 + 已解锁军事：显示训练引导
 console.log('== B. 无训练时显示训练引导 ==');
 {
   const page = await newHomePage(browser, { completed: ['military_basic'] });
@@ -79,7 +79,7 @@ console.log('== B. 无训练时显示训练引导 ==');
   await page.context().close();
 }
 
-// —— C. 7 条进行中（4 探索 + 3 训练）：可执行归零，总数 7 ——
+// C. 7 条进行中（4 探索 + 3 训练）：可执行归零，总数 7
 console.log('== C. 进行中 ≥6 时可执行归零 ==');
 {
   const page = await newHomePage(browser, {

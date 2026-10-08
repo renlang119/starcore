@@ -106,7 +106,7 @@ function makeSave({
 
 const browser = await launch();
 
-// —— A. 全新档：锁定态 + 直访不崩 ——
+// A. 全新档：锁定态 + 直访不崩
 console.log('== A. 全新档：周 Boss 卡锁定 + 直访战斗页不崩 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -127,7 +127,7 @@ console.log('== A. 全新档：周 Boss 卡锁定 + 直访战斗页不崩 ==');
   await ctx.close();
 }
 
-// —— B + C. 解锁档渲染 + 击败流 ——
+// B + C. 解锁档渲染 + 击败流
 console.log('== B. 解锁档：卡可点 + 考题预览 + 战斗页渲染 ==');
 console.log('== C. 击败流：出战胜利 → 记账 → 已击败禁战 ==');
 {
@@ -176,7 +176,7 @@ console.log('== C. 击败流：出战胜利 → 记账 → 已击败禁战 ==');
   await page.context().close();
 }
 
-// —— D. 已击败注档三态 ——
+// D. 已击败注档三态
 console.log('== D. 注档三态：本周标记禁战 / 旧档缺键可战 / 跨周标记失效 ==');
 {
   const doneMap = await newSeededPage(
@@ -213,7 +213,7 @@ console.log('== D. 注档三态：本周标记禁战 / 旧档缺键可战 / 跨�
   await staleWeek.context().close();
 }
 
-// —— E. 战损与常规面 ——
+// E. 战损与常规面
 console.log('== E. 缩编出战损失区渲染 + 常规据点不回归 ==');
 {
   const page = await newSeededPage(
@@ -240,7 +240,7 @@ console.log('== E. 缩编出战损失区渲染 + 常规据点不回归 ==');
   await normal.context().close();
 }
 
-// —— F. 移动视口 ——
+// F. 移动视口
 console.log('== F. 移动视口（390px）无横向溢出 ==');
 {
   const mobMap = await newSeededPage(

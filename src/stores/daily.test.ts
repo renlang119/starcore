@@ -1,5 +1,5 @@
 /**
- * daily.test.ts — 每日签到/周期挑战测试（v0.62 玩法扩展方案 7）
+ * daily.test.ts：每日签到/周期挑战测试（v0.62 玩法扩展方案 7）
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
@@ -254,7 +254,7 @@ describe('daily — 存档', () => {
     ).toBe(true)
   })
 
-  // —— v0.75：伪造挑战条目按模板重推导（防 target:0 白领奖励）——
+  // v0.75：伪造挑战条目按模板重推导（防 target:0 白领奖励），
 
   it('伪造 target/rewardDark/kind：hydrate 一律按模板重推导', () => {
     setActivePinia(createPinia())

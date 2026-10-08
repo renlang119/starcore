@@ -84,7 +84,7 @@
     transform: scale(1);
   }
 }
-/* 视觉动线引导 — Hero 底部光柱呼吸 */
+/* 视觉动线引导：Hero 底部光柱呼吸 */
 @keyframes flowPulse {
   0%,
   100% {

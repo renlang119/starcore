@@ -1,5 +1,5 @@
 /**
- * combat.ts — PVE 战斗系统 store
+ * combat.ts：PVE 战斗系统 store
  * PVE 战斗：4 类据点自动结算、无尽远征、每周强敌、挂机驻扎
  */
 import { t } from '@/i18n'
@@ -197,7 +197,7 @@ export const useCombatStore = defineStore('combat', () => {
     const rng = mulberry32(_battleSeed(formation, stronghold.id))
     let round = 0
     // 软墙设计（v0.52 确定）：保底伤害 1 + 50 回合上限配合使用。
-    // 战斗为瞬时结算，该组合表示「越级挑战本该败」——低攻编队对高防据点
+    // 战斗为瞬时结算，该组合表示「越级挑战本该败」，低攻编队对高防据点
     // 每轮仅保底 1 点进展，50 回合磨不死即超时撤退判负；文案已有覆盖。
     // 去掉保底会出现 0 伤害僵局，去掉上限则蚂蚁可啃死大象，均非设计意图。
     const maxRounds = 50
@@ -345,7 +345,7 @@ export const useCombatStore = defineStore('combat', () => {
     return true
   }
 
-  // —— 无尽远征（v0.60）——
+  // 无尽远征（v0.60），
 
   /** 远征是否已解锁（本轮须已攻克解锁锚点据点） */
   function isEndlessUnlocked(): boolean {
@@ -357,7 +357,7 @@ export const useCombatStore = defineStore('combat', () => {
     return endlessStronghold(depth)
   }
 
-  // —— 每周强敌（v1.24 可玩内容扩展方案 5）——
+  // 每周强敌（v1.24 可玩内容扩展方案 5），
 
   /** 本周 Boss 合成据点（不入 STRONGHOLDS 表） */
   function getWeeklyBossStronghold(expeditionBest: number, weekKey: string): StrongholdDef {
@@ -378,7 +378,7 @@ export const useCombatStore = defineStore('combat', () => {
     return true
   }
 
-  // —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
+  // 远征里程碑（v1.20 可玩内容扩展方案 2），
 
   /** 已领取的里程碑档位清单（终身数据：转生保留、hardReset 清零，与 expeditionBest 同语义） */
   const milestonesClaimed = ref<number[]>([])
@@ -393,7 +393,7 @@ export const useCombatStore = defineStore('combat', () => {
   })
 
   /**
-   * 领取里程碑奖励（纯逻辑，不发放资源——由 game store 包装走 resources.gain，
+   * 领取里程碑奖励（纯逻辑，不发放资源，由 game store 包装走 resources.gain，
    * 同 claimChallenge 先例）：档位达标且未领取才记账，返回奖励对象。
    * @returns 奖励对象；未达标/已领/非法档位返回 null
    */
@@ -408,7 +408,7 @@ export const useCombatStore = defineStore('combat', () => {
   function ungarrison(strongholdId: string) {
     delete garrisoned.value[strongholdId]
   }
-  /** 获取驻扎挂机收益（每秒）——按编队特性乘区（v1.23 方案 7）；
+  /** 获取驻扎挂机收益（每秒），按编队特性乘区（v1.23 方案 7）；
    *  在线 tick / 离线补算走已驻记录；战斗页预览发生在驻扎前，
    *  由调用方传入将要驻扎的编队 id（缺省回退已驻记录） */
   function garrisonIdleReward(strongholdId: string, formationId?: string): Record<string, number> {
@@ -425,7 +425,7 @@ export const useCombatStore = defineStore('combat', () => {
   }
 
   /**
-   * 所有驻扎据点的合并产出（每秒）—— computed 缓存
+   * 所有驻扎据点的合并产出（每秒）， computed 缓存
    * 仅在 garrisoned 变化时重算，避免每 tick 遍历
    */
   const garrisonProduction = computed<Record<string, number>>(() => {
@@ -470,7 +470,7 @@ export const useCombatStore = defineStore('combat', () => {
     if (typeof data.expeditionBest === 'number' && isFinite(data.expeditionBest)) {
       expeditionBest.value = Math.max(0, Math.floor(data.expeditionBest))
     }
-    // 里程碑领取记录：旧档缺失保持空（零迁移）；条目级自愈——只留「深度达标内、
+    // 里程碑领取记录：旧档缺失保持空（零迁移）；条目级自愈，只留「深度达标内、
     // 正整数、未重复」的档位，伪领（超现有深度档）与非法条目静默剥离
     if (Array.isArray(data.milestonesClaimed)) {
       const maxTier = endlessMilestoneTier(expeditionBest.value)

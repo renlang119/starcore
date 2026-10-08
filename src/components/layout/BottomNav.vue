@@ -150,7 +150,7 @@ onUnmounted(() => {
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-core) 50%, transparent));
 }
 
-/* 更多按钮反馈——面板打开时图标微弹 */
+/* 更多按钮反馈，面板打开时图标微弹 */
 .icon.popped {
   transform: scale(1.15);
 }
@@ -158,7 +158,7 @@ onUnmounted(() => {
   transition: transform 0.2s var(--ease-out);
 }
 
-/* 更多面板——向上弹出 */
+/* 更多面板，向上弹出 */
 .more-panel {
   position: absolute;
   bottom: 100%;

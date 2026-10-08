@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Icon.vue — symbol 图标引用（v1.07 合并自全站重复的 svg + use 形态）
+ * Icon.vue：symbol 图标引用（v1.07 合并自全站重复的 svg + use 形态）
  *
  * 根节点即 <svg>、子节点保留 <use> 结构（v078 的 querySelector('use') 断言
  * 与 v079/v091 的 .t-icon use 消费点核验依赖此形态）；类名与其余属性经

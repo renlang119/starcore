@@ -1,5 +1,5 @@
 /**
- * RelicView.test.ts — 遗物视图组件测试
+ * RelicView.test.ts：遗物视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载与装备槽

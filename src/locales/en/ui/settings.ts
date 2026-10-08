@@ -1,5 +1,5 @@
 /**
- * settings — English locale messages (translated from the zh-CN baseline)
+ * settings：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'settings.langAuto': 'Auto (follow browser)',

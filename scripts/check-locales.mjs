@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-locales.mjs — 文案守卫（缺键扫描 + 硬编码中文零残留扫描）
+ * check-locales.mjs：文案守卫（缺键扫描 + 硬编码中文零残留扫描）
  *
  * 两份真值对照：
  *   · 语言包（src/locales/zh-CN/）：全部可引用键
@@ -71,7 +71,7 @@ for (const f of files) {
 const missing = [...used.keys()].filter((k) => !keys.has(k)).sort()
 const unused = [...keys].filter((k) => !used.has(k)).sort()
 
-// —— 多语言键面一致性：注册表内每种非默认语言与默认语言键集、占位符逐项一致 ——
+// 多语言键面一致性：注册表内每种非默认语言与默认语言键集、占位符逐项一致
 const { AVAILABLE_LOCALES, DEFAULT_LOCALE } = await import(
   pathToFileURL(join(ROOT, 'src', 'i18n', 'locale.ts')).href
 )
@@ -99,7 +99,7 @@ for (const loc of AVAILABLE_LOCALES) {
   }
 }
 
-// —— 硬编码中文零残留扫描（注释掩码后任何 CJK 即违规）——
+// 硬编码中文零残留扫描（注释掩码后任何 CJK 即违规），
 const CJK = /[一-鿿]+/g
 function maskComments(src, isVue) {
   let out = src

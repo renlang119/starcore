@@ -1,5 +1,5 @@
 /**
- * decimal.ts — 大数运算辅助
+ * decimal.ts：大数运算辅助
  * 统一用 decimal.js 处理所有游戏数值，避免浮点精度问题
  *
  * 使用 Decimal.clone() 创建独立配置的构造器，

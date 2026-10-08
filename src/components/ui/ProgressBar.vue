@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * ProgressBar.vue — 通用进度条（轨道 + 填充）
+ * ProgressBar.vue：通用进度条（轨道 + 填充）
  *
  * 统一 MapView / ArmyView / AchievementsView / DailyCard / ActionQueuePanel
  * 五处同构实现（v1.02）。调用方类名自动落在组件根节点，填充条类名经

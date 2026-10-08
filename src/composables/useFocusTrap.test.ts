@@ -1,5 +1,5 @@
 /**
- * useFocusTrap.test.ts — 焦点陷阱行为（v0.96 新增）
+ * useFocusTrap.test.ts：焦点陷阱行为（v0.96 新增）
  *
  * 覆盖：激活聚焦首元素（禁用/隐藏节点跳过）、末位 Tab 与首位 Shift+Tab 环绕、
  * 焦点落弹窗外时的 contains 兜底、Escape 回调、关闭还焦、

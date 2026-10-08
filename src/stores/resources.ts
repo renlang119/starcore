@@ -1,5 +1,5 @@
 /**
- * resources.ts — 资源 store
+ * resources.ts：资源 store
  * 5 种资源：energy(能量)、crystal(晶体)、alloy(合金)、data(数据流)、dark(暗物质)
  */
 import { t } from '@/i18n'
@@ -53,7 +53,7 @@ const RES_META: Record<ResourceType, ResourceMeta> = {
 }
 
 export const useResourcesStore = defineStore('resources', () => {
-  // —— state ——
+  // state
   const amounts = ref<Record<ResourceType, Decimal>>({
     ...zeroResources(),
     energy: D(START_ENERGY),
@@ -62,7 +62,7 @@ export const useResourcesStore = defineStore('resources', () => {
   /** 每秒产出（由 game loop 每 tick（1 秒）计算并写入） */
   const production = ref<Record<ResourceType, Decimal>>(zeroResources())
 
-  // —— getters ——
+  // getters
   const getAmount = (t: ResourceType) => amounts.value[t]
   const getTotal = (t: ResourceType) => totals.value[t]
   const getRate = (t: ResourceType) => production.value[t]
@@ -78,7 +78,7 @@ export const useResourcesStore = defineStore('resources', () => {
     return true
   }
 
-  // —— actions ——
+  // actions
   /** 增加 */
   function gain(t: ResourceType, v: Decimal.Value) {
     amounts.value[t] = add(amounts.value[t], v)
@@ -125,7 +125,7 @@ export const useResourcesStore = defineStore('resources', () => {
     production.value = zeroResources()
   }
 
-  // —— 序列化 ——
+  // 序列化
   function serialize() {
     return {
       amounts: Object.fromEntries(

@@ -1,5 +1,5 @@
 /**
- * BattleView.test.ts — 战斗视图组件测试
+ * BattleView.test.ts：战斗视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载

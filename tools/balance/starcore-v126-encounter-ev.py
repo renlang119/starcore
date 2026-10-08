@@ -36,7 +36,7 @@ RESOURCE_SPREAD_MAX = 1.0
 
 # ---- 10 模板数值表（与设计稿同源；outcomes = [(p, {资源: 数量}), ...]) ----
 ENCOUNTERS = [
-    # —— 资源类 4 ——
+    # 资源类 4
     {
         "id": "enc_flux", "flavor": "resource", "name": "能量涌流",
         "optA": {"label": "就地收集", "outcomes": [(1.0, {"energy": 8000})]},
@@ -57,7 +57,7 @@ ENCOUNTERS = [
         "optA": {"label": "小心回收", "outcomes": [(1.0, {"energy": 6000, "alloy": 400})]},
         "optB": {"label": "加压拖曳", "outcomes": [(0.65, {"energy": 9200, "alloy": 600}), (0.35, {"energy": 2500, "alloy": 300})]},
     },
-    # —— 军事类 2 ——
+    # 军事类 2
     {
         "id": "enc_salvage", "flavor": "military", "name": "残骸回收",
         "optA": {"label": "拆解装甲", "outcomes": [(1.0, {"alloy": 2800, "data": 280})]},
@@ -68,13 +68,13 @@ ENCOUNTERS = [
         "optA": {"label": "收编入伍", "outcomes": [(1.0, {"unit_assault": 80})]},
         "optB": {"label": "收下装备", "outcomes": [(1.0, {"energy": 4400, "alloy": 400})]},
     },
-    # —— 探索类 1 ——
+    # 探索类 1
     {
         "id": "enc_beacon", "flavor": "explore", "name": "未知信标",
         "optA": {"label": "解码数据核", "outcomes": [(1.0, {"data": 90, "dark": 1})]},
         "optB": {"label": "抽出能源芯", "outcomes": [(0.85, {"energy": 9600}), (0.15, {"energy": 2000})]},
     },
-    # —— 赌注类 3 ——
+    # 赌注类 3
     {
         "id": "enc_well", "flavor": "gamble", "name": "暗捕获井",
         "optA": {"label": "安全封井", "outcomes": [(1.0, {"energy": 7000})]},

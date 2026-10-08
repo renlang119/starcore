@@ -1,5 +1,5 @@
 /**
- * transcend — English locale messages (translated from the zh-CN baseline)
+ * transcend：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.transcend.t_alloy_1.desc': 'Alloy building production permanently +50%',

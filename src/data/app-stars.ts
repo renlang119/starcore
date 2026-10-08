@@ -1,5 +1,5 @@
 /**
- * app-stars.ts — AppShell 背景星点配置表。
+ * app-stars.ts：AppShell 背景星点配置表。
  *
  * 星点闪烁：以数据驱动的 6 枚背景星点（替代早期 6 个静态 span）。
  * 数值与挂载顺序保持不变；渲染侧按本表逐项绑定 CSS 变量。

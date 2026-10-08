@@ -1,5 +1,5 @@
 /**
- * format.test.ts — format.ts 格式化函数测试
+ * format.test.ts：format.ts 格式化函数测试
  */
 import { describe, it, expect } from 'vitest'
 import { fmt, fmtTime, fmtRate } from './format'

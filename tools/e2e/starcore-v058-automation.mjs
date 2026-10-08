@@ -36,7 +36,7 @@ function makeSave(tree = [], ne = '0') {
 
 const browser = await launch();
 
-// —— A. 未购协议：不自动化 + 无徽标 ——
+// A. 未购协议：不自动化 + 无徽标
 console.log('== A. 未购协议（对照组）==');
 {
   const page = await newSeededPage(browser, makeSave(), '/build', { waitMs: 1600 });
@@ -55,7 +55,7 @@ console.log('== A. 未购协议（对照组）==');
   await page.context().close();
 }
 
-// —— B. 购 3 协议：自动化生效 + 徽标可见 ——
+// B. 购 3 协议：自动化生效 + 徽标可见
 console.log('== B. 购买 3 协议后自动化生效 ==');
 {
   // 探索需要时间完成，出生点 orbit 探索进行中 → 星图页有节点在探索
@@ -85,7 +85,7 @@ console.log('== B. 购买 3 协议后自动化生效 ==');
   await page.context().close();
 }
 
-// —— C. 转生树 UI：新节点展示 ——
+// C. 转生树 UI：新节点展示
 console.log('== C. 转生树新节点展示 ==');
 {
   // 未购：负熵 30 够买建造协议（10）

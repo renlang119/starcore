@@ -1,5 +1,5 @@
 /**
- * achievements.ts — 成就/里程碑定义（v0.57 玩法扩展方案 2；v1.22 成就扩展扩至 49 条）
+ * achievements.ts：成就/里程碑定义（v0.57 玩法扩展方案 2；v1.22 成就扩展扩至 49 条）
  *
  * 设计口径：
  * - 成就统计基于「终身计数」：转生会重置单轮进度（totals/科技/据点等），
@@ -98,7 +98,7 @@ function combat(pct: number): AchievementEffect[] {
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
-  // —— 能量（终身累计产出）——
+  // 能量（终身累计产出），
   {
     id: 'ach_energy_1',
     name: t('content.achievements.ach_energy_1.name'),
@@ -135,7 +135,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 1e12,
     effects: prod(5),
   },
-  // —— 暗物质（终身累计产出）——
+  // 暗物质（终身累计产出），
   {
     id: 'ach_dark_1',
     name: t('content.achievements.ach_dark_1.name'),
@@ -163,7 +163,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 1e7,
     effects: prod(3),
   },
-  // —— 建造 ——
+  // 建造
   {
     id: 'ach_build_1',
     name: t('content.achievements.ach_build_1.name'),
@@ -200,7 +200,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 50,
     effects: prod(3),
   },
-  // —— 研究 ——
+  // 研究
   {
     id: 'ach_tech_1',
     name: t('content.achievements.ach_tech_1.name'),
@@ -228,7 +228,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 59,
     effects: prod(3),
   },
-  // —— 探索 ——
+  // 探索
   {
     id: 'ach_explore_1',
     name: t('content.achievements.ach_explore_1.name'),
@@ -334,7 +334,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
       },
     ],
   },
-  // —— 战斗 ——
+  // 战斗
   {
     id: 'ach_battle_1',
     name: t('content.achievements.ach_battle_1.name'),
@@ -362,7 +362,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 80,
     effects: combat(12),
   },
-  // —— 远征深度（读外部现值 expeditionBest，跨转生保留，v0.69）——
+  // 远征深度（读外部现值 expeditionBest，跨转生保留，v0.69），
   {
     id: 'ach_battle_4',
     name: t('content.achievements.ach_battle_4.name'),
@@ -399,7 +399,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 40,
     effects: combat(8),
   },
-  // —— 敌方图鉴（已收录种数，读现值，v1.22）——
+  // 敌方图鉴（已收录种数，读现值，v1.22），
   {
     id: 'ach_battle_8',
     name: t('content.achievements.ach_battle_8.name'),
@@ -418,7 +418,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: ENEMY_KIND_TOTAL,
     effects: combat(3),
   },
-  // —— 遗物收藏（按当前持有数，遗物跨转生保留）——
+  // 遗物收藏（按当前持有数，遗物跨转生保留），
   {
     id: 'ach_relic_1',
     name: t('content.achievements.ach_relic_1.name'),
@@ -467,7 +467,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
       },
     ],
   },
-  // —— 遗物合成（终身合成次数，v1.22）——
+  // 遗物合成（终身合成次数，v1.22），
   {
     id: 'ach_relic_5',
     name: t('content.achievements.ach_relic_5.name'),
@@ -495,7 +495,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 15,
     effects: prod(3),
   },
-  // —— 遗物强化（终身强化总级数，v1.22）——
+  // 遗物强化（终身强化总级数，v1.22），
   {
     id: 'ach_relic_8',
     name: t('content.achievements.ach_relic_8.name'),
@@ -523,7 +523,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 150,
     effects: prod(3),
   },
-  // —— 套装收集（已激活完整套装数，读现值，v1.22）——
+  // 套装收集（已激活完整套装数，读现值，v1.22），
   {
     id: 'ach_relic_11',
     name: t('content.achievements.ach_relic_11.name'),
@@ -548,7 +548,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: RELIC_SETS.length,
     effects: prod(3),
   },
-  // —— 转生 ——
+  // 转生
   {
     id: 'ach_transcend_1',
     name: t('content.achievements.ach_transcend_1.name'),
@@ -597,7 +597,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     threshold: 10,
     effects: prod(3),
   },
-  // —— 游玩时长（终身在线秒数；离线不计，后台节流窗口按 1 秒计）——
+  // 游玩时长（终身在线秒数；离线不计，后台节流窗口按 1 秒计），
   {
     id: 'ach_time_1',
     name: t('content.achievements.ach_time_1.name'),

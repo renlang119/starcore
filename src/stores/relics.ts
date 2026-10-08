@@ -1,5 +1,5 @@
 /**
- * relics.ts — 遗物系统 store
+ * relics.ts：遗物系统 store
  * 收集遗物、装备到槽位（基础 4 个槽位，可通过转生树 t_slot 扩展）
  */
 import { defineStore } from 'pinia'
@@ -157,7 +157,7 @@ export const useRelicsStore = defineStore('relics', () => {
     return list
   })
 
-  // —— 套装（v0.61）：按装备中遗物的所属系别统计件数 ——
+  // 套装（v0.61）：按装备中遗物的所属系别统计件数
   const setProgress = computed(() => {
     const rows = RELIC_SETS.map((set) => ({
       set,
@@ -178,13 +178,13 @@ export const useRelicsStore = defineStore('relics', () => {
   /** 已激活的套装加成（partial/full），供 equippedEffects 聚合 */
   const activeSetBonuses = computed(() => setProgress.value.filter((r) => r.mode !== 'none'))
 
-  /** 遗物图鉴种类数（distinct id，不计重复件）——ach_relic_4 用 */
+  /** 遗物图鉴种类数（distinct id，不计重复件），ach_relic_4 用 */
   const ownedKinds = computed(() => new Set(owned.value.map((r) => r.id)).size)
 
   /** 已激活完整套装数（3 件同套全装备；v1.22 成就指标） */
   const activeFullSets = computed(() => setProgress.value.filter((r) => r.mode === 'full').length)
 
-  // —— 合成（v0.61）：3 件同稀有度未装备遗物 → 高一档随机产物 ——
+  // 合成（v0.61）：3 件同稀有度未装备遗物 → 高一档随机产物
   /** 稀有度升阶链（legendary 为顶档，不可作为材料） */
   const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary'] as const
 
@@ -220,7 +220,7 @@ export const useRelicsStore = defineStore('relics', () => {
     return aggregateMult(equippedEffects.value, type, target).toNumber()
   }
 
-  // —— 强化（v0.70）：instance 级等级轴 ——
+  // 强化（v0.70）：instance 级等级轴
 
   /** 该遗物下一级能量成本（满级返回 null） */
   function nextEnhanceCost(instanceId: string): number | null {

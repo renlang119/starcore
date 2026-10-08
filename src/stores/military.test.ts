@@ -1,5 +1,5 @@
 /**
- * military.test.ts — 训练并行槽位（v0.48）；另含编队特性（v1.23）与派遣远征（v1.27）
+ * military.test.ts：训练并行槽位（v0.48）；另含编队特性（v1.23）与派遣远征（v1.27）
  * 基础 1 槽，科技「集群操练 I/II」各 +1，上限 3；满槽拒绝入队，队列中任务不受影响；旧档超槽任务继续跑完，仅限新入队
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -94,7 +94,7 @@ describe('集群操练科技数据契约', () => {
   })
 })
 
-// —— v0.75：hydrate 加固（小数兵力取整 / 编队缺键补零防 NaN）——
+// v0.75：hydrate 加固（小数兵力取整 / 编队缺键补零防 NaN），
 describe('military — hydrate 加固（v0.75）', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -158,7 +158,7 @@ describe('military store · 全量口径（v0.95）', () => {
   })
 })
 
-// —— v1.23 方案 7：编队特性 ——
+// v1.23 方案 7：编队特性
 describe('military store · 编队特性（v1.23）', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

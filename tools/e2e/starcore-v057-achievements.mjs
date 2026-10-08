@@ -47,7 +47,7 @@ async function newPage(browser, save, path = '/achievements', viewport = { width
 
 const browser = await launch();
 
-// —— A. 全新档：成就页渲染 + 导航入口 ——
+// A. 全新档：成就页渲染 + 导航入口
 console.log('== A. 全新档成就页渲染与导航 ==');
 {
   const { page, errors } = await newPage(browser, makeSave());
@@ -75,7 +75,7 @@ console.log('== A. 全新档成就页渲染与导航 ==');
   await page.context().close();
 }
 
-// —— B. 注入终身计数档：解锁态/进度条/汇总 ——
+// B. 注入终身计数档：解锁态/进度条/汇总
 console.log('== B. 终身计数档解锁态与进度条 ==');
 {
   const save = makeSave({
@@ -113,7 +113,7 @@ console.log('== B. 终身计数档解锁态与进度条 ==');
   await page.context().close();
 }
 
-// —— C. 实时解锁 + toast ——
+// C. 实时解锁 + toast
 console.log('== C. 实时解锁与 toast 提示 ==');
 {
   // totals 与 lifetime.energy 均 99990（快照对齐后 lifetime 从装档起算，须同步注入），
@@ -147,7 +147,7 @@ console.log('== C. 实时解锁与 toast 提示 ==');
   await page.context().close();
 }
 
-// —— D. 缺 achievements 字段的旧档兼容 ——
+// D. 缺 achievements 字段的旧档兼容
 console.log('== D. 旧档（无 achievements 字段）兼容 ==');
 {
   const save = makeSave({
@@ -168,7 +168,7 @@ console.log('== D. 旧档（无 achievements 字段）兼容 ==');
   await page.context().close();
 }
 
-// —— E. 转生保留成就 ——
+// E. 转生保留成就
 console.log('== E. 转生后成就保留 ==');
 {
   const save = makeSave({
@@ -188,7 +188,7 @@ console.log('== E. 转生后成就保留 ==');
   await page.waitForTimeout(300);
   await page.locator('.btn-accent', { hasText: '确认重启' }).click();
   await page.waitForTimeout(800);
-  // SPA 内导航到成就页（不能 page.goto——addInitScript 每次整页导航会重写注入档，冲掉转生后的内存态）
+  // SPA 内导航到成就页（不能 page.goto，addInitScript 每次整页导航会重写注入档，冲掉转生后的内存态）
   await page.locator('.side-nav .nav-item', { hasText: '成就' }).click();
   await page.waitForTimeout(800);
   const e1 = page.locator('.ach-card', { hasText: '星火初燃' }).first();
@@ -199,7 +199,7 @@ console.log('== E. 转生后成就保留 ==');
   await page.context().close();
 }
 
-// —— F. 远征深度里程碑（v0.69：expeditionBest 走 provider，注入档读现值解锁）——
+// F. 远征深度里程碑（v0.69：expeditionBest 走 provider，注入档读现值解锁），
 console.log('== F. 远征深度里程碑（D10 解锁，跨转生现值判定）==');
 {
   // expeditionBest: 10 → ach_battle_4 解锁；combat.completed 保持空（不影响常规据点口径）

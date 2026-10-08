@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// HomeView — 首页编排（v0.54 起瘦身为组件编排）
+// HomeView：首页编排（v0.54 起瘦身为组件编排）
 // 板块组件实现见 components/home/；行动队列数据组装见 composables/useActionQueue
 import HeroCore from '@/components/home/HeroCore.vue'
 import ActionQueuePanel from '@/components/home/ActionQueuePanel.vue'
@@ -37,7 +37,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
   animation: screenIn 0.4s var(--ease-out);
 }
 
-/* —— 桌面端双列布局 —— */
+/* 桌面端双列布局 */
 /* 内容区宽度由 AppShell 按 route.meta.wide 加宽（v0.77），本视图只管内部布局 */
 .home-top-row {
   display: flex;
@@ -60,7 +60,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
   }
 }
 
-/* 中窄档整理（v1.44）：768-999px 维持单列堆叠——40/60 双列不足以容纳
+/* 中窄档整理（v1.44）：768-999px 维持单列堆叠，40/60 双列不足以容纳
    328px 舞台与六格概况，避免核心视觉区徽章溢入侧栏带 */
 @media (min-width: 768px) and (max-width: 999.98px) {
   .home-top-row {
@@ -74,7 +74,7 @@ const { activeStep, dismiss, skipAll } = useOnboarding(['home-core', 'home-quick
   }
 }
 
-/* —— 四档响应断点 —— */
+/* 四档响应断点 */
 /* L 断点（1024-1439px）：双列比 38/62 */
 @media (min-width: 1024px) {
   .home-top-row {

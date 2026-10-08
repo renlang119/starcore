@@ -54,7 +54,7 @@ async function formationPage(browser, save, opts = {}) {
 
 const browser = await launch();
 
-// —— A. 全新档渲染 ——
+// A. 全新档渲染
 console.log('== A. 全新档：3 卡 × 5 选项，默认均衡高亮 ==');
 {
   const page = await formationPage(browser, makeSave());
@@ -71,7 +71,7 @@ console.log('== A. 全新档：3 卡 × 5 选项，默认均衡高亮 ==');
   await page.context().close();
 }
 
-// —— B. 真实点击链 ——
+// B. 真实点击链
 console.log('== B. 点击切换：高亮迁移 + 描述展开 + 切回均衡 ==');
 {
   const page = await formationPage(browser, makeSave());
@@ -93,7 +93,7 @@ console.log('== B. 点击切换：高亮迁移 + 描述展开 + 切回均衡 =='
   await page.context().close();
 }
 
-// —— C. 三编队独立 ——
+// C. 三编队独立
 console.log('== C. 三编队特性互相独立 ==');
 {
   const page = await formationPage(browser, makeSave());
@@ -106,7 +106,7 @@ console.log('== C. 三编队特性互相独立 ==');
   await page.context().close();
 }
 
-// —— D. 旧档兼容 ——
+// D. 旧档兼容
 console.log('== D. 旧档：未知 id 自愈、缺字段正常 ==');
 {
   // 未知 id → 回落均衡
@@ -118,7 +118,7 @@ console.log('== D. 旧档：未知 id 自愈、缺字段正常 ==');
   check('缺 trait 字段档正常渲染（A 段已覆盖）', true);
 }
 
-// —— E. 存档往返 ——
+// E. 存档往返
 console.log('== E. 存档落盘与刷新持久化 ==');
 {
   const page = await formationPage(browser, makeSave());
@@ -139,7 +139,7 @@ console.log('== E. 存档落盘与刷新持久化 ==');
   await page.context().close();
 }
 
-// —— F. 驻扎乘区 ——
+// F. 驻扎乘区
 console.log('== F. 后勤特性驻扎收益 ×1.2 ==');
 {
   // f2 后勤 + 编队有兵 + raider_1 已攻克 → 战斗页驻扎弹窗每秒收益
@@ -169,7 +169,7 @@ console.log('== F. 后勤特性驻扎收益 ×1.2 ==');
   await page2.context().close();
 }
 
-// —— G. 战斗页不受影响 ——
+// G. 战斗页不受影响
 console.log('== G. 战斗页编队页签照常 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/battle/raider_1', { waitMs: 1500 });
@@ -178,7 +178,7 @@ console.log('== G. 战斗页编队页签照常 ==');
   await page.context().close();
 }
 
-// —— H. 移动视口 + 双语 ——
+// H. 移动视口 + 双语
 console.log('== H. 移动视口与英文标签 ==');
 {
   const page = await formationPage(browser, makeSave(), { viewport: { width: 375, height: 800 } });

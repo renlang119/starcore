@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 /**
- * OnboardingBubble.vue — 新手引导气泡
+ * OnboardingBubble.vue：新手引导气泡
  *
  * 视觉：elevated 底 + core 描边 + elevation-2 阴影
  * 动画：floatUp 入场
@@ -83,7 +83,7 @@ const emit = defineEmits<{
   color: var(--color-core);
 }
 
-/* 尾巴 — 默认朝下 */
+/* 尾巴：默认朝下 */
 .onboard-tail {
   position: absolute;
   bottom: -6px;

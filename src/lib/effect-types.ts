@@ -1,5 +1,5 @@
 /**
- * effect-types.ts — 效果类型基线与构造 helper（v1.08）
+ * effect-types.ts：效果类型基线与构造 helper（v1.08）
  *
  * 四域效果定义同源：tech / relic / transcend / achievement 的 type 联合
  * 共享五型基线（EffectTypeBase，乘数族），各域在自身数据文件以

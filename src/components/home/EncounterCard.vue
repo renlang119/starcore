@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// EncounterCard — 随机遭遇事件卡（v1.26 可玩内容扩展方案 8）
+// EncounterCard：随机遭遇事件卡（v1.26 可玩内容扩展方案 8）
 // 挂起态显示事件与两选项按钮；结算/过期后随 store 状态消失。
 // 结算回执由 AppShell 统一 watch lastResolution 呈现（全局单实例 toast），
 // 本组件只调 game.resolveEncounter 执行发放。

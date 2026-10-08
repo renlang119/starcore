@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * BattleResultModal.vue — 战斗结果弹窗（从 BattleView 拆出）。
+ * BattleResultModal.vue：战斗结果弹窗（从 BattleView 拆出）。
  *
  * 胜败标题、战利品（含遗物掉落）、损失与战报日志；弹窗交互结果经
  * stay / confirm 事件交回父层（遮罩点击与按钮同语义：胜利留在原地、
@@ -31,7 +31,7 @@ const emit = defineEmits<{ stay: []; confirm: [] }>()
 
 const game = useGameStore()
 
-// —— 结果展示派生（奖励 / 损失 / 无损失）——
+// 结果展示派生（奖励 / 损失 / 无损失），
 const rewardRows = computed(() => {
   if (!props.result?.rewards) return []
   return resourceRows(props.result.rewards, game.resources.allMeta, { positiveOnly: true })

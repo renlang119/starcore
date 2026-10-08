@@ -1,5 +1,5 @@
 /**
- * dispatch — English locale messages (translated from the zh-CN baseline)
+ * dispatch：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.dispatch.tier.4': '4 hours',

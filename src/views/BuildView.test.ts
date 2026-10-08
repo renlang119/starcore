@@ -1,5 +1,5 @@
 /**
- * BuildView.test.ts — 建造视图组件测试
+ * BuildView.test.ts：建造视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载与扇区切换

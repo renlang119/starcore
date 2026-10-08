@@ -54,7 +54,7 @@ const browser = await launch();
 const TODAY = localDateStr();
 const THIS_WEEK = weekStr();
 
-// —— A/B. 全新档渲染 + 自动首签 ——
+// A/B. 全新档渲染 + 自动首签
 console.log('== A/B. 全新档：卡片渲染 + 自动首签 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/', { waitMs: 1500 });
@@ -75,7 +75,7 @@ console.log('== A/B. 全新档：卡片渲染 + 自动首签 ==');
   await page.context().close();
 }
 
-// —— C. 已完成挑战领取 ——
+// C. 已完成挑战领取
 console.log('== C. 注档完成态：领取 → 暗物质到账 ==');
 {
   // 当前周 + 一项 battles 挑战 tier 0（模板 target 5），计数已 5 → 可领取
@@ -101,13 +101,13 @@ console.log('== C. 注档完成态：领取 → 暗物质到账 ==');
   await claimBtn.click();
   await page.waitForTimeout(500);
   check('领取后按钮消失（已领取）', (await page.locator('[data-testid="challenge-wk_battles"] .c-claimed').count()) === 1);
-  // 暗物质到账：签到勾连连击 +1（2→3），且 +3 暗物质进资源——检查资源面板数值变化
+  // 暗物质到账：签到勾连连击 +1（2→3），且 +3 暗物质进资源，检查资源面板数值变化
   const overviewDark = await page.evaluate(() => localStorage.getItem('starcore_save_v1_backup'));
   check('存档已更新（领取落库）', overviewDark !== null);
   await page.context().close();
 }
 
-// —— D. 连击 5 天注档 ——
+// D. 连击 5 天注档
 console.log('== D. 连击 5 天：圆点 5 亮 ==');
 {
   const page = await newSeededPage(browser, makeSave({
@@ -126,7 +126,7 @@ console.log('== D. 连击 5 天：圆点 5 亮 ==');
   await page.context().close();
 }
 
-// —— G. 扩类挑战（v1.21）：新 kind 渲染与领取 + 旧计数器兼容 ——
+// G. 扩类挑战（v1.21）：新 kind 渲染与领取 + 旧计数器兼容
 console.log('== G. 扩类挑战：新 kind 渲染/领取 + 旧档兼容 ==');
 {
   // G1. 旧五键 weeklyCounters（v1.19 形态）加载不拒档：挑战正常渲染
@@ -176,7 +176,7 @@ console.log('== G. 扩类挑战：新 kind 渲染/领取 + 旧档兼容 ==');
   await g2.context().close();
 }
 
-// —— E. 换周重掷 ——
+// E. 换周重掷
 console.log('== E. 注档旧周标识：加载后重掷 ==');
 {
   const page = await newSeededPage(browser, makeSave({
@@ -193,7 +193,7 @@ console.log('== E. 注档旧周标识：加载后重掷 ==');
       },
     }), '/', { waitMs: 1500 });
   await page.waitForTimeout(1500);
-  // 换周后重掷：本真实周（W36 当前）的种子抽取结果与注档的 wk_battles 是否还在不确定——
+  // 换周后重掷：本真实周（W36 当前）的种子抽取结果与注档的 wk_battles 是否还在不确定，
   // 关键断言：计数清零（99 → 0）且仍有 3 行。用「任一行 count 以 0/ 开头」判定清零
   const counts = await page.locator('.challenge-row .c-count').allTextContents();
   check('换周后计数清零（全部 0/ 开头）', counts.length === 3 && counts.every((t) => t.trim().startsWith('0/')));
@@ -201,7 +201,7 @@ console.log('== E. 注档旧周标识：加载后重掷 ==');
   await page.context().close();
 }
 
-// —— F. 不回归项 ——
+// F. 不回归项
 console.log('== F. 成就 49 卡 / 导航不增 / 移动视口 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements', { waitMs: 1500 });
@@ -209,7 +209,7 @@ console.log('== F. 成就 49 卡 / 导航不增 / 移动视口 ==');
   await page.context().close();
 
   const home = await newSeededPage(browser, makeSave(), '/', { viewport: { width: 390, height: 844 }, waitMs: 1500 });
-  // 移动端底部导航结构不同：按「更多」按钮展开后的导航项校验——直接数可见导航标签文本
+  // 移动端底部导航结构不同：按「更多」按钮展开后的导航项校验，直接数可见导航标签文本
   const navTexts = await home.evaluate(() => {
     const texts = new Set();
     for (const el of document.querySelectorAll('.bottom-nav *, nav *')) {

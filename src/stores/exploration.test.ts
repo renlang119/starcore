@@ -1,5 +1,5 @@
 /**
- * exploration.test.ts — 探索 store 测试
+ * exploration.test.ts：探索 store 测试
  * 覆盖：初始进度 / availableNodes 前置链 / startExplore 校验与扣费 /
  * 完成时间锁定（mult 变化不影响进行中探索）/ applyTick 奖励发放 / isExploring 未知节点防御 /
  * endTime=0 容缺 / getProgress / reset / serialize-hydrate
@@ -253,7 +253,7 @@ describe('exploration — reset / serialize / hydrate', () => {
     expect(store.isCompleted('node_orbit')).toBe(true)
   })
 
-  // —— v0.75：isExploring 未知节点返回 false（原 undefined !== 0 误判为 true）——
+  // v0.75：isExploring 未知节点返回 false（原 undefined !== 0 误判为 true），
   it('isExploring 未知节点/空 id 返回 false', () => {
     expect(store.isExploring('node_ghost')).toBe(false)
     expect(store.isExploring('')).toBe(false)

@@ -1,5 +1,5 @@
 /**
- * relics.test.ts — 遗物合成/套装测试（v0.61 玩法扩展方案 6）
+ * relics.test.ts：遗物合成/套装测试（v0.61 玩法扩展方案 6）
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'

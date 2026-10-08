@@ -51,7 +51,7 @@ function makeSave({ levels = {}, amounts = {}, completedTechs = [], completedStr
 
 const browser = await launch();
 
-// —— B. 驻扎校验——
+// B. 驻扎校验，
 console.log('== B. 驻扎/出征校验 ==');
 {
   // 未攻克据点（raider_1 未在通关集）：驻扎禁用、出征可用
@@ -86,7 +86,7 @@ console.log('== B. 驻扎/出征校验 ==');
   await p3.context().close();
 }
 
-// —— A. 战损接线——
+// A. 战损接线，
 console.log('== A. 战损接线 ==');
 {
   // 挑软柿子：编队 400 兵打 raider_1（tier1），可能胜可能败，但 losses 应实际扣编队
@@ -169,7 +169,7 @@ console.log('== A. 战损接线 ==');
   await pw.context().close();
 }
 
-// —— C. 弹窗样式——
+// C. 弹窗样式，
 console.log('== C. 弹窗样式穿透 ==');
 {
   const p = await newSeededPage(browser, makeSave({ completedStrongholds: ['raider_1'] }), '/battle/raider_1');
@@ -201,7 +201,7 @@ console.log('== C. 弹窗样式穿透 ==');
   // PrestigeView 弹窗琥珀边框（.modal :deep 穿透）
   const p2 = await newSeededPage(browser, makeSave(), '/prestige');
   const amberOk = await p2.evaluate(() => {
-    // 触发弹窗需满足转生条件，直接检查编译产物是否含 :deep 命中形态不可行——
+    // 触发弹窗需满足转生条件，直接检查编译产物是否含 :deep 命中形态不可行，
     // 改为检查页面样式表中存在 [data-v-xxx][data-v-yyy] 组合选择器过于脆弱，
     // 用可观测代理：样式表文本含 .modal 与 amber 变量的规则
     let found = false;
@@ -220,7 +220,7 @@ console.log('== C. 弹窗样式穿透 ==');
   await p2.context().close();
 }
 
-// —— D. 自动建造修复——
+// D. 自动建造修复，
 console.log('== D. 自动建造集合修复 ==');
 {
   const p = await newSeededPage(browser, makeSave({ completedTechs: ['fusion_tech'], protocols: true }), '/build');
@@ -240,7 +240,7 @@ console.log('== D. 自动建造集合修复 ==');
   await p.context().close();
 }
 
-// —— E. 行动队列不重复计数——
+// E. 行动队列不重复计数，
 console.log('== E. 行动队列计数 ==');
 {
   // node_orbit 已完成（侦察档），node_inner 可探索且未开始 → 首页应显示「1 个星域待探索」

@@ -1,5 +1,5 @@
 /**
- * encounter — English locale messages (translated from the zh-CN baseline)
+ * encounter：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'ui.encounter.title': 'Encounter',

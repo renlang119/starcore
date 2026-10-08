@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * ExploreNodeCard.vue — 星图探索节点卡。
+ * ExploreNodeCard.vue：星图探索节点卡。
  *
  * 从 MapView 拆出：按状态渲染（进行中 / 待探索 / 已锁定 / 已完成）、
  * 进度条、成本与奖励预览。类名与文案保持不变。

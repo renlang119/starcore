@@ -1,5 +1,5 @@
 /**
- * save/io.ts — 存档读写通道（从 storage.ts 拆出）。
+ * save/io.ts：存档读写通道（从 storage.ts 拆出）。
  *
  * localforage（IndexedDB）作为主存，localStorage 作为辅助/备份；
  * 写路径双通道共用 { d, c } 校验载荷，c 为 HMAC-SHA256 存档签名
@@ -22,7 +22,7 @@ const STORE = localforage.createInstance({
 
 const SAVE_KEY = 'starcore_save_v1'
 
-/** 存档签名——HMAC-SHA256（keyed），检测存档被篡改或损坏 */
+/** 存档签名，HMAC-SHA256（keyed），检测存档被篡改或损坏 */
 function _checksum(data: string): string {
   return saveSignature(data)
 }
@@ -121,7 +121,7 @@ export async function readSave(): Promise<SaveReadOutcome> {
   if (tooNew) return tooNew
   if (best) return best
   // 有存储值但都不可用：报告 corrupt（附原始备份载荷供导出），
-  // 与「无档」严格区分——后续流程不得静默清档或用空状态覆盖
+  // 与「无档」严格区分，后续流程不得静默清档或用空状态覆盖
   if (sawAnyValue) return { status: 'corrupt', raw: rawBackup ?? undefined }
   return { status: 'none' }
 }
@@ -140,7 +140,7 @@ function _parsePayload(value: unknown): SaveReadOutcome | null {
   if (!_isObject(value)) return null
   // 新格式：{ d: json, c: HMAC 签名 }
   if (typeof value.d === 'string' && typeof value.c === 'string') {
-    if (!verifySaveSignature(value.d, value.c)) return null // 校验失败——被篡改或损坏
+    if (!verifySaveSignature(value.d, value.c)) return null // 校验失败，被篡改或损坏
     try {
       const data = JSON.parse(value.d)
       const tooNew = tooNewVersion(data)

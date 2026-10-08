@@ -1,5 +1,5 @@
 /**
- * i18n 门面 — 唯一对外取词接口
+ * i18n 门面：唯一对外取词接口
  *
  * 用法（组件 / 模块通用）：import { t } from '@/i18n'
  *  - 模板：{{ t('home.hero.aria') }}（script setup 会暴露导入的 t）

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * AchievementsView.vue — 成就/里程碑页（v0.57 玩法扩展方案 2）
+ * AchievementsView.vue：成就/里程碑页（v0.57 玩法扩展方案 2）
  * 按类别分区展示全部成就：已解锁（时间戳+高亮）/进行中（进度条）/未达成
  */
 import { t } from '@/i18n'

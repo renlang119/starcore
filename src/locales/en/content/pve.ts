@@ -1,5 +1,5 @@
 /**
- * pve — English locale messages (translated from the zh-CN baseline)
+ * pve：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.pve.beast_1.desc': 'Pack creatures nesting in crystal veins; low defense but numerous',

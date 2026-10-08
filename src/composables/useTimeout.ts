@@ -1,7 +1,7 @@
 import { onUnmounted } from 'vue'
 
 /**
- * useTimeout — setTimeout 句柄样板统一（v1.07）
+ * useTimeout：setTimeout 句柄样板统一（v1.07）
  *
  * 统一样板：重触发先清旧（含触发后句柄复位）、组件卸载自动清理。
  * 此前六处组件各自手写句柄与 onUnmounted；setInterval 类（资源粒子、
@@ -31,7 +31,7 @@ export function useTimeout() {
 }
 
 /**
- * useTimeoutMap — 按 key 的多路 setTimeout（资源高亮等场景）
+ * useTimeoutMap：按 key 的多路 setTimeout（资源高亮等场景）
  *
  * 同 key 重触发先清旧；触发后自动从表内移除；卸载时全量清理。
  */

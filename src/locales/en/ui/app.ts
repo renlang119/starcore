@@ -1,5 +1,5 @@
 /**
- * app — English locale messages (translated from the zh-CN baseline)
+ * app：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'app.clearSave': 'Clear Save & Restart',

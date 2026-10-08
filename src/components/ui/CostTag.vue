@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * CostTag.vue — 通用成本标签组件 (6.6)
+ * CostTag.vue：通用成本标签组件 (6.6)
  *
  * 提取 BuildView / TechView / ArmyView 中重复的成本标签 UI 模式。
  * 根据当前资源量自动判断 enough / not-enough 状态。

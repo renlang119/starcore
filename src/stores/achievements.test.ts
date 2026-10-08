@@ -1,5 +1,5 @@
 /**
- * achievements.test.ts — 成就/里程碑 store 测试（v0.57；v1.22 扩展）
+ * achievements.test.ts：成就/里程碑 store 测试（v0.57；v1.22 扩展）
  *
  * 覆盖：
  * 1. 定义表完整性（49 成就、id 唯一、类别合法、阈值正数）

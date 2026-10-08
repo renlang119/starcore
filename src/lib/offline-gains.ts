@@ -1,5 +1,5 @@
 /**
- * offline-gains.ts — 离线收益计算
+ * offline-gains.ts：离线收益计算
  *
  * 从 game.ts 中提取，独立计算玩家离线期间的资源收益、
  * 驻扎收益、训练完成等单位。

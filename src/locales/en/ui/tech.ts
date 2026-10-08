@@ -1,5 +1,5 @@
 /**
- * tech — English locale messages (translated from the zh-CN baseline)
+ * tech：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'tech.all': 'All',

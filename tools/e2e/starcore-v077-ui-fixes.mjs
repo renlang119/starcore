@@ -50,7 +50,7 @@ function makeSave({ research = [], relics = [], equipped = [null, null, null, nu
 
 const browser = await launch();
 
-// —— A. 首页宽度 ——
+// A. 首页宽度
 console.log('== A. 首页宽度（route.meta 加宽）==');
 {
   const page = await newSeededPage(browser, makeSave(), '/');
@@ -75,7 +75,7 @@ console.log('== A. 首页宽度（route.meta 加宽）==');
   await page.context().close();
 }
 
-// —— B. toast z-index + 死样式删除 ——
+// B. toast z-index + 死样式删除
 console.log('== B. toast z-index + 死样式 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/');
@@ -105,7 +105,7 @@ console.log('== B. toast z-index + 死样式 ==');
   await page.context().close();
 }
 
-// —— C. 未知据点 / 未知路径兜底 ——
+// C. 未知据点 / 未知路径兜底
 console.log('== C. 未知据点 / 未知路径兜底 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/battle/no_such_id');
@@ -124,7 +124,7 @@ console.log('== C. 未知据点 / 未知路径兜底 ==');
   await page2.context().close();
 }
 
-// —— D. Escape 关弹窗 + 焦点陷阱 ——
+// D. Escape 关弹窗 + 焦点陷阱
 console.log('== D. Escape 关弹窗 + 焦点陷阱 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/army');
@@ -141,7 +141,7 @@ console.log('== D. Escape 关弹窗 + 焦点陷阱 ==');
   await page.context().close();
 }
 
-// —— E. Icons 符号表唯一挂载 ——
+// E. Icons 符号表唯一挂载
 console.log('== E. Icons 符号表唯一挂载 ==');
 for (const p of ['/', '/relic']) {
   const page = await newSeededPage(browser, makeSave({ relics: [{ id: 'r_energy_1' }] }), p);
@@ -153,7 +153,7 @@ for (const p of ['/', '/relic']) {
   await page.context().close();
 }
 
-// —— F. 键盘可达 ——
+// F. 键盘可达
 console.log('== F. 键盘可达：装备槽 / 卡面按钮（v0.96 起图鉴卡与编队卡去伪交互语义） ==');
 {
   const page = await newSeededPage(browser, makeSave({ relics: [{ id: 'r_energy_1' }, { id: 'r_alloy_1' }], equipped: ['relic_v077_0', null, null, null] }), '/relic');
@@ -186,7 +186,7 @@ console.log('== F. 键盘可达：装备槽 / 卡面按钮（v0.96 起图鉴卡�
   await page2.context().close();
 }
 
-// —— G. 训练时长 fmtTime ——
+// G. 训练时长 fmtTime
 console.log('== G. 训练时长统一 fmtTime ==');
 {
   const training = [{ id: 'task_v077', unitId: 'assault', count: 10, remaining: 50000, totalTime: 50000 }];
@@ -197,7 +197,7 @@ console.log('== G. 训练时长统一 fmtTime ==');
   await page.context().close();
 }
 
-// —— H. 反馈口径：建造 / 训练开始 toast ——
+// H. 反馈口径：建造 / 训练开始 toast
 console.log('== H. 反馈口径：建造 / 训练开始 toast ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/build');
@@ -218,7 +218,7 @@ console.log('== H. 反馈口径：建造 / 训练开始 toast ==');
   await page2.context().close();
 }
 
-// —— I. 视口缩放 + 移动端抽查 ——
+// I. 视口缩放 + 移动端抽查
 console.log('== I. 视口缩放 + 移动端抽查 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/');

@@ -66,7 +66,7 @@ def endless_enemies(depth):
 
 SEEDS = [0x1234 + i * 7919 for i in range(8)]
 
-# (档, best, 前沿 target) —— target = best+1 的里程碑边界战
+# (档, best, 前沿 target) ， target = best+1 的里程碑边界战
 POINTS = [
     ('A', 8, 10), ('A', 12, 15),
     ('B', 16, 20), ('B', 21, 25),

@@ -1,5 +1,5 @@
 /**
- * explore — English locale messages (translated from the zh-CN baseline)
+ * explore：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.explore.layer.arm.name': 'Star Arm Layer',

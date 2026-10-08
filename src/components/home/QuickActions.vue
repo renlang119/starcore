@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// QuickActions — 首页快速操作入口（v0.54 从 HomeView 拆出）
+// QuickActions：首页快速操作入口（v0.54 从 HomeView 拆出）
 import { t } from '@/i18n'
 import { useRouter } from 'vue-router'
 import { NAV_ITEMS } from '@/data/navigation'
@@ -32,7 +32,7 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
 </script>
 
 <template>
-  <!-- 快速操作入口 — Hero 下方一行 4 个等宽紧凑按钮 -->
+  <!-- 快速操作入口：Hero 下方一行 4 个等宽紧凑按钮 -->
   <section class="quick-actions" :aria-label="t('home.quick.aria')">
     <!-- onboarding: 快速操作引导 -->
     <OnboardingBubble
@@ -57,7 +57,7 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
 </template>
 
 <style scoped>
-/* —— 快速操作入口 —— */
+/* 快速操作入口 */
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -91,7 +91,7 @@ const quickActions = QUICK_ENTRIES.map(({ id, color, label }) => {
   transform: scale(0.95);
 }
 
-/* —— onboarding 气泡定位（变体类承载定位与层级，v0.97）—— */
+/* onboarding 气泡定位（变体类承载定位与层级，v0.97）， */
 .ob-quick {
   position: absolute;
   bottom: 100%;

@@ -192,7 +192,7 @@ console.log('== S4. 时间作弊：系统时间拨快 30 天 ==');
     localStorage.removeItem('starcore_save_v1');
     localStorage.setItem('starcore_onboarding', JSON.stringify({}));
   }, payload);
-  // 用 clock API 快进 30 天（逐日签到应触发 30 次？还是 1 次？——记录行为）
+  // 用 clock API 快进 30 天（逐日签到应触发 30 次？还是 1 次？，记录行为）
   await page_clock(ctx, 30);
   async function page_clock(ctx, days) {
     const page = await ctx.newPage();

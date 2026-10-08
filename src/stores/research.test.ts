@@ -1,5 +1,5 @@
 /**
- * research.test.ts — 科技 store 测试
+ * research.test.ts：科技 store 测试
  * 覆盖：complete / available 前置判定 / allEffects /
  * getMult 连乘聚合 / getValue 累加 / cost_mult /
  * reset / serialize-hydrate / 数值规范守恒断言（docs/游戏数值设定规范.md §四）

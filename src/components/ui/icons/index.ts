@@ -1,5 +1,5 @@
 /**
- * icons/index.ts — 统一导出 7 个图标子组件
+ * icons/index.ts：统一导出 7 个图标子组件
  *
  * Icons.vue facade 通过此入口 import 全部子组件；
  * 符号表由 AppShell 单点挂载（v0.77 统一）。

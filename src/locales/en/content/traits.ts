@@ -1,5 +1,5 @@
 /**
- * traits — English content strings
+ * traits：English content strings
  *
  * Chinese is the baseline language; translations follow the shared glossary.
  */

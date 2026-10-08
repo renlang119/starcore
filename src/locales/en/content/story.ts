@@ -1,5 +1,5 @@
 /**
- * story — English locale messages (translated from the zh-CN baseline)
+ * story：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.story.node_arm_abyss':

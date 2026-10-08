@@ -1,5 +1,5 @@
 /**
- * src/tests/reset-providers.ts — isolate:false 下模块级单例 provider 的集中重置
+ * src/tests/reset-providers.ts：isolate:false 下模块级单例 provider 的集中重置
  *
  * 背景（v0.93）：vitest isolate:false 跨文件共享 worker，
  * 全部模块级 provider（见 resetProviderSingletons 清单）
@@ -9,7 +9,7 @@
  *
  * 本文件由 vitest.config.ts 的 setupFiles 挂载，每个测试文件开始前把全部
  * provider 恢复默认值（同各 store 模块声明处的初始默认）。测试内注入的
- * provider 只在本文件内有效，跨文件不再泄漏——散落的手工重置不再是
+ * provider 只在本文件内有效，跨文件不再泄漏，散落的手工重置不再是
  * 正确性的必要条件（保留无害）。
  *
  * 注意：achievements.externalProviders 无 setter 全清接口，这里用

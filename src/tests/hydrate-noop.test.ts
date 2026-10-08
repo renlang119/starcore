@@ -1,5 +1,5 @@
 /**
- * hydrate-noop.test.ts — 跨 store 的 hydrate(undefined) no-op 一致性
+ * hydrate-noop.test.ts：跨 store 的 hydrate(undefined) no-op 一致性
  *
  * 由 buildings/exploration/research/resources 四个 store 测试的同名同义用例
  * 合并而来（v1.04）：hydrate(undefined) 必须不改变现状，含已有内容的 store

@@ -47,7 +47,7 @@ async function newPage(browser, save, path = '/archive', viewport = { width: 128
 
 const browser = await launch();
 
-// —— A. 全新档：档案馆渲染与导航入口 ——
+// A. 全新档：档案馆渲染与导航入口
 console.log('== A. 全新档档案馆渲染 ==');
 {
   const { page, errors } = await newPage(browser, makeSave());
@@ -80,7 +80,7 @@ console.log('== A. 全新档档案馆渲染 ==');
   await page.context().close();
 }
 
-// —— B. 注入探索进度档：剧情回读 ——
+// B. 注入探索进度档：剧情回读
 console.log('== B. 探索进度档剧情回读 ==');
 {
   const save = makeSave({
@@ -103,7 +103,7 @@ console.log('== B. 探索进度档剧情回读 ==');
   await page.context().close();
 }
 
-// —— C. 注入遭遇记录档：图鉴收录态 ——
+// C. 注入遭遇记录档：图鉴收录态
 console.log('== C. 遭遇记录档图鉴收录 ==');
 {
   const save = makeSave({ archive: { enemies: ['raider_1#0', 'beast_1#0'] } });
@@ -117,7 +117,7 @@ console.log('== C. 遭遇记录档图鉴收录 ==');
   await page.context().close();
 }
 
-// —— D. 战斗接线：真实点击出征收录图鉴 ——
+// D. 战斗接线：真实点击出征收录图鉴
 console.log('== D. 战斗接线图鉴收录 ==');
 {
   // 档：完成 node_orbit（解锁 raider_1）+ 带兵编队，打 raider_1
@@ -159,7 +159,7 @@ console.log('== D. 战斗接线图鉴收录 ==');
   await ctx.close();
 }
 
-// —— E. 旧档兼容（无 archive 字段）——
+// E. 旧档兼容（无 archive 字段），
 console.log('== E. 旧档兼容 ==');
 {
   const save = makeSave(); // 无 archive 字段

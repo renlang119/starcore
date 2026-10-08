@@ -1,5 +1,5 @@
 /**
- * src/tests/force-zh-locale.ts — 测试环境固定 zh-CN 语言语境（v1.15）
+ * src/tests/force-zh-locale.ts：测试环境固定 zh-CN 语言语境（v1.15）
  *
  * 背景：jsdom 的 navigator.language 缺省为 en-US。多语言上线前注册表只有
  * zh-CN，浏览器匹配落空回退默认语言；注册 en 后英文前缀匹配命中，测试环境

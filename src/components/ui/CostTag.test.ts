@@ -1,5 +1,5 @@
 /**
- * CostTag.test.ts — 成本标签组件测试
+ * CostTag.test.ts：成本标签组件测试
  *
  * @vitest-environment jsdom
  */

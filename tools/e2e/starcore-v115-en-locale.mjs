@@ -12,7 +12,7 @@ const en = (await import('../../src/locales/en/index.ts')).default;
 
 const browser = await launch();
 
-// —— A. 中文浏览器环境默认渲染 ——
+// A. 中文浏览器环境默认渲染
 console.log('== A. 中文环境默认渲染 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -41,7 +41,7 @@ console.log('== A. 中文环境默认渲染 ==');
   await ctx.close();
 }
 
-// —— B. 英文浏览器环境自动匹配 ——
+// B. 英文浏览器环境自动匹配
 console.log('== B. 英文环境自动匹配 ==');
 {
   const ctx = await browser.newContext({
@@ -73,7 +73,7 @@ console.log('== B. 英文环境自动匹配 ==');
   await ctx.close();
 }
 
-// —— C. 手动切换：English → 简体中文 ——
+// C. 手动切换：English → 简体中文
 console.log('== C. 手动切换 ==');
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -108,7 +108,7 @@ console.log('== C. 手动切换 ==');
   await ctx.close();
 }
 
-// —— D. 显式选择优先于浏览器识别 ——
+// D. 显式选择优先于浏览器识别
 console.log('== D. 显式选择优先级 ==');
 {
   // en 浏览器 + 显式 zh-CN → 中文
@@ -146,7 +146,7 @@ console.log('== D. 显式选择优先级 ==');
   await ctx2.close();
 }
 
-// —— E. 无匹配统一回退英文 / 繁体归简体（v1.17）——
+// E. 无匹配统一回退英文 / 繁体归简体（v1.17），
 console.log('== E. 无匹配回退与繁体 ==');
 {
   const E_CASES = [

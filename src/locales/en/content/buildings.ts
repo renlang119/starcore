@@ -1,5 +1,5 @@
 /**
- * buildings — English locale messages (translated from the zh-CN baseline)
+ * buildings：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.buildings.core_extractor.desc': 'Draws raw energy directly from the planetary core',

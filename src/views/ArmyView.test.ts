@@ -1,5 +1,5 @@
 /**
- * ArmyView.test.ts — 部队视图组件测试
+ * ArmyView.test.ts：部队视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载与战力面板

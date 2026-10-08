@@ -52,7 +52,7 @@ function makeSave({
 
 const browser = await launch();
 
-// —— A. 全新档渲染 ——
+// A. 全新档渲染
 console.log('== A. 全新档：49 卡 9 区 + 汇总 0/49 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements', { waitMs: 1500 });
@@ -69,7 +69,7 @@ console.log('== A. 全新档：49 卡 9 区 + 汇总 0/49 ==');
   await page.context().close();
 }
 
-// —— B. 终身计数：合成/强化 ——
+// B. 终身计数：合成/强化
 console.log('== B. 注档终身计数：合成/强化解锁 ==');
 {
   const page = await newSeededPage(
@@ -92,7 +92,7 @@ console.log('== B. 注档终身计数：合成/强化解锁 ==');
   await page.context().close();
 }
 
-// —— C. 现值指标：敌方图鉴/套装 ——
+// C. 现值指标：敌方图鉴/套装
 console.log('== C. 注档现值指标：敌情/套装解锁 ==');
 {
   // 敌方图鉴键静态推导（据点表 + 中文语言包聚合，与 ENEMY_KIND_BUCKETS 同源；
@@ -135,7 +135,7 @@ console.log('== C. 注档现值指标：敌情/套装解锁 ==');
   await page.context().close();
 }
 
-// —— D. 远征长线：阈值边界 ——
+// D. 远征长线：阈值边界
 console.log('== D. 远征 D30/D40 边界 ==');
 {
   // D29：不到 ach_battle_6；D30：解锁
@@ -162,7 +162,7 @@ console.log('== D. 远征 D30/D40 边界 ==');
   await p40.context().close();
 }
 
-// —— E. 旧档兼容：缺新两键 ——
+// E. 旧档兼容：缺新两键
 console.log('== E. v1.21 旧档（缺 synths/enhanceLevels）不废档 ==');
 {
   const save = makeSave();
@@ -175,7 +175,7 @@ console.log('== E. v1.21 旧档（缺 synths/enhanceLevels）不废档 ==');
   await page.context().close();
 }
 
-// —— F. 真实操作链：合成一次 → 计数与解锁 ——
+// F. 真实操作链：合成一次 → 计数与解锁
 console.log('== F. 真实合成操作 → 终身计数 + 成就 ==');
 {
   // 注档 3 件普通遗物 → 选材模式点 3 张 → 合成 → 跳成就页核对
@@ -222,7 +222,7 @@ console.log('== F. 真实合成操作 → 终身计数 + 成就 ==');
   await page.context().close();
 }
 
-// —— G. 转生保留 ——
+// G. 转生保留
 console.log('== G. 转生后终身计数保留 ==');
 {
   const page = await newSeededPage(
@@ -237,7 +237,7 @@ console.log('== G. 转生后终身计数保留 ==');
   await page.context().close();
 }
 
-// —— H. 移动视口 ——
+// H. 移动视口
 console.log('== H. 移动视口 375 无横向溢出 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements', {

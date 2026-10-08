@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * run.mjs — 星核纪元 · 端到端诊断运行器
+ * run.mjs：星核纪元 · 端到端诊断运行器
  *
  * 对本地预览或远程目标运行回归脚本集；默认自动管理本地预览服务的启停。
  *
@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const E2E_DIR = path.join(ROOT, 'tools', 'e2e')
 
-// —— 清单：本地全量回归（36）/ 远程重跑（26）——
+// 清单：本地全量回归（36）/ 远程重跑（26），
 const SUITE = [
   'starcore-baseline-regress.mjs',
   'starcore-v045-release.mjs',
@@ -115,7 +115,7 @@ function printHelp() {
   --help           显示本说明`)
 }
 
-// —— 参数解析 ——
+// 参数解析
 const argv = process.argv.slice(2)
 let remote = process.env.SC_URL || null
 let port = null
@@ -166,7 +166,7 @@ for (const s of list) {
   }
 }
 
-// —— 预览服务生命周期 ——
+// 预览服务生命周期
 let previewProc = null
 
 function freePort(start) {
@@ -272,7 +272,7 @@ process.on('SIGTERM', () => {
   cleanup().finally(() => process.exit(143))
 })
 
-// —— 主流程 ——
+// 主流程
 async function main() {
   let target
   if (mode === 'remote') {
@@ -336,7 +336,7 @@ async function main() {
   process.exit(fail ? 1 : 0)
 }
 
-// —— 日志目录准备（仅清理同名 .log，不动目录内其他文件）——
+// 日志目录准备（仅清理同名 .log，不动目录内其他文件），
 fs.mkdirSync(logDir, { recursive: true })
 for (const f of fs.readdirSync(logDir)) {
   if (f.endsWith('.log')) fs.rmSync(path.join(logDir, f))

@@ -1,5 +1,5 @@
 /**
- * weeklyBoss — English locale messages (translated from the zh-CN baseline)
+ * weeklyBoss：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.weeklyBoss.name': 'Weekly Foe · Layer {d}',

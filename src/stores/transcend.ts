@@ -1,5 +1,5 @@
 /**
- * transcend.ts — 转生（奇点重启）系统 store
+ * transcend.ts：转生（奇点重启）系统 store
  * 重置大部分进度，获得负熵（永久货币），提升全局产出
  *
  * 节点分两类（v0.56 转生树无限化）：
@@ -65,7 +65,7 @@ export function nextCost(node: TranscendNode, level = node.level): number {
 
 // 导出供守恒脚本取真值（转生树节点清单），运行期消费方为本文件内部
 export const DEFAULT_NODES: TranscendNode[] = [
-  // —— 买断节点（引导期目标，原 11 节点口径不变）——
+  // 买断节点（引导期目标，原 11 节点口径不变），
   {
     id: 't_energy_1',
     name: t('content.transcend.t_energy_1.name'),
@@ -225,7 +225,7 @@ export const DEFAULT_NODES: TranscendNode[] = [
     ],
     level: 0,
   },
-  // —— 自动化 QoL（v0.58 新增，买断常开：买后每 tick 自动执行对应操作）——
+  // 自动化 QoL（v0.58 新增，买断常开：买后每 tick 自动执行对应操作），
   {
     id: 't_auto_build',
     name: t('content.transcend.t_auto_build.name'),
@@ -264,7 +264,7 @@ export const DEFAULT_NODES: TranscendNode[] = [
     ],
     level: 0,
   },
-  // —— 无限节点（v0.56 新增，负熵支出端永不枯竭）——
+  // 无限节点（v0.56 新增，负熵支出端永不枯竭），
   {
     id: 't_inf_prod',
     name: t('content.transcend.t_inf_prod.name'),
@@ -339,7 +339,7 @@ export const DEFAULT_NODES: TranscendNode[] = [
   },
 ]
 
-/** 克隆默认节点表。注意不能用 JSON 往返——Infinity 会被序列化为 null，
+/** 克隆默认节点表。注意不能用 JSON 往返，Infinity 会被序列化为 null，
  *  无限节点的 maxLevel 会退化成买断语义 */
 function cloneDefaultNodes(): TranscendNode[] {
   return DEFAULT_NODES.map((n) => ({ ...n, effects: n.effects.map((e) => ({ ...e })) }))
@@ -366,7 +366,7 @@ export const useTranscendStore = defineStore('transcend', () => {
    * 乘数型（getMult 乘法通道）实际乘数 = value^repeat，
    * 加法型（getValue 累加通道）实际值 = value×repeat。
    * 旧实现按 level 逐份 push，超大等级值的存档会在 init 首帧同步物化
-   * 数十亿元素挂死主线程——校验层等级上限之外的第二道防线
+   * 数十亿元素挂死主线程，校验层等级上限之外的第二道防线
    */
   const allEffects = computed(() => {
     const list: (TranscendEffect & { repeat: number })[] = []

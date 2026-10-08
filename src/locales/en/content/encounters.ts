@@ -1,5 +1,5 @@
 /**
- * encounters — English locale messages (translated from the zh-CN baseline)
+ * encounters：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.encounters.enc_flux.name': 'Energy Surge',

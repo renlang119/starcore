@@ -1,10 +1,10 @@
 /**
- * weekly-boss.ts — 每周强敌（周 Boss）定义（v1.24 可玩内容扩展方案 5）
+ * weekly-boss.ts：每周强敌（周 Boss）定义（v1.24 可玩内容扩展方案 5）
  *
  * 每周一（ISO 周，与周期挑战同轨）刷新一只强化据点 Boss：
  * 编成 = 远征 4 模板之一（周种子洗牌取 1，克制考题每周变）
  *        × TEMPLATE_NORMALIZE 强度归一 × endlessScale(bossDepth)；
- * bossDepth = max(6, expeditionBest + OFFSET[模板])——锚玩家终身远征前沿，
+ * bossDepth = max(6, expeditionBest + OFFSET[模板])，锚玩家终身远征前沿，
  * 模板偏移把四类编成的 50% 墙位结构差对齐（六轮战斗模拟校准定稿，
  * 2026-09-24）。
  *
@@ -12,7 +12,7 @@
  * 卡墙玩家（墙位）胜率落 [15%, 85%]（可过且非白给）；破墙后 Boss 随
  * 前沿上移自校准，永远有下一只。
  *
- * 奖励 = endlessStronghold(max(6, expeditionBest + 1)) 全套 × 1.5——
+ * 奖励 = endlessStronghold(max(6, expeditionBest + 1)) 全套 × 1.5，
  * 锚玩家前沿、与模板解耦（消除「难的模板周反而奖金低」错位）；
  * 量级 = 1.5 场前沿远征单场，周频一次性，不构成第二资源轴。
  *
@@ -46,7 +46,7 @@ export const WEEKLY_BOSS_TEMPLATE_IDS = ['silencer_3', 'raider_5', 'beast_4', 'r
 
 /**
  * 模板深度偏移（校准 2026-09-24 六轮定稿）：把四类编成 50% 墙位的
- * 结构分量对齐——单体巨兽（beast_4，血池集中、50 回合限制下更难）墙位偏早，
+ * 结构分量对齐，单体巨兽（beast_4，血池集中、50 回合限制下更难）墙位偏早，
  * 步兵海（raider_5）偏晚。卡墙玩家 Boss 胜率落 [15%, 85%] 可过带。
  */
 export const WEEKLY_BOSS_OFFSET: Record<(typeof WEEKLY_BOSS_TEMPLATE_IDS)[number], number> = {

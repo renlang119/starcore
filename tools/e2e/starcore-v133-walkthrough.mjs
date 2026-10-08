@@ -15,7 +15,7 @@ const OUT = process.env.OUT || path.join(os.tmpdir(), 'starcore-walkthrough')
 fs.mkdirSync(OUT, { recursive: true })
 const HOUR = 3_600_000
 
-// —— 异常采集（全上下文共用） ——
+// 异常采集（全上下文共用）
 const errors = []
 function wire(page) {
   page.on('console', (m) => {
@@ -61,7 +61,7 @@ async function findExplorable(page) {
   return null
 }
 
-// —— 日期/周工具（与 app 同逻辑） ——
+// 日期/周工具（与 app 同逻辑）
 function weekStr(d = new Date()) {
   const t = new Date(d.getFullYear(), d.getMonth(), d.getDate())
   const dayNum = (t.getDay() + 6) % 7
@@ -76,7 +76,7 @@ function weekStr(d = new Date()) {
 const TODAY = new Date().toLocaleDateString('sv')
 const THIS_WEEK = weekStr()
 
-// —— 数据基线 ——
+// 数据基线
 const ALL_TECHS = ["fusion_tech", "energy_eff_1", "core_mining", "energy_eff_2", "dyson_theory", "crystal_eff_1", "refine_tech", "alloy_eff_1", "nano_forge_tech", "ion_casting", "alloy_eff_2", "stellar_forge_theory", "quantum_tech", "data_eff_1", "neural_arch", "research_speed", "data_eff_2", "holographic_computing", "military_basic", "weapon_upg", "armor_upg", "adv_units", "parallel_training_1", "parallel_training_2", "crystal_growth", "deep_crystal_mining", "crystal_eff_2", "silicon_ring_theory", "explore_basic", "explore_range_1", "explore_range_2", "dark_detection", "dark_matter_theory", "dark_capture", "dark_eff_1", "dark_singularity_well_theory", "singularity_theory", "prestige_boost", "offline_enhance", "stellar_charting", "wormhole_stabilization", "fleet_logistics", "dark_resonance", "starcluster_charting", "flagship_doctrine", "dark_amplifier", "precursor_memory", "arm_navigation", "armada_tactics", "dark_harvester", "neural_archive", "galaxy_charting", "galaxy_command", "dark_web", "galaxy_archive", "void_charting", "void_command", "dark_veil", "void_archive"]
 const TECH_GAP = ['galaxy_command', 'void_command']
 const DEEP_NODES = ['node_orbit', 'node_inner', 'node_outer', 'node_deep', 'node_stellar_gate', 'node_stellar_mine', 'node_stellar_forge', 'node_stellar_dead', 'node_stellar_core', 'node_stellar_edge']

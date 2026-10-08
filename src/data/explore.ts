@@ -1,5 +1,5 @@
 /**
- * explore.ts — 探索星图节点定义
+ * explore.ts：探索星图节点定义
  * 星图层：layer 值 9 种 = 初版 4 层（轨道带 / 内层星系 / 外层星系 / 深空带）
  * + 五次层扩展（v0.59-v0.92）；玩法叙事口径为六层（星核 → 恒星系 → 星团 → 星臂 → 星系 → 深空）。
  * 星臂 / 星系 / 深空三层敌人编成经战斗模拟脚本三档验证。
@@ -93,7 +93,7 @@ export const LAYER_INFO: Record<
 }
 
 export const EXPLORE_NODES: ExploreNode[] = [
-  // —— 轨道带 ——
+  // 轨道带
   {
     id: 'node_orbit',
     name: t('content.explore.node_orbit.name'),
@@ -103,7 +103,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     cost: { energy: 100 },
     rewards: { energy: 300, crystal: 10, alloy: 20 },
   },
-  // —— 内层星系 ——
+  // 内层星系
   {
     id: 'node_inner',
     name: t('content.explore.node_inner.name'),
@@ -114,7 +114,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 5000, crystal: 50, alloy: 200, data: 100 },
     requires: ['node_orbit'],
   },
-  // —— 外层星系 ——
+  // 外层星系
   {
     id: 'node_outer',
     name: t('content.explore.node_outer.name'),
@@ -125,7 +125,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 50000, crystal: 200, alloy: 2000, data: 1000, dark: 2 },
     requires: ['node_inner'],
   },
-  // —— 深空 ——
+  // 深空
   {
     id: 'node_deep',
     name: t('content.explore.node_deep.name'),
@@ -136,7 +136,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 500000, crystal: 1000, alloy: 10000, data: 10000, dark: 20 },
     requires: ['node_outer'],
   },
-  // —— 恒星系层 ——
+  // 恒星系层
   {
     id: 'node_stellar_gate',
     name: t('content.explore.node_stellar_gate.name'),
@@ -197,7 +197,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 300000000, data: 2000000, dark: 120 },
     requires: ['node_stellar_core'],
   },
-  // —— 星团层（v0.71）——
+  // 星团层（v0.71），
   {
     id: 'node_cluster_gate',
     name: t('content.explore.node_cluster_gate.name'),
@@ -258,7 +258,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 18000000000, data: 40000000, dark: 400 },
     requires: ['node_cluster_hollow'],
   },
-  // —— 星臂层（v0.90）——
+  // 星臂层（v0.90），
   {
     id: 'node_arm_gate',
     name: t('content.explore.node_arm_gate.name'),
@@ -319,7 +319,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 480000000000, data: 80000000, dark: 1000 },
     requires: ['node_arm_abyss'],
   },
-  // —— 星系层（v0.91）——
+  // 星系层（v0.91），
   {
     id: 'node_galaxy_gate',
     name: t('content.explore.node_galaxy_gate.name'),
@@ -380,7 +380,7 @@ export const EXPLORE_NODES: ExploreNode[] = [
     rewards: { energy: 12000000000000, data: 2000000000, dark: 2200 },
     requires: ['node_galaxy_halo'],
   },
-  // —— 深空层（v0.92）——
+  // 深空层（v0.92），
   {
     id: 'node_void_gate',
     name: t('content.explore.node_void_gate.name'),

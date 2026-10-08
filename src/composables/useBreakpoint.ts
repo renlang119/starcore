@@ -16,7 +16,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 const MOBILE_BREAKPOINT = 768 // px, 与 Tailwind md 断点一致
 
 export function useBreakpoint() {
-  // setup 阶段立即求值——消除首帧闪烁
+  // setup 阶段立即求值，消除首帧闪烁
   const mql =
     typeof window !== 'undefined' ? window.matchMedia(`(min-width: ${MOBILE_BREAKPOINT}px)`) : null
   const isDesktop = ref(mql ? mql.matches : true)

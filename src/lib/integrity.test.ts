@@ -1,5 +1,5 @@
 /**
- * integrity.test.ts — 存档完整性签名测试
+ * integrity.test.ts：存档完整性签名测试
  *
  * 覆盖：SHA-256 / HMAC-SHA256 标准向量（RFC 4231、FIPS 180-4 示例）、
  * 长密钥分支、密钥派生稳定性、saveSignature/verifySaveSignature 门面、

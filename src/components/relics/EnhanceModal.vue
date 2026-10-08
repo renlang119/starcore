@@ -17,7 +17,7 @@ import ModalOverlay from '@/components/ui/ModalOverlay.vue'
 import Icon from '@/components/ui/Icon.vue'
 
 /**
- * EnhanceModal — 遗物强化弹窗（自 RelicView 拆出，v0.72）
+ * EnhanceModal：遗物强化弹窗（自 RelicView 拆出，v0.72）
  *
  * 强化状态（选中遗物/成本/预览/执行）全部内聚在本组件；
  * 能量不足等提示通过 fail 事件交由视图层 toast（不自带 toast 实现）。

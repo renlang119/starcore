@@ -1,5 +1,5 @@
 /**
- * zh-CN — 中文语言包（基线语言；值 = 界面实际文案，逐字保真）
+ * zh-CN：中文语言包（基线语言；值 = 界面实际文案，逐字保真）
  *
  * 结构：ui/ 界面层按域拆分；content/ 内容层按域拆分（镜像 src/data 文件名）。
  * 纯数据模块：相对路径 + 显式 .ts 后缀，保证纯 Node 工具链（守卫脚本等）可直接加载。
@@ -67,7 +67,7 @@ export default {
   ...tech,
   ...ui,
 
-  // —— 内容层（content/）——
+  // 内容层（content/），
   ...achievementsContent,
   ...buildingsContent,
   ...endlessContent,

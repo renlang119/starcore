@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * BarracksPanel.vue — 兵营面板（训练与训练队列）。
+ * BarracksPanel.vue：兵营面板（训练与训练队列）。
  *
  * 从 ArmyView 拆出：解锁空态、单位卡（训练数量 / 成本 / 战力 / 训练按钮）
  * 与训练队列进度。类名与文案保持不变；训练反馈经 feedback 事件交回视图

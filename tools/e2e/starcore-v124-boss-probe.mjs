@@ -1,5 +1,5 @@
 /**
- * starcore-v124-boss-probe.mjs — v1.24 周 Boss 冒烟探针（非套件）
+ * starcore-v124-boss-probe.mjs：v1.24 周 Boss 冒烟探针（非套件）
  *
  * 两档状态 × 本地预览（SC_URL 可指定远程）：
  *   A. 全新档：/map 周 Boss 卡锁定态；直接访问 /battle/weekly_boss 不崩

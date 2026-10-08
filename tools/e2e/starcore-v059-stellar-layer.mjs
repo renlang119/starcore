@@ -67,7 +67,7 @@ const browser = await launch();
 const nodeCard = (page, name) =>
   page.locator('.node-card', { has: page.locator(`.n-name:text-is("${name}")`) });
 
-// —— A. 五层渲染 ——
+// A. 五层渲染
 console.log('== A. 全新档：恒星系层分区 + 全锁定 ==');
 {
   const page = await newSeededPage(browser, makeSave({ rich: false }), '/map');
@@ -80,7 +80,7 @@ console.log('== A. 全新档：恒星系层分区 + 全锁定 ==');
   await page.context().close();
 }
 
-// —— B. node_deep 完成：入口解锁，双分支锁定 ——
+// B. node_deep 完成：入口解锁，双分支锁定
 console.log('== B. node_deep 完成：gate 可用 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: ['node_deep'] }), '/map');
@@ -94,7 +94,7 @@ console.log('== B. node_deep 完成：gate 可用 ==');
   await page.context().close();
 }
 
-// —— C. 旧档形态（仅 4 旧节点完成，无新字段）：gate 可用，深层锁定 ——
+// C. 旧档形态（仅 4 旧节点完成，无新字段）：gate 可用，深层锁定
 console.log('== C. 旧档形态（4 旧节点完成）==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: ['node_orbit', 'node_inner', 'node_outer', 'node_deep'] }), '/map');
@@ -105,7 +105,7 @@ console.log('== C. 旧档形态（4 旧节点完成）==');
   await page.context().close();
 }
 
-// —— D. 9/10 完成：edge 可用 + 据点解锁 + 自动化不误开 ——
+// D. 9/10 完成：edge 可用 + 据点解锁 + 自动化不误开
 console.log('== D. 9/10 完成：edge 可用 + 14 据点 + 自动化不误开 ==');
 {
   const nine = STELLAR_NODES.slice(0, 5).concat(['node_orbit', 'node_inner', 'node_outer', 'node_deep']);
@@ -142,7 +142,7 @@ console.log('== D. 9/10 完成：edge 可用 + 14 据点 + 自动化不误开 ==
   await page.context().close();
 }
 
-// —— E. 配套科技渲染 + 成就不回归 ——
+// E. 配套科技渲染 + 成就不回归
 console.log('== E. 新科技渲染 + 成就 34 卡不回归 ==');
 {
   const page = await newSeededPage(browser, makeSave({}), '/tech');
@@ -167,7 +167,7 @@ console.log('== E. 新科技渲染 + 成就 34 卡不回归 ==');
   await page2.context().close();
 }
 
-// —— F. 空态不误触 ——
+// F. 空态不误触
 console.log('== F. 空态不误触 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: ['node_orbit', 'node_inner', 'node_outer', 'node_deep'] }), '/map');

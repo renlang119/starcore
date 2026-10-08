@@ -1,5 +1,5 @@
 /**
- * units — English locale messages (translated from the zh-CN baseline)
+ * units：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'content.units.assault.desc':

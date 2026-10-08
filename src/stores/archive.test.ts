@@ -1,5 +1,5 @@
 /**
- * archive.test.ts — 档案馆 store 测试（v1.18）
+ * archive.test.ts：档案馆 store 测试（v1.18）
  *
  * 覆盖：
  * 1. 图鉴键全集完整性（正式据点全条目键、远征不在其中；计数见断言）

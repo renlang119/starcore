@@ -1,5 +1,5 @@
 /**
- * navigation.ts — 统一导航项定义
+ * navigation.ts：统一导航项定义
  * SideNav / BottomNav / 首页快速操作等共用此数据源，通过 tier 字段筛选
  */
 

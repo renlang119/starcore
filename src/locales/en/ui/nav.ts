@@ -1,5 +1,5 @@
 /**
- * nav — English locale messages (translated from the zh-CN baseline)
+ * nav：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'nav.achievements': 'Achievements',

@@ -1,5 +1,5 @@
 /**
- * DispatchPanel.test.ts — 派遣区组件测试（v1.27 可玩内容扩展方案 6）
+ * DispatchPanel.test.ts：派遣区组件测试（v1.27 可玩内容扩展方案 6）
  *
  * 覆盖（3 个 describe、5 条用例）：
  * 1. 未解锁态（提示语、无档位按钮）
@@ -102,9 +102,9 @@ describe('DispatchPanel · 派遣中与召回', () => {
       expect(game.military.startDispatch('f1', 4, T0)).toBe(true)
       await wrapper.vm.$nextTick() // startDispatch 后等重渲染，召回按钮才回到 DOM
       vi.setSystemTime(T0 + 4 * 3_600_000)
-      // 组件 nowTick 是真实 setInterval——fake timers 下手动推进组件内倒计时状态：
+      // 组件 nowTick 是真实 setInterval，fake timers 下手动推进组件内倒计时状态：
       // 直接挂载新 wrapper 让 setup 重新读当前时间，或直接触发召回（结算按 now 参数
-      // 用 Date.now()，与组件显示无关）——store 正确性已由 military.test 覆盖，
+      // 用 Date.now()，与组件显示无关），store 正确性已由 military.test 覆盖，
       // 此处断言 UI 点击链路发放正确即可
       const energyBefore = game.resources.getAmount('energy').toNumber()
       await wrapper.find('[data-testid="dispatch-recall-f1"]').trigger('click')

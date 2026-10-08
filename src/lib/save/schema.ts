@@ -1,5 +1,5 @@
 /**
- * save/schema.ts — 存档类型契约与版本号（从 storage.ts 拆出）。
+ * save/schema.ts：存档类型契约与版本号（从 storage.ts 拆出）。
  *
  * 各 store 的序列化类型、全量存档接口（SaveData）与版本号常量；
  * 校验（validate）与读写（io）均以本文件的契约为准。
@@ -9,7 +9,7 @@ import type { UnitId } from '@/data/units'
 /** 存档版本号（测试阶段重新起算；旧版本迁移链已随 v0.73 精简移除） */
 export const SAVE_VERSION = 1
 
-// —— 各 store 的序列化类型 ——
+// 各 store 的序列化类型
 export interface ResourceSaveData {
   amounts: Record<string, string>
   totals: Record<string, string>

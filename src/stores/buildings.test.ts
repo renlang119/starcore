@@ -1,5 +1,5 @@
 /**
- * buildings.test.ts — 建筑 store 与成本曲线测试
+ * buildings.test.ts：建筑 store 与成本曲线测试
  * 覆盖：初始等级 / upgrade / getCost 公式 / 产出计算 / 解锁判定 /
  * reset / serialize-hydrate / 数值规范守恒断言（docs/游戏数值设定规范.md §三）
  */

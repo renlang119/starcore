@@ -1,5 +1,5 @@
 /**
- * useResourceParticles.ts — 资源产出粒子动画
+ * useResourceParticles.ts：资源产出粒子动画
  *
  * 功能：
  * - rate > 0 时，pill 旁生成 2px 光点向上飘 28px

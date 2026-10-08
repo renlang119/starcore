@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// SVG icon symbol 定义 — facade：统一渲染 7 个子组件
+// SVG icon symbol 定义：facade：统一渲染 7 个子组件
 // 符号表由 AppShell 单点挂载（v0.77 统一），各视图不再各自 import/挂载
 // 隐藏 svg/defs 外壳单点在此（v1.09 统一），子组件仅输出 symbol
 import {

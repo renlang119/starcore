@@ -1,5 +1,5 @@
 /**
- * common — English locale messages (translated from the zh-CN baseline)
+ * common：English locale messages (translated from the zh-CN baseline)
  */
 export default {
   'common.back': 'Back',

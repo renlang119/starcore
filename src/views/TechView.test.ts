@@ -1,5 +1,5 @@
 /**
- * TechView.test.ts — 科技视图组件测试
+ * TechView.test.ts：科技视图组件测试
  *
  * 重点测试：
  * 1. 组件挂载与分支筛选

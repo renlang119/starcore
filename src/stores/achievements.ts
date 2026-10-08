@@ -1,5 +1,5 @@
 /**
- * achievements.ts — 成就/里程碑 store（v0.57 玩法扩展方案 2；v1.22 成就扩展扩至 49 条）
+ * achievements.ts：成就/里程碑 store（v0.57 玩法扩展方案 2；v1.22 成就扩展扩至 49 条）
  *
  * 职责：
  * - 维护终身计数器（lifetime）：转生会重置单轮进度，本 store 的计数跨转生累计，
@@ -13,7 +13,7 @@
  *   （number）
  * - 外部现值（provider 注入，指标本身跨转生保留）：relicsOwned/relicKinds/
  *   enemyKinds/activeFullSets/transcends/playtime/expeditionBest
- *   —— 沿用跨 store 派生值的 provider 注入模式（同 setRelicSlotProvider）
+ *   沿用跨 store 派生值的 provider 注入模式（同 setRelicSlotProvider）
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
@@ -96,7 +96,7 @@ function emptyLifetimeInt(): Record<IntLifetimeKey, number> {
 }
 
 export const useAchievementsStore = defineStore('achievements', () => {
-  // —— 终身计数（转生不清，仅 hardReset 清零）——
+  // 终身计数（转生不清，仅 hardReset 清零），
   const lifetimeBig = ref<Record<BigLifetimeKey, Decimal>>(emptyLifetimeBig())
   const lifetimeInt = ref<Record<IntLifetimeKey, number>>(emptyLifetimeInt())
   /** 已解锁成就：id → 解锁时间戳（ms） */
@@ -129,7 +129,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
     return unlocked.value[id] !== undefined
   }
 
-  // —— 终身计数累计接口（由 game store 钩子调用）——
+  // 终身计数累计接口（由 game store 钩子调用），
   function addEnergy(v: Decimal.Value): void {
     lifetimeBig.value.energy = add(lifetimeBig.value.energy, v)
   }
@@ -182,7 +182,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
     toastQueue.value.shift()
   }
 
-  // —— EffectSource 实现 ——
+  // EffectSource 实现
   /** 已解锁成就的效果汇总 */
   const allEffects = computed(() => {
     const list: AchievementEffect[] = []
@@ -196,7 +196,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
     return aggregateMult(allEffects.value, type, target)
   }
 
-  // —— 生命周期 ——
+  // 生命周期
   /** 转生不清；hardReset 全清 */
   function reset(): void {
     lifetimeBig.value = emptyLifetimeBig()
@@ -205,7 +205,7 @@ export const useAchievementsStore = defineStore('achievements', () => {
     toastQueue.value = []
   }
 
-  // —— 序列化 ——
+  // 序列化
   function serialize(): AchievementsSaveData {
     return {
       lifetime: {

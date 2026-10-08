@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * UpgradeCountdown.vue — 建筑升级倒计时组件
+ * UpgradeCountdown.vue：建筑升级倒计时组件
  *
  * 基于木桶原理计算建筑升级所需资源的预估时间。
  * 渐进式披露：默认显示倒计时文字+色点；点击（或键盘 Enter/Space）展开明细面板，hover 仅高亮。
@@ -32,7 +32,7 @@ const expanded = ref(false)
 
 const { result } = useBuildCountdown(() => props.buildingId)
 
-// —— 倒计时时间部分（用于模板分段渲染）——
+// 倒计时时间部分（用于模板分段渲染），
 const timePart = computed(() => {
   if (result.value.type !== 'countdown') return ''
   return fmtDuration(result.value.etaSeconds!)
@@ -62,7 +62,7 @@ const rows = computed(() => {
   return []
 })
 
-// —— 辅助函数 ——
+// 辅助函数
 function resColor(rt: ResourceType): string {
   return game.resources.getMeta(rt).color
 }
@@ -207,7 +207,7 @@ function toggleExpand() {
   position: relative;
 }
 
-/* —— 倒计时行 —— */
+/* 倒计时行 */
 .countdown-row {
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@ function toggleExpand() {
   transform: rotate(180deg);
 }
 
-/* —— rate=0 状态 —— */
+/* rate=0 状态 */
 .countdown-row.rate-zero {
   background: color-mix(in srgb, var(--color-amber) 6%, transparent);
   border-color: color-mix(in srgb, var(--color-amber) 25%, transparent);
@@ -285,12 +285,12 @@ function toggleExpand() {
   color: var(--color-amber);
 }
 
-/* —— 混合态两行间距（行体统一后以相邻兄弟边距表达） —— */
+/* 混合态两行间距（行体统一后以相邻兄弟边距表达） */
 .countdown-row + .countdown-row {
   margin-top: var(--space-1);
 }
 
-/* —— 展开面板 —— */
+/* 展开面板 */
 .countdown-detail {
   overflow: hidden;
   animation: cdIn 0.25s var(--ease-out);

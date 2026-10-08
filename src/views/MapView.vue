@@ -79,7 +79,7 @@ const availableStrongholds = computed(() => {
   return game.combat.availableStrongholds(game.exploration.completedNodes)
 })
 
-// —— 无尽远征（v0.60）——
+// 无尽远征（v0.60），
 const endlessUnlockedNow = computed(() => game.combat.isEndlessUnlocked())
 /** 前沿深度 = 历史最深 + 1（攻克即推进） */
 const endlessFrontier = computed(() => game.combat.expeditionBest + 1)
@@ -88,7 +88,7 @@ const endlessSection = {
   desc: t('map.endlessDesc'),
 }
 
-// —— 远征里程碑（v1.20 可玩内容扩展方案 2）——
+// 远征里程碑（v1.20 可玩内容扩展方案 2），
 /** 最小可领档位（0 = 无）；达标时卡下方显示领取条（并置结构，卡本体仍走跳转） */
 const milestoneReadyTier = computed(() => game.combat.nextMilestoneTier)
 /** 领取条文案：档位对应深度 = 档位 × 步长 */
@@ -110,7 +110,7 @@ function claimMilestone() {
   if (reward) toast.show(t('map.milestoneClaimed', { depth: tier * MILESTONE_STEP }))
 }
 
-// —— 每周强敌（v1.24 可玩内容扩展方案 5）——
+// 每周强敌（v1.24 可玩内容扩展方案 5），
 /** 解锁口径与远征一致（锚点据点 silencer_3） */
 const weeklyBossUnlocked = computed(() => game.combat.isEndlessUnlocked())
 /** 本周是否已击败（跨周自动失效由 daily store 承担） */
@@ -383,7 +383,7 @@ const weeklyBossCard = computed(() => {
   color: var(--color-t-tertiary);
 }
 
-/* —— 无尽远征（v0.60）—— */
+/* 无尽远征（v0.60）， */
 .endless-section {
   margin-top: var(--space-2);
 }
@@ -415,7 +415,7 @@ const weeklyBossCard = computed(() => {
   color: var(--c);
 }
 
-/* —— 里程碑领取条（v1.20）：并置于远征卡下方 —— */
+/* 里程碑领取条（v1.20）：并置于远征卡下方 */
 .milestone-bar {
   display: flex;
   align-items: center;
@@ -428,7 +428,7 @@ const weeklyBossCard = computed(() => {
   padding: var(--space-2) var(--space-3);
 }
 
-/* —— 周强敌卡（v1.24）：复用远征卡骨架，实线边框区分 —— */
+/* 周强敌卡（v1.24）：复用远征卡骨架，实线边框区分 */
 .weekly-boss-card {
   margin-top: var(--space-2);
   border-style: solid;

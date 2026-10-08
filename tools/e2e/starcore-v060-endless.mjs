@@ -70,7 +70,7 @@ function makeSave({
 const browser = await launch();
 const UNLOCK_NODE = ALL_NODES; // 沉默者旗舰需 node_stellar_edge 完成 → 全部 10 节点
 
-// —— A. 未解锁 ——
+// A. 未解锁
 console.log('== A. 未解锁：置灰卡 + 提示 + 点击不跳转 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: [] }), '/map');
@@ -88,7 +88,7 @@ console.log('== A. 未解锁：置灰卡 + 提示 + 点击不跳转 ==');
   await page.context().close();
 }
 
-// —— B. 解锁 + 旧档兼容 ——
+// B. 解锁 + 旧档兼容
 console.log('== B. 克旗舰解锁：亮卡 + 前沿第1层 + 旧档无字段兼容 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: UNLOCK_NODE, completedStrongholds: ['silencer_3'] }), '/map');
@@ -107,7 +107,7 @@ console.log('== B. 克旗舰解锁：亮卡 + 前沿第1层 + 旧档无字段兼
   await legacyUnl.context().close();
 }
 
-// —— C. 远征战斗页 + 胜利推进 ——
+// C. 远征战斗页 + 胜利推进
 console.log('== C. /battle/endless：深度跟随前沿 + 胜利推进 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: UNLOCK_NODE, completedStrongholds: ['silencer_3'] }), '/battle/endless');
@@ -146,7 +146,7 @@ console.log('== C. /battle/endless：深度跟随前沿 + 胜利推进 ==');
   await page.context().close();
 }
 
-// —— D. 深度步进与钳制 + 重打不推进 ——
+// D. 深度步进与钳制 + 重打不推进
 console.log('== D. 深度步进钳制 + 重打不推进 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: UNLOCK_NODE, completedStrongholds: ['silencer_3'], expeditionBest: 3 }), '/battle/endless');
@@ -176,7 +176,7 @@ console.log('== D. 深度步进钳制 + 重打不推进 ==');
   await page.context().close();
 }
 
-// —— E. 转生后入口锁回 + 深度档案保留 ——
+// E. 转生后入口锁回 + 深度档案保留
 console.log('== E. 转生锁回入口、深度保留语义 ==');
 {
   // 转生清 completed → 入口锁回；expeditionBest 在存档仍保留（UI 显示语义由 store 单测保证）
@@ -188,7 +188,7 @@ console.log('== E. 转生锁回入口、深度保留语义 ==');
   await postTranscend.context().close();
 }
 
-// —— F. 常规据点不受影响 + 移动视口 ——
+// F. 常规据点不受影响 + 移动视口
 console.log('== F. 常规据点战斗 + 移动视口不溢出 ==');
 {
   const page = await newSeededPage(browser, makeSave({ completedNodes: ['node_orbit'], completedStrongholds: [] }), '/battle/raider_1');
@@ -208,7 +208,7 @@ console.log('== F. 常规据点战斗 + 移动视口不溢出 ==');
   await ach.context().close();
 }
 
-// —— G. 远征里程碑（v1.20）：领取条、领取入账、转生保留、伪领净化 ——
+// G. 远征里程碑（v1.20）：领取条、领取入账、转生保留、伪领净化
 console.log('== G. 里程碑领取条：显示/领取/转生保留/旧档兼容 ==');
 {
   // G1. best=9 未达标：无领取条

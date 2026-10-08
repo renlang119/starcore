@@ -1,5 +1,5 @@
 /**
- * pve.ts — PVE 据点定义
+ * pve.ts：PVE 据点定义
  * 4 类据点（共 36 个）：掠夺者营地、异星巨兽、古代遗迹、沉默者前哨
  * 每类有多个难度层级，难度越高奖励越好
  */
@@ -83,7 +83,7 @@ export const STRONGHOLD_TYPES: Record<
 }
 
 export const STRONGHOLDS: StrongholdDef[] = [
-  // —— 掠夺者营地 ——
+  // 掠夺者营地
   {
     id: 'raider_1',
     name: t('content.pve.raider_1.name'),
@@ -173,7 +173,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     requires: 'node_outer',
   },
 
-  // —— 异星巨兽 ——
+  // 异星巨兽
   {
     id: 'beast_1',
     name: t('content.pve.beast_1.name'),
@@ -224,7 +224,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     requires: 'node_deep',
   },
 
-  // —— 古代遗迹 ——
+  // 古代遗迹
   {
     id: 'ruin_1',
     name: t('content.pve.ruin_1.name'),
@@ -284,7 +284,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     requires: 'node_deep',
   },
 
-  // —— 沉默者前哨 ——
+  // 沉默者前哨
   {
     id: 'silencer_1',
     name: t('content.pve.silencer_1.name'),
@@ -323,7 +323,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     requires: 'node_deep',
   },
 
-  // —— 恒星系层据点 ——
+  // 恒星系层据点
   {
     id: 'raider_4',
     name: t('content.pve.raider_4.name'),
@@ -579,7 +579,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     idle: { energy: 5000, alloy: 300, data: 400, dark: 4 },
     requires: 'node_stellar_edge',
   },
-  // —— 星团层（v0.71，敌人编成经离线战斗模拟脚本三档验证）——
+  // 星团层（v0.71，敌人编成经离线战斗模拟脚本三档验证），
   {
     id: 'raider_6',
     name: t('content.pve.raider_6.name'),
@@ -822,7 +822,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     idle: { energy: 10000, alloy: 600, data: 800, dark: 8 },
     requires: 'node_cluster_silence',
   },
-  // —— 星臂层（v0.90，敌人编成经战斗模拟脚本三档验证）——
+  // 星臂层（v0.90，敌人编成经战斗模拟脚本三档验证），
   {
     id: 'raider_8',
     name: t('content.pve.raider_8.name'),
@@ -1092,7 +1092,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     idle: { energy: 30000, alloy: 1500, data: 2500, dark: 12 },
     requires: 'node_arm_threshold',
   },
-  // —— 星系层（v0.91，敌人编成经战斗模拟脚本三档验证）——
+  // 星系层（v0.91，敌人编成经战斗模拟脚本三档验证），
   {
     id: 'raider_10',
     name: t('content.pve.raider_10.name'),
@@ -1398,7 +1398,7 @@ export const STRONGHOLDS: StrongholdDef[] = [
     idle: { energy: 60000, alloy: 3000, data: 5000, dark: 24 },
     requires: 'node_galaxy_heart',
   },
-  // —— 深空层（v0.92，敌人编成经战斗模拟脚本三档验证）——
+  // 深空层（v0.92，敌人编成经战斗模拟脚本三档验证），
   {
     id: 'raider_12',
     name: t('content.pve.raider_12.name'),

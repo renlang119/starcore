@@ -1,5 +1,5 @@
 /**
- * buildings.ts — 建造系统 store
+ * buildings.ts：建造系统 store
  * 管理各建筑等级、升级成本计算、产出贡献
  */
 import { defineStore } from 'pinia'
@@ -16,12 +16,12 @@ import { isUnlockedBy } from '@/lib/requires'
 import type { BuildingSaveData } from '@/lib/storage'
 
 export const useBuildingsStore = defineStore('buildings', () => {
-  // —— state ——
+  // state
   const levels = ref<Record<string, number>>({})
   // 初始化所有建筑为 0 级
   for (const b of BUILDINGS) levels.value[b.id] = 0
 
-  // —— getters ——
+  // getters
   const getLevel = (id: string) => levels.value[id] ?? 0
   const isUnlocked = (def: BuildingDef, completedTechs: Set<string>) =>
     isUnlockedBy(def.requires, completedTechs)
@@ -78,7 +78,7 @@ export const useBuildingsStore = defineStore('buildings', () => {
     return result
   }
 
-  // —— actions ——
+  // actions
   function upgrade(id: string): boolean {
     const def = getBuilding(id)
     if (!def) return false
