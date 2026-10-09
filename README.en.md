@@ -153,6 +153,22 @@ A pure static SPA. The build output goes to `dist/` and is synced to a
 static site by `./deploy.sh` (site URL and target directory are configured
 via environment variables; see the script for details).
 
+## Updating
+
+When a new version is released, pull the latest code and deploy again:
+
+```bash
+git pull
+corepack pnpm install   # run when dependencies have changed
+./deploy.sh             # build, sync and verify in one step
+```
+
+- The site settings from your first deployment are reused; no
+  reconfiguration is needed for updates.
+- Updates do not affect game saves, which are kept locally in the browser.
+- If your site directory is not in the `/var/www/<name>` form, sync the
+  build output `dist/` to it manually; the rest of the flow is unchanged.
+
 ## License
 
 [MIT](LICENSE) © 2026 renlang119
