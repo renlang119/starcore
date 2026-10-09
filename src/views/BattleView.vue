@@ -147,6 +147,15 @@ const {
   confirmGarrison,
   cancelGarrison,
 } = bossFlow
+
+/** 出征按钮文案：派遣锁定 / 本周已击败 / 默认出征（v1.50 自模板抽离） */
+const deployButtonLabel = computed(() => {
+  if (formationDispatched.value) return t('battle.deployBlockedDispatch')
+  if (isWeeklyBoss.value && bossFlow.isWeeklyBossDefeated.value) {
+    return t('battle.weeklyBossDefeated')
+  }
+  return t('battle.deploy')
+})
 </script>
 
 <template>
@@ -215,13 +224,7 @@ const {
         @click="startBattle"
       >
         <Icon name="i-ui-sword" size="md" />
-        {{
-          formationDispatched
-            ? t('battle.deployBlockedDispatch')
-            : isWeeklyBoss && bossFlow.isWeeklyBossDefeated.value
-              ? t('battle.weeklyBossDefeated')
-              : t('battle.deploy')
-        }}
+        {{ deployButtonLabel }}
       </button>
       <button
         v-if="!isEndless && !isWeeklyBoss"

@@ -82,6 +82,14 @@ function isBottleneck(r: ResourceResult): boolean {
   return result.value.type === 'countdown' && r.resType === result.value.bottleneckResource
 }
 
+/** 资源行状态类名：充足 / 瓶颈 / 手动（v1.50 自模板抽离） */
+function statusClass(r: ResourceResult): string {
+  if (r.status === 'sufficient') return 'ok'
+  if (isBottleneck(r)) return 'bottleneck'
+  if (r.status === 'manual') return 'manual'
+  return ''
+}
+
 function toggleExpand() {
   expanded.value = !expanded.value
 }
@@ -162,18 +170,7 @@ function toggleExpand() {
             </span>
             <span class="d-rate" :class="{ zero: r.status === 'manual' }">{{ fmtRateStr(r) }}</span>
             <span class="d-eta">{{ fmtEta(r) }}</span>
-            <span
-              class="d-status"
-              :class="
-                r.status === 'sufficient'
-                  ? 'ok'
-                  : isBottleneck(r)
-                    ? 'bottleneck'
-                    : r.status === 'manual'
-                      ? 'manual'
-                      : ''
-              "
-            >
+            <span class="d-status" :class="statusClass(r)">
               <template v-if="r.status === 'sufficient'">✓</template>
               <template v-else-if="isBottleneck(r)">{{ t('build.bottleneck') }}</template>
               <template v-else-if="r.status === 'manual'">{{ t('build.manual') }}</template>

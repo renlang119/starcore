@@ -95,7 +95,7 @@ starcore/
 ├─ public/          favicon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation, message key checks)
 ├─ tools/           diagnostics (environment self-check, end-to-end and numeric)
-├─ changelog/       version history; active file and two archives
+├─ changelog/       version history; active file and three archives
 ├─ deploy.sh        deployment script
 └─ project configs (vite.config.ts, vitest.config.ts, tsconfig*.json, eslint.config.js)
 ```
@@ -142,7 +142,8 @@ The self-check covers Node, dependencies, build output, the browser and Python p
 
 ## Version History
 
-- [changelog.md](changelog/changelog.md) · from v1.01, newest first
+- [changelog.md](changelog/changelog.md) · from v1.51, newest first
+- [changelog-v1.01-v1.50.md](changelog/changelog-v1.01-v1.50.md) · v1.01 to v1.50 archive
 - [changelog-v0.51-v1.00.md](changelog/changelog-v0.51-v1.00.md) · v0.51 to v1.00 archive
 - [changelog-v0.01-v0.50.md](changelog/changelog-v0.01-v0.50.md) · v0.01 to v0.50 archive
 

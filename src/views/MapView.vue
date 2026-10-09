@@ -133,6 +133,13 @@ const weeklyBossCard = computed(() => {
     rewards: resourceRows(def.rewards, game.resources.allMeta, { positiveOnly: true }),
   }
 })
+
+/** 周强敌卡测试标识：已击败 / 可挑战 / 未解锁（v1.50 自模板抽离） */
+const weeklyBossTestid = computed(() => {
+  if (weeklyBossDefeated.value) return 'weekly-boss-done'
+  if (weeklyBossUnlocked.value) return 'weekly-boss-open'
+  return 'weekly-boss-locked'
+})
 </script>
 
 <template>
@@ -275,13 +282,7 @@ const weeklyBossCard = computed(() => {
         :class="{ unlocked: weeklyBossUnlocked, defeated: weeklyBossDefeated }"
         :style="{ '--c': weeklyBossCard ? STRONGHOLD_TYPES[weeklyBossCard.type].color : '' }"
         :disabled="!weeklyBossUnlocked"
-        :data-testid="
-          weeklyBossDefeated
-            ? 'weekly-boss-done'
-            : weeklyBossUnlocked
-              ? 'weekly-boss-open'
-              : 'weekly-boss-locked'
-        "
+        :data-testid="weeklyBossTestid"
         @click="router.push('/battle/weekly_boss')"
       >
         <div class="s-icon">

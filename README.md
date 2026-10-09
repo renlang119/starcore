@@ -79,7 +79,7 @@ starcore/
 ├─ public/          favicon、分享图与本地字体（Orbitron、JetBrains Mono）
 ├─ scripts/         质量脚本（计数守恒、文案缺键检查）
 ├─ tools/           诊断工具（环境自检、端到端与数值校验）
-├─ changelog/       版本历史三档（活跃档 changelog.md 与两份历史存档）
+├─ changelog/       版本历史四档（活跃档 changelog.md 与三份历史存档）
 ├─ deploy.sh        部署脚本
 └─ 工程配置（vite.config.ts、vitest.config.ts、tsconfig*.json、eslint.config.js）
 ```
@@ -120,7 +120,8 @@ corepack pnpm diagnose --fix  # 对可自动修复的缺件执行修复
 
 ## 版本历史
 
-- [changelog.md](changelog/changelog.md)：v1.01 起，新条目置顶
+- [changelog.md](changelog/changelog.md)：v1.51 起，新条目置顶
+- [changelog-v1.01-v1.50.md](changelog/changelog-v1.01-v1.50.md)：v1.01 至 v1.50 存档
 - [changelog-v0.51-v1.00.md](changelog/changelog-v0.51-v1.00.md)：v0.51 至 v1.00 存档
 - [changelog-v0.01-v0.50.md](changelog/changelog-v0.01-v0.50.md)：v0.01 至 v0.50 存档
 
