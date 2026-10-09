@@ -32,7 +32,7 @@ const resourceList = computed(() => {
   return resourceRows(amounts, res.allMeta).map((r) => ({
     ...r,
     icon: res.allMeta[r.id as ResourceType].icon,
-    rate: fmtRate(res.getRate(r.id as ResourceType)),
+    rate: fmtRate(game.getDisplayRate(r.id as ResourceType)),
     flash: !!flashState.value[r.id],
   }))
 })
@@ -61,7 +61,7 @@ watchEffect(() => {
 function getPositiveRateResources(): string[] {
   const ids: string[] = []
   for (const [id] of Object.entries(res.allMeta)) {
-    if (res.getRate(id as ResourceType).gt(0)) ids.push(id)
+    if (game.getDisplayRate(id as ResourceType).gt(0)) ids.push(id)
   }
   return ids
 }

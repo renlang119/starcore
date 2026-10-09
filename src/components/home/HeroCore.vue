@@ -38,7 +38,7 @@ const resNodes = computed(() =>
       icon: meta.icon,
       color: meta.color,
       amount: fmt(amount),
-      rate: fmtRate(game.resources.getRate(id)),
+      rate: fmtRate(game.getDisplayRate(id)),
       zero: amount.lte(0),
     }
   })

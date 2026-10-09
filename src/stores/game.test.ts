@@ -15,7 +15,7 @@ import { exportSave, importSave, clearAllSaves, type SaveData } from '@/lib/stor
 import { useGameStore } from './game'
 import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
-import { BUILDINGS, buildingCost } from '@/data/buildings'
+import { BUILDINGS, buildingCost, type ResourceType } from '@/data/buildings'
 import { STRONGHOLDS } from '@/data/pve'
 import { useRelicsStore } from './relics'
 import { useTranscendStore } from './transcend'
@@ -872,5 +872,59 @@ describe('v0.82 驻扎守卫真实规则分支', () => {
     combat.completedStrongholds.add('raider_1')
     expect(combat.garrison('raider_1', 'f1')).toBe(true)
     expect(combat.garrisoned['raider_1'].formationId).toBe('f1')
+  })
+})
+
+// v1.47 显示用实时速率：购买与驻扎变更即时反映，不等下一 tick 快照
+describe('getDisplayRate 实时速率', () => {
+  const ALL = ['energy', 'crystal', 'alloy', 'data', 'dark'] as const
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    setRelicSlotProvider(() => 0)
+  })
+
+  it('新档全资源实时速率为 0', () => {
+    const game = useGameStore()
+    for (const rt of ALL) {
+      expect(game.getDisplayRate(rt).toNumber()).toBe(0)
+    }
+  })
+
+  it('购买建筑后立即反映，tick 快照未跑时仍为 0', () => {
+    const game = useGameStore()
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 500)
+    expect(game.getDisplayRate('energy').toNumber()).toBe(0)
+    expect(game.tryUpgradeBuilding(SOLAR)).toBe(true)
+    // 显示速率即时等于建筑实时总产出；累加快照 getRate 未跑 tick 仍为 0
+    const prod = useBuildingsStore().getTotalProduction(game.productionMults)
+    expect(game.getDisplayRate('energy').toNumber()).toBe(prod.energy.toNumber())
+    expect(resources.getRate('energy').toNumber()).toBe(0)
+  })
+
+  it('驻扎收益即时并入显示速率', () => {
+    const game = useGameStore()
+    exploredNodes('node_orbit')
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    expect(combat.garrison('raider_1', 'f1')).toBe(true)
+    const idle = combat.garrisonIdleReward('raider_1')
+    expect(Object.keys(idle).length).toBeGreaterThan(0)
+    for (const [res, v] of Object.entries(idle)) {
+      expect(game.getDisplayRate(res as ResourceType).toNumber()).toBe(v)
+    }
+  })
+
+  it('撤出驻扎后显示速率即时回落', () => {
+    const game = useGameStore()
+    exploredNodes('node_orbit')
+    const combat = useCombatStore()
+    combat.completedStrongholds.add('raider_1')
+    combat.garrison('raider_1', 'f1')
+    combat.ungarrison('raider_1')
+    for (const rt of ALL) {
+      expect(game.getDisplayRate(rt).toNumber()).toBe(0)
+    }
   })
 })

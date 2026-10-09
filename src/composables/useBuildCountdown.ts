@@ -67,7 +67,7 @@ export function useBuildCountdown(getBuildingId: () => string): {
       if (need <= 0) continue
       const rt = resType as ResourceType
       const have = game.resources.getAmount(rt)
-      const rate = game.resources.getRate(rt)
+      const rate = game.getDisplayRate(rt)
       const deficit = Decimal.max(D(need).minus(have), D(0))
 
       if (deficit.lte(0)) {

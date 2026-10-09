@@ -541,6 +541,16 @@ export const useGameStore = defineStore('game', () => {
     return true
   }
 
+  /**
+   * 显示用实时速率：建筑总产出与驻扎挂机收益的实时派生合并值，
+   * 购买、升级、乘数与驻扎变化即时反映，不等下一 tick。
+   * resources.getRate 是 tick 累加口径的每秒快照，显示面勿用。
+   */
+  function getDisplayRate(type: ResourceType): Decimal {
+    const base = totalProduction.value[type] ?? D(0)
+    return add(base, D(combat.garrisonProduction[type] ?? 0))
+  }
+
   return {
     // sub-stores (directly accessible)
     resources,
@@ -600,6 +610,8 @@ export const useGameStore = defineStore('game', () => {
     previewUpgradeBuildingSteps,
     previewRelicEnhanceSteps,
     tryResearch,
+    // 显示用实时速率（建筑 + 驻扎合并派生）
+    getDisplayRate,
     // transcend
     canTranscend,
     previewTranscendGain,

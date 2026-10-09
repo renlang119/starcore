@@ -65,6 +65,7 @@ export const useResourcesStore = defineStore('resources', () => {
   // getters
   const getAmount = (t: ResourceType) => amounts.value[t]
   const getTotal = (t: ResourceType) => totals.value[t]
+  /** tick 累加口径的速率快照（主 tick 每秒写入）；界面显示的实时速率走 game.getDisplayRate */
   const getRate = (t: ResourceType) => production.value[t]
   /** 所有资源的元信息（ widened 为 string 索引，方便消费方用任意 string key 查找） */
   const allMeta: Record<string, ResourceMeta> = RES_META
