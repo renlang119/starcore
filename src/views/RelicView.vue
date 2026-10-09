@@ -91,6 +91,13 @@ function handleDiscard(e: Event, relic: OwnedRelic) {
   }
 }
 
+/** 丢弃按钮三态文案：已装备提示先卸下，待确认提示二次确认，默认显示丢弃 */
+function discardLabel(r: OwnedRelic): string {
+  if (game.relics.isEquipped(r.instanceId)) return t('relics.unequipFirstShort')
+  if (pendingDiscardId.value === r.instanceId) return t('relics.confirmDiscard')
+  return t('relics.discard')
+}
+
 // 强化（v0.70）：面板内聚于 EnhanceModal，此处只持开关与失败 toast
 const selectedEnhance = ref<OwnedRelic | null>(null)
 
@@ -271,13 +278,7 @@ function onEnhanceFail(msg: string) {
               :title="game.relics.isEquipped(r.instanceId) ? t('relics.unequipFirst') : ''"
               @click="handleDiscard($event, r)"
             >
-              {{
-                game.relics.isEquipped(r.instanceId)
-                  ? t('relics.unequipFirstShort')
-                  : pendingDiscardId === r.instanceId
-                    ? t('relics.confirmDiscard')
-                    : t('relics.discard')
-              }}
+              {{ discardLabel(r) }}
             </button>
           </div>
         </div>
