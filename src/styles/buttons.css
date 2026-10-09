@@ -39,7 +39,7 @@
 } /* 按下 0.1s，释放回 0.15s 两段式 */
 .btn-primary:disabled {
   background: var(--color-elevated);
-  color: var(--color-t-tertiary);
+  color: var(--color-t-secondary); /* vs elevated 5.30 达 AA（v1.48；原 tertiary 4.30） */
   cursor: not-allowed;
   opacity: 0.4;
   pointer-events: none; /* 禁止 hover/active 反馈 */
@@ -80,7 +80,7 @@
 } /* 按下 0.1s，释放回 0.15s 两段式 */
 .btn-accent:disabled {
   background: var(--color-elevated);
-  color: var(--color-t-tertiary);
+  color: var(--color-t-secondary); /* vs elevated 5.30 达 AA（v1.48；原 tertiary 4.30） */
   cursor: not-allowed;
   opacity: 0.4;
   pointer-events: none;
