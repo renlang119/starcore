@@ -168,6 +168,10 @@ corepack pnpm install   # run when dependencies have changed
 - Updates do not affect game saves, which are kept locally in the browser.
 - If your site directory is not in the `/var/www/<name>` form, sync the
   build output `dist/` to it manually; the rest of the flow is unchanged.
+- If you prefer not to use the command line, a prebuilt archive is available
+  on the [Releases](https://github.com/renlang119/starcore/releases) page:
+  unzip and copy the contents of `dist/` over your site files to deploy or
+  update.
 
 ## License
 

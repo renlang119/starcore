@@ -144,6 +144,9 @@ corepack pnpm install   # 依赖有更新时执行
 - 更新不影响游戏存档，存档保存在浏览器本地。
 - 站点目录不是 `/var/www/<名字>` 形态时，将构建产物 `dist/` 手动同步到
   站点目录即可，其余流程相同。
+- 不使用命令行时，也可以从
+  [Releases](https://github.com/renlang119/starcore/releases) 页面下载构建
+  产物包，解压后将其中的 `dist/` 目录内容覆盖到站点目录即可完成部署或更新。
 
 ## 许可证
 
