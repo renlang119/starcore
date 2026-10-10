@@ -1,14 +1,14 @@
 /**
  * game.ts：主游戏 store
- * 统筹 tick 循环、转生协调与跨 store 编排；
- * 效果系统见 game-effects，存档簇见 game-persistence
+ * 统筹子 store 装配、tick 主循环与生命周期；效果系统见 game-effects，
+ * 存档簇见 game-persistence，奖励编排 / 操作层 / 转生协调分别见
+ * game-rewards / game-actions / game-transcend
  */
 import { t } from '@/i18n'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { D, add, type Decimal } from '@/lib/decimal'
-import { repeatUntilFail, simulateSteps } from '@/lib/batch'
-import { useResourcesStore, START_ENERGY } from './resources'
+import { useResourcesStore } from './resources'
 import { useBuildingsStore } from './buildings'
 import { useResearchStore } from './research'
 import { useMilitaryStore } from './military'
@@ -22,12 +22,10 @@ import { useArchiveStore } from './archive'
 import { useEncountersStore } from './encounters'
 import { createGameEffects, wireGameProviders } from './game-effects'
 import { createGamePersistence } from './game-persistence'
-import { TECHS, adjustedTechCost } from '@/data/tech'
-import { BUILDINGS, buildingCost } from '@/data/buildings'
-import { enhanceCost, MAX_RELIC_LEVEL } from '@/data/relics'
-import type { MilestoneReward } from '@/data/endless'
+import { createGameRewards } from './game-rewards'
+import { createGameActions } from './game-actions'
+import { createGameTranscend } from './game-transcend'
 import type { ResourceType } from '@/data/buildings'
-import type { EncounterResolution } from './encounters'
 import type { OfflineReport } from '@/lib/offline-gains'
 
 const TICK_INTERVAL = 1000 // ms
@@ -166,82 +164,58 @@ export const useGameStore = defineStore('game', () => {
     start,
   })
 
-  // 每日签到/周期挑战
-  /** 挑战奖励发放（DailyCard 领取按钮回调） */
-  function claimChallenge(templateId: string): { dark: number; streakBonus: number } | null {
-    const result = daily.claim(templateId)
-    if (!result) return null
-    resources.gain('dark', result.dark)
-    return result
-  }
+  // 奖励编排（每日挑战 / 随机遭遇 / 派遣远征 / 远征里程碑），
+  const {
+    claimChallenge,
+    resolveEncounter,
+    syncDispatchUnlocked,
+    settleDispatches,
+    lastDispatchResolution,
+    claimMilestone,
+  } = createGameRewards({ resources, military, combat, daily, encounters })
+
+  // 操作层（原子操作 / 批量预览 / 自动化协议），
+  const {
+    tryUpgradeBuilding,
+    tryUpgradeBuildingSteps,
+    previewUpgradeBuildingSteps,
+    previewRelicEnhanceSteps,
+    tryResearch,
+    runAutomation,
+  } = createGameActions({
+    resources,
+    buildings,
+    research,
+    relics,
+    achievements,
+    daily,
+    exploration,
+    techCostMult,
+    exploreMult,
+    autoBuild,
+    autoResearch,
+    autoExplore,
+  })
+
+  // 转生协调（奇点重启），
+  const { canTranscend, previewTranscendGain, doTranscend } = createGameTranscend({
+    resources,
+    buildings,
+    research,
+    military,
+    combat,
+    exploration,
+    encounters,
+    transcend,
+    achievements,
+    daily,
+    prestigeMult,
+    collectLifetimeTotals,
+    alignLifetimeSnapshot,
+  })
 
   /** 驻扎小时累计进位（v1.21 周挑战：内存小数累加，满 1 小时 bump；不入档） */
   const garrisonHourCarry = ref(0)
-
-  // 随机遭遇事件（v1.26 可玩内容扩展方案 8），
-  /**
-   * 遭遇事件结算发放（EncounterCard 选项按钮回调）：encounters store 掷取
-   * 结果后按奖励对象逐项发放，资源走 resources.gain（负值合金损失按余额
-   * 封顶扣至空，不产生负库存）；units 走 military 库存直加（收编入伍不经训练
-   * 队列、不占训练槽）。返回结算结果供 toast 回执，无挂起/已过期返回 null。
-   */
-  function resolveEncounter(choice: 'A' | 'B'): EncounterResolution | null {
-    const result = encounters.resolve(choice)
-    if (!result) return null
-    const { rewards } = result
-    for (const [key, value] of Object.entries(rewards)) {
-      if (key === 'units') {
-        if (value > 0) military.addToOwned('assault', value)
-        continue
-      }
-      if (value < 0) {
-        // 负值损失（仅合金）：按余额封顶扣减（至多扣空），不产生负库存
-        const current = resources.getAmount(key as ResourceType)
-        const loss = D(-value)
-        resources.spend(key as ResourceType, loss.gt(current) ? current : loss)
-        continue
-      }
-      resources.gain(key as ResourceType, value)
-    }
-    return result
-  }
-
-  // 派遣远征（v1.27 可玩内容扩展方案 6），
-  /** 派遣解锁同步（tick 每秒调用）：远征开放即解锁派遣（本轮已攻克解锁锚点据点） */
-  function syncDispatchUnlocked(): void {
-    military.setDispatchUnlocked(combat.isEndlessUnlocked())
-  }
-
-  /** 派遣奖励发放：逐资源 resources.gain（纯资源包，无负值无兵员） */
-  function grantDispatchReward(reward: Record<ResourceType, number>): void {
-    for (const [key, value] of Object.entries(reward)) {
-      if (value > 0) resources.gain(key as ResourceType, value)
-    }
-  }
-
-  /** 派遣到点结算（tick 每秒调用）：发放并记录最近结算供 AppShell 回执 toast */
-  const lastDispatchResolution = ref<Record<string, Record<ResourceType, number>> | null>(null)
-  function settleDispatches(): Record<string, Record<ResourceType, number>> {
-    const completed = military.collectCompletedDispatches(Date.now())
-    const results: Record<string, Record<ResourceType, number>> = {}
-    for (const [fid, r] of Object.entries(completed)) {
-      grantDispatchReward(r.reward)
-      results[fid] = r.reward
-    }
-    if (Object.keys(results).length > 0) lastDispatchResolution.value = results
-    return results
-  }
-
-  // 远征里程碑（v1.20 可玩内容扩展方案 2），
-  /** 里程碑奖励发放（MapView 领取按钮回调）：combat 记账成功后按奖励对象逐资源发放 */
-  function claimMilestone(tier: number): MilestoneReward | null {
-    const reward = combat.claimMilestone(tier)
-    if (!reward) return null
-    for (const [key, value] of Object.entries(reward)) {
-      resources.gain(key as ResourceType, value as number)
-    }
-    return reward
-  }
 
   // 主 tick
   function tick() {
@@ -335,39 +309,6 @@ export const useGameStore = defineStore('game', () => {
     encounters.tick(now)
   }
 
-  /**
-   * 自动化 QoL：每 tick 一遍，三种协议独立开关。
-   * - 建造协议：按 BUILDINGS 数据序扫描已解锁建筑，买得起即升 1 级（每建筑每 tick 至多 1 级）
-   * - 研究协议：按 TECHS 数据序扫描可用科技，买得起即完成（含 techCostMult，与手动一致）
-   * - 探索协议：availableNodes 已挡完成/进行中/前置，逐个尝试开始（与 MapView 手动同路径）
-   * 购买策略 = 买得起即买，不留储备。单遍扫描 20 建筑/59 科技/34 节点，开销可忽略。
-   */
-  function runAutomation(): void {
-    if (autoBuild.value) {
-      for (const b of BUILDINGS) {
-        // isUnlocked 查 b.requires（科技 id），须传已完成科技集合；
-        // 误传 unlock 效果目标派生的集合会使两集合永不相交，建筑永不自动升级
-        if (!buildings.isUnlocked(b, research.completed)) continue
-        tryUpgradeBuilding(b.id)
-      }
-    }
-    if (autoResearch.value) {
-      for (const def of TECHS) {
-        if (!research.available(def)) continue
-        tryResearch(def.id)
-      }
-    }
-    if (autoExplore.value) {
-      for (const node of exploration.availableNodes()) {
-        exploration.startExplore(
-          node.id,
-          exploreMult.value,
-          (c) => resources.canAfford(c),
-          (c) => resources.spendCost(c)
-        )
-      }
-    }
-  }
   // 自动存档
   let saveTimer: ReturnType<typeof setInterval> | null = null
   let tickTimer: ReturnType<typeof setInterval> | null = null
@@ -410,135 +351,6 @@ export const useGameStore = defineStore('game', () => {
     }
     start()
     return loaded
-  }
-
-  // 转生
-  function canTranscend(): boolean {
-    const totalEnergy = resources.getTotal('energy')
-    const preview = transcend.previewNegEntropy(totalEnergy, prestigeMult.value)
-    return preview.gte(1)
-  }
-  function previewTranscendGain(): Decimal {
-    return transcend.previewNegEntropy(resources.getTotal('energy'), prestigeMult.value)
-  }
-  /**
-   * 执行转生（奇点重启）
-   *
-   * 设计意图说明：
-   * 转生后 resources.reset(true) 会重置 totals（历史总产出）为 0。
-   * 这是设计意图而非 bug，放置类游戏的标准循环：
-   *   每轮 run 积累能量 → 获得负熵 → 转生重置 → 新一轮 run
-   * 如果 totals 不重置，玩家在后续 run 中无需任何努力即可获得大量负熵，
-   * 破坏游戏平衡。previewNegEntropy 基于 getTotal('energy') 计算，
-   * 重置后需要重新积累到 3e5 才能再次转生，符合预期。
-   */
-  function doTranscend(): boolean {
-    const gain = previewTranscendGain()
-    if (gain.lt(1)) return false
-    // 成就终身计数：转生前先把本轮未采集的 totals 增量收进终身计数，
-    // 再把快照归零对齐 reset 后的 totals（否则差值为负被钳掉，白丢一段计数）
-    collectLifetimeTotals()
-    alignLifetimeSnapshot(true)
-    // 执行转生
-    transcend.transcend(gain)
-    daily.bump('transcends')
-    // 重置非保留项
-    resources.reset(true) // 保留暗物质
-    buildings.reset()
-    research.reset()
-    military.reset()
-    combat.reset() // 转生清驻扎/本轮通关，远征深度跨转生保留
-    exploration.reset()
-    encounters.reset() // 本轮数据：挂起与冷却窗口随转生清空
-    // relics 保留
-    // transcend 保留
-    // 初始能量加成
-    const startingMult = transcend.getValue('starting_energy')
-    if (startingMult > 0) {
-      resources.setAmount('energy', START_ENERGY * startingMult)
-    }
-    // 转生次数类成就即时判定（不等下一个 tick）
-    achievements.checkAndUnlock()
-    return true
-  }
-
-  // 原子操作（check + spend + execute 一体化，消除竞态），
-  /**
-   * 尝试升级建筑：原子检查资源 + 扣费 + 升级
-   * 替代视图中 canAfford → spendCost → upgrade 的三步非原子调用
-   */
-  function tryUpgradeBuilding(id: string): boolean {
-    const def = BUILDINGS.find((b) => b.id === id)
-    if (!def) return false // 未知建筑 id：失败路径不记账不扣费
-    if (buildings.isMaxed(id)) return false // 已达等级上限：与视图/队列/预览共用同一门槛
-    const cost = buildings.getCost(id)
-    if (!resources.spendCost(cost)) return false // spendCost 内部已含 canAfford 检查
-    buildings.upgrade(id)
-    achievements.recordUpgrade(buildings.getLevel(id))
-    daily.bump('upgrades')
-    return true
-  }
-
-  /**
-   * 批量升级预览：返回当前资源下点击一次批量升级的实际
-   * 可买级数与逐级累计总花费。逐级取价与扣费模拟同 tryUpgradeBuilding
-   * 的实扣顺序一致（资源不足或达等级上限自然停止，最多 steps 级），
-   * 供 ×N>1 档位在成本行展示「可买级数 + 预计总花费」。
-   */
-  function previewUpgradeBuildingSteps(
-    id: string,
-    steps: number
-  ): { count: number; cost: Record<string, number> } {
-    const def = BUILDINGS.find((b) => b.id === id)
-    if (!def || steps < 1) return { count: 0, cost: {} }
-    return simulateSteps(
-      steps,
-      buildings.getLevel(id),
-      (level) => buildingCost(def, level),
-      { ...resources.amounts },
-      (level) => !buildings.isMaxed(id, level)
-    )
-  }
-
-  /**
-   * 批量强化预览：返回当前能量下点击一次批量强化的实际可完成级数。
-   * 逐级按新等级取价，能量不足或达 MAX_RELIC_LEVEL 上限自然停止，最多 steps 级；
-   * 取价与扣费顺序同 relics.enhanceSteps，供按钮文案按实际级数显示。
-   */
-  function previewRelicEnhanceSteps(instanceId: string, steps: number): number {
-    const relic = relics.owned.find((r) => r.instanceId === instanceId)
-    if (!relic || steps < 1) return 0
-    return simulateSteps(
-      steps,
-      relic.level,
-      (level) => ({ energy: enhanceCost(relic.rarity, level + 1) }),
-      { energy: resources.getAmount('energy') },
-      (level) => level < MAX_RELIC_LEVEL
-    ).count
-  }
-
-  /**
-   * 批量升级建筑：至多 steps 级、买满语义。
-   * 内部逐级复用 tryUpgradeBuilding 原子操作，等级/成就/周挑战记账
-   * 粒度与连点完全一致；买不起下一级或已满级自然停止。
-   */
-  function tryUpgradeBuildingSteps(id: string, steps: number): number {
-    return repeatUntilFail(steps, () => tryUpgradeBuilding(id))
-  }
-
-  /**
-   * 尝试研究科技：原子检查资源 + 扣费 + 完成
-   */
-  function tryResearch(id: string): boolean {
-    const def = TECHS.find((t) => t.id === id)
-    if (!def) return false
-    const adjustedCost = adjustedTechCost(def.cost, techCostMult.value.toNumber())
-    if (!research.available(def)) return false
-    if (!resources.spendCost(adjustedCost)) return false
-    research.complete(id)
-    achievements.recordResearch()
-    daily.bump('researches')
-    return true
   }
 
   /**
