@@ -44,6 +44,39 @@ export function vueRouterMock(options?: {
   }
 }
 
+/**
+ * 共享可变路由状态（v1.51）：跨文件唯一实例，各测试经 routeState 注入
+ * 当前 path/meta，push 统一收集。
+ *
+ * 背景：isolate:false 下组件模块每 worker 只求值一次并绑定首个注册的
+ * vue-router mock；各文件各自带可变状态的 mock 工厂时，后跑文件改的是
+ * 自己文件的状态变量，组件仍读首跑文件的闭包，断言随文件执行顺序漂移。
+ * 共享单一实例后，无论绑定到哪个文件的工厂，读写的都是同一份状态。
+ *
+ * 用法：
+ *   vi.mock('vue-router', () => sharedVueRouterMock())
+ *   it('...', () => { routeState.path = '/build'; ... })
+ * useViewTestHooks 每个用例前置重置 path='/' 与 meta={}。
+ */
+export const routeState = {
+  path: '/',
+  meta: {} as Record<string, unknown>,
+  push: vi.fn(),
+}
+
+/** vue-router 共享 mock 工厂（消费 routeState；各文件顶层 vi.mock 的工厂体） */
+export function sharedVueRouterMock() {
+  return {
+    useRoute: () => ({ path: routeState.path, meta: routeState.meta }),
+    useRouter: () => ({ push: routeState.push }),
+    RouterLink: defineComponent({
+      props: { to: { type: String, required: false, default: '' } },
+      template: '<a><slot /></a>',
+    }),
+    RouterView: defineComponent({ template: '<div />' }),
+  }
+}
+
 /** useFocusTrap mock 工厂（弹窗组件测试不验焦点陷阱本体） */
 export function focusTrapMock() {
   return { useFocusTrap: () => {} }
@@ -74,6 +107,8 @@ export function useViewTestHooks(): void {
     vi.clearAllMocks()
     localStorage.clear()
     setActivePinia(createPinia())
+    routeState.path = '/'
+    routeState.meta = {}
   })
   afterEach(() => {
     for (const w of wrappers) w.unmount()
