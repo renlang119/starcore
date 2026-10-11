@@ -264,3 +264,102 @@ describe('exploration — reset / serialize / hydrate', () => {
     expect(store.isExploring('node_orbit')).toBe(true)
   })
 })
+
+describe('exploration — 层完成仪式（v1.55）', () => {
+  it('层全完成跳变沿：入仪式队列并登记 completedLayers', () => {
+    expect(store.layerCeremonyQueue).toEqual([])
+    const f = makeFunds()
+    store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
+    advance(30_000)
+    const results = store.applyTick()
+    expect(results).toHaveLength(1)
+    expect(store.completedLayers).toEqual(['orbit'])
+    expect(store.layerCeremonyQueue).toEqual(['orbit'])
+  })
+
+  it('同层不重复播：后续 tick 无新完成不入队', () => {
+    const f = makeFunds()
+    store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
+    advance(30_000)
+    store.applyTick()
+    store.applyTick()
+    store.applyTick()
+    expect(store.layerCeremonyQueue).toEqual(['orbit'])
+  })
+
+  it('hydrate 已登记层不重播，新完成层入队后可逐条消费', () => {
+    store.hydrate({
+      progress: {
+        node_orbit: { nodeId: 'node_orbit', startTime: 1, endTime: 2, completed: true },
+      },
+    })
+    const f = makeFunds()
+    store.startExplore('node_inner', D(1), f.canAfford, f.spend)
+    advance(120_000)
+    store.applyTick()
+    // orbit 已在 hydrate 时静默登记，本次仅 inner 入队
+    expect(store.completedLayers).toEqual(['orbit', 'inner'])
+    expect(store.layerCeremonyQueue).toEqual(['inner'])
+    store.shiftLayerCeremony()
+    expect(store.layerCeremonyQueue).toEqual([])
+  })
+
+  it('层内尚有节点未完成时不触发（stellar 5/6 不入队）', () => {
+    store.hydrate({
+      progress: {
+        node_stellar_gate: {
+          nodeId: 'node_stellar_gate',
+          startTime: 1,
+          endTime: 2,
+          completed: true,
+        },
+        node_stellar_mine: {
+          nodeId: 'node_stellar_mine',
+          startTime: 1,
+          endTime: 2,
+          completed: true,
+        },
+        node_stellar_forge: {
+          nodeId: 'node_stellar_forge',
+          startTime: 1,
+          endTime: 2,
+          completed: true,
+        },
+        node_stellar_dead: {
+          nodeId: 'node_stellar_dead',
+          startTime: 1,
+          endTime: 2,
+          completed: true,
+        },
+        node_stellar_core: {
+          nodeId: 'node_stellar_core',
+          startTime: 1,
+          endTime: 2,
+          completed: true,
+        },
+      },
+    })
+    expect(store.completedLayers).not.toContain('stellar')
+    expect(store.layerCeremonyQueue).toEqual([])
+  })
+
+  it('hydrate 已全完成的层静默登记（补记录防重播、不入队）', () => {
+    store.hydrate({
+      progress: {
+        node_orbit: { nodeId: 'node_orbit', startTime: 1, endTime: 2, completed: true },
+      },
+    })
+    expect(store.completedLayers).toEqual(['orbit'])
+    expect(store.layerCeremonyQueue).toEqual([])
+  })
+
+  it('reset 清空层完成记录与仪式队列', () => {
+    const f = makeFunds()
+    store.startExplore('node_orbit', D(1), f.canAfford, f.spend)
+    advance(30_000)
+    store.applyTick()
+    store.reset()
+    expect(store.completedLayers).toEqual([])
+    expect(store.layerCeremonyQueue).toEqual([])
+  })
+})

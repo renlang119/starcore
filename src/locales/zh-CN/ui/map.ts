@@ -24,6 +24,7 @@ export default {
   'map.explore': '探索',
   'map.exploreStarted': '探索已开始',
   'map.lockedHint': '攻克「沉默者旗舰」后开放',
+  'map.layerComplete': '「{layer}」星域探索完毕',
   'map.needsPrereq': '需先完成：',
   'map.obtained': '已获得：',
   'map.onboarding': '选择星域发起探索，完成后获得资源与据点奖励。',

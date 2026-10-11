@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { isInfiniteNode, nextCost } from '@/stores/transcend'
 import { fmt } from '@/lib/format'
 import ConfirmModal from '@/components/ui/ConfirmModal.vue'
+import CeremonyOverlay from '@/components/ui/CeremonyOverlay.vue'
 import Icon from '@/components/ui/Icon.vue'
 import { bulkLabel } from '@/composables/useBulkLabel'
 
@@ -61,9 +62,14 @@ function tryTranscend() {
   if (!canTranscend.value) return
   showConfirm.value = true
 }
+// 转生仪式（v1.55）：确认后先预存收益与次数，执行重置再播全屏仪式
+const ceremony = ref<{ gain: string; count: number } | null>(null)
 function confirmTranscend() {
-  game.doTranscend()
+  const gain = fmt(previewGain.value)
+  const count = game.transcend.totalTranscends + 1
+  if (!game.doTranscend()) return
   showConfirm.value = false
+  ceremony.value = { gain, count }
 }
 function cancelTranscend() {
   showConfirm.value = false
@@ -228,6 +234,18 @@ function cancelTranscend() {
         {{ t('prestige.gain') }} +{{ fmt(previewGain) }} {{ t('resources.negEntropy') }}
       </p>
     </ConfirmModal>
+
+    <!-- 转生仪式（v1.55）：确认重启后全屏演出，点击或自动关闭 -->
+    <CeremonyOverlay
+      v-if="ceremony"
+      :title="t('prestige.title')"
+      accent="var(--color-amber)"
+      icon="i-nav-prestige"
+      @close="ceremony = null"
+    >
+      <p class="ceremony-gain font-mono">+{{ ceremony.gain }} {{ t('resources.negEntropy') }}</p>
+      <p class="ceremony-count">{{ t('prestige.ceremonyCount', { n: ceremony.count }) }}</p>
+    </CeremonyOverlay>
   </div>
 </template>
 
@@ -446,5 +464,16 @@ function cancelTranscend() {
   font-size: var(--text-sm);
   color: var(--color-quantum);
   margin-bottom: var(--space-3);
+}
+
+/* 转生仪式卡内容（v1.55）：底座样式在 CeremonyOverlay */
+.ceremony-gain {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-amber);
+}
+.ceremony-count {
+  font-size: var(--text-sm);
+  color: var(--color-t-secondary);
 }
 </style>

@@ -529,6 +529,10 @@ await sec('M. 转生', async () => {
   await page.waitForTimeout(500)
   await page.locator('.btn-accent:visible').last().click()
   await page.waitForTimeout(1500)
+  // 转生仪式（v1.55）：确认后全屏演出，点击关闭再截转生后状态（overlay 会盖画面）
+  check('转生仪式出现', (await page.locator('.ceremony-overlay').count()) === 1)
+  await page.locator('.ceremony-overlay').click()
+  await page.waitForTimeout(300)
   await shot(page, 'm-prestige-after')
   await page.waitForTimeout(14000)
   const st = await page.evaluate(() => {

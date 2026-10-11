@@ -65,6 +65,7 @@ const SUITE = [
   'starcore-v126-encounter.mjs',
   'starcore-v127-dispatch.mjs',
   'starcore-v135-save-integrity.mjs',
+  'starcore-v155-ceremony.mjs',
   'starcore-boot-screen.mjs',
 ]
 
@@ -94,6 +95,7 @@ const REMOTE = [
   'starcore-v126-encounter.mjs',
   'starcore-v127-dispatch.mjs',
   'starcore-v135-save-integrity.mjs',
+  'starcore-v155-ceremony.mjs',
   'starcore-boot-screen.mjs',
 ]
 

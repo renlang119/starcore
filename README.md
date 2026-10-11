@@ -62,7 +62,7 @@ Vue 3 · TypeScript · Vite · Pinia · Vue Router · decimal.js · localforage
 ```text
 starcore/
 ├─ src/
-│  ├─ components/   42 个组件（含图标子组件 8 个），按 ui / layout / home / relics / build / army / battle / map / settings 分组
+│  ├─ components/   44 个组件（含图标子组件 8 个），按 ui / layout / home / relics / build / army / battle / map / settings 分组
 │  ├─ composables/  13 个组合式函数（断点、Toast、行动队列、引导、粒子等）
 │  ├─ data/         15 份数据表（建筑、科技、探索、据点、遗物、成就、远征、周强敌、遭遇、派遣、部队、编队特性、导航、剧情、背景星点）
 │  ├─ i18n/         多语言门面（取词与语言识别）
@@ -86,7 +86,7 @@ starcore/
 
 ## 质量
 
-- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，55 个测试文件 748 个用例
+- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，56 个测试文件 761 个用例
 - **类型与规范**：构建内置 vue-tsc 类型检查；ESLint 与 Prettier 全量检查零输出
 - **计数守恒**：`scripts/check-conservation.mjs` 校验文档计数、成就文案联动与
   测试硬性校验，防止数值漂移（`corepack pnpm check:conservation`）

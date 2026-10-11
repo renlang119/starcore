@@ -15,6 +15,7 @@ import PrestigeView from './PrestigeView.vue'
 import { useResourcesStore } from '@/stores/resources'
 import { useTranscendStore, nextCost } from '@/stores/transcend'
 import { selectBulk10 } from '@/tests/view-mount'
+import { resetProviderSingletons } from '@/tests/reset-providers'
 import { D } from '@/lib/decimal'
 
 // Mock useFocusTrap
@@ -96,6 +97,64 @@ describe('PrestigeView — 转生确认流程', () => {
     expect(wrapper.find('.modal-overlay').exists()).toBe(false)
     // 取消不触发转生：转生次数不变
     expect(useTranscendStore().totalTranscends).toBe(0)
+  })
+})
+
+describe('PrestigeView — 转生仪式（v1.55）', () => {
+  beforeEach(() => {
+    pinia = createPinia()
+    setActivePinia(pinia)
+    resetProviderSingletons()
+
+    const resources = useResourcesStore()
+    resources.setAmount('energy', 1e9)
+    resources.gain('energy', 1e9)
+  })
+
+  it('确认重启后播全屏仪式：收益与次数，点击关闭', async () => {
+    const wrapper = mountPrestige()
+    await wrapper.find('.btn-transcend').trigger('click')
+    await wrapper.vm.$nextTick()
+    const confirmBtn = wrapper.findAll('.modal-overlay button').find((b) => b.text() === '确认重启')
+    expect(confirmBtn).toBeTruthy()
+    await confirmBtn!.trigger('click')
+    await wrapper.vm.$nextTick()
+
+    // 仪式 overlay 出现：标题 / 负熵收益 / 第 1 次重启；确认弹窗已关闭
+    const overlay = wrapper.find('.ceremony-overlay')
+    expect(overlay.exists()).toBe(true)
+    expect(overlay.text()).toContain('奇点重启')
+    expect(overlay.text()).toContain('负熵')
+    expect(overlay.text()).toContain('第 1 次奇点重启')
+    expect(wrapper.find('.modal-overlay').exists()).toBe(false)
+    // 转生已执行（次数 +1、资源重置）
+    expect(useTranscendStore().totalTranscends).toBe(1)
+
+    // 点击任意处关闭仪式
+    await overlay.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.ceremony-overlay').exists()).toBe(false)
+  })
+
+  it('仪式自动关闭：4 秒后 overlay 消失', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = mountPrestige()
+      await wrapper.find('.btn-transcend').trigger('click')
+      await wrapper.vm.$nextTick()
+      const confirmBtn = wrapper
+        .findAll('.modal-overlay button')
+        .find((b) => b.text() === '确认重启')
+      await confirmBtn!.trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.ceremony-overlay').exists()).toBe(true)
+
+      await vi.advanceTimersByTimeAsync(4000)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.ceremony-overlay').exists()).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 

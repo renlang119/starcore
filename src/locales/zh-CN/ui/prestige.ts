@@ -8,6 +8,7 @@ export default {
   'prestige.available': '本次转生可获得',
   'prestige.bulkAria': '单次购买级数',
   'prestige.buy': '购买',
+  'prestige.ceremonyCount': '第 {n} 次奇点重启',
   'prestige.confirm': '确认重启',
   'prestige.confirmTitle': '确认奇点重启？',
   'prestige.currentBonus': '当前 +{pct}%',

@@ -24,6 +24,7 @@ export default {
   'map.explore': 'Explore',
   'map.exploreStarted': 'Exploration started',
   'map.lockedHint': 'Unlocks after conquering the "Flagship of the Silent Ones"',
+  'map.layerComplete': '{layer} sector fully explored',
   'map.needsPrereq': 'Requires: ',
   'map.obtained': 'Obtained: ',
   'map.onboarding':

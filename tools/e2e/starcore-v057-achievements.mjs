@@ -188,6 +188,10 @@ console.log('== E. 转生后成就保留 ==');
   await page.waitForTimeout(300);
   await page.locator('.btn-accent', { hasText: '确认重启' }).click();
   await page.waitForTimeout(800);
+  // 转生仪式（v1.55）：确认后全屏演出，点击关闭再走 SPA 导航（overlay 拦截点击）
+  check('转生仪式出现', (await page.locator('.ceremony-overlay').count()) === 1);
+  await page.locator('.ceremony-overlay').click();
+  await page.waitForTimeout(300);
   // SPA 内导航到成就页（不能 page.goto，addInitScript 每次整页导航会重写注入档，冲掉转生后的内存态）
   await page.locator('.side-nav .nav-item', { hasText: '成就' }).click();
   await page.waitForTimeout(800);

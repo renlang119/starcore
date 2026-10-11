@@ -4,7 +4,13 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { EXPLORE_NODES, getNode, type ExploreNode } from '@/data/explore'
+import {
+  EXPLORE_NODES,
+  getNode,
+  LAYER_INFO,
+  type ExploreNode,
+  type StarLayer,
+} from '@/data/explore'
 import type { Decimal } from '@/lib/decimal'
 import type { ExplorationSaveData } from '@/lib/storage'
 
@@ -29,6 +35,33 @@ export const useExplorationStore = defineStore('exploration', () => {
       )
   )
   const count = computed(() => completedNodes.value.size)
+
+  // 层完成仪式（v1.55）：层全完成跳变沿入仪式队列，由 UI 层消费展示；
+  // completedLayers 防同层复播，随 reset 清零（转生后重新探索可再触发）。
+  const completedLayers = ref<StarLayer[]>([])
+  const layerCeremonyQueue = ref<StarLayer[]>([])
+
+  /** 全完成的层集合（按当前 progress 现算） */
+  function fullyCompletedLayers(): StarLayer[] {
+    return (Object.keys(LAYER_INFO) as StarLayer[]).filter((layer) => {
+      const nodes = EXPLORE_NODES.filter((n) => n.layer === layer)
+      return nodes.length > 0 && nodes.every((n) => progress.value[n.id]?.completed)
+    })
+  }
+
+  /** 跳变沿检测：新全完成的层入队（仅在有节点新完成时由 applyTick 调用） */
+  function detectLayerEdges(): void {
+    for (const layer of fullyCompletedLayers()) {
+      if (completedLayers.value.includes(layer)) continue
+      completedLayers.value.push(layer)
+      layerCeremonyQueue.value.push(layer)
+    }
+  }
+
+  /** 消费仪式队列（UI 展示完毕后调用） */
+  function shiftLayerCeremony(): void {
+    layerCeremonyQueue.value.shift()
+  }
 
   function isCompleted(id: string) {
     return progress.value[id]?.completed ?? false
@@ -101,6 +134,7 @@ export const useExplorationStore = defineStore('exploration', () => {
         })
       }
     }
+    if (results.length > 0) detectLayerEdges()
     return results
   }
 
@@ -118,6 +152,8 @@ export const useExplorationStore = defineStore('exploration', () => {
     progress.value = {}
     for (const n of EXPLORE_NODES)
       progress.value[n.id] = { nodeId: n.id, startTime: 0, endTime: 0, completed: false }
+    completedLayers.value = []
+    layerCeremonyQueue.value = []
   }
 
   function serialize() {
@@ -128,12 +164,19 @@ export const useExplorationStore = defineStore('exploration', () => {
     for (const n of EXPLORE_NODES) {
       if (data.progress[n.id]) progress.value[n.id] = { ...data.progress[n.id] }
     }
+    // 读档恢复：已全完成的层静默登记（补 completedLayers 防重复播仪式，不入队）
+    for (const layer of fullyCompletedLayers()) {
+      if (!completedLayers.value.includes(layer)) completedLayers.value.push(layer)
+    }
   }
 
   return {
     progress,
     completedNodes,
     count,
+    completedLayers,
+    layerCeremonyQueue,
+    shiftLayerCeremony,
     isCompleted,
     isExploring,
     prereqMet,

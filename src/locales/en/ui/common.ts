@@ -20,6 +20,7 @@ export default {
   'common.statAttack': 'ATK',
   'common.statDefense': 'DEF',
   'common.statPower': 'PWR',
+  'common.tapToContinue': 'Tap anywhere to continue',
   'common.totalLead': 'Total',
   'common.unitLevel': 'levels',
 }

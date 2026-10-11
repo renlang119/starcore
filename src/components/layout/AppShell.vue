@@ -14,6 +14,7 @@ import BottomNav from './BottomNav.vue'
 import SideNav from './SideNav.vue'
 import OfflineReport from './OfflineReport.vue'
 import AchievementToast from './AchievementToast.vue'
+import LayerCompleteCeremony from './LayerCompleteCeremony.vue'
 import Toast from '@/components/ui/Toast.vue'
 import Icons from '@/components/ui/Icons.vue'
 
@@ -168,6 +169,9 @@ watch(
 
     <!-- 成就解锁全局提示（v0.57） -->
     <AchievementToast />
+
+    <!-- 层完成仪式（v1.55）：普通层横幅 + 终局全屏仪式 -->
+    <LayerCompleteCeremony />
 
     <!-- 全局轻提示（存档失败提醒等） -->
     <Toast :toast="toast" />

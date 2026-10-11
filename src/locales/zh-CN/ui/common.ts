@@ -22,6 +22,7 @@ export default {
   'common.statAttack': '攻',
   'common.statDefense': '防',
   'common.statPower': '战力',
+  'common.tapToContinue': '点击任意处继续',
   'common.totalLead': '共',
   'common.unitLevel': '级',
 }

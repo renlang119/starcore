@@ -7,6 +7,7 @@ export default {
   'prestige.bulkAria': 'Levels per purchase',
   'prestige.buy': 'Buy',
   'prestige.confirm': 'Confirm Restart',
+  'prestige.ceremonyCount': 'Singularity Restart No. {n}',
   'prestige.confirmTitle': 'Confirm Singularity Restart?',
   'prestige.currentBonus': 'Current +{pct}%',
   'prestige.doTranscend': 'Execute Singularity Restart',

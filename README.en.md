@@ -77,7 +77,7 @@ Safari 14+; both desktop and mobile layouts are supported.
 ```text
 starcore/
 ├─ src/
-│  ├─ components/   42 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
+│  ├─ components/   44 components (including 8 icon sub-components), grouped as ui / layout / home / relics / build / army / battle / map / settings
 │  ├─ composables/  13 composables (breakpoints, Toast, action queue, onboarding, particles, …)
 │  ├─ data/         15 data tables (buildings, tech, exploration, strongholds, relics, achievements, expeditions, weekly boss, encounters, dispatch, units, formation doctrines, navigation, story, background stars)
 │  ├─ i18n/         i18n facade (message lookup and locale detection)
@@ -102,8 +102,8 @@ starcore/
 
 ## Quality
 
-- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 55 test files,
-  748 cases
+- **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 56 test files,
+  761 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document
