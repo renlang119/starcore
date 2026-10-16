@@ -114,6 +114,15 @@ describe('setLocale / clearLocale — 持久化', () => {
     expect(store.get(LOCALE_STORAGE_KEY)).toBe('zh-CN')
   })
 
+  it('写入成功同步 documentElement.lang（v1.66 免刷新切换防御写点）', () => {
+    const { api } = fakeStorage()
+    vi.stubGlobal('localStorage', api)
+    const doc = { documentElement: { lang: 'zh-CN' } }
+    vi.stubGlobal('document', doc)
+    expect(setLocale('en')).toBe(true)
+    expect(doc.documentElement.lang).toBe('en')
+  })
+
   it('未支持的语言拒绝', () => {
     const { api } = fakeStorage()
     vi.stubGlobal('localStorage', api)

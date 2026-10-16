@@ -12,7 +12,8 @@
  * 环境（含 Node 21+ 自带 navigator 全局的 CLI）一律回退基线语言。
  *
  * 切换语义：整页刷新生效。解析在模块加载时求值一次（一次会话内不变），
- * 显式选择写持久化后由调用方负责刷新。
+ * 显式选择写持久化后由调用方负责刷新。免刷新切换路径若未来引入，
+ * 必须先过 setLocale 内的 documentElement.lang 写点（v1.66 防御）。
  */
 
 export interface LocaleInfo {
@@ -113,12 +114,15 @@ export function isSupportedLocale(code: string): boolean {
   return supported.has(code)
 }
 
-/** 显式选择语言：写入持久化；未支持或存储不可用时返回 false */
+/** 显式选择语言：写入持久化并同步 <html lang>；未支持或存储不可用时返回 false */
 export function setLocale(code: string): boolean {
   if (!supported.has(code)) return false
   try {
     if (typeof localStorage === 'undefined') return false
     localStorage.setItem(LOCALE_STORAGE_KEY, code)
+    // 浏览器环境同步 <html lang>：当前切换经整页刷新闭环（main.ts 重写），
+    // 此写点为免刷新切换路径引入前的防御（v1.66）；Node 工具链无 document，守卫跳过
+    if (typeof document !== 'undefined') document.documentElement.lang = code
     return true
   } catch {
     return false

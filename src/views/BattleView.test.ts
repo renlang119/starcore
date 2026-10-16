@@ -176,6 +176,8 @@ describe('BattleView — 战斗流程与奖励发放', () => {
     // 弹窗动作与重复调用不再发放（防重复）
     vm.skipPlayback()
     vm.confirmResult()
+    // v1.66 路由语义显式断言（知秋复核增强）：胜利确认跳转星图 /map
+    expect(routeState.push).toHaveBeenCalledWith('/map')
     vm.stayHere()
     vm.confirmResult()
     await wrapper.vm.$nextTick()
@@ -380,6 +382,33 @@ describe('BattleView — 战损结算与驻扎切换（v1.61 补测）', () => {
     expect(combat.garrisoned['raider_1']).toBeUndefined()
     expect(shown.some((m) => m.includes('全军覆没'))).toBe(true)
     expect(shown.some((m) => m.includes('已从驻扎撤回'))).toBe(true)
+  })
+
+  it('败局弹窗：失败标题无奖励块，确认后停留原页不跳转（v1.66 补测）', async () => {
+    const wrapper = mountBattle()
+    const combat = useCombatStore()
+    ;(combat as unknown as { resolveBattle: unknown }).resolveBattle = () => ({
+      victory: false,
+      log: [{ round: 1, msg: 'demo', side: 'system' }],
+      rewards: {},
+      losses: { assault: 4 },
+      rounds: 1,
+    })
+    const vm = wrapper.vm as any
+    vm.startBattle()
+    await wrapper.vm.$nextTick()
+
+    // 失败标题出场、无战利品区块（BattleResultModal defeat 分支）
+    const overlay = wrapper.find('.modal-overlay')
+    expect(overlay.exists()).toBe(true)
+    expect(wrapper.find('.result-title').text()).toBe('失 败')
+    expect(wrapper.find('.result-rewards').exists()).toBe(false)
+
+    // v1.66 路由语义显式断言（知秋复核增强）：败局确认停留战斗页，不跳 /map
+    vm.confirmResult()
+    await wrapper.vm.$nextTick()
+    expect(routeState.push).not.toHaveBeenCalled()
+    expect(wrapper.find('.modal-overlay').exists()).toBe(false)
   })
 
   it('部分战损：编队减员并提示', async () => {
