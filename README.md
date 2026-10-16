@@ -42,10 +42,10 @@ corepack pnpm dev           # 启动开发服务器，浏览器打开 http://loc
 
 ```bash
 corepack pnpm build         # 类型检查 + 生产构建，产物在 dist/
-corepack pnpm test          # 运行单元/组件测试
+corepack pnpm test:cov      # 测试 + 覆盖率阈值门禁
 corepack pnpm lint:check    # ESLint 检查
 corepack pnpm format:check  # Prettier 检查
-corepack pnpm check         # 全量关卡（build + test + 守恒 + lint + format）
+corepack pnpm check         # 全量关卡（build + test:cov + 守恒 + 文案 + 体积 + lint + format）
 ```
 
 ## 技术栈
@@ -78,7 +78,7 @@ starcore/
 ├─ docs/            十二册规范文档，见「文档索引」
 ├─ references/      参考资料（英语文案术语表）
 ├─ public/          favicon、主屏图标、分享图与本地字体（Orbitron、JetBrains Mono）
-├─ scripts/         质量脚本（计数守恒、文案缺键检查）
+├─ scripts/         质量脚本（计数守恒、文案缺键检查、产物体积预算）
 ├─ tools/           诊断工具（环境自检、端到端与数值校验）
 ├─ .github/         CI 工作流（推送 main 自动跑全量检查）
 ├─ changelog/       版本历史四档（活跃档 changelog.md 与三份历史存档）
@@ -94,6 +94,13 @@ starcore/
   测试硬性校验，防止数值漂移（`corepack pnpm check:conservation`）
 - **文案守卫**：`scripts/check-locales.mjs` 校验文案键闭合（缺键 / 未使用 /
   非字面量调用）、硬编码中文零残留与多语言键面一致性，已并入 `corepack pnpm check` 门禁
+- **覆盖率门禁**：vitest coverage thresholds 三档（全局 lines ≥ 92% / stores
+  ≥ 97% / lib ≥ 92%，取 v1.66 实测基线取整留余），`corepack pnpm test:cov`
+  随 check 链强制生效
+- **体积预算**：`scripts/check-size.mjs` 对 dist 产物（js/css/html）做 gzip
+  合计门禁，预算 256 KiB，超额挂红（`--warn-only` 为特殊情形逃生口）
+- **数值核验**：CI `balance` 独立 job 依序运行 v126 / v127 两枚 EV 核验表
+  （python3 缺失时显式跳过），详见 `tools/README.md`
 
 ## 自检与诊断
 
@@ -104,7 +111,7 @@ corepack pnpm diagnose        # 环境与仓库自检，缺件时给出修复指
 corepack pnpm diagnose --fix  # 对可自动修复的缺件执行修复
 ```
 
-自检覆盖 Node、依赖、构建产物、浏览器、Python 等前置条件；端到端与数值校验工具用法见 `tools/README.md`。
+自检覆盖 Node、依赖、构建产物、浏览器、Python 等前置条件；端到端与数值校验工具用法见 `tools/README.md`。数值校验自 v1.67 起进 CI（`balance` 独立 job，python3 可选守卫），本地复算仍用同一组脚本。
 
 ## 文档索引
 

@@ -56,10 +56,10 @@ Other common commands:
 
 ```bash
 corepack pnpm build         # type-check + production build into dist/
-corepack pnpm test          # unit / component tests
+corepack pnpm test:cov      # tests + coverage thresholds gate
 corepack pnpm lint:check    # ESLint
 corepack pnpm format:check  # Prettier
-corepack pnpm check         # full gate (build + test + conservation + lint + format)
+corepack pnpm check         # full gate (build + test:cov + conservation + copy + size + lint + format)
 ```
 
 ## Tech Stack
@@ -94,7 +94,7 @@ starcore/
 ├─ docs/            12 specification documents (in Chinese), see Documentation
 ├─ references/      reference materials (English copy glossary)
 ├─ public/          favicon, touch icon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
-├─ scripts/         quality scripts (count conservation, message key checks)
+├─ scripts/         quality scripts (count conservation, message key checks, bundle size budget)
 ├─ tools/           diagnostics (environment self-check, end-to-end and numeric)
 ├─ .github/         CI workflow (full checks on push to main)
 ├─ changelog/       version history; active file and three archives
@@ -114,6 +114,15 @@ starcore/
 - **Copy guard**: `scripts/check-locales.mjs` gates message-key closure (missing /
   unused / non-literal calls), zero hardcoded Chinese residuals and
   cross-locale key parity; wired into `corepack pnpm check`
+- **Coverage gate**: vitest coverage thresholds on three tiers (global lines
+  >= 92% / stores >= 97% / lib >= 92%, rounded down from the v1.66 measured
+  baseline), enforced via `corepack pnpm test:cov` in the check chain
+- **Bundle size budget**: `scripts/check-size.mjs` gates the gzip total of the
+  dist output (js/css/html) at 256 KiB; over-budget fails the run
+  (`--warn-only` is the escape hatch for exceptional cases)
+- **Balance checks**: the CI `balance` job runs the v126 / v127 EV verification
+  scripts in sequence (skipped explicitly when python3 is absent), see
+  `tools/README.md`
 
 ## Self-check & Diagnostics
 
@@ -124,7 +133,7 @@ corepack pnpm diagnose        # environment & repo self-check with fix hints
 corepack pnpm diagnose --fix  # repair fixable missing pieces
 ```
 
-The self-check covers Node, dependencies, build output, the browser and Python prerequisites. For end-to-end and numeric diagnostics, see `tools/README.md`.
+The self-check covers Node, dependencies, build output, the browser and Python prerequisites. For end-to-end and numeric diagnostics, see `tools/README.md`. Since v1.67 the balance checks also run in CI (a dedicated `balance` job with a python3 optional guard); local recomputation still uses the same scripts.
 
 ## Documentation
 
