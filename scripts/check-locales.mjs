@@ -8,10 +8,13 @@
  * 另扫硬编码中文：源码（语言包、门面、测试与 src/tests/ 除外）在掩码注释后
  * 不得出现任何 CJK 字符（.vue 额外掩码 HTML 注释；模板文本与属性值同查）。
  * 多语言键面一致性：注册表内每种非默认语言与默认语言键集、{参数} 占位符一致。
+ * 术语分野禁用扫描（v1.66 新增）：层名/族名/称谓分级的确定性禁用 pattern，
+ * 依据 references/i18n-en-glossary.md §五用词分野与 §七设定事实源。
  *
  * 用法：node scripts/check-locales.mjs [--strict]
- *   --strict：缺键 / 未使用键 / 非字面量调用 / 硬编码中文残留 / 键面一致性，
- *   任一非零退出 1（已挂入 `corepack pnpm check` 门禁链）；默认报告模式恒退出 0。
+ *   --strict：缺键 / 未使用键 / 非字面量调用 / 硬编码中文残留 / 键面一致性 /
+ *   术语禁用命中，任一非零退出 1（已挂入 `corepack pnpm check` 门禁链）；
+ *   默认报告模式恒退出 0。
  */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
@@ -125,6 +128,36 @@ for (const f of files) {
   }
 }
 
+// 术语分野禁用扫描（v1.66 新增第四段，依据 references/i18n-en-glossary.md §五/§七）：
+// 首版只收确定性 pattern（对当前基线零误报），模糊规则不进门禁，随 §五扩条目再增。
+const bannedPatterns = [
+  {
+    // 层名定稿「深空层」；「虚空」域词（虚空航道/虚空记忆库等）不受限
+    label: '层名禁用「虚空层」（定稿「深空层」）',
+    test: (v) => v.includes('虚空层'),
+  },
+  {
+    // 族名定稿「掠夺者」；「劫掠」仅限舰级名缀（快艇/巡洋舰/护航舰/无畏舰）
+    label: '单位名「劫掠」前缀（族名定稿「掠夺者」，舰级名缀仅限四舰级）',
+    test: (v) => /^劫掠(?!快艇|巡洋舰|护航舰|无畏舰)/.test(v),
+  },
+  {
+    // 王庭/帝庭分级称谓不互串：禁族名冠顶层（「掠夺者帝庭」）与两者相邻拼接
+    label: '王庭/帝庭混写（分级称谓不互串）',
+    test: (v) => v.includes('掠夺者帝庭') || /帝庭王庭|王庭帝庭/.test(v),
+  },
+]
+const banned = []
+for (const [key, value] of Object.entries(bundle)) {
+  if (typeof value !== 'string') continue
+  for (const p of bannedPatterns) {
+    if (p.test(value)) {
+      banned.push(`${key}  [${p.label}]`)
+      break
+    }
+  }
+}
+
 console.log(`== 文案守卫扫描（${strict ? '门禁' : '报告'}模式）==`)
 console.log(`语言包键数: ${keys.size} | 源码调用键数: ${used.size} | 扫描文件: ${files.length}`)
 console.log(`缺键（调用但语言包无此键）: ${missing.length}`)
@@ -137,6 +170,8 @@ console.log(`硬编码中文残留（语言包与测试外源码）: ${residual.
 for (const s of residual.slice(0, 40)) console.log(`  ✗ ${s}`)
 console.log(`多语言键面一致性（非默认语言 vs 默认语言）: ${parityProblems.length}`)
 for (const s of parityProblems.slice(0, 40)) console.log(`  ✗ ${s}`)
+console.log(`术语分野禁用命中（v1.66 新增段）: ${banned.length}`)
+for (const s of banned.slice(0, 40)) console.log(`  ✗ ${s}`)
 
 if (strict) {
   const bad = []
@@ -145,6 +180,7 @@ if (strict) {
   if (nonLiteral.length > 0) bad.push(`非字面量调用 ${nonLiteral.length}`)
   if (residual.length > 0) bad.push(`硬编码中文残留 ${residual.length}`)
   if (parityProblems.length > 0) bad.push(`键面一致性 ${parityProblems.length}`)
+  if (banned.length > 0) bad.push(`术语禁用命中 ${banned.length}`)
   if (bad.length > 0) {
     console.error(`\n[strict] 文案守卫未过：${bad.join('、')}，退出码 1`)
     process.exit(1)

@@ -91,7 +91,7 @@ starcore/
 │  ├─ tests/        test harness (vitest setup and shared helpers)
 │  ├─ views/        11 views (home, build, tech, map, army, battle, relics, rebirth, achievements, archive, settings)
 │  └─ App.vue / app.ts / main.ts / version.ts / style.css
-├─ docs/            11 specification documents (in Chinese), see Documentation
+├─ docs/            12 specification documents (in Chinese), see Documentation
 ├─ references/      reference materials (English copy glossary)
 ├─ public/          favicon, touch icon, share image and self-hosted fonts (Orbitron, JetBrains Mono)
 ├─ scripts/         quality scripts (count conservation, message key checks)
@@ -105,7 +105,7 @@ starcore/
 ## Quality
 
 - **Unit / component tests**: Vitest + @vue/test-utils + jsdom; 57 test files,
-  790 cases
+  792 cases
 - **Types & conventions**: vue-tsc type checking in the build; ESLint and
   Prettier pass with zero output
 - **Count conservation**: `scripts/check-conservation.mjs` validates document

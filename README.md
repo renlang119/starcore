@@ -75,7 +75,7 @@ starcore/
 │  ├─ tests/        测试装置（vitest setup 与公共 helper）
 │  ├─ views/        11 个页面视图（主界面、建造、科技、地图、军队、战斗、遗物、转生、成就、档案馆、设置）
 │  └─ App.vue / app.ts / main.ts / version.ts / style.css
-├─ docs/            十一册规范文档，见「文档索引」
+├─ docs/            十二册规范文档，见「文档索引」
 ├─ references/      参考资料（英语文案术语表）
 ├─ public/          favicon、主屏图标、分享图与本地字体（Orbitron、JetBrains Mono）
 ├─ scripts/         质量脚本（计数守恒、文案缺键检查）
@@ -88,7 +88,7 @@ starcore/
 
 ## 质量
 
-- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，57 个测试文件 790 个用例
+- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，57 个测试文件 792 个用例
 - **类型与规范**：构建内置 vue-tsc 类型检查；ESLint 与 Prettier 全量检查零输出
 - **计数守恒**：`scripts/check-conservation.mjs` 校验文档计数、成就文案联动与
   测试硬性校验，防止数值漂移（`corepack pnpm check:conservation`）
