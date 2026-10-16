@@ -125,6 +125,7 @@ function toggleCollapsed() {
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh; /* 移动浏览器动态视口：地址栏收展不裁切（100vh 为回退，v1.66） */
   overflow-y: auto;
   transition: width 0.2s var(--ease-out);
 }

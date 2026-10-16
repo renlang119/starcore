@@ -143,6 +143,8 @@ onBeforeUnmount(() => {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border-line);
   padding: var(--space-2) var(--space-3);
+  /* 刘海屏安全区：顶栏随刘海下移（env 第二参 0 兜底，桌面端无变化；v1.66） */
+  padding-top: calc(var(--space-2) + env(safe-area-inset-top, 0px));
   display: flex;
   align-items: center;
   gap: var(--space-3);
