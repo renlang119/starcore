@@ -17,6 +17,10 @@
  * 纯资源包：relicChance/relicRarityBias 不入周 Boss 奖励（与派遣同口径）；
  * 量级 = 1.5 场前沿远征单场，周频一次性，不构成第二资源轴。
  *
+ * 帝庭威胁名录（v1.71）：合成据点显示名读剧情条目池（四族 × 8 条，
+ * 条目轮换沿既有周种子轨道洗牌取 1，同周同条目），条目名带「每周强敌·」
+ * 前缀；条目未命中回退通用键，玩家可见面与 v1.70 行为一致。
+ *
  * 数据契约：
  * - 合成据点 id = 'weekly_boss'，不入 STRONGHOLDS 表（与 endless 同口径：
  *   严禁进 completedStrongholds，白名单会拒档）；不入敌方图鉴（动态编成）；
@@ -109,6 +113,190 @@ export function weeklyBossReward(expeditionBest: number): MilestoneReward {
   return out
 }
 
+/** 剧情条目（帝庭威胁名录）：name = 条目名；origin = 出身注（档案口径一行来历） */
+export interface WeeklyBossLoreEntry {
+  name: string
+  origin: string
+}
+
+/**
+ * 帝庭威胁名录条目池（v1.71）：四模板族各 8 条，zh/en 镜像。
+ * 帝庭档案视角统一包装（王庭失格者 / 兽灾 / 先驱遗产 / 不可交涉系），
+ * 四族共册；条目文案与数值解耦（只换显示名，编成/深度/奖励零变化）。
+ * 数据实体字段口径：模块加载时取词，UI 读字段不做动态键拼接。
+ * 导出供测试直测（池结构断言），运行期消费方为 weeklyBossLore。
+ */
+export const WEEKLY_BOSS_LORE: Record<
+  (typeof WEEKLY_BOSS_TEMPLATE_IDS)[number],
+  WeeklyBossLoreEntry[]
+> = {
+  silencer_3: [
+    {
+      name: t('content.weeklyBoss.lore.silencer.1.name'),
+      origin: t('content.weeklyBoss.lore.silencer.1.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.2.name'),
+      origin: t('content.weeklyBoss.lore.silencer.2.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.3.name'),
+      origin: t('content.weeklyBoss.lore.silencer.3.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.4.name'),
+      origin: t('content.weeklyBoss.lore.silencer.4.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.5.name'),
+      origin: t('content.weeklyBoss.lore.silencer.5.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.6.name'),
+      origin: t('content.weeklyBoss.lore.silencer.6.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.7.name'),
+      origin: t('content.weeklyBoss.lore.silencer.7.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.silencer.8.name'),
+      origin: t('content.weeklyBoss.lore.silencer.8.origin'),
+    },
+  ],
+  raider_5: [
+    {
+      name: t('content.weeklyBoss.lore.raider.1.name'),
+      origin: t('content.weeklyBoss.lore.raider.1.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.2.name'),
+      origin: t('content.weeklyBoss.lore.raider.2.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.3.name'),
+      origin: t('content.weeklyBoss.lore.raider.3.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.4.name'),
+      origin: t('content.weeklyBoss.lore.raider.4.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.5.name'),
+      origin: t('content.weeklyBoss.lore.raider.5.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.6.name'),
+      origin: t('content.weeklyBoss.lore.raider.6.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.7.name'),
+      origin: t('content.weeklyBoss.lore.raider.7.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.raider.8.name'),
+      origin: t('content.weeklyBoss.lore.raider.8.origin'),
+    },
+  ],
+  beast_4: [
+    {
+      name: t('content.weeklyBoss.lore.beast.1.name'),
+      origin: t('content.weeklyBoss.lore.beast.1.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.2.name'),
+      origin: t('content.weeklyBoss.lore.beast.2.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.3.name'),
+      origin: t('content.weeklyBoss.lore.beast.3.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.4.name'),
+      origin: t('content.weeklyBoss.lore.beast.4.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.5.name'),
+      origin: t('content.weeklyBoss.lore.beast.5.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.6.name'),
+      origin: t('content.weeklyBoss.lore.beast.6.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.7.name'),
+      origin: t('content.weeklyBoss.lore.beast.7.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.beast.8.name'),
+      origin: t('content.weeklyBoss.lore.beast.8.origin'),
+    },
+  ],
+  ruin_4: [
+    {
+      name: t('content.weeklyBoss.lore.ruin.1.name'),
+      origin: t('content.weeklyBoss.lore.ruin.1.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.2.name'),
+      origin: t('content.weeklyBoss.lore.ruin.2.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.3.name'),
+      origin: t('content.weeklyBoss.lore.ruin.3.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.4.name'),
+      origin: t('content.weeklyBoss.lore.ruin.4.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.5.name'),
+      origin: t('content.weeklyBoss.lore.ruin.5.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.6.name'),
+      origin: t('content.weeklyBoss.lore.ruin.6.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.7.name'),
+      origin: t('content.weeklyBoss.lore.ruin.7.origin'),
+    },
+    {
+      name: t('content.weeklyBoss.lore.ruin.8.name'),
+      origin: t('content.weeklyBoss.lore.ruin.8.origin'),
+    },
+  ],
+}
+
+/**
+ * 条目轮换纯函数：沿既有周种子轨道（fnv1a('weekly_boss:'+weekKey) 洗牌
+ * 取 1，与模板轮换同族口径）——同周同条目；跨周重洗，池深 8 下相邻周
+ * 存在 1/8 重合的小概率，观感可接受、加深池自然稀释。空池返回
+ * undefined（兜底语义，装配层回退通用键）。导出供测试直测。
+ */
+export function pickWeeklyBossLore(
+  pool: WeeklyBossLoreEntry[],
+  weekKey: string
+): WeeklyBossLoreEntry | undefined {
+  if (pool.length === 0) return undefined
+  const arr = [...pool]
+  const rng = mulberry32(fnv1a('weekly_boss:' + weekKey))
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j]!, arr[i]!]
+  }
+  return arr[0]
+}
+
+/** 本周名录条目：模板族池内按周轮换；未知模板或空池返回 undefined */
+export function weeklyBossLore(
+  templateId: string,
+  weekKey: string
+): WeeklyBossLoreEntry | undefined {
+  const pool = WEEKLY_BOSS_LORE[templateId as keyof typeof WEEKLY_BOSS_LORE]
+  return pool ? pickWeeklyBossLore(pool, weekKey) : undefined
+}
+
 /**
  * 周 Boss 合成据点（不入 STRONGHOLDS 表；每次调用现算，编辑成本高勿在 tick 调）。
  * 模板缺失抛错（配置错误快速失败，与 endless 同口径）。
@@ -120,6 +308,7 @@ export function weeklyBossStronghold(expeditionBest: number, weekKey: string): S
   const normalize = BASE_POWER / TEMPLATE_NORMALIZE.get(templateId)!
   const depth = weeklyBossDepth(expeditionBest, templateId)
   const scale = endlessScale(depth) * normalize
+  const lore = weeklyBossLore(templateId, weekKey)
   const enemies = template.enemies.map((e) => {
     const r = (v: number): number => Math.round(v * scale)
     return {
@@ -134,10 +323,14 @@ export function weeklyBossStronghold(expeditionBest: number, weekKey: string): S
   })
   return {
     id: WEEKLY_BOSS_ID,
-    name: t('content.weeklyBoss.name', { d: depth }),
+    // 显示名接剧情条目（v1.71 帝庭威胁名录）：条目名带「每周强敌·」前缀，
+    // 与敌方名前缀同口径；池未命中回退通用键
+    name: lore
+      ? `${t('content.weeklyBoss.prefix')}·${lore.name}`
+      : t('content.weeklyBoss.name', { d: depth }),
     type: template.type,
     tier: template.tier,
-    desc: t('content.weeklyBoss.desc', { d: depth }),
+    desc: lore?.origin ?? t('content.weeklyBoss.desc', { d: depth }),
     enemies,
     rewards: weeklyBossReward(expeditionBest),
     idle: {},

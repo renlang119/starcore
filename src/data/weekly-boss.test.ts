@@ -3,7 +3,9 @@
  *
  * 覆盖：模板轮换确定性（同周同模板、跨周可能换）、深度公式与门槛钳制、
  * 奖励公式（前沿锚 ×1.5 与模板解耦）、合成据点结构、校准锚点
- * （OFFSET 表与校准定稿一致；归一化后总强度随深度单调）。
+ * （OFFSET 表与校准定稿一致；归一化后总强度随深度单调）；
+ * v1.71 帝庭威胁名录：条目池结构（四族 × 8 条非空）、轮换确定性
+ * 与覆盖、装配接线（合成据点显示名 = 本周条目）、兜底路径可达。
  */
 import { describe, it, expect } from 'vitest'
 import {
@@ -12,16 +14,23 @@ import {
   WEEKLY_BOSS_TEMPLATE_IDS,
   WEEKLY_BOSS_OFFSET,
   WEEKLY_BOSS_REWARD_MULT,
+  WEEKLY_BOSS_LORE,
   weeklyBossTemplateId,
   weeklyBossDepth,
   weeklyBossReward,
   weeklyBossStronghold,
+  weeklyBossLore,
+  pickWeeklyBossLore,
 } from './weekly-boss'
 import { STRONGHOLDS, getStronghold } from './pve'
 import { ENDLESS_UNLOCK_STRONGHOLD } from './endless'
+import { t } from '@/i18n'
 
 /** 校准脚本的墙位锚（档A/B/C 50% 墙位中位，starcore-v124-boss-calib.py v6） */
 const CALIB_WALLS = { A: 33, B: 37, C: 40 } as const
+
+/** 中文断言用（缺键回落键名时不含 CJK，可捕获取词失败） */
+const CJK = /[一-鿿]/
 
 describe('weekly-boss 模板轮换', () => {
   it('同周标识确定：任意多次调用同一周返回同一模板', () => {
@@ -177,5 +186,60 @@ describe('weekly-boss 合成据点', () => {
       expect(e.count).toBeGreaterThan(0)
       expect(e.counteredBy).toBeDefined()
     }
+  })
+})
+
+describe('weekly-boss 帝庭威胁名录（v1.71）', () => {
+  it('四族池结构：每族 8 条、条目名族内不重复、name/origin 均为非空中文', () => {
+    expect(WEEKLY_BOSS_TEMPLATE_IDS.length).toBe(4)
+    for (const tid of WEEKLY_BOSS_TEMPLATE_IDS) {
+      const pool = WEEKLY_BOSS_LORE[tid]
+      expect(pool.length, tid).toBe(8)
+      expect(new Set(pool.map((e) => e.name)).size, tid).toBe(8)
+      for (const e of pool) {
+        expect(e.name.length, tid).toBeGreaterThan(0)
+        expect(e.origin.length, tid).toBeGreaterThan(0)
+        expect(e.name, tid).toMatch(CJK)
+        expect(e.origin, tid).toMatch(CJK)
+      }
+    }
+  })
+
+  it('同周条目确定：同模板同周任意多次调用返回同一条目', () => {
+    for (const wk of ['2026-W38', '2026-W39', '2027-W01']) {
+      for (const tid of WEEKLY_BOSS_TEMPLATE_IDS) {
+        const a = weeklyBossLore(tid, wk)
+        const b = weeklyBossLore(tid, wk)
+        expect(a, `${tid} ${wk}`).toBeDefined()
+        expect(a).toEqual(b)
+      }
+    }
+  })
+
+  it('跨周轮换覆盖：固定模板连续 24 周至少出现 4 个不同条目', () => {
+    const weeks = Array.from({ length: 24 }, (_, i) => `2026-W${String(20 + i).padStart(2, '0')}`)
+    for (const tid of WEEKLY_BOSS_TEMPLATE_IDS) {
+      const names = new Set(weeks.map((wk) => weeklyBossLore(tid, wk)!.name))
+      expect(names.size, tid).toBeGreaterThanOrEqual(4)
+    }
+  })
+
+  it('装配接线：合成据点显示名为「每周强敌·条目名」（连投四周验证换装）', () => {
+    for (const wk of ['2026-W38', '2026-W39', '2026-W40', '2026-W41']) {
+      const def = weeklyBossStronghold(10, wk)
+      const lore = weeklyBossLore(weeklyBossTemplateId(wk), wk)!
+      expect(def.name, wk).toBe(`每周强敌·${lore.name}`)
+      expect(def.desc, wk).toBe(lore.origin)
+      // 敌方名前缀口径不变（每周强敌·单位名）
+      for (const e of def.enemies) expect(e.name, wk).toContain('每周强敌·')
+    }
+  })
+
+  it('兜底路径：空池与未知模板返回 undefined；通用回退键仍可解析', () => {
+    expect(pickWeeklyBossLore([], '2026-W41')).toBeUndefined()
+    expect(weeklyBossLore('no_such_template', '2026-W41')).toBeUndefined()
+    expect(t('content.weeklyBoss.name', { d: 6 })).toMatch(CJK)
+    expect(t('content.weeklyBoss.desc', { d: 6 })).toMatch(CJK)
+    expect(t('content.weeklyBoss.prefix')).toMatch(CJK)
   })
 })
