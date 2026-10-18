@@ -88,7 +88,7 @@ starcore/
 
 ## 质量
 
-- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，58 个测试文件 797 个用例
+- **单元/组件测试**：Vitest + @vue/test-utils + jsdom，58 个测试文件 802 个用例
 - **类型与规范**：构建内置 vue-tsc 类型检查；ESLint 与 Prettier 全量检查零输出
 - **计数守恒**：`scripts/check-conservation.mjs` 校验文档计数、成就文案联动与
   测试硬性校验，防止数值漂移（`corepack pnpm check:conservation`）
