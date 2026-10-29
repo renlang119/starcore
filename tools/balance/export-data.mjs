@@ -4,7 +4,8 @@
  *
  * 用仓库既有 Vite 的 SSR 模块加载（createServer appType custom + middlewareMode
  * + ssrLoadModule）直接载入 src/data 数据表，解决 @/ 别名与 TS 语法，零新增依赖。
- * 六枚核验脚本统一改读导出的 JSON，不再各自正则解析 TS 源码；
+ * 数值核验脚本统一改读导出的 JSON，不再各自正则解析 TS 源码
+ * （六枚既有脚本 + EV 总账 starcore-ev-ledger.py）；
  * 快照由本导出器生成，新鲜度由 check 链尾的校验把关。
  *
  * 载入顺序（src/i18n/index.ts 头注约束）：先 await loadLocaleBundles()，
@@ -12,12 +13,20 @@
  * 而数据表在模块级取词。Node 环境下 locale 守卫回退基线语言 zh-CN，
  * 因此 JSON 中的文案（遭遇选项标签等）即 zh-CN 解析值。
  *
- * 输出：tools/balance/data/balance-data.json（schema:1，无时间戳——
+ * 输出：tools/balance/data/balance-data.json（schema:2，无时间戳——
  * 确定性输出保证基线对照稳定与新鲜度校验可复现）。
  *
- * 私有常量说明（src/ 零改动边界内的两处最小提取）：
+ * schema:2（2026-10，EV 总账第一段）：新增 explore / weeklyBoss /
+ * transcend 三域并补 units.cost 投影（训练支出面）。transcend 域自
+ * store 模块载入 DEFAULT_NODES（模块级 export const，不涉及 pinia
+ * 实例化）；无限节点 maxLevel = Infinity 序列化为 null（JSON 无穷限）。
+ * 遗物概率面（endless.ts 内联常量）按 #18 修订不进本轮导出。
+ *
+ * 私有常量说明（src/ 零改动边界内的三处最小提取）：
  *  - offline 的 OFFLINE_CAP（src/lib/offline-gains.ts 模块私有，非导出值），
  *    文本提取集中在导出器一处，脚本侧不再各自提取；
+ *  - dispatch 的 DISPATCH_BASE_STRONGHOLD（src/data/dispatch.ts 模块私有），
+ *    同为文本提取；与 endless.unlockStronghold 在消费侧交叉校验同源；
  *  - endless 的 TEMPLATE_IDS / TEMPLATE_NORMALIZE 同为模块私有，但可由公开
  *    API 推导（endlessEnemies 深度轮换编成 + STRONGHOLDS 等比匹配 + 强度
  *    公式重算），并经逐值 round 校验兜底，故不做文本提取。
@@ -102,6 +111,9 @@ try {
   const relicsMod = await server.ssrLoadModule('/src/data/relics.ts')
   const achievementsMod = await server.ssrLoadModule('/src/data/achievements.ts')
   const buildingsMod = await server.ssrLoadModule('/src/data/buildings.ts')
+  const exploreMod = await server.ssrLoadModule('/src/data/explore.ts')
+  const weeklyBossMod = await server.ssrLoadModule('/src/data/weekly-boss.ts')
+  const transcendMod = await server.ssrLoadModule('/src/stores/transcend.ts')
 
   const power = (enemies) =>
     enemies.reduce((a, e) => a + (e.attack + e.defense + e.hp) * e.count, 0)
@@ -174,9 +186,14 @@ try {
   if (!capMatch) throw new Error('OFFLINE_CAP 提取失败（src/lib/offline-gains.ts）')
   const offlineCap = Number(capMatch[1]) * Number(capMatch[2])
 
+  // ---------- dispatch 私有基准据点：第二处文本提取（消费侧与 endless 交叉校验） ----------
+  const dispatchSrc = readFileSync(resolve(REPO, 'src/data/dispatch.ts'), 'utf8')
+  const dispatchBaseMatch = dispatchSrc.match(/DISPATCH_BASE_STRONGHOLD\s*=\s*'([^']+)'/)
+  if (!dispatchBaseMatch) throw new Error('DISPATCH_BASE_STRONGHOLD 提取失败（src/data/dispatch.ts）')
+
   // ---------- 组装快照（各域显式投影，键序即字段序，保证输出确定性） ----------
   const data = {
-    schema: 1,
+    schema: 2,
     units: unitsMod.UNITS.map((u) => ({
       id: u.id,
       attack: u.attack,
@@ -184,6 +201,8 @@ try {
       hp: u.hp,
       counters: [...u.counters],
       counterMult: u.counterMult,
+      // 训练成本（EV 总账支出面）：Partial 键，JSON 序列化自动省略缺失键
+      cost: { ...u.cost },
     })),
     traits: traitsMod.TRAITS.map((t) => ({
       id: t.id,
@@ -221,6 +240,7 @@ try {
       })),
     },
     endless: {
+      unlockStronghold: endlessMod.ENDLESS_UNLOCK_STRONGHOLD,
       enemyGrowth: endlessMod.ENEMY_GROWTH,
       rewardGrowth: endlessMod.REWARD_GROWTH,
       maxDepth: endlessMod.MAX_ENDLESS_DEPTH,
@@ -235,6 +255,7 @@ try {
       optB: { label: e.optB.label, chances: e.optB.chances.map(({ p, rewards }) => ({ p, rewards: { ...rewards } })) },
     })),
     dispatch: {
+      baseStronghold: dispatchBaseMatch[1],
       tiers: dispatchMod.DISPATCH_TIERS.map(({ hours, weight }) => ({ hours, weight })),
       rewardGrowth: dispatchGrowth,
       baseRewards: { ...dispatchBaseRewards },
@@ -274,6 +295,49 @@ try {
       )
     ),
     offline: { capSeconds: offlineCap },
+    // ---------- schema:2 新增域（EV 总账第一段，#18 修订口径） ----------
+    // explore：星图探索节点（一次性收支面）。LAYER_INFO 仅文案与分层信息不入账。
+    explore: exploreMod.EXPLORE_NODES.map((n) =>
+      stripText(
+        {
+          id: n.id,
+          layer: n.layer,
+          time: n.time,
+          cost: { ...n.cost },
+          rewards: { ...n.rewards },
+          requires: n.requires ? [...n.requires] : undefined,
+        },
+        `explore.${n.id}`
+      )
+    ),
+    // weeklyBoss：周强敌参数（收入面）。奖励公式（前沿合成据点 × rewardMult）
+    // 由 pve 基准包 + endless.rewardGrowth 在脚本侧推导核验，不在此展开。
+    weeklyBoss: {
+      floor: weeklyBossMod.WEEKLY_BOSS_FLOOR,
+      templateIds: [...weeklyBossMod.WEEKLY_BOSS_TEMPLATE_IDS],
+      offset: { ...weeklyBossMod.WEEKLY_BOSS_OFFSET },
+      rewardMult: weeklyBossMod.WEEKLY_BOSS_REWARD_MULT,
+    },
+    // transcend：转生树（负熵支出面 + 自动协议节点标注）。自 store 模块载入
+    // DEFAULT_NODES（模块级 export const）；无限节点 maxLevel=Infinity 投影为
+    // null（JSON 无穷限，null 即无限语义）。nextCost 公式（买断=基础成本、
+    // 无限=ceil(cost×growth^level)）脚本侧同源重算，不导公式。
+    transcend: {
+      minEnergy: transcendMod.TRANSCEND_MIN_ENERGY,
+      maxInfiniteNodeLevel: transcendMod.MAX_INFINITE_NODE_LEVEL,
+      nodes: transcendMod.DEFAULT_NODES.map((n) =>
+        stripText(
+          {
+            id: n.id,
+            cost: n.cost,
+            maxLevel: n.maxLevel === Infinity ? null : (n.maxLevel ?? 1),
+            costGrowth: n.costGrowth,
+            effects: n.effects.map((e) => ({ type: e.type, target: e.target, value: e.value })),
+          },
+          `transcend.nodes.${n.id}`
+        )
+      ),
+    },
   }
 
   assertJsonSafe(data, '$')

@@ -8,7 +8,8 @@ export-data.mjs 生成，生成命令 corepack pnpm balance:export），
 
 - load()：载入（进程内缓存）数值快照，schema 不符即抛错
 - table(name)：取顶层数据域（units/traits/tech/pve/endless/encounters/
-  dispatch/relics/achievements/buildings/offline），缺域即抛错
+  dispatch/relics/achievements/buildings/offline/explore/weeklyBoss/
+  transcend），缺域即抛错
 - require(cond, msg)：断言式守卫（数据完整性/口径检查，防漂移静默）
 - approx(a, b)：浮点容差相等（round 误差边界判断）
 
@@ -28,7 +29,7 @@ import os
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _JSON_PATH = os.path.join(_HERE, '..', 'data', 'balance-data.json')
 
-_EXPECTED_SCHEMA = 1
+_EXPECTED_SCHEMA = 2
 
 _DATA = None
 
