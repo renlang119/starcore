@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "units": [
     {
       "id": "assault",
@@ -7091,5 +7091,126 @@
         ]
       }
     ]
+  },
+  "profiles": {
+    "source": "calibration",
+    "tiers": {
+      "A": {
+        "source": "calibration",
+        "units": {
+          "assault": 8000,
+          "guard": 6400,
+          "heavy": 6400,
+          "psionic": 3200
+        },
+        "anchorDepth": 34,
+        "milestoneTier": 3,
+        "infiniteCombatLevel": 8,
+        "relicEnhanceLevel": 16,
+        "voidCommand": false
+      },
+      "B": {
+        "source": "calibration",
+        "units": {
+          "assault": 16000,
+          "guard": 12400,
+          "heavy": 12400,
+          "psionic": 6200
+        },
+        "anchorDepth": 38,
+        "milestoneTier": 3,
+        "infiniteCombatLevel": 10,
+        "relicEnhanceLevel": 18,
+        "voidCommand": true
+      },
+      "C": {
+        "source": "calibration",
+        "units": {
+          "assault": 26000,
+          "guard": 20000,
+          "heavy": 20000,
+          "psionic": 10400
+        },
+        "anchorDepth": 40,
+        "milestoneTier": 4,
+        "infiniteCombatLevel": 12,
+        "relicEnhanceLevel": 20,
+        "voidCommand": true
+      }
+    },
+    "relicLoadout": {
+      "source": "calibration",
+      "attackIds": [
+        "r_omega",
+        "r_combat_3",
+        "r_combat_1"
+      ],
+      "defenseIds": [
+        "r_combat_3",
+        "r_combat_2"
+      ],
+      "setFullId": "raiders"
+    },
+    "techPlan": {
+      "source": "calibration",
+      "attackIds": [
+        "weapon_upg",
+        "fleet_logistics",
+        "flagship_doctrine",
+        "armada_tactics",
+        "galaxy_command"
+      ],
+      "defenseIds": [
+        "armor_upg",
+        "fleet_logistics",
+        "flagship_doctrine",
+        "armada_tactics",
+        "galaxy_command"
+      ],
+      "voidCommandId": "void_command"
+    },
+    "achievementIds": [
+      "ach_battle_1",
+      "ach_battle_2",
+      "ach_battle_3",
+      "ach_battle_4",
+      "ach_battle_5",
+      "ach_battle_8"
+    ],
+    "derived": {
+      "A": {
+        "techAtk": 3.046875,
+        "techDef": 3.046875,
+        "achProduct": 1.4690761344000005,
+        "tCombat1": 1.3,
+        "tInf": 1.477455443789063,
+        "relicAtk": 2.9406890304000006,
+        "relicDef": 1.6546879999999997,
+        "multsAtk": 25.281671693649805,
+        "multsDef": 14.225672398190204
+      },
+      "B": {
+        "techAtk": 3.80859375,
+        "techDef": 3.80859375,
+        "achProduct": 1.4690761344000005,
+        "tCombat1": 1.3,
+        "tInf": 1.628894626777442,
+        "relicAtk": 3.0569909567999995,
+        "relicDef": 1.6907519999999996,
+        "multsAtk": 36.21924982453087,
+        "multsDef": 20.032041293124315
+      },
+      "C": {
+        "techAtk": 3.80859375,
+        "techDef": 3.80859375,
+        "achProduct": 1.4690761344000005,
+        "tCombat1": 1.3,
+        "tInf": 1.79585632602213,
+        "relicAtk": 3.1759112,
+        "relicDef": 1.7271999999999996,
+        "multsAtk": 41.485109994026246,
+        "multsDef": 22.56142488545716
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 """balance_data.py：数值核验脚本公共数据底座。
 
-六枚核验脚本统一经此读取 tools/balance/data/balance-data.json（由
+数值核验脚本统一经此读取 tools/balance/data/balance-data.json（由
 export-data.mjs 生成，生成命令 corepack pnpm balance:export），
 不再各自解析 TS 源码。
 
@@ -29,7 +29,7 @@ import os
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _JSON_PATH = os.path.join(_HERE, '..', 'data', 'balance-data.json')
 
-_EXPECTED_SCHEMA = 2
+_EXPECTED_SCHEMA = 3
 
 _DATA = None
 

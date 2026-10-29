@@ -17,13 +17,13 @@ issue #18 口径（上游 2026-10-29 修订后）：
   1 能量 = 1；1 合金 = 1；1 数据 = 6；1 晶体 = 55；1 暗物质 = 8000
   （晶体 55 与据点奖励带 energy:crystal 比价中值对账，见断言 1）
 
-三档画像锚（校准声明，承 v120 校准与 endless.ts 里程碑注记）：
+三档画像（profiles 域：导出器校准声明，聚值自 tech/achievements/relics/
+transcend 域真值连乘推导）：
   档 A / B / C = 可通关深空 D34 / D38 / D40，里程碑档 3 / 3 / 4；
-  兵量承 starcore-v092-battle-sim.py TIERS 现值逐值对齐
-  （第二段 profiles 域并入后，本脚本切换读 balance-data.json，消声明）。
+  兵量与聚值乘数同源经 balance-data.json（v092 / v120 / 本脚本统一消费）。
 
-数据源：tools/balance/data/balance-data.json（schema:2）——
-新增 explore / weeklyBoss / transcend 域与 units.cost 投影；
+数据源：tools/balance/data/balance-data.json（schema:3）——
+explore / weeklyBoss / transcend / profiles 域与 units.cost 投影；
 奖励公式（里程碑 / 战斗 / 周强敌 / 派遣）自 pve 基准包 +
 endless.rewardGrowth 同源重算，脚本不自带可能漂移的数值。
 """
@@ -38,15 +38,13 @@ from lib import balance_data as bd
 # ---------- 折算率（设计声明；断言 1 对账） ----------
 RATE = {'energy': 1.0, 'alloy': 1.0, 'data': 6.0, 'crystal': 55.0, 'dark': 8000.0}
 
-# ---------- 三档画像（校准声明：锚深 + 兵量；第二段切 profiles 域） ----------
-# 锚深 = 可通关深空深度（endless.ts 里程碑注记口径）；best 为终身远征前沿。
-# 兵量 = v092 TIERS 现值（id 顺序 assault/guard/heavy/psionic）。
+# ---------- 三档画像（profiles 域：导出器校准声明 + 域真值聚值） ----------
+# 锚深 = 可通关深空深度（endless.ts 里程碑注记口径）；best 为终身远征前沿；
+# 兵量与聚值乘数同源（v092/v120 消手抄后统一读 profiles）。
 TIERS = {
-    'A': {'best': 34, 'milestone': 3, 'units': {'assault': 8000, 'guard': 6400, 'heavy': 6400, 'psionic': 3200}},
-    'B': {'best': 38, 'milestone': 3, 'units': {'assault': 16000, 'guard': 12400, 'heavy': 12400, 'psionic': 6200}},
-    'C': {'best': 40, 'milestone': 4, 'units': {'assault': 26000, 'guard': 20000, 'heavy': 20000, 'psionic': 10400}},
+    name: {'best': p['anchorDepth'], 'milestone': p['milestoneTier'], 'units': dict(p['units'])}
+    for name, p in bd.table('profiles')['tiers'].items()
 }
-MILESTONE_CLAIM = {'A': 3, 'B': 3, 'C': 4}  # 三档里程碑领取档（3/3/4 注记）
 
 RES_KEYS = ['energy', 'crystal', 'alloy', 'data', 'dark']
 
@@ -187,7 +185,7 @@ AUTO_NODES = [n for n in TRANSCEND['nodes']
               if any(e['type'].startswith('auto_') for e in n['effects'])]
 
 # ---------- 输出：三口径分表 + 两汇总指标 ----------
-print('== 全系统 EV 总账（schema:2，折算：1 合金=1 / 1 数据=6 / 1 晶体=55 / 1 暗物质=8000 能量） ==')
+print('== 全系统 EV 总账（schema:3，折算：1 合金=1 / 1 数据=6 / 1 晶体=55 / 1 暗物质=8000 能量） ==')
 print(f'基准包 {MS_UNLOCK}：{BASE_RW}')
 print()
 

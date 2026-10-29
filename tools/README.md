@@ -42,9 +42,12 @@ python3 tools/balance/starcore-v123-trait-calib.py    # 编队特性校准模拟
 
 - 数据统一经导出器生成的快照 `tools/balance/data/balance-data.json`
   （生成命令 `corepack pnpm balance:export`，新鲜度校验 `corepack pnpm balance:export:check`
-  已挂 check 链尾：改数据表后须重新导出，否则 check 挂红）；快照 schema:2，
+  已挂 check 链尾：改数据表后须重新导出，否则 check 挂红）；快照 schema:3，
   `units.cost` 投影与 `explore` / `weeklyBoss` / `transcend` 三域随 EV 总账
   第一段并入（transcend 域自 `src/stores/transcend.ts` 模块级常量 SSR 载入）；
+  `profiles` 域随第二段并入（三档画像：兵量与配装为校准声明手维护区，
+  乘数聚值自 tech / achievements / relics / transcend 域真值连乘推导，
+  v092 / v120 / 总账脚本统一消费）；
 - 脚本不再解析 TS 源码：公共加载与断言底座见 `tools/balance/lib/balance_data.py`，
   各脚本判据、输出列与退出码不变；
 - `starcore-v092-battle-sim.py`：战斗解析忠实移植，各模拟脚本的共享底座；

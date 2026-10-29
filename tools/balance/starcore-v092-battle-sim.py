@@ -63,34 +63,29 @@ from lib import balance_data as bd
 
 UNITS = {u['id']: u for u in bd.table('units')}
 
-# ---------- 遗物强化 ----------
-def enhance(v, gain, lv):
-    return 1 + (v - 1) * (1 + gain * lv)
+# ---------- 三档画像与乘数（profiles 域，消手抄） ----------
+# 兵量与聚值乘数统一经 balance-data.json profiles 域（导出器校准声明 +
+# 从 tech/achievements/relics/transcend 域真值连乘推导）；本脚本仅按
+# v092 原校准口径做漂移守卫（清单变更即聚值变更，在此拦截）。
+PROFILES = bd.table('profiles')
+TIERS = {k: dict(v['units']) for k, v in PROFILES['tiers'].items()}
+_DERIVED = PROFILES['derived']
 
-def relic_mults(lv):
-    atk = (enhance(1.4, 0.04, lv) * enhance(1.3, 0.04, lv)
-           * enhance(1.05, 0.04, lv) * 1.10)
-    dfn = enhance(1.2, 0.04, lv) * enhance(1.15, 0.04, lv)
-    return atk, dfn
+# 漂移守卫：科技面 A=3.046875、B/C=3.80859375（原头注 3.80859 为截尾写法，
+# 结构断言 B/A 比 == void_command 效果值）；成就面 1.469076；t_inf 1.05^lv
+bd.require(bd.approx(_DERIVED['A']['techAtk'], 3.046875, 1e-9), 'profiles: 档 A 科技面漂移')
+bd.require(bd.approx(_DERIVED['B']['techAtk'], 3.80859375, 1e-9), 'profiles: 档 B 科技面漂移')
+bd.require(bd.approx(_DERIVED['C']['techAtk'], 3.80859375, 1e-9), 'profiles: 档 C 科技面漂移')
+bd.require(bd.approx(_DERIVED['B']['techAtk'] / _DERIVED['A']['techAtk'], 1.25, 1e-9),
+           'profiles: B/A 科技面比 != void_command(1.25)')
+bd.require(bd.approx(_DERIVED['A']['achProduct'], 1.469076, 1e-6), 'profiles: 成就面漂移')
+bd.require(bd.approx(_DERIVED['A']['tCombat1'], 1.3, 1e-9), 'profiles: t_combat_1 漂移')
+bd.require(bd.approx(_DERIVED['A']['tInf'], 1.05 ** 8, 1e-9), 'profiles: 档 A t_inf 漂移')
+bd.require(bd.approx(_DERIVED['C']['tInf'], 1.05 ** 12, 1e-9), 'profiles: 档 C t_inf 漂移')
 
-# ---------- 三档乘数（全部连乘） ----------
 def tier_mults(name):
-    ach    = 1.05 * 1.08 * 1.12 * 1.05 * 1.08 * 1.02  # 成就面攻防 ×1.469（终层无新攻防成就）
-    t_c1   = 1.3
-    inf_lv = {'A': 8, 'B': 10, 'C': 12}[name]
-    t_inf  = 1.05 ** inf_lv
-    rel_lv = {'A': 16, 'B': 18, 'C': 20}[name]
-    tech   = 3.046875 if name == 'A' else 3.80859     # A=55满(星系终配), B/C=59满(含×1.25)
-    r_atk, r_def = relic_mults(rel_lv)
-    atk = tech * ach * t_c1 * t_inf * r_atk
-    dfn = tech * ach * t_c1 * t_inf * r_def
-    return atk, dfn
-
-TIERS = {
-    'A': dict(assault=8000,  guard=6400,  heavy=6400,  psionic=3200),
-    'B': dict(assault=16000, guard=12400, heavy=12400, psionic=6200),
-    'C': dict(assault=26000, guard=20000, heavy=20000, psionic=10400),
-}
+    d = _DERIVED[name]
+    return d['multsAtk'], d['multsDef']
 
 def formation_variant(base, variant):
     if variant == 'counter':
@@ -179,13 +174,13 @@ if __name__ == '__main__':
     for sid, s in STRONGHOLDS.items():
         print(f'  {sid:<12} {s["name"]:<10} power={power(s):>11,}  HP池={hp_pool(s):>11,}')
     print()
-    print('== 三档乘数（连乘实测）==')
+    print('== 三档乘数（profiles 域推导聚值）==')
     mults = {}
     for t in 'ABC':
         a, d = tier_mults(t)
         mults[t] = (a, d)
-        rel_lv = {'A': 16, 'B': 18, 'C': 20}[t]
-        ra, rd = relic_mults(rel_lv)
+        rel_lv = PROFILES['tiers'][t]['relicEnhanceLevel']
+        ra, rd = _DERIVED[t]['relicAtk'], _DERIVED[t]['relicDef']
         print(f'  档 {t}: 攻 ×{a:.4f} / 防 ×{d:.4f}   (遗物 Lv{rel_lv}: 攻×{ra:.3f} 防×{rd:.3f})')
     print()
     ok_all = True

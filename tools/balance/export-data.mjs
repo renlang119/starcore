@@ -13,7 +13,7 @@
  * 而数据表在模块级取词。Node 环境下 locale 守卫回退基线语言 zh-CN，
  * 因此 JSON 中的文案（遭遇选项标签等）即 zh-CN 解析值。
  *
- * 输出：tools/balance/data/balance-data.json（schema:2，无时间戳——
+ * 输出：tools/balance/data/balance-data.json（schema:3，无时间戳——
  * 确定性输出保证基线对照稳定与新鲜度校验可复现）。
  *
  * schema:2（2026-10，EV 总账第一段）：新增 explore / weeklyBoss /
@@ -21,6 +21,9 @@
  * store 模块载入 DEFAULT_NODES（模块级 export const，不涉及 pinia
  * 实例化）；无限节点 maxLevel = Infinity 序列化为 null（JSON 无穷限）。
  * 遗物概率面（endless.ts 内联常量）按 #18 修订不进本轮导出。
+ * schema:3（2026-10，EV 总账第二段）：新增 profiles 域（三档画像：
+ * 校准声明手维护区 + 聚值自各域真值连乘推导），v092 / v120 / 总账
+ * 脚本统一消费，消脚本侧手抄。
  *
  * 私有常量说明（src/ 零改动边界内的三处最小提取）：
  *  - offline 的 OFFLINE_CAP（src/lib/offline-gains.ts 模块私有，非导出值），
@@ -87,6 +90,138 @@ function stripText(value, path) {
   if (value === undefined) return undefined
   assertJsonSafe(value, path)
   return value
+}
+
+/**
+ * buildProfiles：三档玩家画像（EV 总账第二段）。
+ *
+ * 校准声明（source: "calibration"），非仓库数据表推导——兵量与遗物配装为
+ * v092 脚本现值逐值对齐（手维护区）；科技面 / 成就面 / 转生树只维护 id
+ * 清单，聚值（derived.*）按清单从各域真值连乘推导，清单变更即聚值变更，
+ * 不构成双维护。消费脚本对 v092 实测口径断言（科技面 A 3.046875、
+ * B/C 3.80859375 即头注 3.80859；成就面 1.46907）防清单漂移。
+ *
+ * 乘数链（攻防同构，遗物面攻防异构）：
+ *   mults = tech × ach × t_combat_1 × t_inf_combat^lv × relic
+ *   tech  = military 攻/防清单连乘（B/C 追加 void_command 虚空统帅）
+ *   ach   = 深空开门时刻已达成攻防成就连乘（终层无新攻防成就，三档同值）
+ *   relic = enhance(效果值, enhanceLevel) 连乘；enhance = 1+(v-1)(1+0.04·Lv)
+ *           攻追加掠夺者满套 +10%（套装效果不强化）
+ */
+function buildProfiles({ techMod, achievementsMod, relicsMod, transcendMod }) {
+  const CAL = 'calibration'
+  const tiers = {
+    A: {
+      source: CAL,
+      units: { assault: 8000, guard: 6400, heavy: 6400, psionic: 3200 },
+      anchorDepth: 34,
+      milestoneTier: 3,
+      infiniteCombatLevel: 8,
+      relicEnhanceLevel: 16,
+      voidCommand: false,
+    },
+    B: {
+      source: CAL,
+      units: { assault: 16000, guard: 12400, heavy: 12400, psionic: 6200 },
+      anchorDepth: 38,
+      milestoneTier: 3,
+      infiniteCombatLevel: 10,
+      relicEnhanceLevel: 18,
+      voidCommand: true,
+    },
+    C: {
+      source: CAL,
+      units: { assault: 26000, guard: 20000, heavy: 20000, psionic: 10400 },
+      anchorDepth: 40,
+      milestoneTier: 4,
+      infiniteCombatLevel: 12,
+      relicEnhanceLevel: 20,
+      voidCommand: true,
+    },
+  }
+  // 遗物代表配装：传说攻 r_omega / 史诗攻防 r_combat_3 / 稀有防 r_combat_2 /
+  // 普通攻 r_combat_1 / 掠夺者战团满套攻 +10%（套装效果不强化）
+  const relicLoadout = {
+    source: CAL,
+    attackIds: ['r_omega', 'r_combat_3', 'r_combat_1'],
+    defenseIds: ['r_combat_3', 'r_combat_2'],
+    setFullId: 'raiders',
+  }
+  // 科技面：military 支攻/防清单（B/C 追加虚空统帅 void_command ×1.25）
+  const techPlan = {
+    source: CAL,
+    attackIds: ['weapon_upg', 'fleet_logistics', 'flagship_doctrine', 'armada_tactics', 'galaxy_command'],
+    defenseIds: ['armor_upg', 'fleet_logistics', 'flagship_doctrine', 'armada_tactics', 'galaxy_command'],
+    voidCommandId: 'void_command',
+  }
+  // 成就面：深空开门时刻已达成（终层无新攻防成就，三档同值 1.46907）
+  const achievementIds = ['ach_battle_1', 'ach_battle_2', 'ach_battle_3', 'ach_battle_4', 'ach_battle_5', 'ach_battle_8']
+
+  // ---- 聚值推导（清单 → 域真值连乘；缺 id / 缺效果即抛错） ----
+  const combatEff = (effects, target, where) => {
+    const e = effects.find((e) => e.type === 'combat_mult' && e.target === target)
+    if (!e) throw new Error(`profiles: ${where} 缺 combat_mult ${target}`)
+    return e.value
+  }
+  const tech = new Map(techMod.TECHS.map((t) => [t.id, t]))
+  const ach = new Map(achievementsMod.ACHIEVEMENTS.map((a) => [a.id, a]))
+  const relic = new Map(relicsMod.RELIC_POOL.map((r) => [r.id, r]))
+  const node = new Map(transcendMod.DEFAULT_NODES.map((n) => [n.id, n]))
+  const mustGet = (map, id, where) => {
+    const v = map.get(id)
+    if (!v) throw new Error(`profiles: ${where} 缺 ${id}`)
+    return v
+  }
+
+  const combatGain = relicsMod.ENHANCE_GAIN.combat_mult
+  const enhance = (v, lv) => 1 + (v - 1) * (1 + combatGain * lv)
+  const tCombat1 = combatEff(mustGet(node, 't_combat_1', 'transcend').effects, 'attack', 't_combat_1')
+  const tInfBase = combatEff(mustGet(node, 't_inf_combat', 'transcend').effects, 'attack', 't_inf_combat')
+  const achProduct = achievementIds.reduce(
+    (m, id) => m * combatEff(mustGet(ach, id, 'achievements').effects, 'attack', id), 1)
+  const setFull = mustGet(
+    new Map(relicsMod.RELIC_SETS.map((s) => [s.id, s])),
+    relicLoadout.setFullId, 'relic sets'
+  ).full
+  const setAtk = combatEff([setFull], 'attack', `${relicLoadout.setFullId}.full`)
+
+  const derived = {}
+  for (const [name, p] of Object.entries(tiers)) {
+    const techAtkBase = techPlan.attackIds.reduce(
+      (m, id) => m * combatEff(mustGet(tech, id, 'tech').effects, 'attack', id), 1)
+    const techDefBase = techPlan.defenseIds.reduce(
+      (m, id) => m * combatEff(mustGet(tech, id, 'tech').effects, 'defense', id), 1)
+    const voidMult = p.voidCommand
+      ? combatEff(mustGet(tech, techPlan.voidCommandId, 'tech').effects, 'attack', techPlan.voidCommandId)
+      : 1
+    const techAtk = techAtkBase * voidMult
+    const techDef = techDefBase * voidMult
+    const tInf = tInfBase ** p.infiniteCombatLevel
+    const relicAtk = relicLoadout.attackIds.reduce(
+      (m, id) => m * enhance(combatEff(mustGet(relic, id, 'relics').effects, 'attack', id), p.relicEnhanceLevel), 1) * setAtk
+    const relicDef = relicLoadout.defenseIds.reduce(
+      (m, id) => m * enhance(combatEff(mustGet(relic, id, 'relics').effects, 'defense', id), p.relicEnhanceLevel), 1)
+    derived[name] = {
+      techAtk,
+      techDef,
+      achProduct,
+      tCombat1,
+      tInf,
+      relicAtk,
+      relicDef,
+      multsAtk: techAtk * achProduct * tCombat1 * tInf * relicAtk,
+      multsDef: techDef * achProduct * tCombat1 * tInf * relicDef,
+    }
+  }
+
+  return {
+    source: CAL,
+    tiers,
+    relicLoadout,
+    techPlan,
+    achievementIds,
+    derived,
+  }
 }
 
 // ---------- Vite SSR 载入 ----------
@@ -193,7 +328,7 @@ try {
 
   // ---------- 组装快照（各域显式投影，键序即字段序，保证输出确定性） ----------
   const data = {
-    schema: 2,
+    schema: 3,
     units: unitsMod.UNITS.map((u) => ({
       id: u.id,
       attack: u.attack,
@@ -295,7 +430,7 @@ try {
       )
     ),
     offline: { capSeconds: offlineCap },
-    // ---------- schema:2 新增域（EV 总账第一段，#18 修订口径） ----------
+    // ---------- schema:2/3 新增域（EV 总账第一/二段，#18 修订口径） ----------
     // explore：星图探索节点（一次性收支面）。LAYER_INFO 仅文案与分层信息不入账。
     explore: exploreMod.EXPLORE_NODES.map((n) =>
       stripText(
@@ -338,6 +473,13 @@ try {
         )
       ),
     },
+    // ---------- profiles：三档玩家画像（EV 总账第二段） ----------
+    // 校准声明（source: "calibration"），非仓库数据表推导：兵量与遗物配装为
+    // v092 现值逐值对齐（手维护）；科技面 / 成就面 / 转生节点取 id 清单，
+    // 聚值（derived）在导出器内按清单从 tech / achievements / relics /
+    // transcend 域真值连乘推导，清单变更即聚值变更（不构成双维护）。
+    // 遗物强化走 relics.enhanceGain.combat_mult；掠夺者满套攻 +10% 不参与强化。
+    profiles: buildProfiles({ techMod, achievementsMod, relicsMod, transcendMod }),
   }
 
   assertJsonSafe(data, '$')

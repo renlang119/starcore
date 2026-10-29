@@ -36,6 +36,11 @@ ENEMY_GROWTH = bd.table('endless')['enemyGrowth']
 BASE_POWER = sim.power(TEMPLATES['silencer_3'])
 NORMALIZE = {tid: BASE_POWER / sim.power(TEMPLATES[tid]) for tid in TEMPLATE_IDS}
 
+# ---------- 档位锚（profiles 域）：网格上界与 C 档锚深对齐 ----------
+_PROFILES = bd.table('profiles')
+_C_ANCHOR = _PROFILES['tiers']['C']['anchorDepth']
+_C_MILESTONE = _PROFILES['tiers']['C']['milestoneTier']
+
 def endless_enemies(depth):
     d = max(1, int(depth))
     tid = TEMPLATE_IDS[(d - 1) % 4]
@@ -56,6 +61,9 @@ POINTS = [
     ('B', 16, 20), ('B', 21, 25),
     ('C', 26, 30), ('C', 31, 35), ('C', 36, 40),
 ]
+# 档位锚守卫（profiles 域）：网格上界 = C 档可通关锚深（endless.ts 注记 D40 交叉锚定）
+bd.require(POINTS[-1][2] == _C_ANCHOR, f'v120 网格上界 {POINTS[-1][2]} != C 档锚深 {_C_ANCHOR}')
+bd.require(_C_MILESTONE == 4, f'profiles: C 档里程碑档 {_C_MILESTONE} != 4（endless.ts 注记口径）')
 
 print('== 模板归一化系数（基准 = silencer_3）==')
 for tid in TEMPLATE_IDS:
