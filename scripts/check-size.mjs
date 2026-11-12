@@ -21,8 +21,9 @@ import { gzipSync } from 'node:zlib'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = join(ROOT, 'dist')
-// 预算 256 KiB：较首跑基线约 222.6 KiB 留约 15% 余量（33.4 KiB），够 1-2 个常规版本的增量
-const BUDGET = 256 * 1024
+// 预算 280 KiB（v1.81 起）：v1.80 收官 255.8/256 后帝庭界面版实测 +4.3 KiB
+// 触顶；按 issue #21 计划随内容版显式上调 24 KiB，登记于 changelog v1.81
+const BUDGET = 280 * 1024
 const WARN_ONLY = process.argv.includes('--warn-only')
 const EXTS = new Set(['.js', '.css', '.html'])
 
