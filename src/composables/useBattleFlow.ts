@@ -17,6 +17,7 @@ import type { StrongholdDef } from '@/data/pve'
 import type { useCombatStore } from '@/stores/combat'
 import type { BattleLogEntry, BattleReplayFrame } from '@/stores/combat'
 import { useToast } from '@/composables/useToast'
+import { IMPERIAL_AUDIT_ID } from '@/data/imperial-strongholds'
 
 type CombatStore = ReturnType<typeof useCombatStore>
 /** 战斗结果类型由 store 推导（v0.77，替换 any） */
@@ -32,6 +33,8 @@ export interface BattleFlowDeps {
   endlessDepth: Ref<number>
   /** 是否周 Boss（v1.24 方案 5：/battle/weekly_boss；胜利走 daily 记账不入通关集） */
   isWeeklyBoss?: ComputedRef<boolean>
+  /** 是否帝庭据点（v1.81：接管战斗 / 巡检迎战；胜利走接管或巡检记账，不入通关集） */
+  isImperial?: ComputedRef<boolean>
 }
 
 export function useBattleFlow(deps: BattleFlowDeps) {
@@ -171,9 +174,24 @@ export function useBattleFlow(deps: BattleFlowDeps) {
       if (deps.isWeeklyBoss?.value) {
         game.daily.claimWeeklyBoss()
       }
+      // 帝庭据点胜利（v1.81）：接管据点或巡检通过（合成据点 rewards 已清空，
+      // 不走 grantRewards；不入通关集、不入图鉴，见各 store 排除口径）
+      if (deps.isImperial?.value) {
+        if (deps.strongholdId.value === IMPERIAL_AUDIT_ID) {
+          game.settleImperialAudit(true)
+          toast.show(t('battle.imperialAuditWin'))
+        } else {
+          game.imperial.capture(deps.strongholdId.value)
+          toast.show(t('battle.imperialWin', { name: deps.stronghold.value?.name ?? '' }))
+        }
+      }
       // 奖励即时发放（v0.94）：战斗结算即落袋，结果弹窗只做展示；
       // 修复弹窗打开期间离开页面导致资源、遗物与远征推进丢失的问题
       grantRewards(result)
+    } else if (deps.isImperial?.value && deps.strongholdId.value === IMPERIAL_AUDIT_ID) {
+      // 巡检迎战失败（v1.81）：目标失守（整备保留，重夺后恢复产出）
+      game.settleImperialAudit(false)
+      toast.show(t('battle.imperialAuditLose', { name: deps.stronghold.value?.name ?? '' }))
     }
   }
 

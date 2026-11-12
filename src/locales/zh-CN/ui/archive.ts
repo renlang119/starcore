@@ -32,4 +32,5 @@ export default {
   'archive.imperialHint': '贡道、核验与裁决观察留档，完成银盘枢纽探索后可见。',
   'archive.imperialCount': '已归档 {seen} / {total} 条',
   'archive.imperialLocked': '还没走到航道的尽头。',
+  'archive.imperialFinalLocked': '接管全部六座贡道据点后解锁',
 }

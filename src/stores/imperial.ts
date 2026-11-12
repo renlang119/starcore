@@ -28,6 +28,7 @@ import {
   imperialTributeRate,
   imperialUpgradeCost,
   isImperialStrongholdId,
+  isLegalImperialTier,
   pickImperialAuditTarget,
 } from '@/data/imperial-strongholds'
 
@@ -146,7 +147,12 @@ export const useImperialStore = defineStore('imperial', () => {
     return out
   }
 
-  /** 贡赋池：按各座 max(lastClaimAt, capturedAt) 到 now 的时长累积，单座封顶 12h */
+  /**
+   * 贡赋池：按「当前速率 × min(12h, 距上次领取时长)」逐座累积（#23 维持现状）。
+   * 停摆期不实时计入（rateOf 归零），但巡检应付后速率恢复，此时领取会把停摆
+   * 时段一并按恢复后速率追认，追认量以 12 小时池容为上界（有界近似，
+   * 打点成本 24h 总贡赋 > 追认上界，净惩罚方向不变）。
+   */
   function pool(best: number, now = Date.now()): Partial<Record<ResourceType, number>> {
     const out: Partial<Record<ResourceType, number>> = {}
     for (const id of occupiedIds.value) {
@@ -304,7 +310,9 @@ export const useImperialStore = defineStore('imperial', () => {
     if (data.tiers && typeof data.tiers === 'object') {
       const next: Record<string, number> = {}
       for (const [id, v] of Object.entries(data.tiers)) {
-        if (validIds.has(id)) next[id] = clampTier(v)
+        // 非法条目直接跳过（与 validate 同判据的删除语义，#23：不给非法数据发等级；
+        // tierOf 读取侧的 clampTier 保留作运行时兜底）
+        if (validIds.has(id) && isLegalImperialTier(v)) next[id] = v
       }
       tiers.value = next
     }

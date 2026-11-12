@@ -153,3 +153,39 @@ export const IMPERIAL_SECTIONS: readonly ImperialSection[] = [
 
 /** 帝庭档案留档条目总数（计数展示用，5 节 × 3 条 = 15 条） */
 export const IMPERIAL_ENTRY_COUNT = IMPERIAL_SECTIONS.reduce((n, s) => n + s.entries.length, 0)
+
+/**
+ * 炉前节（v1.81）：6 座贡道据点全部接管后的亲见留档，独立于五节
+ * 观察档案（分组解锁走银盘枢纽，本节解锁走接管数，见 ArchiveView）。
+ * 炉音节只收传闻，本节收站在炉前的所见，叙事推进到炉是活的，不揭来源。
+ */
+export const IMPERIAL_FINAL_SECTION: ImperialSection = {
+  id: 'section_06',
+  name: t('content.imperial.section_06'),
+  entries: [
+    {
+      id: 'imp_16',
+      name: t('content.imperial.imp_16.name'),
+      text: t('content.imperial.imp_16.text'),
+      note: t('content.imperial.imp_16.note'),
+    },
+    {
+      id: 'imp_17',
+      name: t('content.imperial.imp_17.name'),
+      text: t('content.imperial.imp_17.text'),
+      note: t('content.imperial.imp_17.note'),
+    },
+    {
+      id: 'imp_18',
+      name: t('content.imperial.imp_18.name'),
+      text: t('content.imperial.imp_18.text'),
+      note: t('content.imperial.imp_18.note'),
+    },
+  ],
+}
+
+/** 炉前节条目数（含入分组计数：15 + 3 = 18） */
+export const IMPERIAL_FINAL_ENTRY_COUNT = IMPERIAL_FINAL_SECTION.entries.length
+
+/** 帝庭档案分组条目总数（五节观察留档 + 炉前亲见留档） */
+export const IMPERIAL_TOTAL_ENTRY_COUNT = IMPERIAL_ENTRY_COUNT + IMPERIAL_FINAL_ENTRY_COUNT

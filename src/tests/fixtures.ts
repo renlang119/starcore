@@ -8,6 +8,7 @@
  */
 import type { SaveData } from '@/lib/storage'
 import { useExplorationStore } from '@/stores/exploration'
+import { useImperialStore } from '@/stores/imperial'
 
 /** 全字段合法存档 */
 export function makeSaveData(): SaveData {
@@ -83,4 +84,19 @@ export function exploredNodes(...nodeIds: string[]): void {
     progress[id] = { nodeId: id, startTime: 0, endTime: 0, completed: true }
   }
   exploration.hydrate({ progress })
+}
+
+/** 把一组帝庭据点构造为「已接管」并 hydrate（接管完成态的唯一构造口，
+ *  everCompleted 同步覆盖，随存档语义） */
+export function capturedImperial(...strongholdIds: string[]): void {
+  const imperial = useImperialStore()
+  const capturedAt: Record<string, number> = {}
+  for (const id of strongholdIds) capturedAt[id] = 0
+  imperial.hydrate({
+    completed: [...strongholdIds],
+    everCompleted: [...strongholdIds],
+    tiers: {},
+    capturedAt,
+    lastClaimAt: 0,
+  })
 }

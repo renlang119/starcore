@@ -8,6 +8,14 @@ import { getStronghold, STRONGHOLD_TYPES } from '@/data/pve'
 import type { StrongholdDef } from '@/data/pve'
 import { ENDLESS_STRONGHOLD_ID, MAX_ENDLESS_DEPTH } from '@/data/endless'
 import { WEEKLY_BOSS_ID } from '@/data/weekly-boss'
+import {
+  IMPERIAL_AUDIT_ID,
+  getImperialStronghold,
+  imperialAuditStronghold,
+  imperialBattleStronghold,
+  imperialUnlocked,
+  isImperialStrongholdId,
+} from '@/data/imperial-strongholds'
 import { getUnit } from '@/data/units'
 import Icon from '@/components/ui/Icon.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -29,6 +37,15 @@ const strongholdId = computed(() => route.params.id as string)
 const isEndless = computed(() => strongholdId.value === ENDLESS_STRONGHOLD_ID)
 /** 是否周 Boss（/battle/weekly_boss，v1.24 方案 5） */
 const isWeeklyBoss = computed(() => strongholdId.value === WEEKLY_BOSS_ID)
+/** 是否帝庭据点（v1.81：接管战斗 / 巡检迎战，/battle/imp_* 与 /battle/imperial_audit） */
+const isImperial = computed(
+  () => strongholdId.value === IMPERIAL_AUDIT_ID || isImperialStrongholdId(strongholdId.value)
+)
+/** 巡检是否待迎战（pending / overdue 才可迎战，v1.81） */
+const auditFightable = computed(() => {
+  const a = game.imperial.audit
+  return !!a && (a.status === 'pending' || a.status === 'overdue')
+})
 
 // 无尽远征（v0.60）：深度选择 + 按深度合成据点
 const endlessDepth = ref(1)
@@ -63,6 +80,21 @@ const stronghold = computed((): StrongholdDef | undefined => {
     if (!game.combat.isEndlessUnlocked()) return undefined
     return game.combat.getWeeklyBossStronghold(game.combat.expeditionBest, game.daily.currentWeek)
   }
+  // 帝庭据点（v1.81）：接管战斗按据点定义合成，巡检迎战按目标整备等级合成；
+  //  未解锁（巡检非待战 / 据点门槛未达）与周 Boss 同走空态
+  if (isImperial.value) {
+    if (strongholdId.value === IMPERIAL_AUDIT_ID) {
+      if (!auditFightable.value) return undefined
+      const a = game.imperial.audit
+      return imperialAuditStronghold(game.combat.expeditionBest, game.imperial.tierOf(a!.targetId))
+    }
+    const def = getImperialStronghold(strongholdId.value)
+    if (!def) return undefined
+    if (!imperialUnlocked(def, game.exploration.completedNodes, game.imperial.completed.size)) {
+      return undefined
+    }
+    return imperialBattleStronghold(def, game.combat.expeditionBest)
+  }
   return getStronghold(strongholdId.value)
 })
 
@@ -79,13 +111,25 @@ const strongholdUnlocked = computed(() => {
   if (isEndless.value) return game.combat.isEndlessUnlocked()
   // 周 Boss：解锁口径与远征入口一致（本轮已克 silencer_3）
   if (isWeeklyBoss.value) return game.combat.isEndlessUnlocked()
+  // 帝庭（v1.81）：巡检要求待迎战，据点按银盘枢纽 + 各自节点 + 接管数
+  if (isImperial.value) {
+    if (strongholdId.value === IMPERIAL_AUDIT_ID) return auditFightable.value
+    const def = getImperialStronghold(strongholdId.value)
+    if (!def) return false
+    return imperialUnlocked(def, game.exploration.completedNodes, game.imperial.completed.size)
+  }
   const def = getStronghold(strongholdId.value)
   if (!def) return false
   return game.exploration.prereqMet(def.requires)
 })
-/** 已攻克：正式据点须在通关集内（未攻克可出战但不可驻扎；合成据点无驻扎语义） */
+/** 已攻克：正式据点须在通关集内（未攻克可出战但不可驻扎；合成据点无驻扎语义）；
+ *  帝庭（v1.81）：已接管视同攻克（重复挑战由出征禁用挡住） */
 const strongholdConquered = computed(
-  () => isEndless.value || game.combat.completedStrongholds.has(strongholdId.value)
+  () =>
+    isEndless.value ||
+    (isImperial.value
+      ? game.imperial.completed.has(strongholdId.value)
+      : game.combat.completedStrongholds.has(strongholdId.value))
 )
 
 // 编队详情（含兵种名和数量）
@@ -111,13 +155,15 @@ const formationDispatched = computed(() =>
   formation.value ? game.military.isDispatched(formation.value.id) : false
 )
 
-/** 出征禁用 = 编队空或据点未解锁或编队派遣中；周 Boss 追加「本周已击败」禁用（防重复领取） */
+/** 出征禁用 = 编队空或据点未解锁或编队派遣中；周 Boss 追加「本周已击败」禁用（防重复领取）；
+ *  帝庭追加「已接管」禁用（v1.81，巡检无此约束：失败可重战至窗口关闭） */
 const battleDisabled = computed(
   () =>
     isFormationEmpty.value ||
     !strongholdUnlocked.value ||
     formationDispatched.value ||
-    (isWeeklyBoss.value && bossFlow.isWeeklyBossDefeated.value)
+    (isWeeklyBoss.value && bossFlow.isWeeklyBossDefeated.value) ||
+    (isImperial.value && strongholdId.value !== IMPERIAL_AUDIT_ID && strongholdConquered.value)
 )
 /** 驻扎禁用 = 编队空或据点未攻克或编队派遣中 */
 const garrisonDisabled = computed(
@@ -132,6 +178,7 @@ const bossFlow = useBattleFlow({
   isEndless,
   endlessDepth,
   isWeeklyBoss,
+  isImperial,
 })
 const {
   battleLog,
@@ -159,7 +206,20 @@ const deployButtonLabel = computed(() => {
   if (isWeeklyBoss.value && bossFlow.isWeeklyBossDefeated.value) {
     return t('battle.weeklyBossDefeated')
   }
+  if (isImperial.value && strongholdId.value !== IMPERIAL_AUDIT_ID && strongholdConquered.value) {
+    return t('map.imperialCaptured')
+  }
   return t('battle.deploy')
+})
+
+// 空态文案（v1.81）：帝庭据点与巡检给专属锁定提示，其余走通用
+const emptyStateText = computed(() => {
+  if (isImperial.value) {
+    return strongholdId.value === IMPERIAL_AUDIT_ID
+      ? t('battle.imperialAuditLocked')
+      : t('battle.imperialLocked')
+  }
+  return t('battle.noStronghold')
 })
 </script>
 
@@ -232,7 +292,7 @@ const deployButtonLabel = computed(() => {
         {{ deployButtonLabel }}
       </button>
       <button
-        v-if="!isEndless && !isWeeklyBoss"
+        v-if="!isEndless && !isWeeklyBoss && !isImperial"
         class="btn-secondary"
         :class="{ 'garrison-active': isGarrisoned }"
         style="flex: 1"
@@ -281,7 +341,7 @@ const deployButtonLabel = computed(() => {
   <EmptyState
     v-else
     icon="i-nav-explore"
-    :text="t('battle.noStronghold')"
+    :text="emptyStateText"
     :hint="t('battle.noStrongholdHint')"
     :action="t('battle.backToMap')"
     to="/map"

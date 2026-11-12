@@ -34,4 +34,5 @@ export default {
     'Observation files of the tribute lanes, audits and verdicts, seen once the Disc Hub has been explored.',
   'archive.imperialCount': 'Filed {seen} / {total} entries',
   'archive.imperialLocked': 'The lanes are not yet walked to their end.',
+  'archive.imperialFinalLocked': 'Unlocks after taking all six route strongholds',
 }

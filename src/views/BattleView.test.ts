@@ -24,7 +24,7 @@ import { useCombatStore } from '@/stores/combat'
 import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
 import { WEEKLY_BOSS_ID } from '@/data/weekly-boss'
 import { useGameStore } from '@/stores/game'
-import { exploredNodes } from '@/tests/fixtures'
+import { exploredNodes, capturedImperial } from '@/tests/fixtures'
 import { resetProviderSingletons } from '@/tests/reset-providers'
 
 vi.mock('vue-router', () => sharedVueRouterMock())
@@ -625,5 +625,42 @@ describe('BattleView — 对阵舞台血条回放（v1.65）', () => {
     expect(vm.playing).toBe(false)
     expect(wrapper.find('[data-testid="battle-stage"]').exists()).toBe(false)
     expect(wrapper.find('.modal-overlay').exists()).toBe(true)
+  })
+})
+
+describe('BattleView — 帝庭据点（v1.81）', () => {
+  useViewTestHooks()
+
+  it('已接管据点：出征禁用且标签提示已接管，驻扎按钮隐藏', async () => {
+    routeState.path = '/battle/imp_pass'
+    routeState.params = { id: 'imp_pass' }
+    exploredNodes('node_galaxy_hub', 'node_arm_gate')
+    capturedImperial('imp_pass')
+    setupBattleReady()
+    const wrapper = mountBattle()
+    await wrapper.vm.$nextTick()
+    const btn = wrapper.find('[data-testid="battle-start"]')
+    expect((btn.element as HTMLButtonElement).disabled).toBe(true)
+    expect(btn.text()).toContain('已接管')
+    // 帝庭合成据点无驻扎语义（rewards/idle 清空）
+    expect(wrapper.find('[data-testid="battle-garrison"]').exists()).toBe(false)
+  })
+
+  it('未解锁帝庭据点：空态显示帝庭锁定提示', async () => {
+    routeState.path = '/battle/imp_pass'
+    routeState.params = { id: 'imp_pass' }
+    setupBattleReady()
+    const wrapper = mountBattle()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('帝庭据点未解锁')
+  })
+
+  it('非待战巡检路由：空态提示本周无巡检', async () => {
+    routeState.path = '/battle/imperial_audit'
+    routeState.params = { id: 'imperial_audit' }
+    setupBattleReady()
+    const wrapper = mountBattle()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('本周无待迎战的巡检')
   })
 })

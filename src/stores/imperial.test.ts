@@ -249,7 +249,7 @@ describe('imperial — 存档', () => {
     expect(next.audit?.week).toBe('2026-W45')
   })
 
-  it('hydrate 剥离未知 id 与非法整备等级', () => {
+  it('hydrate 剥离未知 id 与非法整备等级（#23 删除语义：不钳制发放等级）', () => {
     const next = useImperialStore()
     next.hydrate({
       completed: ['imp_pass', 'raider_1'],
@@ -263,8 +263,21 @@ describe('imperial — 存档', () => {
       },
     })
     expect(next.occupiedIds).toEqual(['imp_pass'])
-    expect(next.tierOf('imp_pass')).toBe(3)
+    // 非法等级 9 跳过条目（原为钳制成 3），tierOf 回落默认 1
+    expect(next.tierOf('imp_pass')).toBe(1)
     expect(next.audit).toBeNull()
+  })
+
+  it('#23 两条路径一致：{id: 7} 经 hydrate 回落到 1，与 validate 剥离后同果', () => {
+    const next = useImperialStore()
+    next.hydrate({
+      completed: ['imp_pass'],
+      tiers: { imp_pass: 7, imp_audit: 2 },
+      lastClaimAt: 1,
+    })
+    // 非法 7 跳过回落 1；合法 2 原样保留
+    expect(next.tierOf('imp_pass')).toBe(1)
+    expect(next.tierOf('imp_audit')).toBe(2)
   })
 
   it('reset 清空全部帝庭状态', () => {

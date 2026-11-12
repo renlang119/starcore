@@ -36,6 +36,14 @@ export const IMPERIAL_AUDIT_BONUS = 1.1
 /** 巡检合成据点 id */
 export const IMPERIAL_AUDIT_ID = 'imperial_audit'
 
+/**
+ * 整备等级合法性：1..3 的整数（validate 与 hydrate 共用的条目判据；
+ * 两处统一为删除语义：非法条目剥离后 tierOf 回落 1，不钳制发放等级）
+ */
+export function isLegalImperialTier(v: unknown): v is number {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 3
+}
+
 export interface ImperialStrongholdDef {
   id: string
   name: string

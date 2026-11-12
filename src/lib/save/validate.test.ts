@@ -32,17 +32,18 @@ describe('validate — imperial 域', () => {
     expect(data.imperial?.audit?.status).toBe('pending')
   })
 
-  it('未知据点、非法等级与捕获时刻条目级剥离', () => {
+  it('未知据点、非法等级与捕获时刻条目级剥离（#23 删除语义：7 与 9 同判据）', () => {
     const data = withImperial({
       completed: ['imp_pass', 'raider_1'],
       everCompleted: ['imp_audit', 'raider_1'],
-      tiers: { imp_pass: 9, raider_1: 2 },
+      tiers: { imp_pass: 9, imp_audit: 7, raider_1: 2 },
       capturedAt: { imp_pass: -1, raider_1: 5 },
       lastClaimAt: 1,
     })
     expect(validateAndRepair(data)).toBe(true)
     expect(data.imperial?.completed).toEqual(['imp_pass'])
     expect(data.imperial?.everCompleted).toEqual(['imp_audit'])
+    // 剥离后 tiers 为空，tierOf 回落默认 1（与 hydrate 路径同果）
     expect(data.imperial?.tiers).toEqual({})
     expect(data.imperial?.capturedAt).toEqual({})
   })

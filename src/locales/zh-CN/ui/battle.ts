@@ -60,4 +60,11 @@ export default {
   'battle.titleDefeat': '失 败',
   'battle.titleVictory': '胜 利',
   'battle.withdrawGarrison': '撤回驻扎',
+
+  // 帝庭据点（v1.81）
+  'battle.imperialLocked': '帝庭据点未解锁，无法出征',
+  'battle.imperialAuditLocked': '本周无待迎战的巡检',
+  'battle.imperialWin': '接管成功：{name}',
+  'battle.imperialAuditWin': '巡检通过，下周贡赋 +10%',
+  'battle.imperialAuditLose': '巡检失守，{name} 停摆',
 }

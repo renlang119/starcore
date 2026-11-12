@@ -18,7 +18,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { vueRouterMock, focusTrapMock, mountView, useViewTestHooks } from '@/tests/view-mount'
 import ArchiveView from './ArchiveView.vue'
-import { exploredNodes } from '@/tests/fixtures'
+import { exploredNodes, capturedImperial } from '@/tests/fixtures'
 import { STRONGHOLDS } from '@/data/pve'
 import { EXPLORE_NODES } from '@/data/explore'
 import { GATE_DOORS } from '@/data/gate'
@@ -145,12 +145,13 @@ describe('ArchiveView — 帝庭档案', () => {
     expect(wrapper.findAll('[data-testid="archive-imperial-card"]').length).toBe(0)
   })
 
-  it('解锁态：银盘枢纽完成后 15 条按五节渲染、节名段头齐备、计数 15/15', async () => {
+  it('解锁态：银盘枢纽完成后 15 条按五节渲染、节名段头齐备、计数 15/18（炉前锁定）', async () => {
     exploredNodes('node_galaxy_hub')
     const wrapper = mountView(ArchiveView)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.text()).toContain('已归档 15 / 15 条')
+    // 五节常开 15 条，炉前节未全接管前锁定不计入 seen（总数 18）
+    expect(wrapper.text()).toContain('已归档 15 / 18 条')
     expect(wrapper.findAll('[data-testid="archive-imperial-card"]').length).toBe(15)
     // 五节节名段头齐备（含压轴的炉音）
     for (const sec of IMPERIAL_SECTIONS) {
@@ -161,6 +162,23 @@ describe('ArchiveView — 帝庭档案', () => {
     expect(wrapper.text()).toContain(IMPERIAL_SECTIONS[0].entries[0].name)
     expect(wrapper.text()).toContain(IMPERIAL_SECTIONS[4].entries[2].name)
     expect(wrapper.text()).toContain(IMPERIAL_SECTIONS[4].entries[2].note)
+    // 炉前节：锁定提示可见、亲见留档零渲染不剧透
+    expect(wrapper.find('[data-testid="archive-imperial-final-locked"]').exists()).toBe(true)
+    expect(wrapper.findAll('[data-testid="archive-imperial-final-card"]').length).toBe(0)
+    expect(wrapper.text()).not.toContain('倾倒的规程')
+  })
+
+  it('炉前节：曾接管全部 6 座后解锁 3 条、计数 18/18（巡检失守不回收）', async () => {
+    exploredNodes('node_galaxy_hub')
+    capturedImperial('imp_pass', 'imp_audit', 'imp_guard', 'imp_verdict', 'imp_echo', 'imp_court')
+    const wrapper = mountView(ArchiveView)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).toContain('已归档 18 / 18 条')
+    expect(wrapper.find('[data-testid="archive-imperial-final-locked"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-testid="archive-imperial-final-card"]').length).toBe(3)
+    expect(wrapper.text()).toContain('炉前')
+    expect(wrapper.text()).toContain('倾倒的规程')
   })
 })
 

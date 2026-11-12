@@ -25,7 +25,13 @@ import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLDS, STRONGHOLD_TYPES } from '@/data/pve'
 import { NODE_STORIES } from '@/data/story'
 import { GATE_DOORS } from '@/data/gate'
-import { IMPERIAL_SECTIONS, IMPERIAL_ENTRY_COUNT } from '@/data/imperial'
+import {
+  IMPERIAL_ENTRY_COUNT,
+  IMPERIAL_FINAL_ENTRY_COUNT,
+  IMPERIAL_FINAL_SECTION,
+  IMPERIAL_SECTIONS,
+  IMPERIAL_TOTAL_ENTRY_COUNT,
+} from '@/data/imperial'
 import { ECHO_ENTRIES, ECHO_SEGMENTS } from '@/data/echo'
 import { getBestiaryNoteForEntries, type BestiaryNote } from '@/data/bestiary'
 import Icon from '@/components/ui/Icon.vue'
@@ -77,6 +83,14 @@ const gateUnlocked = computed(
 // 上锁，与七门及回响的解锁口径错开）
 const imperialUnlocked = computed(
   () => IMPERIAL_SECTIONS.length > 0 && game.exploration.isCompleted('node_galaxy_hub')
+)
+
+// 炉前节（v1.81）：解锁 = 曾接管全部 6 座贡道据点（按曾接管集判读，
+// 巡检失守不回收档案；与五节观察留档的分组解锁错开）
+const imperialFinalUnlocked = computed(() => game.imperial.everCompleted.size >= 6)
+// 分组计数：五节常开，炉前节随解锁计入
+const imperialSeenCount = computed(
+  () => IMPERIAL_ENTRY_COUNT + (imperialFinalUnlocked.value ? IMPERIAL_FINAL_ENTRY_COUNT : 0)
 )
 
 // 回响：解锁 = 当前轮全宇宙探索完毕（与星图档案、首页贺词同口径逐
@@ -231,7 +245,10 @@ function cardEnemy(card: EnemyCard) {
         {{ t('archive.imperialSection') }}
         <span v-if="imperialUnlocked" class="count-lead font-mono">
           {{
-            t('archive.imperialCount', { seen: IMPERIAL_ENTRY_COUNT, total: IMPERIAL_ENTRY_COUNT })
+            t('archive.imperialCount', {
+              seen: imperialSeenCount,
+              total: IMPERIAL_TOTAL_ENTRY_COUNT,
+            })
           }}
         </span>
       </h3>
@@ -252,6 +269,29 @@ function cardEnemy(card: EnemyCard) {
               :key="entry.id"
               class="gate-card"
               data-testid="archive-imperial-card"
+            >
+              <h5 class="gate-name">{{ entry.name }}</h5>
+              <p class="gate-text">{{ entry.text }}</p>
+              <p class="gate-note">{{ entry.note }}</p>
+            </article>
+          </div>
+        </div>
+        <!-- 炉前节（v1.81）：曾全接管后解锁的亲见留档，随解锁计入分组计数 -->
+        <div class="gate-door">
+          <h4 class="gate-door-name">{{ IMPERIAL_FINAL_SECTION.name }}</h4>
+          <p
+            v-if="!imperialFinalUnlocked"
+            class="gate-locked locked-text"
+            data-testid="archive-imperial-final-locked"
+          >
+            {{ t('archive.imperialFinalLocked') }}
+          </p>
+          <div v-else class="gate-grid">
+            <article
+              v-for="entry in IMPERIAL_FINAL_SECTION.entries"
+              :key="entry.id"
+              class="gate-card"
+              data-testid="archive-imperial-final-card"
             >
               <h5 class="gate-name">{{ entry.name }}</h5>
               <p class="gate-text">{{ entry.text }}</p>

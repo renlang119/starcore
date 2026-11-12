@@ -15,7 +15,11 @@ import { RELIC_POOL, MAX_RELIC_LEVEL } from '@/data/relics'
 import { INFINITE_NODE_IDS, MAX_INFINITE_NODE_LEVEL } from '@/stores/transcend'
 import { ARCHIVE_ENEMY_KEYS } from '@/stores/archive'
 import { ENCOUNTER_IDS } from '@/data/encounters'
-import { IMPERIAL_STRONGHOLDS, IMPERIAL_AUDIT_BONUS } from '@/data/imperial-strongholds'
+import {
+  IMPERIAL_STRONGHOLDS,
+  IMPERIAL_AUDIT_BONUS,
+  isLegalImperialTier,
+} from '@/data/imperial-strongholds'
 
 // 有效 ID 集合（用于 validateSaveData 内容范围校验），
 const BUILDING_IDS = new Set(BUILDINGS.map((b) => b.id))
@@ -150,14 +154,9 @@ export function validateAndRepair(data: unknown): data is SaveData {
       }
       if (_isObject(imp.tiers)) {
         for (const id of Object.keys(imp.tiers)) {
-          const lv = imp.tiers[id]
-          if (
-            !IMPERIAL_IDS.has(id) ||
-            typeof lv !== 'number' ||
-            !Number.isInteger(lv) ||
-            lv < 1 ||
-            lv > 3
-          ) {
+          // 共用判据（isLegalImperialTier，#23 统一删除语义）：非法 id / 非法等级剥离，
+          // tierOf 回落 1，不钳制发放等级
+          if (!IMPERIAL_IDS.has(id) || !isLegalImperialTier(imp.tiers[id])) {
             delete imp.tiers[id]
           }
         }

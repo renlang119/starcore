@@ -62,4 +62,11 @@ export default {
   'battle.titleDefeat': 'Defeat',
   'battle.titleVictory': 'Victory',
   'battle.withdrawGarrison': 'Withdraw Garrison',
+
+  // Imperial strongholds (v1.81)
+  'battle.imperialLocked': 'Imperial stronghold not unlocked; cannot deploy',
+  'battle.imperialAuditLocked': 'No inspection to fight this week',
+  'battle.imperialWin': 'Taken over: {name}',
+  'battle.imperialAuditWin': 'Inspection passed. Next week’s tribute +10%',
+  'battle.imperialAuditLose': 'Inspection lost. {name} suspended',
 }

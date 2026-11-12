@@ -8,6 +8,7 @@ import { WEEKLY_BOSS_ID, weeklyBossTemplateId, weeklyBossStronghold } from '@/da
 import { EXPLORE_NODES, LAYER_INFO, type StarLayer } from '@/data/explore'
 import { STRONGHOLD_TYPES, STRONGHOLDS } from '@/data/pve'
 import ExploreNodeCard from '@/components/map/ExploreNodeCard.vue'
+import ImperialRouteSection from '@/components/map/ImperialRouteSection.vue'
 import OnboardingBubble from '@/components/ui/OnboardingBubble.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import Icon from '@/components/ui/Icon.vue'
@@ -217,6 +218,9 @@ const weeklyBossTestid = computed(() => {
         </button>
       </div>
     </div>
+
+    <!-- 帝庭贡道（v1.81）：终局经营与防守循环，未解锁置灰可见 -->
+    <ImperialRouteSection />
 
     <!-- 无尽远征（v0.60）：独立区块，未解锁置灰可见 -->
     <div class="endless-section" data-testid="endless-section">

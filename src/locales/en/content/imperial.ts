@@ -114,4 +114,25 @@ export default {
     'The words "never extinguishing" came from the oldest of the Courts’ tribute rolls. The clerk who wrote them never saw the furnace, only the fire of the lanes — a tribute road that had burned for billions of years earned the phrase.',
   'content.imperial.imp_15.note':
     'Registry note: source verifiable, wording doubtful; retained as written.',
+
+  // Section 6 · Before the Furnace (records from standing before it; all six strongholds held, v1.81)
+  'content.imperial.section_06': 'Before the Furnace',
+
+  'content.imperial.imp_16.name': 'The Unloading Rite',
+  'content.imperial.imp_16.text':
+    'The tribute lanes ended at no temple, only the furnace. The unloading arms rose and fell by procedure; with every hold emptied, the fire steadied a shade. Nothing was spent on ceremony — stoker craft, not piety.',
+  'content.imperial.imp_16.note':
+    'Registry note: unloading rites held by the Stoker Hall; no watching past the mooring line.',
+
+  'content.imperial.imp_17.name': 'The Fire Readers',
+  'content.imperial.imp_17.text':
+    'The old hands of the Stoker Hall read cargo by the firelight alone: white meant alloy overweight, blue meant data holds riding low. They never asked where a cargo came from — asking was the audit’s trade; theirs was the burn.',
+  'content.imperial.imp_17.note':
+    'Registry note: fire-color records filed by season; no off colors on file.',
+
+  'content.imperial.imp_18.name': 'The Level Line',
+  'content.imperial.imp_18.text':
+    'The furnace had never gone out. Reroutes, beast tides, dynasties turned — everything had happened on those lanes, yet the furnace log stayed a level line. The stokers said among themselves it was not men keeping the fire, but the fire keeping the furnace — and no one dared copy that into the ledgers.',
+  'content.imperial.imp_18.note':
+    'Registry note: furnace log sealed; this entry is oral record with no ledger copy.',
 }

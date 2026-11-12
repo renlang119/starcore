@@ -97,4 +97,22 @@ export default {
   'content.imperial.imp_15.text':
     '「永不熄灭」四字出自王庭最早的贡册。写册的人没见过炉，只见过航道的火——一条烧了几十亿年的进贡航路，配得上这四个字。',
   'content.imperial.imp_15.note': '档批：出处可考，字面存疑，沿用。',
+
+  // 节六 · 炉前（六座全接管后的亲见留档，v1.81）
+  'content.imperial.section_06': '炉前',
+
+  'content.imperial.imp_16.name': '倾倒的规程',
+  'content.imperial.imp_16.text':
+    '贡道的终点没有神殿，只有炉。倾贡的机械臂按规程起落，一船贡物入炉，火色就稳一分——排场省得干干净净，是司炉的手艺，不是祭祀的虔诚。',
+  'content.imperial.imp_16.note': '档批：倾倒规程归司炉房执掌，限停区外不得目视。',
+
+  'content.imperial.imp_17.name': '看火色的人',
+  'content.imperial.imp_17.text':
+    '司炉房的老手只看火色就知道贡品成色：发白是合金掺多了，发蓝是数据贡品压了舱。他们不问来处，只管烧得匀——问来处的是核验，管火候的是司炉。',
+  'content.imperial.imp_17.note': '档批：火色记录按季归档，未见异色。',
+
+  'content.imperial.imp_18.name': '平的炉温',
+  'content.imperial.imp_18.text':
+    '炉火没有熄过。改线、兽潮、王庭更替，贡道上什么事都发生过，只有炉温记录是一条平线。司炉房的人私下说，不是人在养火，是火在养着炉——这话没人敢往贡册上誊。',
+  'content.imperial.imp_18.note': '档批：炉温档案密封，此条为口述留档，无誊本对应。',
 }
