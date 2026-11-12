@@ -26,6 +26,10 @@ growing through "Singularity Restart" rebirth cycles.
   every 10 layers conquered unlocks a one-time milestone reward
   (lifetime progress; missed tiers can be claimed later), with a weekly
   boss scaled to the player's expedition frontier every Monday (v1.24)
+- **Imperial Strongholds**: 6 holdings along the tribute route on the star
+  map; taken-over ones yield tribute continuously (12-hour pool cap, manual
+  claim); weekly inspections can be fought or paid off, each holding supports
+  3 readiness levels; progress persists through rebirth (v1.81)
 - **Relics**: 20 kinds drawn from rarity pools; 3 of the same rarity fuse
   into 1 of the next tier; 4 set bonuses; each relic can be enhanced up to
   level 20 with energy
