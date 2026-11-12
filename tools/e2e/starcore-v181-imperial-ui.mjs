@@ -7,7 +7,7 @@
 // F. 巡检打点：pending 态打点 / passed(paid) 无加成
 // G. 逾期停摆：预置 overdue / 目标卡停摆标记 + 迎战恢复入口
 // 时间控制：绝对时间戳制（lastClaimAt / audit.deadline 预置拨时，page.clock 禁用惯例）
-import { launch, finish, savePayload, injectSave, BASE_URL } from './starcore-pwlib.mjs'
+import { launch, finish, check, savePayload, injectSave, BASE_URL } from './starcore-pwlib.mjs'
 
 const BASE = BASE_URL
 const HOUR = 3_600_000
@@ -33,7 +33,8 @@ async function v(label, fn) {
   } catch (e) {
     fail++
     FAILURES.push(`${label}: ${e.message}`)
-    console.log(`  ✗ ${label}: ${e.message}`)
+    // 失败须借道 pwlib 计数：finish 按其 fail 数退出进程，本地计数不接退出码
+    check(`${label}: ${e.message}`, false)
   }
 }
 
@@ -115,6 +116,8 @@ async function gotoMap(browser, seed, opts = {}) {
 /** 打一场并回星图（等结果弹窗 → 确认） */
 async function fightAndBack(page) {
   await page.locator('[data-testid="battle-start"]').first().click()
+  // PR #24 修复 6：出征结算后战斗页必须仍在（巡检结算即变不得卸载整页）
+  if ((await page.locator('.battle-view').count()) === 0) throw new Error('战斗页被卸载')
   await page.waitForSelector('.modal, [data-testid*="result"], .result', { timeout: 20000 }).catch(() => {})
   await page.waitForTimeout(1200)
   // 战报播出收尾后弹窗出现：确认按钮回到星图
@@ -123,6 +126,8 @@ async function fightAndBack(page) {
     if (txt.includes('胜 利') || txt.includes('Victory')) break
     await page.waitForTimeout(1000)
   }
+  // 结果弹窗遮罩在场（战斗页与弹窗未被卸载，PR #24 修复 1/6）
+  if ((await page.locator('.modal-overlay').count()) === 0) throw new Error('结果弹窗缺失')
   // 弹窗内「返回星图」按钮（btn-secondary）；页头同名按钮被弹窗遮罩盖住不可点
   const confirm = page.locator('button.btn-secondary', { hasText: '返回星图' }).first()
   await confirm.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {})
@@ -151,11 +156,13 @@ console.log('== A. 解锁与渲染 ==')
   await ctx.close()
 
   const { ctx: c2, page: p2 } = await gotoMap(browser, makeSeed({}))
-  await v('A3 解锁后 6 座据点卡渲染', async () => {
+  await v('A3 解锁后 6 座据点卡渲染与已接管计数 0/6', async () => {
     for (const id of ['imp_pass', 'imp_audit', 'imp_guard', 'imp_verdict', 'imp_echo', 'imp_court']) {
       if (!(await p2.locator(`[data-testid="imperial-${id}"]`).isVisible()))
         throw new Error(`${id} 缺位`)
     }
+    const cnt = await p2.locator('[data-testid="imperial-held-count"]').textContent()
+    if (!cnt.includes('0/6')) throw new Error('计数缺 0/6: ' + cnt)
   })
   await v('A4 贡赋池面板渲染', async () => {
     if (!(await p2.locator('[data-testid="imperial-pool"]').isVisible())) throw new Error('池缺位')
@@ -200,6 +207,10 @@ console.log('== C/D. 领取与整备 ==')
 {
   const seed = makeSeed({ imperial: capturedAll({ lastClaimAt: Date.now() - 11 * HOUR }) })
   const { ctx, page } = await gotoMap(browser, seed)
+  await v('C0 全接管档计数 6/6', async () => {
+    const cnt = await page.locator('[data-testid="imperial-held-count"]').textContent()
+    if (!cnt.includes('6/6')) throw new Error('计数缺 6/6: ' + cnt)
+  })
   await v('C1 池积 11 小时可领取（按钮可用且有量）', async () => {
     const claim = page.locator('[data-testid="imperial-pool-claim"]')
     await claim.waitFor({ state: 'visible', timeout: 8000 })
@@ -229,6 +240,11 @@ console.log('== E. 巡检迎战 ==')
 {
   const seed = makeSeed({ imperial: capturedAll({}) })
   const { ctx, page } = await gotoMap(browser, seed, { waitMs: 2500 })
+  await v('E0 巡检目标卡亮标（badge 唯一在场）', async () => {
+    const badge = page.locator('[data-testid="imperial-audit-target-badge"]')
+    await badge.waitFor({ state: 'visible', timeout: 8000 })
+    if ((await badge.count()) !== 1) throw new Error('巡检目标标记数异常')
+  })
   await v('E1 tick 自动生成 pending 巡检卡', async () => {
     await page.locator('[data-testid="imperial-audit-pending"]').waitFor({ state: 'visible', timeout: 8000 })
   })
@@ -242,6 +258,48 @@ console.log('== E. 巡检迎战 ==')
   })
   await ctx.close()
 }
+
+// E3（PR #24 修复 1/3）：弱编队迎战必败——败局战斗页仍在 + 失守 toast 传目标据点名
+const weakSeed = makeSeed({
+  imperial: capturedAll({
+    audit: {
+      week: '2020-W01',
+      targetId: 'imp_pass',
+      deadline: Date.now() + 86_400_000,
+      status: 'pending',
+    },
+  }),
+})
+weakSeed.military = {
+  owned: { assault: 1 },
+  training: [],
+  formations: [{ id: 'f1', name: '一队', units: { assault: 1 } }],
+}
+const { ctx: c3, page: p3 } = await gotoMap(browser, weakSeed)
+await v('E3 迎战失败：战斗页仍在且失守提示传目标据点名', async () => {
+  await p3.locator('[data-testid="imperial-audit-fight"]').click()
+  await p3.waitForURL('**/battle/imperial_audit', { timeout: 5000 })
+  await p3.locator('[data-testid="battle-start"]').first().click()
+  let txt = ''
+  let toastTxt = ''
+  for (let i = 0; i < 30; i++) {
+    await p3.waitForTimeout(1000)
+    // toast 约 3 秒消失，逐秒抓取缓存（修复 3 断言对象是 toast 文本；
+    // 战斗页显示巡检舰队名属正常敌方名，不作断言）
+    const t = await p3.locator('.toast').textContent().catch(() => '')
+    if (t && t.includes('巡检失守')) toastTxt = t
+    txt = await p3.locator('body').innerText()
+    if (txt.includes('失 败')) break
+  }
+  if (!txt.includes('失 败')) throw new Error('弱编队竟未失败')
+  // 修复 1：败局结算后战斗页不被卸载
+  if ((await p3.locator('.battle-view').count()) === 0) throw new Error('败局战斗页被卸载')
+  // 修复 3：toast 传目标据点名（非巡检舰队合成名、非空名）
+  if (!toastTxt) throw new Error('失守 toast 未捕获')
+  if (toastTxt.includes('巡检舰队')) throw new Error('失守提示误用巡检舰队名: ' + toastTxt)
+  if (/巡检失守，\s*停摆/.test(toastTxt)) throw new Error('失守提示缺目标名: ' + toastTxt)
+})
+await c3.close()
 
 // F. 巡检打点 + G. 逾期停摆
 console.log('== F/G. 打点与停摆 ==')

@@ -59,4 +59,6 @@ export default {
   'map.imperialAuditFailed': '本周巡检失守：{name}',
   'map.imperialAuditFight': '迎战巡检',
   'map.imperialAuditPay': '打点',
+  'map.imperialHeldCount': '已接管 {n}/6',
+  'map.imperialAuditTarget': '巡检目标',
 }

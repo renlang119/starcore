@@ -17,7 +17,7 @@ import type { StrongholdDef } from '@/data/pve'
 import type { useCombatStore } from '@/stores/combat'
 import type { BattleLogEntry, BattleReplayFrame } from '@/stores/combat'
 import { useToast } from '@/composables/useToast'
-import { IMPERIAL_AUDIT_ID } from '@/data/imperial-strongholds'
+import { IMPERIAL_AUDIT_ID, getImperialStronghold } from '@/data/imperial-strongholds'
 
 type CombatStore = ReturnType<typeof useCombatStore>
 /** 战斗结果类型由 store 推导（v0.77，替换 any） */
@@ -48,6 +48,13 @@ export function useBattleFlow(deps: BattleFlowDeps) {
   const battleResult = ref<BattleResult | null>(null)
   const showResult = ref(false)
   const showGarrisonConfirm = ref(false)
+
+  /**
+   * 交战据点快照（v1.81 PR #24 修复 1）：开战瞬间冻结，战报播出与结果
+   * 弹窗期间由展示侧优先渲染。巡检迎战结算后 audit 状态即变（实时据点
+   * 计算随之 undefined），不冻结会把整页连同战报与弹窗一起卸载。
+   */
+  const engagedStronghold = ref<StrongholdDef | null>(null)
 
   // 战报播出（v1.56 战斗过程演出）：结算完成后页内战报逐条入场，
   // 播完或跳过后结果弹窗才出场；减动效偏好直出弹窗。
@@ -148,6 +155,9 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     if (playing.value) return
     // 周 Boss 已击败：按钮禁用兜底外的防御短路（不重复结算不重复发奖）
     if (deps.isWeeklyBoss?.value && game.daily.isWeeklyBossDefeated()) return
+    // 冻结交战据点：结算后实时据点计算可能转 undefined（巡检状态即变），
+    // 战报与弹窗期间以快照渲染
+    engagedStronghold.value = deps.stronghold.value
     const result = game.combat.resolveBattle(
       deps.formation.value,
       deps.stronghold.value,
@@ -189,9 +199,11 @@ export function useBattleFlow(deps: BattleFlowDeps) {
       // 修复弹窗打开期间离开页面导致资源、遗物与远征推进丢失的问题
       grantRewards(result)
     } else if (deps.isImperial?.value && deps.strongholdId.value === IMPERIAL_AUDIT_ID) {
-      // 巡检迎战失败（v1.81）：目标失守（整备保留，重夺后恢复产出）
+      // 巡检迎战失败（v1.81）：目标失守（整备保留，重夺后恢复产出）；
+      // 提示取巡检目标据点名（合成据点名是巡检舰队名，非失守对象）
       game.settleImperialAudit(false)
-      toast.show(t('battle.imperialAuditLose', { name: deps.stronghold.value?.name ?? '' }))
+      const target = getImperialStronghold(game.imperial.audit?.targetId ?? '')
+      toast.show(t('battle.imperialAuditLose', { name: target?.name ?? '' }))
     }
   }
 
@@ -238,6 +250,7 @@ export function useBattleFlow(deps: BattleFlowDeps) {
 
   function confirmResult() {
     showResult.value = false
+    engagedStronghold.value = null
     if (battleResult.value?.victory) {
       router.push('/map')
     }
@@ -248,6 +261,7 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     battleLog.value = null
     displayedLog.value = null
     battleReplay.value = null
+    engagedStronghold.value = null
   }
 
   function toggleGarrison() {
@@ -285,6 +299,7 @@ export function useBattleFlow(deps: BattleFlowDeps) {
     isGarrisoned,
     isWeeklyBossDefeated,
     garrisonPreview,
+    engagedStronghold,
     toast,
     displayedLog,
     battleReplay,

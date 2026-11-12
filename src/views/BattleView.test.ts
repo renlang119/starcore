@@ -25,6 +25,7 @@ import { ENDLESS_STRONGHOLD_ID } from '@/data/endless'
 import { WEEKLY_BOSS_ID } from '@/data/weekly-boss'
 import { useGameStore } from '@/stores/game'
 import { exploredNodes, capturedImperial } from '@/tests/fixtures'
+import { useImperialStore } from '@/stores/imperial'
 import { resetProviderSingletons } from '@/tests/reset-providers'
 
 vi.mock('vue-router', () => sharedVueRouterMock())
@@ -662,5 +663,39 @@ describe('BattleView — 帝庭据点（v1.81）', () => {
     const wrapper = mountBattle()
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain('本周无待迎战的巡检')
+  })
+
+  it('巡检迎战结算后战斗页与结果弹窗仍在（快照保活，PR #24 修复 1）', async () => {
+    routeState.path = '/battle/imperial_audit'
+    routeState.params = { id: 'imperial_audit' }
+    exploredNodes('node_galaxy_hub', 'node_arm_gate')
+    // 预置接管 + 待迎战巡检（目标 imp_pass），一次 hydrate 全量档
+    const imperial = useImperialStore()
+    imperial.hydrate({
+      completed: ['imp_pass'],
+      everCompleted: ['imp_pass'],
+      tiers: {},
+      capturedAt: { imp_pass: 0 },
+      lastClaimAt: 0,
+      audit: {
+        week: '2026-W45',
+        targetId: 'imp_pass',
+        deadline: Date.now() + 86_400_000,
+        status: 'pending',
+      },
+    })
+    setupBattleReady()
+    const wrapper = mountBattle()
+    await wrapper.vm.$nextTick()
+    const vm = wrapper.vm as any
+    vm.startBattle()
+    await vm.$nextTick()
+    // 结算即变（settleImperialAudit 已执行，实时源转 undefined）：快照接管渲染
+    expect(vm.engagedStronghold).toBeTruthy()
+    expect(vm.battleResult).toBeTruthy()
+    expect(wrapper.find('.battle-view').exists()).toBe(true)
+    vm.skipPlayback()
+    await vm.$nextTick()
+    expect(wrapper.find('.modal-overlay').exists()).toBe(true)
   })
 })

@@ -9,6 +9,7 @@ import type { ResourceType } from '@/data/buildings'
 import {
   IMPERIAL_CLAIM_CAP_SECONDS,
   IMPERIAL_STRONGHOLDS,
+  imperialTributeRate,
   type ImperialStrongholdDef,
 } from '@/data/imperial-strongholds'
 import { EXPLORE_NODES } from '@/data/explore'
@@ -22,6 +23,9 @@ const now = computed(() => game.lastTickTime)
 /** 贡道区解锁：银盘枢纽（与档案馆帝庭档案分组同门槛） */
 const routeUnlocked = computed(() => game.exploration.isCompleted('node_galaxy_hub'))
 
+/** 已接管计数（区头 n/6） */
+const heldCount = computed(() => game.imperial.completed.size)
+
 /** 节点 id → 显示名（锁定原因展示用） */
 const NODE_NAME = new Map(EXPLORE_NODES.map((n) => [n.id, n.name]))
 
@@ -29,6 +33,8 @@ const NODE_NAME = new Map(EXPLORE_NODES.map((n) => [n.id, n.name]))
 interface ImperialRow {
   def: ImperialStrongholdDef
   captured: boolean
+  /** 本周巡检目标（已接管座 + 待迎战/逾期态，卡头亮标） */
+  isAuditTarget: boolean
   suspended: boolean
   tier: number
   rate: number
@@ -49,12 +55,20 @@ const rows = computed<ImperialRow[]>(() => {
     const captured = game.imperial.completed.has(def.id)
     const tier = game.imperial.tierOf(def.id)
     const cost = captured ? game.imperial.upgradeCost(def.id, best) : null
+    const a = game.imperial.audit
+    const isAuditTarget =
+      captured && !!a && a.targetId === def.id && (a.status === 'pending' || a.status === 'overdue')
     out.push({
       def,
       captured,
+      isAuditTarget,
       suspended: game.imperial.isSuspended(def.id, now.value),
       tier,
-      rate: game.imperial.rateOf(def.id, best, now.value),
+      // 未接管座按 1 级预估速率展示（接管决策参考）；已接管座取实时
+      // 速率（含整备加成与停摆归零）
+      rate: captured
+        ? game.imperial.rateOf(def.id, best, now.value)
+        : imperialTributeRate(def, best, 1),
       locked: !(routeUnlocked.value && nodeOk && capturedOk),
       requireLabel: !nodeOk
         ? t('map.imperialRequireNode', { node: NODE_NAME.get(def.requires) ?? def.requires })
@@ -165,7 +179,12 @@ function resourceName(res: ResourceType): string {
 
 <template>
   <section class="imperial-section" data-testid="imperial-section">
-    <h3 class="section-title alert">{{ t('map.imperialSectionTitle') }}</h3>
+    <h3 class="section-title alert">
+      {{ t('map.imperialSectionTitle') }}
+      <span v-if="routeUnlocked" class="count-lead font-mono" data-testid="imperial-held-count">{{
+        t('map.imperialHeldCount', { n: heldCount })
+      }}</span>
+    </h3>
     <p class="imperial-hint">{{ t('map.imperialSectionHint') }}</p>
     <p v-if="!routeUnlocked" class="locked-text" data-testid="imperial-route-locked">
       {{ t('map.imperialLocked') }}
@@ -209,7 +228,15 @@ function resourceName(res: ResourceType): string {
           :data-testid="`imperial-${row.def.id}`"
         >
           <div class="ic-head">
-            <span class="ic-name">{{ row.def.name }}</span>
+            <span class="ic-name">
+              {{ row.def.name }}
+              <span
+                v-if="row.isAuditTarget"
+                class="ic-audit-badge"
+                data-testid="imperial-audit-target-badge"
+                >{{ t('map.imperialAuditTarget') }}</span
+              >
+            </span>
             <span v-if="row.captured" class="ic-tier font-mono">
               {{ t('map.imperialTier', { level: row.tier }) }}
             </span>

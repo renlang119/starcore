@@ -73,7 +73,7 @@ watch(
   { immediate: true }
 )
 
-const stronghold = computed((): StrongholdDef | undefined => {
+const liveStronghold = computed((): StrongholdDef | undefined => {
   if (isEndless.value) return endlessStrongholdDef.value
   // 周 Boss：按终身远征深度 + 本周标识合成（深度实时派生，未击败期间推进上移）
   if (isWeeklyBoss.value) {
@@ -173,13 +173,19 @@ const garrisonDisabled = computed(
 // 战斗流程状态机：战斗执行 / 结果弹窗 / 驻扎（useBattleFlow），
 const bossFlow = useBattleFlow({
   strongholdId,
-  stronghold,
+  stronghold: liveStronghold,
   formation,
   isEndless,
   endlessDepth,
   isWeeklyBoss,
   isImperial,
 })
+/**
+ * 展示源（PR #24 修复 1）：交战快照优先于实时计算。巡检迎战结算后
+ * 实时源随巡检状态转 undefined，不切换会把战报与结果弹窗一起卸载。
+ * 下方各 computed 的 getter 惰性求值，引用顺序安全。
+ */
+const stronghold = computed(() => engagedStronghold.value ?? liveStronghold.value)
 const {
   battleLog,
   battleResult,
@@ -187,6 +193,7 @@ const {
   showGarrisonConfirm,
   isGarrisoned,
   garrisonPreview,
+  engagedStronghold,
   toast,
   displayedLog,
   playing,

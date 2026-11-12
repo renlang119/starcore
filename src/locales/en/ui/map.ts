@@ -61,4 +61,6 @@ export default {
   'map.imperialAuditFailed': 'Inspection lost: {name}',
   'map.imperialAuditFight': 'Fight inspection',
   'map.imperialAuditPay': 'Pay off',
+  'map.imperialHeldCount': 'Held {n}/6',
+  'map.imperialAuditTarget': 'Inspection',
 }
