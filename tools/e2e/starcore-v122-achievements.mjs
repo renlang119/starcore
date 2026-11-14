@@ -1,5 +1,5 @@
 // 星核纪元 v1.22 专项回归：成就扩展
-// A. 全新档：54 卡 10 区、汇总 0/54；v1.22 新成就卡渲染（合成/强化/套装/敌情/远征长线）
+// A. 全新档：54 卡 10 区、汇总 0/57；v1.22 新成就卡渲染（合成/强化/套装/敌情/远征长线）
 // B. 注档终身计数：合成 3 次 → 初试熔合解锁；强化 60 级 → 千锤百炼解锁、150 未达
 // C. 注档现值指标：敌方图鉴 20 种 → 侦察分析员；56 种 → 敌情全录；套装 1 → 套装初成
 // D. 远征长线：expeditionBest 30/40 → 深空远航者/深渊尽头；阈值边界 29/39 不解锁
@@ -53,15 +53,15 @@ function makeSave({
 const browser = await launch();
 
 // A. 全新档渲染
-console.log('== A. 全新档：54 卡 10 区 + 汇总 0/54 ==');
+console.log('== A. 全新档：54 卡 10 区 + 汇总 0/57 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements', { waitMs: 1500 });
   const cards = page.locator('.ach-card');
-  check(`54 张成就卡（实际 ${await cards.count()}）`, (await cards.count()) === 54);
+  check(`57 张成就卡（实际 ${await cards.count()}）`, (await cards.count()) === 57);
   const sections = await page.locator('.ach-section, section').count();
   check('成就分区渲染正常（10 区）', sections >= 10);
   const countText = (await page.locator('.summary-count').textContent()).replace(/\s/g, '');
-  check(`汇总 0/54（实际 ${countText}）`, countText === '0/54');
+  check(`汇总 0/57（实际 ${countText}）`, countText === '0/54');
   // 新成就卡可见（按名称定位，:text-is 精确匹配防子串误命中）
   for (const name of ['初试熔合', '千锤百炼', '套装初成', '侦察分析员', '深空远航者', '敌情全录']) {
     check(`新成就卡「${name}」渲染`, (await page.locator('.ach-card', { has: page.locator(`.ach-name:text-is("${name}")`) }).count()) === 1);
@@ -88,7 +88,7 @@ console.log('== B. 注档终身计数：合成/强化解锁 ==');
     check(`「${name}」已解锁`, await card.evaluate((el) => el.classList.contains('unlocked')));
   }
   const cnt = (await page.locator('.summary-count').textContent()).replace(/\s/g, '');
-  check(`汇总 3/54（实际 ${cnt}）`, cnt === '3/54');
+  check(`汇总 3/57（实际 ${cnt}）`, cnt === '3/54');
   await page.context().close();
 }
 
@@ -169,9 +169,9 @@ console.log('== E. v1.21 旧档（缺 synths/enhanceLevels）不废档 ==');
   delete save.achievements.lifetime.synths;
   delete save.achievements.lifetime.enhanceLevels;
   const page = await newSeededPage(browser, save, '/achievements', { waitMs: 1500 });
-  check('旧档成就页正常渲染（54 卡）', (await page.locator('.ach-card').count()) === 54);
+  check('旧档成就页正常渲染（54 卡）', (await page.locator('.ach-card').count()) === 57);
   const cnt = (await page.locator('.summary-count').textContent()).replace(/\s/g, '');
-  check(`汇总 0/54（实际 ${cnt}）`, cnt === '0/54');
+  check(`汇总 0/57（实际 ${cnt}）`, cnt === '0/54');
   await page.context().close();
 }
 

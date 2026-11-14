@@ -161,7 +161,7 @@ console.log('== E. 新科技渲染 + 成就 34 卡不回归 ==');
   // 这里只验证渲染与状态类存在，不验证可研（前置链由 requires 数据保证）
   await page.context().close();
   const page2 = await newSeededPage(browser, makeSave({}), '/achievements');
-  check('成就页 54 卡', (await page2.locator('.ach-card').count()) === 54);
+  check('成就页 54 卡', (await page2.locator('.ach-card').count()) === 57);
   const sections = await page2.locator('.ach-section, section').count();
   check('成就分区渲染正常', sections >= 9);
   await page2.context().close();

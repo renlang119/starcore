@@ -29,6 +29,8 @@ import {
   IMPERIAL_ENTRY_COUNT,
   IMPERIAL_FINAL_ENTRY_COUNT,
   IMPERIAL_FINAL_SECTION,
+  IMPERIAL_FORGE_ENTRY_COUNT,
+  IMPERIAL_FORGE_SECTION,
   IMPERIAL_SECTIONS,
   IMPERIAL_TOTAL_ENTRY_COUNT,
 } from '@/data/imperial'
@@ -88,9 +90,15 @@ const imperialUnlocked = computed(
 // 炉前节（v1.81）：解锁 = 曾接管全部 6 座贡道据点（按曾接管集判读，
 // 巡检失守不回收档案；与五节观察留档的分组解锁错开）
 const imperialFinalUnlocked = computed(() => game.imperial.everCompleted.size >= 6)
-// 分组计数：五节常开，炉前节随解锁计入
+// 炉域节（v1.83）：forgeEntered 终身置位即解锁（跨转生保持，与节六 everCompleted 口径同构；
+// 置位在炉域入口动作内，首次进门当帧可见）
+const imperialForgeUnlocked = computed(() => game.achievements.metricValue('forgeEntered') > 0)
+// 分组计数：五节常开，炉前节与炉域节随解锁计入
 const imperialSeenCount = computed(
-  () => IMPERIAL_ENTRY_COUNT + (imperialFinalUnlocked.value ? IMPERIAL_FINAL_ENTRY_COUNT : 0)
+  () =>
+    IMPERIAL_ENTRY_COUNT +
+    (imperialFinalUnlocked.value ? IMPERIAL_FINAL_ENTRY_COUNT : 0) +
+    (imperialForgeUnlocked.value ? IMPERIAL_FORGE_ENTRY_COUNT : 0)
 )
 
 // 回响：解锁 = 当前轮全宇宙探索完毕（与星图档案、首页贺词同口径逐
@@ -292,6 +300,30 @@ function cardEnemy(card: EnemyCard) {
               :key="entry.id"
               class="gate-card"
               data-testid="archive-imperial-final-card"
+            >
+              <h5 class="gate-name">{{ entry.name }}</h5>
+              <p class="gate-text">{{ entry.text }}</p>
+              <p class="gate-note">{{ entry.note }}</p>
+            </article>
+          </div>
+        </div>
+        <!-- 炉域节（v1.83）：首次进入炉域后收录的亲见留档（forgeEntered 终身判读，
+             跨转生保持解锁），随解锁计入分组计数 -->
+        <div class="gate-door">
+          <h4 class="gate-door-name">{{ IMPERIAL_FORGE_SECTION.name }}</h4>
+          <p
+            v-if="!imperialForgeUnlocked"
+            class="gate-locked locked-text"
+            data-testid="archive-imperial-forge-locked"
+          >
+            {{ t('archive.imperialForgeLocked') }}
+          </p>
+          <div v-else class="gate-grid">
+            <article
+              v-for="entry in IMPERIAL_FORGE_SECTION.entries"
+              :key="entry.id"
+              class="gate-card"
+              data-testid="archive-imperial-forge-card"
             >
               <h5 class="gate-name">{{ entry.name }}</h5>
               <p class="gate-text">{{ entry.text }}</p>

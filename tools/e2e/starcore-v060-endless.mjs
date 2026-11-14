@@ -206,7 +206,7 @@ console.log('== F. 常规据点战斗 + 移动视口不溢出 ==');
   await mob.context().close();
 
   const ach = await newSeededPage(browser, makeSave({}), '/achievements');
-  check('成就页仍 54 卡', (await ach.locator('.ach-card').count()) === 54);
+  check('成就页仍 54 卡', (await ach.locator('.ach-card').count()) === 57);
   await ach.context().close();
 }
 

@@ -145,13 +145,13 @@ describe('ArchiveView — 帝庭档案', () => {
     expect(wrapper.findAll('[data-testid="archive-imperial-card"]').length).toBe(0)
   })
 
-  it('解锁态：银盘枢纽完成后 15 条按五节渲染、节名段头齐备、计数 15/18（炉前锁定）', async () => {
+  it('解锁态：银盘枢纽完成后 15 条按五节渲染、节名段头齐备、计数 15/21（炉前+炉域锁定）', async () => {
     exploredNodes('node_galaxy_hub')
     const wrapper = mountView(ArchiveView)
     await wrapper.vm.$nextTick()
 
     // 五节常开 15 条，炉前节未全接管前锁定不计入 seen（总数 18）
-    expect(wrapper.text()).toContain('已归档 15 / 18 条')
+    expect(wrapper.text()).toContain('已归档 15 / 21 条')
     expect(wrapper.findAll('[data-testid="archive-imperial-card"]').length).toBe(15)
     // 五节节名段头齐备（含压轴的炉音）
     for (const sec of IMPERIAL_SECTIONS) {
@@ -168,17 +168,43 @@ describe('ArchiveView — 帝庭档案', () => {
     expect(wrapper.text()).not.toContain('倾倒的规程')
   })
 
-  it('炉前节：曾接管全部 6 座后解锁 3 条、计数 18/18（巡检失守不回收）', async () => {
+  it('炉前节：曾接管全部 6 座后解锁 3 条、计数 18/21（巡检失守不回收；炉域节随 forgeEntered 解锁）', async () => {
     exploredNodes('node_galaxy_hub')
     capturedImperial('imp_pass', 'imp_audit', 'imp_guard', 'imp_verdict', 'imp_echo', 'imp_court')
     const wrapper = mountView(ArchiveView)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.text()).toContain('已归档 18 / 18 条')
+    expect(wrapper.text()).toContain('已归档 18 / 21 条')
     expect(wrapper.find('[data-testid="archive-imperial-final-locked"]').exists()).toBe(false)
     expect(wrapper.findAll('[data-testid="archive-imperial-final-card"]').length).toBe(3)
     expect(wrapper.text()).toContain('炉前')
     expect(wrapper.text()).toContain('倾倒的规程')
+  })
+
+  it('炉域节（v1.83）：forgeEntered 置位后当帧可见 3 条、计数 21/21；置位前锁定不剧透', async () => {
+    exploredNodes('node_galaxy_hub')
+    capturedImperial('imp_pass', 'imp_audit', 'imp_guard', 'imp_verdict', 'imp_echo', 'imp_court')
+    // 置位前：炉域节锁定、亲见留档零渲染
+    const locked = mountView(ArchiveView)
+    await locked.vm.$nextTick()
+    expect(locked.find('[data-testid="archive-imperial-forge-locked"]').exists()).toBe(true)
+    expect(locked.findAll('[data-testid="archive-imperial-forge-card"]').length).toBe(0)
+    expect(locked.text()).not.toContain('炉口的另一侧')
+    locked.unmount()
+    // 置位（门面 enterForge 内 recordForgeEntered，先于档案判读）后：同帧解锁
+    const game = useGameStore()
+    game.imperial.ensureAudit('2026-W46')
+    game.imperial.markAuditPassed('standard')
+    game.enterForge()
+    const wrapper = mountView(ArchiveView)
+    await wrapper.vm.$nextTick()
+    expect(game.achievements.metricValue('forgeEntered')).toBe(1)
+    expect(wrapper.find('[data-testid="archive-imperial-forge-locked"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-testid="archive-imperial-forge-card"]').length).toBe(3)
+    expect(wrapper.text()).toContain('炉域')
+    expect(wrapper.text()).toContain('炉口的另一侧')
+    expect(wrapper.text()).toContain('等着什么的火')
+    expect(wrapper.text()).toContain('已归档 21 / 21 条')
   })
 })
 

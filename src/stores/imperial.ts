@@ -33,6 +33,15 @@ import {
   isLegalImperialTier,
   pickImperialAuditTarget,
   type ImperialAuditDifficulty,
+  FORGE_DAILY_LIMIT,
+  FORGE_REQUIRED_CAPTURES,
+  FORGE_STABILITY_MAX,
+  FORGE_TRIBUTE_REFILL,
+  forgeDecayed,
+  forgeYield,
+  isForgeInputResource,
+  pickForgeResource,
+  type ForgeInputResource,
 } from '@/data/imperial-strongholds'
 
 export type ImperialAuditStatus = 'pending' | 'passed' | 'failed' | 'overdue'
@@ -46,6 +55,20 @@ export interface ImperialAuditState {
   status: ImperialAuditStatus
   /** 是否通过打点完成（不享受下周加成） */
   paid?: boolean
+}
+
+/** 炉域状态（v1.83）：stability 0-100 线性衰减，lastTick 为上次结算时刻；
+ * day 为 UTC 日号（floor(ms/86400000)），dayCount 为当日已倾贡次数（0-4） */
+export interface ImperialForgeState {
+  stability: number
+  lastTick: number
+  day: number
+  dayCount: number
+}
+
+/** UTC 日号（倾贡日限的日界，floor 取整对齐） */
+export function forgeDayKey(now: number): number {
+  return Math.floor(now / 86_400_000)
 }
 
 const MAX_TIER = 3
@@ -72,6 +95,10 @@ export const useImperialStore = defineStore('imperial', () => {
   const audit = ref<ImperialAuditState | null>(null)
   /** 转生宽限截止时刻（ms）：此前不生成新巡检（v1.82） */
   const auditGraceUntil = ref(0)
+  /** 是否曾通过巡检（终身布尔；v1.83 炉域入口门槛之一，转生不清仅 hardReset 清零） */
+  const auditEverPassed = ref(false)
+  /** 炉域状态（v1.83；null = 未进入过，进入即初始化 stability 0） */
+  const forge = ref<ImperialForgeState | null>(null)
 
   /** 已接管 id，按数据表顺序（周巡检目标选取依赖稳定顺序） */
   const occupiedIds = computed(() =>
@@ -270,12 +297,13 @@ export const useImperialStore = defineStore('imperial', () => {
     if (now >= a.deadline) audit.value = { ...a, status: 'overdue' }
   }
 
-  /** 迎战胜利：核验通过，下周贡赋按档位加成（标准 +10% / 从严 +20%） */
+  /** 迎战胜利：核验通过，下周贡赋按档位加成（标准 +10% / 从严 +30%，以常量 1.1/1.3 为准） */
   function markAuditPassed(difficulty: ImperialAuditDifficulty = 'standard'): boolean {
     const a = audit.value
     if (!a || !['pending', 'overdue'].includes(a.status)) return false
     audit.value = { ...a, status: 'passed', paid: false }
     bonus.value = difficulty === 'strict' ? IMPERIAL_AUDIT_STRICT_BONUS : IMPERIAL_AUDIT_BONUS
+    auditEverPassed.value = true
     return true
   }
 
@@ -285,6 +313,7 @@ export const useImperialStore = defineStore('imperial', () => {
     if (!a || !['pending', 'overdue'].includes(a.status)) return false
     audit.value = { ...a, status: 'passed', paid: true }
     bonus.value = 1
+    auditEverPassed.value = true
     return true
   }
 
@@ -298,6 +327,58 @@ export const useImperialStore = defineStore('imperial', () => {
     return true
   }
 
+  // —— 炉域（v1.83）——
+  /** 炉域入口门槛：曾接管全部六座 + 曾通过巡检（两门槛均终身事实，跨转生保留） */
+  const forgeUnlocked = computed(
+    () => everCompleted.value.size >= FORGE_REQUIRED_CAPTURES && auditEverPassed.value
+  )
+
+  /** 进入炉域：门槛满足即初始化（幂等，重复进入不重置稳定度）；返回是否成功 */
+  function enterForge(now = Date.now()): boolean {
+    if (!forgeUnlocked.value) return false
+    if (!forge.value)
+      forge.value = { stability: 0, lastTick: now, day: forgeDayKey(now), dayCount: 0 }
+    return true
+  }
+
+  /** 当前稳定度（显示用：衰减补算到 now，不落盘；落盘点在倾贡结算） */
+  function forgeStability(now = Date.now()): number {
+    if (!forge.value) return 0
+    const hours = (now - forge.value.lastTick) / 3_600_000
+    return forgeDecayed(forge.value.stability, hours)
+  }
+
+  /**
+   * 倾贡一次（倾贡即得，无产出池）：投入四选一（不含 data），
+   * 衰减补算 → 回填 +12（上限 100）→ 按档位与点名结算产出 → 写回。
+   * 资源扣减与发放由 game 门面编排；此处只算状态与产出。
+   */
+  function tributeForge(
+    input: ForgeInputResource,
+    weekKey: string,
+    now = Date.now()
+  ): { yield: number; picked: boolean; stability: number } | null {
+    if (!forge.value || !isForgeInputResource(input)) return null
+    // 日限：跨日重置计数，当日满额拒绝（返回 null 由界面置禁用态）
+    const day = forgeDayKey(now)
+    const dayCount = day === forge.value.day ? forge.value.dayCount : 0
+    if (dayCount >= FORGE_DAILY_LIMIT) return null
+    const decayed = forgeStability(now)
+    const stability = Math.min(FORGE_STABILITY_MAX, decayed + FORGE_TRIBUTE_REFILL)
+    const picked = input === pickForgeResource(weekKey)
+    const amount = forgeYield(stability, picked)
+    forge.value = { stability, lastTick: now, day, dayCount: dayCount + 1 }
+    return { yield: amount, picked, stability }
+  }
+
+  /** 当日剩余倾贡次数（显示用） */
+  function forgeRemainingToday(now = Date.now()): number {
+    if (!forge.value) return 0
+    const day = forgeDayKey(now)
+    const used = day === forge.value.day ? forge.value.dayCount : 0
+    return Math.max(0, FORGE_DAILY_LIMIT - used)
+  }
+
   function reset(): void {
     completed.value = new Set()
     everCompleted.value = new Set()
@@ -307,6 +388,8 @@ export const useImperialStore = defineStore('imperial', () => {
     bonus.value = 1
     audit.value = null
     auditGraceUntil.value = 0
+    auditEverPassed.value = false
+    forge.value = null
   }
 
   function serialize(): ImperialSaveData {
@@ -319,6 +402,8 @@ export const useImperialStore = defineStore('imperial', () => {
       bonus: bonus.value,
       audit: audit.value ? { ...audit.value } : undefined,
       auditGraceUntil: auditGraceUntil.value,
+      auditEverPassed: auditEverPassed.value || undefined,
+      forge: forge.value ? { ...forge.value } : undefined,
     }
   }
 
@@ -371,6 +456,36 @@ export const useImperialStore = defineStore('imperial', () => {
         : data.bonus === IMPERIAL_AUDIT_STRICT_BONUS
           ? IMPERIAL_AUDIT_STRICT_BONUS
           : 1
+    auditEverPassed.value = data.auditEverPassed === true
+    if (
+      data.forge &&
+      typeof data.forge.stability === 'number' &&
+      Number.isFinite(data.forge.stability) &&
+      data.forge.stability >= 0 &&
+      data.forge.stability <= FORGE_STABILITY_MAX
+    ) {
+      // lastTick 非法兜当前时刻（衰减从现在起算）；stability 非法整体剥离（null，重新进入重开）
+      forge.value = {
+        stability: data.forge.stability,
+        lastTick:
+          typeof data.forge.lastTick === 'number' && Number.isFinite(data.forge.lastTick)
+            ? data.forge.lastTick
+            : Date.now(),
+        // day/dayCount 非法兜当日零计（v1.83 复审补字段，旧档缺失视为未倾贡）
+        day:
+          typeof data.forge.day === 'number' && Number.isFinite(data.forge.day)
+            ? data.forge.day
+            : forgeDayKey(Date.now()),
+        dayCount:
+          typeof data.forge.dayCount === 'number' &&
+          Number.isFinite(data.forge.dayCount) &&
+          data.forge.dayCount >= 0
+            ? Math.min(FORGE_DAILY_LIMIT, Math.floor(data.forge.dayCount))
+            : 0,
+      }
+    } else {
+      forge.value = null
+    }
     if (
       data.audit &&
       typeof data.audit === 'object' &&
@@ -426,6 +541,13 @@ export const useImperialStore = defineStore('imperial', () => {
     markAuditPaid,
     markAuditFailed,
     poolFull,
+    auditEverPassed,
+    forge,
+    forgeUnlocked,
+    enterForge,
+    forgeStability,
+    tributeForge,
+    forgeRemainingToday,
     reset,
     serialize,
     hydrate,

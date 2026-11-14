@@ -72,6 +72,7 @@ const SUITE = [
   'starcore-v175-imperial.mjs',
   'starcore-v181-imperial-ui.mjs',
   'starcore-v182-imperial-audit.mjs',
+  'starcore-v183-imperial-forge.mjs',
   'starcore-boot-screen.mjs',
 ]
 
@@ -107,6 +108,7 @@ const REMOTE = [
   'starcore-v174-gates.mjs',
   'starcore-v175-imperial.mjs',
   'starcore-v181-imperial-ui.mjs',
+  'starcore-v183-imperial-forge.mjs',
   'starcore-v182-imperial-audit.mjs',
   'starcore-boot-screen.mjs',
 ]

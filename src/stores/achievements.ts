@@ -41,6 +41,9 @@ export type IntLifetimeKey =
   | 'enhanceLevels' // v1.22 遗物强化总级数
   | 'auditWins' // v1.82 巡检迎战胜次
   | 'imperialClaims' // v1.82 贡赋领取次数
+  | 'forgeEntered' // v1.83 炉域首次进入（0/1，档案节七判读锚）
+  | 'forgeTributes' // v1.83 倾贡次数
+  | 'forgePicks' // v1.83 响应点名倾贡次数（投入=当周点名资源）
 /** 读外部现值的指标（不自持计数；playtime = game store 的 totalPlayTime，已入档） */
 export type ExternalMetric =
   | 'relicsOwned'
@@ -63,6 +66,9 @@ const INT_KEYS: IntLifetimeKey[] = [
   'enhanceLevels',
   'auditWins',
   'imperialClaims',
+  'forgeEntered',
+  'forgeTributes',
+  'forgePicks',
 ]
 
 /** 外部现值指标 provider，由 game store 注入 */
@@ -103,6 +109,9 @@ function emptyLifetimeInt(): Record<IntLifetimeKey, number> {
     enhanceLevels: 0,
     auditWins: 0,
     imperialClaims: 0,
+    forgeEntered: 0,
+    forgeTributes: 0,
+    forgePicks: 0,
   }
 }
 
@@ -180,9 +189,21 @@ export const useAchievementsStore = defineStore('achievements', () => {
   function recordImperialClaim(): void {
     lifetimeInt.value.imperialClaims++
   }
+  /** 炉域首次进入置 1（v1.83；置位先于档案节七判读，首次进门当帧可见） */
+  function recordForgeEntered(): void {
+    lifetimeInt.value.forgeEntered = 1
+  }
+  /** 倾贡次数 +1（v1.83；每次成功倾贡经此） */
+  function recordForgeTribute(): void {
+    lifetimeInt.value.forgeTributes++
+  }
+  /** 响应点名倾贡次数 +1（v1.83；投入资源=当周点名资源时经此） */
+  function recordForgePick(): void {
+    lifetimeInt.value.forgePicks++
+  }
 
   /**
-   * 全表扫描解锁判定（54 条，tick 尾部每秒一次，开销可忽略）。
+   * 全表扫描解锁判定（57 条，tick 尾部每秒一次，开销可忽略）。
    * 新解锁成就入 toast 队列并返回定义列表。
    */
   function checkAndUnlock(): typeof ACHIEVEMENTS {
@@ -281,6 +302,9 @@ export const useAchievementsStore = defineStore('achievements', () => {
     recordBattle,
     recordAuditWin,
     recordImperialClaim,
+    recordForgeEntered,
+    recordForgeTribute,
+    recordForgePick,
     recordSynth,
     recordEnhanceLevels,
     checkAndUnlock,

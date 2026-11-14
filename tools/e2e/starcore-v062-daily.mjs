@@ -205,7 +205,7 @@ console.log('== E. 注档旧周标识：加载后重掷 ==');
 console.log('== F. 成就 54 卡 / 导航不增 / 移动视口 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements', { waitMs: 1500 });
-  check('成就页 54 卡', (await page.locator('.ach-card').count()) === 54);
+  check('成就页 54 卡', (await page.locator('.ach-card').count()) === 57);
   await page.context().close();
 
   const home = await newSeededPage(browser, makeSave(), '/', { viewport: { width: 390, height: 844 }, waitMs: 1500 });

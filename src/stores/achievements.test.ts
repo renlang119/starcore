@@ -31,9 +31,9 @@ beforeEach(() => {
 })
 
 describe('achievements — 定义表完整性', () => {
-  it('共 54 个成就，id 唯一', () => {
-    expect(ACHIEVEMENTS).toHaveLength(54)
-    expect(ACHIEVEMENT_IDS.size).toBe(54)
+  it('共 57 个成就，id 唯一', () => {
+    expect(ACHIEVEMENTS).toHaveLength(57)
+    expect(ACHIEVEMENT_IDS.size).toBe(57)
   })
 
   it('类别/指标/阈值/效果字段合法', () => {

@@ -135,4 +135,25 @@ export default {
     'The furnace had never gone out. Reroutes, beast tides, dynasties turned — everything had happened on those lanes, yet the furnace log stayed a level line. The stokers said among themselves it was not men keeping the fire, but the fire keeping the furnace — and no one dared copy that into the ledgers.',
   'content.imperial.imp_18.note':
     'Registry note: furnace log sealed; this entry is oral record with no ledger copy.',
+  // Section 7 · The Furnace Domain (firsthand records from inside, v1.83;
+  // half-reveal: actions only, never the nature or origin)
+  'content.imperial.section_07': 'Within the Furnace',
+
+  'content.imperial.imp_19.name': 'Beyond the Furnace Mouth',
+  'content.imperial.imp_19.text':
+    'What the forecourt showed was only the furnace mouth. Inside the domain there stood no hall behind the frontage — the furnace body ran on past the edge of sight, meeting the light of the galactic core. The loading arms rose and fell with no command post; the rite walked itself.',
+  'content.imperial.imp_19.note':
+    'Registry note: one-time clearance into the domain; the escort record ends here.',
+
+  'content.imperial.imp_20.name': 'Where the Furnace Voice Settled',
+  'content.imperial.imp_20.text':
+    'Tribute did not fall silent into the fire. Some loads drew the faintest ring as they went in, and the flame steadied by a shade; others sank without a sound, and the flame did not move. The note-column rumor of "the furnace voice" was no illusion — the furnace chose. What it chose rang; what it passed over sank. The stoker house logged only fire color, never the choosing.',
+  'content.imperial.imp_20.note':
+    'Registry note: choosing is outside the rite; two accounts coexist, undecided.',
+
+  'content.imperial.imp_21.name': 'A Fire Waiting for Something',
+  'content.imperial.imp_21.text':
+    'The fire had never gone out, nor did it burn for anyone. Generations of fire readers had come and gone, yet the furnace log stayed a level line — the fire kept the furnace, and the furnace was waiting for something. For what, no one asked; had they asked, the fire would not have answered.',
+  'content.imperial.imp_21.note':
+    'Registry note: closing entry of this record; "waiting" is unverified, kept unruled.',
 }

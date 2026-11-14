@@ -9,6 +9,19 @@ import {
   IMPERIAL_STRONGHOLDS,
   IMPERIAL_TIER3_MULT,
   IMPERIAL_TIER_MULT,
+  FORGE_DECAY_PER_HOUR,
+  FORGE_INPUT_RESOURCES,
+  FORGE_STABILITY_MAX,
+  FORGE_TRIBUTE_COST,
+  FORGE_TRIBUTE_REFILL,
+  FORGE_PICK_MULT,
+  FORGE_REQUIRED_CAPTURES,
+  FORGE_YIELD_BASE,
+  forgeDecayed,
+  forgeYield,
+  forgeYieldTier,
+  isForgeInputResource,
+  pickForgeResource,
   getImperialStronghold,
   imperialAuditStronghold,
   imperialBattleStronghold,
@@ -114,5 +127,60 @@ describe('imperial-strongholds — 数据', () => {
 
   it('贡赋池上限常量 = 12h', () => {
     expect(IMPERIAL_CLAIM_CAP_SECONDS).toBe(12 * 3600)
+  })
+})
+
+describe('imperial-strongholds — 炉域（v1.83）', () => {
+  it('入口门槛 = 6；稳定度 0-100；衰减/回填/点名倍数契约', () => {
+    expect(FORGE_REQUIRED_CAPTURES).toBe(6)
+    expect(FORGE_STABILITY_MAX).toBe(100)
+    expect(FORGE_DECAY_PER_HOUR).toBe(2)
+    expect(FORGE_TRIBUTE_REFILL).toBe(24)
+    expect(FORGE_PICK_MULT).toBe(3)
+  })
+
+  it('投入资源四选一，不含 data（防自循环套利）', () => {
+    expect([...FORGE_INPUT_RESOURCES]).toEqual(['energy', 'crystal', 'alloy', 'dark'])
+    expect(isForgeInputResource('data')).toBe(false)
+    expect(isForgeInputResource('energy')).toBe(true)
+    // 投入量为正数
+    for (const r of FORGE_INPUT_RESOURCES) {
+      expect(FORGE_TRIBUTE_COST[r]).toBeGreaterThan(0)
+    }
+  })
+
+  it('产出档位边界：80/50/20', () => {
+    expect(forgeYieldTier(100)).toBe(3)
+    expect(forgeYieldTier(80)).toBe(3)
+    expect(forgeYieldTier(79.99)).toBe(2)
+    expect(forgeYieldTier(50)).toBe(2)
+    expect(forgeYieldTier(49.99)).toBe(1)
+    expect(forgeYieldTier(20)).toBe(1)
+    expect(forgeYieldTier(19.99)).toBe(0)
+    expect(forgeYieldTier(0)).toBe(0)
+  })
+
+  it('离线衰减补算：线性、到 0 停、负时长不动', () => {
+    expect(forgeDecayed(100, 0)).toBe(100)
+    expect(forgeDecayed(100, -3)).toBe(100)
+    expect(forgeDecayed(100, 10)).toBe(80)
+    expect(forgeDecayed(100, 10.5)).toBe(79)
+    expect(forgeDecayed(50, 100)).toBe(0)
+  })
+
+  it('周点名资源确定性：同周同值、四选一内', () => {
+    const a = pickForgeResource('2026-W46')
+    const b = pickForgeResource('2026-W46')
+    expect(a).toBe(b)
+    expect(FORGE_INPUT_RESOURCES).toContain(a)
+  })
+
+  it('倾贡产出：档位线性、点名 ×3、20 以下无产出', () => {
+    expect(forgeYield(100, false)).toBe(FORGE_YIELD_BASE * 3)
+    expect(forgeYield(50, false)).toBe(FORGE_YIELD_BASE * 2)
+    expect(forgeYield(20, false)).toBe(FORGE_YIELD_BASE)
+    expect(forgeYield(100, true)).toBe(FORGE_YIELD_BASE * 3 * FORGE_PICK_MULT)
+    expect(forgeYield(19.99, true)).toBe(0)
+    expect(forgeYield(0, false)).toBe(0)
   })
 })

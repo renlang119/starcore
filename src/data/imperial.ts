@@ -187,5 +187,41 @@ export const IMPERIAL_FINAL_SECTION: ImperialSection = {
 /** 炉前节条目数（含入分组计数：15 + 3 = 18） */
 export const IMPERIAL_FINAL_ENTRY_COUNT = IMPERIAL_FINAL_SECTION.entries.length
 
-/** 帝庭档案分组条目总数（五节观察留档 + 炉前亲见留档） */
-export const IMPERIAL_TOTAL_ENTRY_COUNT = IMPERIAL_ENTRY_COUNT + IMPERIAL_FINAL_ENTRY_COUNT
+/**
+ * 炉域节（v1.83）：首次进入炉域后的亲见留档。半揭口径「只揭行为，
+ * 不揭本体」：炉的自主行为、规模轮廓与拣贡亲证可写；来源、目的、
+ * 与门后侧的关系保持留白（台账勾稽与排除词表见 references/
+ * i18n-en-glossary.md §三⑤）。解锁 = forgeEntered 终身置位（跨转生
+ * 保持解锁，与炉前节 everCompleted 口径同构），判读在 ArchiveView。
+ */
+export const IMPERIAL_FORGE_SECTION: ImperialSection = {
+  id: 'section_07',
+  name: t('content.imperial.section_07'),
+  entries: [
+    {
+      id: 'imp_19',
+      name: t('content.imperial.imp_19.name'),
+      text: t('content.imperial.imp_19.text'),
+      note: t('content.imperial.imp_19.note'),
+    },
+    {
+      id: 'imp_20',
+      name: t('content.imperial.imp_20.name'),
+      text: t('content.imperial.imp_20.text'),
+      note: t('content.imperial.imp_20.note'),
+    },
+    {
+      id: 'imp_21',
+      name: t('content.imperial.imp_21.name'),
+      text: t('content.imperial.imp_21.text'),
+      note: t('content.imperial.imp_21.note'),
+    },
+  ],
+}
+
+/** 炉域节条目数（含入分组计数：18 + 3 = 21） */
+export const IMPERIAL_FORGE_ENTRY_COUNT = IMPERIAL_FORGE_SECTION.entries.length
+
+/** 帝庭档案分组条目总数（五节观察留档 + 炉前亲见留档 + 炉域亲见留档） */
+export const IMPERIAL_TOTAL_ENTRY_COUNT =
+  IMPERIAL_ENTRY_COUNT + IMPERIAL_FINAL_ENTRY_COUNT + IMPERIAL_FORGE_ENTRY_COUNT

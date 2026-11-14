@@ -5749,6 +5749,55 @@
       ]
     },
     {
+      "id": "ach_imperial_6",
+      "category": "imperial",
+      "metric": "forgeEntered",
+      "threshold": 1,
+      "effects": [
+        {
+          "type": "combat_mult",
+          "target": "attack",
+          "value": 1.04
+        },
+        {
+          "type": "combat_mult",
+          "target": "defense",
+          "value": 1.04
+        }
+      ]
+    },
+    {
+      "id": "ach_imperial_7",
+      "category": "imperial",
+      "metric": "forgeTributes",
+      "threshold": 100,
+      "effects": [
+        {
+          "type": "production_mult",
+          "target": "all",
+          "value": 1.06
+        }
+      ]
+    },
+    {
+      "id": "ach_imperial_8",
+      "category": "imperial",
+      "metric": "forgePicks",
+      "threshold": 12,
+      "effects": [
+        {
+          "type": "combat_mult",
+          "target": "attack",
+          "value": 1.1
+        },
+        {
+          "type": "combat_mult",
+          "target": "defense",
+          "value": 1.1
+        }
+      ]
+    },
+    {
       "id": "ach_relic_1",
       "category": "relic",
       "metric": "relicsOwned",
@@ -6954,6 +7003,20 @@
     "auditWindowSeconds": 259200,
     "auditPayHours": 24,
     "auditBonus": 1.1,
+    "auditStrictBonus": 1.3,
+    "forge": {
+      "decayPerHour": 2,
+      "tributeRefill": 24,
+      "pickMult": 3,
+      "yieldBase": 900000000,
+      "stabilityMax": 100,
+      "tributeCost": {
+        "energy": 1360000000,
+        "crystal": 24727000,
+        "alloy": 1360000000,
+        "dark": 170000
+      }
+    },
     "strongholds": [
       {
         "id": "imp_pass",

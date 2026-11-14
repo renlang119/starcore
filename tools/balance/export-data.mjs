@@ -26,6 +26,8 @@
  * 侧手抄。
  * schema:4（2026-11）：新增 imperial 域（帝庭据点线：6 座贡赋基准、
  * 整备倍率、巡检参数），总账脚本据此断言 5% 派遣当量锚点与回收期。
+ * schema:5（2026-11）：imperial 域扩 forge 子域（v1.83 炉域：衰减/回填/
+ * 点名/产出基准与投入表），总账脚本据此断言对价锚点。
  *
  * 私有常量说明（src/ 零改动边界内的三处最小提取）：
  *  - offline 的 OFFLINE_CAP（src/lib/offline-gains.ts 模块私有，非导出值），
@@ -472,6 +474,15 @@ try {
       auditWindowSeconds: imperialMod.IMPERIAL_AUDIT_WINDOW_SECONDS,
       auditPayHours: imperialMod.IMPERIAL_AUDIT_PAY_HOURS,
       auditBonus: imperialMod.IMPERIAL_AUDIT_BONUS,
+      auditStrictBonus: imperialMod.IMPERIAL_AUDIT_STRICT_BONUS,
+      forge: {
+        decayPerHour: imperialMod.FORGE_DECAY_PER_HOUR,
+        tributeRefill: imperialMod.FORGE_TRIBUTE_REFILL,
+        pickMult: imperialMod.FORGE_PICK_MULT,
+        yieldBase: imperialMod.FORGE_YIELD_BASE,
+        stabilityMax: imperialMod.FORGE_STABILITY_MAX,
+        tributeCost: { ...imperialMod.FORGE_TRIBUTE_COST },
+      },
       strongholds: imperialMod.IMPERIAL_STRONGHOLDS.map((s) =>
         stripText(
           {

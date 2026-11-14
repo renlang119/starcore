@@ -115,4 +115,21 @@ export default {
   'content.imperial.imp_18.text':
     '炉火没有熄过。改线、兽潮、王庭更替，贡道上什么事都发生过，只有炉温记录是一条平线。司炉房的人私下说，不是人在养火，是火在养着炉——这话没人敢往贡册上誊。',
   'content.imperial.imp_18.note': '档批：炉温档案密封，此条为口述留档，无誊本对应。',
+  // 节七 · 炉域（首次进入炉域后的亲见留档，v1.83；半揭口径：只揭行为，不揭本体）
+  'content.imperial.section_07': '炉域',
+
+  'content.imperial.imp_19.name': '炉口的另一侧',
+  'content.imperial.imp_19.text':
+    '炉前庭看到的炉只是炉口。进了炉域才知道，门脸后面没有殿宇——炉体一直延伸到视野尽头，与银心的光接在一起。倾贡的机械臂起起落落，没有指挥台，规程自己在走。',
+  'content.imperial.imp_19.note': '档批：炉域限停区一次放行，随行记录至此。',
+
+  'content.imperial.imp_20.name': '炉音的落定',
+  'content.imperial.imp_20.text':
+    '贡物入炉并非无声无息。有的入炉极轻地响一声，火色稳一分；有的毫无声息，火色不动。押贡官备注栏里的「炉音」不是错觉——炉在拣，拣中的响，拣不中的沉。司炉房只记火色，不记拣择。',
+  'content.imperial.imp_20.note': '档批：拣择记录不在规程内，两说并存，不予裁定。',
+
+  'content.imperial.imp_21.name': '等着什么的火',
+  'content.imperial.imp_21.text':
+    '火没有熄过，也不为谁烧。看火色的人换了几代，火色记录还是一条平线——火在养着炉，炉在等着什么。等什么，没人问，问了火也不答。',
+  'content.imperial.imp_21.note': '档批：此条为观察留档收束，「等」字存疑，沿用不裁。',
 }

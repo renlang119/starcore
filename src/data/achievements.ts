@@ -46,6 +46,9 @@ export type AchievementMetric =
   | 'imperialTierSum' // 帝庭据点整备等级总和（0-18，跨转生保留，读现值，v1.82）
   | 'auditWins' // 终身巡检迎战胜次（v1.82）
   | 'imperialClaims' // 终身贡赋领取次数（v1.82）
+  | 'forgeEntered' // 炉域首次进入（0/1，终身，档案节七判读锚，v1.83）
+  | 'forgeTributes' // 倾贡次数（终身，v1.83）
+  | 'forgePicks' // 响应点名倾贡次数（终身，v1.83）
 
 type AchievementCategory =
   | 'energy'
@@ -477,6 +480,33 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     metric: 'auditWins',
     threshold: 5,
     effects: combat(8),
+  },
+  {
+    id: 'ach_imperial_6',
+    name: t('content.achievements.ach_imperial_6.name'),
+    desc: t('content.achievements.ach_imperial_6.desc'),
+    category: 'imperial',
+    metric: 'forgeEntered',
+    threshold: 1,
+    effects: combat(4),
+  },
+  {
+    id: 'ach_imperial_7',
+    name: t('content.achievements.ach_imperial_7.name'),
+    desc: t('content.achievements.ach_imperial_7.desc'),
+    category: 'imperial',
+    metric: 'forgeTributes',
+    threshold: 100,
+    effects: prod(6),
+  },
+  {
+    id: 'ach_imperial_8',
+    name: t('content.achievements.ach_imperial_8.name'),
+    desc: t('content.achievements.ach_imperial_8.desc'),
+    category: 'imperial',
+    metric: 'forgePicks',
+    threshold: 12,
+    effects: combat(10),
   },
   // 遗物收藏（按当前持有数，遗物跨转生保留），
   {

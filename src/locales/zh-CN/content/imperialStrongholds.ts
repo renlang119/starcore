@@ -24,4 +24,20 @@ export default {
     '银盘枢纽外缘的炉前庭，贡道在此汇入最后一道庭门，门后是炉。',
   'content.imperialStrongholds.audit.name': '帝庭巡检舰队',
   'content.imperialStrongholds.audit.desc': '按周巡查贡道节点的裁决分舰队，核验不通过即收回据点。',
+
+  // 炉域（v1.83）：倾贡与炉火稳定度；投入四选一（不含数据），产出数据
+  'content.imperialStrongholds.forge.name': '炉域',
+  'content.imperialStrongholds.forge.desc':
+    '贡道尽头的炉域。倾贡回填炉火，稳定度越高，回礼越厚；炉每周点名一种贡物，点名倾贡回礼三倍。',
+  'content.imperialStrongholds.forge.stabilityLabel': '炉火稳定度',
+  'content.imperialStrongholds.forge.stabilityDesc':
+    '稳定度随时间回落，每次倾贡回填；80/50/20 以上分三档回礼，20 以下无回礼。',
+  'content.imperialStrongholds.forge.remaining': '今日剩余倾贡 {n} 次',
+  'content.imperialStrongholds.forge.enter': '进入炉域',
+  'content.imperialStrongholds.forge.tributeHint': '投入固定量资源，回填炉火 +24',
+  'content.imperialStrongholds.forge.yieldDesc':
+    '回礼按稳定度档位结算：80/50/20 以上三档递增，点名资源 ×3，20 以下无回礼；每日 4 次。',
+  'content.imperialStrongholds.forge.tribute': '倾贡',
+  'content.imperialStrongholds.forge.pickHint': '本周点名：{res}（回礼 ×3）',
+  'content.imperialStrongholds.forge.lockedDesc': '需接管全部六座贡道据点，且至少一次通过巡检。',
 }

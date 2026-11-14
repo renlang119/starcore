@@ -1,5 +1,5 @@
 // 星核纪元 v0.57 专项回归：成就/里程碑系统
-// A. 全新档：成就页渲染（54 卡/10 分区/汇总 0/54）、导航双端入口
+// A. 全新档：成就页渲染（57 卡/10 分区/汇总 0/57）、导航双端入口
 // B. 注入终身计数档：解锁态/进度条/汇总加成
 // C. 实时解锁 + toast：注入接近阈值档 → tick 触发解锁 → toast 弹出
 // D. 缺 achievements 字段的旧档兼容不废档
@@ -52,11 +52,11 @@ console.log('== A. 全新档成就页渲染与导航 ==');
 {
   const { page, errors } = await newPage(browser, makeSave());
   const cards = page.locator('.ach-card');
-  check(`54 张成就卡（实际 ${await cards.count()}）`, (await cards.count()) === 54);
+  check(`57 张成就卡（实际 ${await cards.count()}）`, (await cards.count()) === 57);
   const sections = page.locator('.ach-section');
   check(`10 个分类区（实际 ${await sections.count()}）`, (await sections.count()) === 10);
   const countText = norm(await page.locator('.summary-count').textContent());
-  check(`汇总 0/54（实际 ${countText}）`, countText === '0/54');
+  check(`汇总 0/57（实际 ${countText}）`, countText === '0/57');
   check('汇总提示尚未获得加成', (await page.locator('.bonus-value').textContent()).includes('尚未获得加成'));
   // 桌面侧栏有成就入口
   check('桌面侧栏含成就导航', (await page.locator('.side-nav .nav-item', { hasText: '成就' }).count()) === 1);
@@ -100,7 +100,7 @@ console.log('== B. 终身计数档解锁态与进度条 ==');
   // 应解锁：energy_1, energy_2, build_1, tech_1, explore_1, battle_1, transcend_1, transcend_2, time_1 = 9
   check(`解锁 9 个成就（实际 ${await unlockedCards.count()}）`, (await unlockedCards.count()) === 9);
   const countText = norm(await page.locator('.summary-count').textContent());
-  check(`汇总 9/54（实际 ${countText}）`, countText === '9/54');
+  check(`汇总 9/57（实际 ${countText}）`, countText === '9/57');
   const bonus = await page.locator('.bonus-value').textContent();
   check(`汇总加成含全资源产出（实际 ${norm(bonus)}）`, bonus.includes('全资源产出'));
   // 进度条：暗物质 500/1,000
@@ -139,11 +139,11 @@ console.log('== C. 实时解锁与 toast 提示 ==');
   // 等自动消失后队列清空
   await page.waitForTimeout(3000);
   check('toast 2.5s 后自动消失', !(await toast.isVisible().catch(() => false)));
-  // 成就页此时应 1/54
+  // 成就页此时应 1/57
   await page.goto(URL + '/achievements', { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
   const countText = norm(await page.locator('.summary-count').textContent());
-  check(`成就页汇总 1/54（实际 ${countText}）`, countText === '1/54');
+  check(`成就页汇总 1/57（实际 ${countText}）`, countText === '1/57');
   await page.context().close();
 }
 
@@ -160,7 +160,7 @@ console.log('== D. 旧档（无 achievements 字段）兼容 ==');
   delete save.totalPlayTime;
   const { page, errors } = await newPage(browser, save);
   await page.waitForTimeout(1500);
-  check('成就页正常渲染（缺成就字段旧档不废）', (await page.locator('.ach-card').count()) === 54);
+  check('成就页正常渲染（缺成就字段旧档不废）', (await page.locator('.ach-card').count()) === 57);
   // 转生次数 2 → 追溯解锁 ach_transcend_1
   const unlocked = await page.locator('.ach-card.unlocked').count();
   check(`追溯解锁转生类成就（实际 ${unlocked} ≥ 1）`, unlocked >= 1);

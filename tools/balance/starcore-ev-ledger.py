@@ -281,6 +281,30 @@ payback3 = 72 / (IMPERIAL['tier3Mult'] - IMPERIAL['tierMult'])
 check(79 <= payback2 <= 81, f'整备 2 级回收期异常：{payback2:.1f}h')
 check(180 <= payback3 <= 190, f'整备 3 级回收期异常：{payback3:.1f}h')
 
+# ---------- 断言 7c：炉域对价锚点（v1.83，imperial.forge 子域） ----------
+FORGE = IMPERIAL['forge']
+check(FORGE['stabilityMax'] == 100, '炉域稳定度上限 ≠ 100')
+check(FORGE['decayPerHour'] == 2 and FORGE['tributeRefill'] == 24,
+      '炉域衰减/回填契约变动（-2/h 与 +24/次）')
+# 满档维持频次：日衰减 48 对回填 12/次 → 4 次/天
+check(24 * FORGE['decayPerHour'] % FORGE['tributeRefill'] == 0,
+      '日衰减/回填不对齐（维持满档频次非整数）')
+# 对价：A 档 tier1 满接管从严 +30% 一周贡赋加成当量（折 data）vs
+# 满档点名最优策略周产出（28 次/周 × 3 档 × ×3 点名 × yieldBase）
+audit_strict_gain = sum(
+    s['baseRate'] * (IMPERIAL['auditStrictBonus'] - 1) * 7 * 86400 * RATE[s['resource']]
+    for s in IMPERIAL['strongholds']
+) / RATE['data']
+forge_week = 28 * 3 * FORGE['pickMult'] * FORGE['yieldBase']
+check(0.7 <= forge_week / audit_strict_gain <= 1.05,
+      f'炉域周产出偏离从严加成当量：{forge_week:.3e} vs {audit_strict_gain:.3e}'
+      f'（比值 {forge_week / audit_strict_gain:.2f}，预期 0.7-1.05）')
+# 投入当量低于产出的 5%（象征性添柴）
+cost_ev = sum(FORGE['tributeCost'][r] * RATE[r] for r in FORGE['tributeCost']) / len(FORGE['tributeCost'])
+yield_ev = FORGE['yieldBase'] * 3 * FORGE['pickMult'] * RATE['data']
+check(cost_ev / yield_ev < 0.05,
+      f'单次投入占满档点名产出当量 > 5%：{cost_ev / yield_ev:.2%}')
+
 # ---------- 断言 8：转生门槛结构（首档里程碑可覆盖；终局时薪下秒级可积） ----------
 for name, p in TIERS.items():
     steady = dispatch_hourly(p['best'], 24, 3)

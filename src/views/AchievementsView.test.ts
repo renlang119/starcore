@@ -88,9 +88,9 @@ describe('AchievementsView — 解锁与进度', () => {
     await wrapper.vm.$nextTick()
     const bonus = wrapper.find('.bonus-value').text()
     // 与 EffectSystem 实际生效的连乘口径一致（求和口径会系统性低报）；
-    // v1.82 帝庭类 5 条并入后：prod 连乘 ×1.05×1.04、combat 连乘 ×1.03×1.05×1.08
-    expect(bonus).toContain('全资源产出 +91.7%')
-    expect(bonus).toContain('攻防 +104.4%')
+    // v1.83 帝庭类 8 条并入后：prod 连乘 ×1.05×1.04×1.06、combat 连乘 ×1.03×1.05×1.08×1.04×1.10
+    expect(bonus).toContain('全资源产出 +103.2%')
+    expect(bonus).toContain('攻防 +133.9%')
     expect(bonus).toContain('探索 +69.1%')
     expect(bonus).toContain('离线 +61.1%')
     expect(bonus).toContain('负熵 +10%')

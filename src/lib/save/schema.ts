@@ -84,6 +84,10 @@ export interface ImperialSaveData {
   audit?: ImperialAuditSaveData
   /** 转生宽限截止时刻 ms（v1.82 可选字段；旧档缺失视为 0） */
   auditGraceUntil?: number
+  /** 是否曾通过巡检（v1.83 可选：终身布尔，炉域入口门槛之一；旧档缺失视为 false） */
+  auditEverPassed?: boolean
+  /** 炉域状态（v1.83 可选：null/缺失 = 未进入过；旧档缺失视为未进入） */
+  forge?: { stability: number; lastTick: number; day?: number; dayCount?: number }
 }
 export interface ExplorationSaveData {
   progress: Record<
@@ -133,6 +137,12 @@ export interface AchievementsSaveData {
     auditWins?: number
     /** 终身贡赋领取次数（v1.82 可选：旧档缺失视为 0） */
     imperialClaims?: number
+    /** 炉域首次进入（v1.83 可选：0/1；旧档缺失视为 0） */
+    forgeEntered?: number
+    /** 倾贡次数（v1.83 可选：旧档缺失视为 0） */
+    forgeTributes?: number
+    /** 响应点名倾贡次数（v1.83 可选：旧档缺失视为 0） */
+    forgePicks?: number
   }
   /** 已解锁成就：id → 解锁时间戳（ms） */
   unlocked: Record<string, number>

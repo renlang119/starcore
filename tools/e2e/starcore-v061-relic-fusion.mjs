@@ -152,7 +152,7 @@ console.log('== D. 套装：2 件 partial 激活 / 卸下失活 ==');
 console.log('== E. 成就页 54 卡 + 欧米伽传承 20 种口径 ==');
 {
   const page = await newSeededPage(browser, makeSave(), '/achievements');
-  check('成就页 54 卡', (await page.locator('.ach-card').count()) === 54);
+  check('成就页 54 卡', (await page.locator('.ach-card').count()) === 57);
   const omega = page.locator('.ach-card', { has: page.locator('text=欧米伽传承') });
   check('欧米伽传承卡存在', (await omega.count()) === 1);
   check('文案为「集齐全部 20 种遗物」', (await omega.textContent()).includes('集齐全部 20 种遗物'));

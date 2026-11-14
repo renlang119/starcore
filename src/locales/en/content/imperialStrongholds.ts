@@ -26,4 +26,22 @@ export default {
   'content.imperialStrongholds.audit.name': 'Imperial Inspection Fleet',
   'content.imperialStrongholds.audit.desc':
     'An adjudication squadron that tours the tribute nodes each week; a failed inspection reclaims the stronghold.',
+
+  // The furnace domain (v1.83): tribute feeding and fire stability;
+  // inputs are four of five resources (data excluded), yield is data
+  'content.imperialStrongholds.forge.name': 'The Furnace Domain',
+  'content.imperialStrongholds.forge.desc':
+    'The domain at the end of the tribute route. Feed the furnace to steady the fire; the higher the stability, the richer the return. Each week the furnace names one tribute — named tribute returns thrice.',
+  'content.imperialStrongholds.forge.stabilityLabel': 'Fire Stability',
+  'content.imperialStrongholds.forge.stabilityDesc':
+    'Stability decays over time and refills with each tribute; returns come in three tiers above 80/50/20, none below 20.',
+  'content.imperialStrongholds.forge.remaining': 'Tributes left today: {n}',
+  'content.imperialStrongholds.forge.enter': 'Enter the Furnace Domain',
+  'content.imperialStrongholds.forge.tributeHint': 'Give a fixed amount to refill the fire by +24',
+  'content.imperialStrongholds.forge.yieldDesc':
+    'Returns scale with stability tiers above 80/50/20, named tribute ×3, none below 20; 4 per day.',
+  'content.imperialStrongholds.forge.tribute': 'Give Tribute',
+  'content.imperialStrongholds.forge.pickHint': 'Named this week: {res} (return ×3)',
+  'content.imperialStrongholds.forge.lockedDesc':
+    'Requires all six route strongholds taken and at least one audit passed.',
 }

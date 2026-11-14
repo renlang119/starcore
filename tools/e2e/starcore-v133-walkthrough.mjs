@@ -372,7 +372,7 @@ await sec('F. 编队特性', async () => {
 // ============ G. 成就 ============
 await sec('G. 成就', async () => {
   const page = await seeded(browser, richSave(), '/achievements')
-  check('成就页 54 卡', (await page.locator('.ach-card').count()) === 54)
+  check('成就页 54 卡', (await page.locator('.ach-card').count()) === 57)
   await shot(page, 'g-achievements')
   await page.context().close()
 })

@@ -7,7 +7,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useImperialStore } from './imperial'
-import { IMPERIAL_ANCHOR_BEST, IMPERIAL_CLAIM_CAP_SECONDS } from '@/data/imperial-strongholds'
+import {
+  FORGE_YIELD_BASE,
+  IMPERIAL_ANCHOR_BEST,
+  IMPERIAL_CLAIM_CAP_SECONDS,
+  pickForgeResource,
+} from '@/data/imperial-strongholds'
 
 let store: ReturnType<typeof useImperialStore>
 
@@ -364,5 +369,135 @@ describe('imperial — 存档', () => {
     expect(store.occupiedCount).toBe(0)
     expect(store.audit).toBeNull()
     expect(store.lastClaimAt).toBeGreaterThan(0)
+  })
+})
+
+describe('imperial — 炉域（v1.83）', () => {
+  const SIX = ['imp_pass', 'imp_audit', 'imp_guard', 'imp_verdict', 'imp_echo', 'imp_court']
+
+  function unlockForForge(): void {
+    for (const id of SIX) store.capture(id, 1_000)
+    store.ensureAudit('2026-W46')
+    store.markAuditPassed('strict')
+  }
+
+  it('入口门槛：六座全接管且曾通过巡检，缺一不可', () => {
+    expect(store.forgeUnlocked).toBe(false)
+    for (const id of SIX) store.capture(id, 1_000)
+    expect(store.forgeUnlocked).toBe(false) // 巡检未过
+    store.ensureAudit('2026-W46')
+    store.markAuditPassed('standard')
+    expect(store.forgeUnlocked).toBe(true)
+  })
+
+  it('enterForge：门槛内初始化 stability 0 且幂等；门槛外拒绝', () => {
+    expect(store.enterForge()).toBe(false)
+    expect(store.forge).toBeNull()
+    unlockForForge()
+    expect(store.enterForge(2_000)).toBe(true)
+    expect(store.forge).toEqual({ stability: 0, lastTick: 2_000, day: 0, dayCount: 0 })
+    expect(store.enterForge(3_000)).toBe(true) // 幂等：不重置
+    expect(store.forge).toEqual({ stability: 0, lastTick: 2_000, day: 0, dayCount: 0 })
+  })
+
+  it('markAuditPassed 与 markAuditPaid 两路均置位 auditEverPassed', () => {
+    store.capture('imp_pass', 1_000)
+    store.ensureAudit('2026-W46')
+    expect(store.markAuditPassed('standard')).toBe(true)
+    expect(store.auditEverPassed).toBe(true)
+    // 下一周打点路径（先重置再走 markAuditPaid）
+    store.audit = null
+    store.ensureAudit('2026-W47')
+    store.$patch({})
+    expect(store.markAuditPaid()).toBe(true)
+    expect(store.auditEverPassed).toBe(true)
+  })
+
+  it('倾贡结算：回填 +24、日限 4 次、跨日重置、上限 100、衰减补算、点名 ×3', () => {
+    unlockForForge()
+    store.enterForge(0)
+    const pickedRes = pickForgeResource('2026-W46')
+    const normalRes = (['energy', 'crystal', 'alloy', 'dark'] as const).find(
+      (r) => r !== pickedRes
+    )!
+    // 同日连投：0→24（24 以下首投无产出，先添柴）→48→72→96；第 5 次撞日限拒
+    const r1 = store.tributeForge(normalRes, '2026-W46', 0)
+    // 回填 +24：首投即 20 档，tier1 有产出（+12 时代的启动期不再，v1.83 复审修正）
+    expect(r1).toEqual({ yield: FORGE_YIELD_BASE, picked: false, stability: 24 })
+    expect(store.forgeRemainingToday(0)).toBe(3)
+    store.tributeForge(normalRes, '2026-W46', 0)
+    store.tributeForge(normalRes, '2026-W46', 0)
+    const r4 = store.tributeForge(normalRes, '2026-W46', 0)
+    expect(r4?.stability).toBe(96)
+    expect(store.tributeForge(normalRes, '2026-W46', 0)).toBeNull() // 日限满
+    expect(store.forgeRemainingToday(0)).toBe(0)
+    // 跨日重置：96 - 48（24h 衰减）= 48 起步，+24×3 → 100 钳制
+    const day2 = 86_400_000
+    store.tributeForge(normalRes, '2026-W46', day2) // 48+24=72
+    store.tributeForge(normalRes, '2026-W46', day2) // 72+24=96
+    const rTop = store.tributeForge(normalRes, '2026-W46', day2) // 96+24→100 钳制
+    expect(rTop?.stability).toBe(100)
+    store.tributeForge(normalRes, '2026-W46', day2) // 100 钳制（日限第 4 次）
+    // 再跨日离线 34h（day2 → 2*day2+10h）：100 - 68 + 24 = 56
+    const rOff = store.tributeForge(normalRes, '2026-W46', 2 * day2 + 10 * 3_600_000)
+    expect(rOff?.stability).toBe(56)
+    // 点名 ×3：同稳定度下点名资源产出 = 非点名 ×3
+    const rPick = store.tributeForge(pickedRes, '2026-W46', 2 * day2 + 10 * 3_600_000)
+    const rNorm = store.tributeForge(normalRes, '2026-W46', 2 * day2 + 10 * 3_600_000)
+    expect(rPick?.picked).toBe(true)
+    expect(rNorm?.picked).toBe(false)
+    expect(rPick?.yield).toBe((rNorm?.yield ?? 0) * 3)
+  })
+
+  it('倾贡拒非法：data 投入、未进入炉域', () => {
+    unlockForForge()
+    store.enterForge(0)
+    // @ts-expect-error 故意传 data（运行时防御）
+    expect(store.tributeForge('data', '2026-W46', 0)).toBeNull()
+    store.forge = null
+    expect(store.tributeForge('energy', '2026-W46', 0)).toBeNull()
+  })
+
+  it('forgeStability 显示补算：不落盘', () => {
+    unlockForForge()
+    store.enterForge(0)
+    store.tributeForge('energy', '2026-W46', 0) // stability 24, lastTick 0
+    expect(store.forgeStability(5 * 3_600_000)).toBe(14) // 24 - 10
+    expect(store.forge?.stability).toBe(24) // 未落盘
+  })
+
+  it('serialize/hydrate 往返与旧档兜底（两可选域）', () => {
+    unlockForForge()
+    store.enterForge(5_000)
+    store.tributeForge('energy', '2026-W46', 5_000)
+    const saved = store.serialize()
+    expect(saved.auditEverPassed).toBe(true)
+    expect(saved.forge).toBeDefined()
+    const s2 = useImperialStore()
+    s2.hydrate(saved)
+    expect(s2.auditEverPassed).toBe(true)
+    expect(s2.forge).toEqual(store.forge)
+    // 旧档（无两字段）：兜 false / null
+    const s3 = useImperialStore()
+    s3.hydrate({ completed: [], tiers: {}, lastClaimAt: 0 })
+    expect(s3.auditEverPassed).toBe(false)
+    expect(s3.forge).toBeNull()
+    // 非法 forge（stability 越界）整体剥离
+    const s4 = useImperialStore()
+    s4.hydrate({
+      completed: [],
+      tiers: {},
+      lastClaimAt: 0,
+      forge: { stability: 500, lastTick: 0 },
+    })
+    expect(s4.forge).toBeNull()
+  })
+
+  it('reset 清炉域两域（hardReset 语义）', () => {
+    unlockForForge()
+    store.enterForge(0)
+    store.reset()
+    expect(store.auditEverPassed).toBe(false)
+    expect(store.forge).toBeNull()
   })
 })

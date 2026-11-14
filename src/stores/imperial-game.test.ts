@@ -98,8 +98,71 @@ describe('game — 帝庭据点门面', () => {
     const a = game.imperial.ensureAudit('2026-W45', t0)
     expect(a).not.toBeNull()
     game.resources.setAmount('energy', 1e9)
-    game.resources.gain('energy', 1e9)
+    game.resources.gain('energy', 1e12)
     expect(game.doTranscend()).toBe(true)
     expect(game.imperial.audit?.deadline).toBe(a!.deadline + 7 * 24 * 3600 * 1000)
+  })
+})
+
+describe('game — 炉域门面（v1.83）', () => {
+  const SIX = ['imp_pass', 'imp_audit', 'imp_guard', 'imp_verdict', 'imp_echo', 'imp_court']
+
+  function setupForForge() {
+    const game = useGameStore()
+    game.imperial.reset()
+    game.achievements.reset()
+    game.resources.reset()
+    for (const id of SIX) game.imperial.capture(id, 1_000)
+    game.imperial.ensureAudit('2026-W46')
+    game.imperial.markAuditPassed('strict')
+    return game
+  }
+
+  it('首次进入置 forgeEntered（当帧可用于档案判读），重复进入不重置计数', () => {
+    const game = setupForForge()
+    expect(game.achievements.lifetimeInt.forgeEntered).toBe(0)
+    expect(game.enterForge(2_000)).toBe(true)
+    expect(game.achievements.lifetimeInt.forgeEntered).toBe(1)
+    expect(game.achievements.metricValue('forgeEntered')).toBe(1) // 档案节七判读读此值
+    expect(game.enterForge(3_000)).toBe(true)
+    expect(game.achievements.lifetimeInt.forgeEntered).toBe(1) // 不重置
+  })
+
+  it('门槛未满足（巡检未过）：enterForge 拒绝且不置位', () => {
+    const game = useGameStore()
+    game.imperial.reset()
+    game.achievements.reset()
+    game.resources.reset()
+    for (const id of SIX) game.imperial.capture(id, 1_000) // 不通过巡检
+    expect(game.enterForge()).toBe(false)
+    expect(game.achievements.lifetimeInt.forgeEntered).toBe(0)
+  })
+
+  it('倾贡：扣投入、发 data、计数三条（含点名响应）', () => {
+    const game = setupForForge()
+    game.enterForge(0)
+    const resources = game.resources
+    // 预置四种投入资源与 data 基线
+    resources.gain('energy', 1e12)
+    resources.gain('crystal', 1e12)
+    resources.gain('alloy', 1e12)
+    resources.gain('dark', 1e12)
+    const dataBefore = resources.getAmount('data').toNumber()
+    const r1 = game.tributeForge('energy', 0)
+    // 回填 +24（v1.83 复审修正）：首投即进 20 档有产出（+12 时代的两投启动期不再）
+    expect(r1).toBeGreaterThan(0)
+    expect(game.achievements.lifetimeInt.forgeTributes).toBe(1)
+    expect(resources.getAmount('data').toNumber()).toBeGreaterThan(dataBefore)
+    const r2 = game.tributeForge('energy', 0)
+    expect(r2 ?? 0).toBeGreaterThanOrEqual(r1 ?? 0)
+    expect(game.achievements.lifetimeInt.forgeTributes).toBe(2)
+  })
+
+  it('倾贡资源不足：拒付且零计数', () => {
+    const game = setupForForge() // reset 后 energy = START_ENERGY(50) < 1.2e6
+    game.enterForge(0)
+    const tributes = game.achievements.lifetimeInt.forgeTributes
+    expect(game.tributeForge('energy', 0)).toBeNull()
+    expect(game.achievements.lifetimeInt.forgeTributes).toBe(tributes)
   })
 })

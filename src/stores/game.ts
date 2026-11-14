@@ -22,6 +22,11 @@ import { useArchiveStore } from './archive'
 import { useEncountersStore } from './encounters'
 import { useImperialStore } from './imperial'
 import type { ImperialAuditDifficulty } from '@/data/imperial-strongholds'
+import {
+  FORGE_TRIBUTE_COST,
+  isForgeInputResource,
+  type ForgeInputResource,
+} from '@/data/imperial-strongholds'
 import { createGameEffects, wireGameProviders } from './game-effects'
 import { createGamePersistence } from './game-persistence'
 import { createGameRewards } from './game-rewards'
@@ -392,6 +397,27 @@ export const useGameStore = defineStore('game', () => {
     return bundle
   }
 
+  /** 进入炉域（v1.83）：首次进入置位 forgeEntered——置位先于档案节七判读，当帧可见 */
+  function enterForge(now = Date.now()): boolean {
+    const first = achievements.lifetimeInt.forgeEntered === 0
+    const ok = imperial.enterForge(now)
+    if (ok && first) achievements.recordForgeEntered()
+    return ok
+  }
+
+  /** 倾贡（v1.83）：扣投入（四选一）→ 结算 → 发 data → 计数（点名响应计 forgePicks） */
+  function tributeForge(input: ForgeInputResource, now = Date.now()): number | null {
+    if (!isForgeInputResource(input) || !imperial.forge) return null
+    const cost = FORGE_TRIBUTE_COST[input]
+    if (!resources.spendCost({ [input]: cost })) return null
+    const result = imperial.tributeForge(input, daily.currentWeek, now)
+    if (!result) return null
+    if (result.yield > 0) resources.gain('data', result.yield)
+    achievements.recordForgeTribute()
+    if (result.picked) achievements.recordForgePick()
+    return result.yield
+  }
+
   function upgradeImperialStronghold(id: string): boolean {
     const cost = imperial.upgradeCost(id, combat.expeditionBest)
     if (!cost) return false
@@ -480,6 +506,8 @@ export const useGameStore = defineStore('game', () => {
     getDisplayRate,
     // 帝庭据点线（v1.80 系统层）
     claimImperialTribute,
+    enterForge,
+    tributeForge,
     upgradeImperialStronghold,
     payImperialAudit,
     settleImperialAudit,
